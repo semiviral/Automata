@@ -1,7 +1,3 @@
-#region
-
-#endregion
-
 namespace Automata.Core
 {
     public class ViewDoUpdateSystem : ComponentSystem
@@ -20,7 +16,7 @@ namespace Automata.Core
             {
                 if (windowViewComponent.View.IsClosing)
                 {
-                    return;
+                    continue;
                 }
 
                 windowViewComponent.View.DoEvents();

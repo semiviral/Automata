@@ -84,9 +84,7 @@ namespace AutomataTest
             options.Position = new Point(500, 400);
 
             _Window = Window.Create(options);
-            _Window.Load += Initialize;
             _Window.Render += OnRender;
-            _Window.Update += OnUpdate;
             _Window.Closing += OnClose;
             _Projection = Matrix4x4.CreatePerspective(Mathf.ToRadians(90f),
                 (float)_Window.Size.Width / _Window.Size.Height, 0.1f, 100f);
@@ -103,7 +101,6 @@ namespace AutomataTest
                     SystemManager.Update();
                 }
             }
-
         }
 
         private static void Initialize()
@@ -116,11 +113,13 @@ namespace AutomataTest
 
             Entity gameEntity = new Entity();
             EntityManager.RegisterEntity(gameEntity);
-            EntityManager.RegisterComponent<KeyboardInputComponent>(gameEntity);
+            EntityManager.RegisterComponent(gameEntity, new WindowViewComponent(_Window));
             EntityManager.RegisterComponent(gameEntity, new UnregisteredInputContextComponent
             {
                 InputContext = _Window.CreateInput()
             });
+            EntityManager.RegisterComponent<KeyboardInputComponent>(gameEntity);
+
 
             _GL = GL.GetApi();
 
@@ -157,11 +156,6 @@ namespace AutomataTest
             _Shader.SetUniform("uBlue", (float)Math.Sin((DateTime.UtcNow.Millisecond / 1000f) * Math.PI));
 
             _GL.DrawElements(PrimitiveType.Triangles, (uint)_indices.Length, DrawElementsType.UnsignedInt, null);
-        }
-
-        private static void OnUpdate(double delta)
-        {
-            SystemManager.Update();
         }
 
         private static void OnClose()
