@@ -51,5 +51,19 @@ namespace Automata.Core
                 return (T)component;
             }
         }
+
+        public bool TryGetComponent<T>(out T component) where T : IComponent
+        {
+            if (_Components.TryGetValue(typeof(T), out IComponent? componentBase))
+            {
+                component = (T)componentBase;
+                return true;
+            }
+            else
+            {
+                component = (T)Component.Default;
+                return false;
+            }
+        }
     }
 }

@@ -24,6 +24,12 @@ namespace Automata.Core
             {
                 foreach (ComponentSystem system in systems)
                 {
+                    if (!system.IsEnabled)
+                    {
+                        system.Enabled();
+                        system.IsEnabled = true;
+                    }
+
                     system.Update();
                 }
             }
@@ -37,6 +43,7 @@ namespace Automata.Core
             }
 
             _systems[order].Add(componentSystem);
+            componentSystem.Registered();
         }
     }
 }

@@ -81,14 +81,16 @@ namespace Automata.Core
 
         #region Get .. Data
 
-        public static IEnumerable<IEntity> GetEntitiesWithComponent(Type componentType)
+        public static IEnumerable<IEntity> GetEntitiesWithComponent<T>() where T : IComponent
         {
-            if (!IComponentType.IsAssignableFrom(componentType))
+            Type typeT = typeof(T);
+
+            if (!IComponentType.IsAssignableFrom(typeT))
             {
-                throw new TypeLoadException(componentType.ToString());
+                throw new TypeLoadException(typeT.ToString());
             }
 
-            return _EntitiesByComponent[componentType];
+            return _EntitiesByComponent[typeT];
         }
 
         // todo this should accept only component types

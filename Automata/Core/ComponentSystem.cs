@@ -2,6 +2,8 @@ namespace Automata.Core
 {
     public abstract class ComponentSystem
     {
+        public bool IsEnabled { get; set; }
+
         protected ComponentSystem(int order = SystemManager.DEFAULT_SYSTEM_ORDER)
         {
             SystemManager.RegisterSystem(this, order);
@@ -9,7 +11,7 @@ namespace Automata.Core
 
         public virtual void Registered() { }
 
-        public virtual void Enable() { }
+        public virtual void Enabled() { }
 
         public virtual void Update() { }
     }

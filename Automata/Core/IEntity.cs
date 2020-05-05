@@ -14,5 +14,6 @@ namespace Automata.Core
         T GetComponent<T>() where T : IComponent;
 
         bool TryAddComponent<T>() where T : IComponent;
+        bool TryGetComponent<T>(out T component) where T : IComponent;
     }
 }

@@ -114,7 +114,7 @@ namespace AutomataTest
             _Shader = new Shader(_GL, "default.vert", "shader.frag");
             _Shader.SetUniform("model", Matrix4x4.Identity);
             _Shader.SetUniform("projection", _Projection);
-            _Shader.SetUniform("view", _View);
+
         }
 
         private static Matrix4x4 _View;
@@ -126,10 +126,11 @@ namespace AutomataTest
             _GL.Clear((uint)ClearBufferMask.ColorBufferBit);
 
             _VAO.Bind();
-            _Shader.Use();
+_Shader.Use();
+_Shader.SetUniform("view", _View);
 
             const float radius = 10f;
-            //_View = Matrix4x4.CreateLookAt(new Vector3((float)Math.Sin(radius * _glfw.GetTime()), 0f, (float)Math.Cos(radius * _glfw.GetTime())), new Vector3(0f, 0f, 0f), new Vector3(0f, 1f, 0f));
+            _View = Matrix4x4.CreateLookAt(new Vector3((float)Math.Sin(radius * _glfw.GetTime()), 0f, (float)Math.Cos(radius * _glfw.GetTime())), new Vector3(0f, 0f, 0f), new Vector3(0f, 1f, 0f));
 
             _Shader.SetUniform("uBlue", (float)Math.Sin((DateTime.UtcNow.Millisecond / 1000f) * Math.PI));
 
