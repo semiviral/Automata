@@ -9,6 +9,9 @@ using Silk.NET.Input.Common;
 
 namespace Automata.Input
 {
+    /// <summary>
+    ///     System used for capturing and dispatching input updates.
+    /// </summary>
     public class InputSystem : ComponentSystem
     {
         private readonly HashSet<Key> _KeysUp;

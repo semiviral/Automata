@@ -10,9 +10,19 @@ using Silk.NET.OpenGL;
 
 namespace Automata.Rendering
 {
+    /// <summary>
+    ///     Consumes a <see cref="PendingMeshDataComponent"/> and creates relevant GPU buffers so a given mesh can be rendered.
+    /// </summary>
     public class MeshCompositionSystem : ComponentSystem
     {
+        /// <summary>
+        ///     <see cref="GL"/> instance to use for graphics operations.
+        /// </summary>
         private readonly GL _GL;
+
+        /// <summary>
+        ///     Default shader to apply to graphics entities.
+        /// </summary>
         private readonly Shader _DefaultShader;
 
         public MeshCompositionSystem()

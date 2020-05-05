@@ -7,6 +7,9 @@ using Automata.Core;
 
 namespace Automata.Rendering
 {
+    /// <summary>
+    ///     Used to hold pending mesh data that needs to be uploaded to the GPU.
+    /// </summary>
     public class PendingMeshDataComponent : IComponent
     {
         public Vector3[] Vertices { get; set; }

@@ -13,9 +13,8 @@ namespace Automata.Core
 
         bool TryAddComponent(IComponent component);
         bool TryRemoveComponent<T>() where T : IComponent;
-        T GetComponent<T>() where T : IComponent;
-
         bool TryGetComponent<T>(out T component) where T : IComponent;
+        T GetComponent<T>() where T : IComponent;
     }
 
     public class Entity : IEntity
@@ -33,6 +32,11 @@ namespace Automata.Core
 
         public bool TryAddComponent(IComponent? component)
         {
+            if (component == null)
+            {
+                return false;
+            }
+
             Type type = component.GetType();
 
             if (_Components.ContainsKey(type))
@@ -49,6 +53,7 @@ namespace Automata.Core
         public T GetComponent<T>() where T : IComponent
         {
             Type typeT = typeof(T);
+
             if (!_Components.TryGetValue(typeT, out IComponent? component) || (component == null))
             {
                 throw new TypeLoadException(typeT.ToString());
