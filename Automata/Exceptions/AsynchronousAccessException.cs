@@ -4,7 +4,7 @@ using System;
 
 #endregion
 
-namespace Automata.Core
+namespace Automata.Exceptions
 {
     public class AsynchronousAccessException : Exception
     {
