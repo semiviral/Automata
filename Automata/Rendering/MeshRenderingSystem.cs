@@ -11,7 +11,7 @@ namespace Automata.Rendering
 
         public override void Update()
         {
-            foreach (IEntity entity in EntityManager.GetEntitiesWithComponent<RenderedMeshComponent>())
+            foreach (IEntity entity in EntityManager.GetEntitiesWithComponent<DirtyMeshComponent>())
             {
                 if (!entity.TryGetComponent(out RenderedShaderComponent renderedShaderComponent))
                 {
@@ -20,7 +20,10 @@ namespace Automata.Rendering
 
                 // get shader
 
-                // apply buffers
+                // create buffers if one doesn't exist
+                // apply new buffer data
+
+                entity.RemoveComponent<DirtyMeshComponent>();
             }
         }
     }

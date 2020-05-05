@@ -1,13 +1,16 @@
 namespace Automata.Core
 {
-    public abstract class ComponentSystem
+    public interface IComponentSystem
+    {
+        bool IsEnabled { get; set; }
+        void Registered();
+        void Enabled();
+        void Update();
+    }
+
+    public abstract class ComponentSystem : IComponentSystem
     {
         public bool IsEnabled { get; set; }
-
-        protected ComponentSystem(int order = SystemManager.DEFAULT_SYSTEM_ORDER)
-        {
-            SystemManager.RegisterSystem(this, order);
-        }
 
         public virtual void Registered() { }
 

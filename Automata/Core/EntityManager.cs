@@ -46,6 +46,13 @@ namespace Automata.Core
             Log.Verbose($"{nameof(EntityManager)} registered new entity '{entity.ID}' (#{_Entities.Count}).");
         }
 
+        public static void RegisterComponent(IEntity entity, ComponentSystem componentSystem)
+        {
+            Type type = componentSystem.GetType();
+
+            if (entity.)
+        }
+
         public static void RegisterComponent<T>(IEntity entity) where T : IComponent
         {
             if (entity.TryAddComponent<T>())

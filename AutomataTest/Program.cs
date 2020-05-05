@@ -94,11 +94,14 @@ namespace AutomataTest
 
         private static void OnLoad()
         {
-            _InputSystem = new InputSystem(_Window);
+            Entity gameEntity = new Entity();
+            EntityManager.RegisterEntity(gameEntity);
 
-            Entity entity = new Entity();
-            EntityManager.RegisterEntity(entity);
-            EntityManager.RegisterComponent<KeyboardInputComponent>(entity);
+            SystemManager.GetSystem<InputSystem>();
+            SystemManager.RegisterSystem<MeshRenderingSystem>();
+
+            EntityManager.RegisterComponent<UnregisteredInputContext>(gameEntity);
+            EntityManager.RegisterComponent<KeyboardInputComponent>(gameEntity);
 
             _GL = GL.GetApi();
 
@@ -133,7 +136,6 @@ _Shader.SetUniform("view", _View);
             _View = Matrix4x4.CreateLookAt(new Vector3((float)Math.Sin(radius * _glfw.GetTime()), 0f, (float)Math.Cos(radius * _glfw.GetTime())), new Vector3(0f, 0f, 0f), new Vector3(0f, 1f, 0f));
 
             _Shader.SetUniform("uBlue", (float)Math.Sin((DateTime.UtcNow.Millisecond / 1000f) * Math.PI));
-
 
             _GL.DrawElements(PrimitiveType.Triangles, (uint)_indices.Length, DrawElementsType.UnsignedInt, null);
         }

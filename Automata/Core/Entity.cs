@@ -7,6 +7,18 @@ using System.Collections.Generic;
 
 namespace Automata.Core
 {
+    public interface IEntity
+    {
+        Guid ID { get; }
+
+        T AddComponent<T>() where T : IComponent;
+        void RemoveComponent<T>() where T : IComponent;
+        T GetComponent<T>() where T : IComponent;
+
+        bool TryAddComponent<T>() where T : IComponent;
+        bool TryGetComponent<T>(out T component) where T : IComponent;
+    }
+
     public class Entity : IEntity
     {
         private readonly Dictionary<Type, IComponent> _Components;
@@ -20,13 +32,23 @@ namespace Automata.Core
             ID = Guid.NewGuid();
         }
 
+        public void AddComponent(IComponent component)
+        {
+            Type type = component.GetType();
+
+            if (_Components.ContainsKey(type))
+            {
+                throw new Exception(ExceptionFormats.ComponentInstanceExistsException);
+            }
+        }
+
         public T AddComponent<T>() where T : IComponent
         {
             Type typeT = typeof(T);
 
             if (_Components.ContainsKey(typeT))
             {
-                throw new Exception($"Entity already contains component ({typeT}).");
+                throw new Exception(ExceptionFormats.ComponentInstanceExistsException);
             }
 
             T component = Activator.CreateInstance<T>();
@@ -38,6 +60,8 @@ namespace Automata.Core
         }
 
         public bool TryAddComponent<T>() where T : IComponent => _Components.TryAdd(typeof(T), Activator.CreateInstance<T>());
+
+        public void RemoveComponent<T>() where T : IComponent => _Components.Remove(typeof(T));
 
         public T GetComponent<T>() where T : IComponent
         {

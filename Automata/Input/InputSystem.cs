@@ -2,9 +2,7 @@
 
 using System.Collections.Generic;
 using Automata.Core;
-using Silk.NET.Input;
 using Silk.NET.Input.Common;
-using Silk.NET.Windowing.Common;
 
 #endregion
 
@@ -15,22 +13,23 @@ namespace Automata.Input
         private readonly HashSet<Key> _KeysUp;
         private readonly HashSet<Key> _KeysDown;
 
-        public InputSystem(IView window) : base(SystemManager.INPUT_SYSTEM_ORDER)
+        public InputSystem()
         {
-            IInputContext inputContext = window.CreateInput();
-
-            foreach (IKeyboard keyboard in inputContext.Keyboards)
-            {
-                keyboard.KeyUp += OnKeyUp;
-                keyboard.KeyDown += OnKeyDown;
-            }
-
             _KeysUp = new HashSet<Key>();
             _KeysDown = new HashSet<Key>();
         }
 
         public override void Update()
         {
+            foreach (IEntity entity in EntityManager.GetEntitiesWithComponent<UnregisteredInputContext>())
+            {
+                UnregisteredInputContext unregisteredInputContext = entity.GetComponent<UnregisteredInputContext>();
+
+                RegisterInputContext(unregisteredInputContext.InputContext);
+
+                entity.RemoveComponent<UnregisteredInputContext>();
+            }
+
             if ((_KeysUp.Count == 0) && (_KeysDown.Count == 0))
             {
                 return;
@@ -43,6 +42,15 @@ namespace Automata.Input
 
                 inputComponent.KeysUp.UnionWith(_KeysUp);
                 inputComponent.KeysDown.UnionWith(_KeysDown);
+            }
+        }
+
+        private void RegisterInputContext(IInputContext inputContext)
+        {
+            foreach (IKeyboard keyboard in inputContext.Keyboards)
+            {
+                keyboard.KeyUp += OnKeyUp;
+                keyboard.KeyDown += OnKeyDown;
             }
         }
 

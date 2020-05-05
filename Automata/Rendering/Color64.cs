@@ -32,7 +32,7 @@ namespace Automata.Rendering
         {
             if (array == null)
             {
-                throw new NullReferenceException($"Argument '{nameof(array)}` cannot be null.");
+                throw new NullReferenceException($"Argument '{nameof(array)}' cannot be null.");
             }
 
             if ((index < 0) || (index >= array.Length))
@@ -47,5 +47,7 @@ namespace Automata.Rendering
 
             RawValue.CopyTo(array, index);
         }
+
+        public static implicit operator Vector4(Color64 color) => color.RawValue;
     }
 }
