@@ -12,13 +12,11 @@ namespace Automata.Core
 {
     public static class EntityManager
     {
-        // ReSharper disable once InconsistentNaming
-        private static readonly Type IComponentType = typeof(IComponent);
-
         public static int MainThreadID { get; }
 
         private static Dictionary<Guid, IEntity> Entities { get; }
         private static Dictionary<Type, List<IEntity>> EntitiesByComponent { get; }
+        private static Dictionary<Type, int> ComponentCountByType { get; }
 
         static EntityManager()
         {
@@ -26,6 +24,7 @@ namespace Automata.Core
 
             Entities = new Dictionary<Guid, IEntity>();
             EntitiesByComponent = new Dictionary<Type, List<IEntity>>();
+            ComponentCountByType = new Dictionary<Type, int>();
         }
 
         #region Register .. Data
@@ -61,22 +60,8 @@ namespace Automata.Core
         /// <remarks>
         ///     Use this method to ensure <see cref="EntityManager" /> caches remain accurate.
         /// </remarks>
-        public static void RegisterComponent(IEntity entity, IComponent component)
-        {
-            if (!entity.TryAddComponent(component))
-            {
-                return;
-            }
-
-            Type type = component.GetType();
-
-            if (!EntitiesByComponent.ContainsKey(type))
-            {
-                EntitiesByComponent.Add(type, new List<IEntity>());
-            }
-
-            EntitiesByComponent[type].Add(entity);
-        }
+        public static void RegisterComponent(IEntity entity, IComponent component) =>
+            RegisterComponentInternal(entity, component.GetType(), component);
 
         /// <summary>
         ///     Adds the specified component to the given <see cref="IEntity" />.
@@ -86,20 +71,26 @@ namespace Automata.Core
         /// <remarks>
         ///     Use this method to ensure <see cref="EntityManager" /> caches remain accurate.
         /// </remarks>
-        public static void RegisterComponent<T>(IEntity entity) where T : IComponent
+        public static void RegisterComponent<T>(IEntity entity) where T : IComponent =>
+            RegisterComponentInternal(entity, typeof(T), null);
+
+        private static void RegisterComponentInternal(IEntity entity, Type type, IComponent? component)
         {
-            if (!entity.TryAddComponent<T>())
+            if (!EntitiesByComponent.ContainsKey(type))
             {
-                return;
+                EntitiesByComponent.Add(type, new List<IEntity>());
             }
 
-            Type typeT = typeof(T);
-            if (!EntitiesByComponent.ContainsKey(typeT))
+            if (!ComponentCountByType.ContainsKey(type))
             {
-                EntitiesByComponent.Add(typeof(T), new List<IEntity>());
+                ComponentCountByType.Add(type, 0);
             }
 
-            EntitiesByComponent[typeT].Add(entity);
+            if (entity.TryAddComponent(component ?? (IComponent)Activator.CreateInstance(type)))
+            {
+                EntitiesByComponent[type].Add(entity);
+                ComponentCountByType[type] += 1;
+            }
         }
 
         #endregion
@@ -149,7 +140,7 @@ namespace Automata.Core
 
             foreach (Type componentType in componentTypes)
             {
-                if (!IComponentType.IsAssignableFrom(componentType))
+                if (!typeof(IComponent).IsAssignableFrom(componentType))
                 {
                     throw new TypeLoadException(componentType.ToString());
                 }
@@ -199,6 +190,25 @@ namespace Automata.Core
             }
 
             return EntitiesByComponent[typeT].Select(entity => entity.GetComponent<T>());
+        }
+
+        public static int GetComponentCount<T>() where T : IComponent => ComponentCountByType[typeof(T)];
+
+        public static int GetComponentCount(Type type)
+        {
+            if (!typeof(IComponent).IsAssignableFrom(type))
+            {
+                throw new TypeLoadException(type.ToString());
+            }
+
+            if (ComponentCountByType.TryGetValue(type, out int count))
+            {
+                return count;
+            }
+            else
+            {
+                return 0;
+            }
         }
 
         #endregion

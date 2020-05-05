@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 #endregion
 
@@ -36,6 +37,11 @@ namespace Automata.Core
                         system.IsEnabled = true;
                     }
 
+                    if (system.UtilizedComponentTypes.Any(type => EntityManager.GetComponentCount(type) <= 0))
+                    {
+                        continue;
+                    }
+
                     system.Update();
                 }
             }
@@ -56,6 +62,16 @@ namespace Automata.Core
             }
 
             T componentSystem = Activator.CreateInstance<T>();
+
+            foreach (Type type in componentSystem.UtilizedComponentTypes)
+            {
+                if (!typeof(IComponent).IsAssignableFrom(type))
+                {
+                    throw new TypeLoadException(
+                        $"A given type in '{nameof(componentSystem.UtilizedComponentTypes)}' does not inherit '{nameof(IComponent)}' ({componentSystem.GetType()}: {type}).");
+                }
+            }
+
             _systems[order].Add(componentSystem);
             _systemsByType.Add(typeT, componentSystem);
 

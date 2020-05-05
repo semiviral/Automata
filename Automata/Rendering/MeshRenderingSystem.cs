@@ -8,6 +8,14 @@ namespace Automata.Rendering
 {
     public class MeshRenderingSystem : ComponentSystem
     {
+        public MeshRenderingSystem()
+        {
+            UtilizedComponentTypes = new[]
+            {
+                typeof(DirtyMeshComponent)
+            };
+        }
+
         public override void Registered() { }
 
         public override void Update()

@@ -7,7 +7,7 @@ using Silk.NET.Input.Common;
 
 namespace Automata.Input
 {
-    public class UnregisteredInputContext : IComponent
+    public class UnregisteredInputContextComponent : IComponent
     {
         public IInputContext InputContext { get; set; }
     }

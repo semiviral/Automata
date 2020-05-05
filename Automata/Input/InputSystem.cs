@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Automata.Core;
+using Silk.NET.GLFW;
 using Silk.NET.Input.Common;
 
 #endregion
@@ -18,11 +19,17 @@ namespace Automata.Input
         {
             _KeysUp = new HashSet<Key>();
             _KeysDown = new HashSet<Key>();
+
+            UtilizedComponentTypes = new[]
+            {
+                typeof(UnregisteredInputContextComponent),
+                typeof(KeyboardInputComponent)
+            };
         }
 
         public override void Update()
         {
-            List<IEntity> registeredInputContextEntities = EntityManager.GetEntitiesWithComponent<UnregisteredInputContext>().ToList();
+            List<IEntity> registeredInputContextEntities = EntityManager.GetEntitiesWithComponent<UnregisteredInputContextComponent>().ToList();
 
             foreach (IEntity entity in registeredInputContextEntities)
             {
@@ -31,11 +38,11 @@ namespace Automata.Input
                     continue;
                 }
 
-                UnregisteredInputContext unregisteredInputContext = entity.GetComponent<UnregisteredInputContext>();
+                UnregisteredInputContextComponent unregisteredInputContextComponent = entity.GetComponent<UnregisteredInputContextComponent>();
 
-                RegisterInputContext(unregisteredInputContext.InputContext);
+                RegisterInputContext(unregisteredInputContextComponent.InputContext);
 
-                EntityManager.RemoveComponent<UnregisteredInputContext>(entity);
+                EntityManager.RemoveComponent<UnregisteredInputContextComponent>(entity);
             }
 
             if ((_KeysUp.Count == 0) && (_KeysDown.Count == 0))

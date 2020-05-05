@@ -1,3 +1,5 @@
+using System;
+
 namespace Automata.Core
 {
     public class Component : IComponent

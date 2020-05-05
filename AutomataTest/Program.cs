@@ -104,7 +104,7 @@ namespace AutomataTest
             SystemManager.RegisterSystem<KeyboardInputStringOutputSystem>();
 
             EntityManager.RegisterComponent<KeyboardInputComponent>(gameEntity);
-            EntityManager.RegisterComponent(gameEntity, new UnregisteredInputContext
+            EntityManager.RegisterComponent(gameEntity, new UnregisteredInputContextComponent
             {
                 InputContext = _Window.CreateInput()
             });

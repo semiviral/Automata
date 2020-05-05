@@ -12,11 +12,9 @@ namespace Automata.Core
         Guid ID { get; }
 
         bool TryAddComponent(IComponent component);
-        T AddComponent<T>() where T : IComponent;
         bool TryRemoveComponent<T>() where T : IComponent;
         T GetComponent<T>() where T : IComponent;
 
-        bool TryAddComponent<T>() where T : IComponent;
         bool TryGetComponent<T>(out T component) where T : IComponent;
     }
 
@@ -33,7 +31,7 @@ namespace Automata.Core
             ID = Guid.NewGuid();
         }
 
-        public bool TryAddComponent(IComponent component)
+        public bool TryAddComponent(IComponent? component)
         {
             Type type = component.GetType();
 
@@ -46,25 +44,6 @@ namespace Automata.Core
             return true;
         }
 
-        public T AddComponent<T>() where T : IComponent
-        {
-            Type typeT = typeof(T);
-
-            if (_Components.ContainsKey(typeT))
-            {
-                throw new Exception(ExceptionFormats.ComponentInstanceExistsException);
-            }
-
-            T component = Activator.CreateInstance<T>();
-
-            // todo fix boxing here
-            _Components.Add(typeT, component);
-
-            return component;
-        }
-
-        public bool TryAddComponent<T>() where T : IComponent => _Components.TryAdd(typeof(T), Activator.CreateInstance<T>());
-
         public bool TryRemoveComponent<T>() where T : IComponent => _Components.Remove(typeof(T));
 
         public T GetComponent<T>() where T : IComponent
@@ -72,7 +51,7 @@ namespace Automata.Core
             Type typeT = typeof(T);
             if (!_Components.TryGetValue(typeT, out IComponent? component) || (component == null))
             {
-                throw new TypeLoadException(nameof(typeT));
+                throw new TypeLoadException(typeT.ToString());
             }
             else
             {
