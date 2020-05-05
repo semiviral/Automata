@@ -99,8 +99,8 @@ namespace AutomataTest
             Entity gameEntity = new Entity();
             EntityManager.RegisterEntity(gameEntity);
 
-            SystemManager.RegisterSystem<InputSystem>();
-            SystemManager.RegisterSystem<MeshRenderingSystem>();
+            SystemManager.RegisterSystem<InputSystem>(SystemManager.INPUT_SYSTEM_ORDER);
+            SystemManager.RegisterSystem<MeshCompositionSystem>();
             SystemManager.RegisterSystem<KeyboardInputStringOutputSystem>();
 
             EntityManager.RegisterComponent<KeyboardInputComponent>(gameEntity);

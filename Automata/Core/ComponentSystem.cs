@@ -6,6 +6,19 @@ using System;
 
 namespace Automata.Core
 {
+    public enum SystemType
+    {
+        /// <summary>
+        ///     System executes computational work.
+        /// </summary>
+        Computation,
+
+        /// <summary>
+        ///     System executes rendering work (i.e. draw calls).
+        /// </summary>
+        Rendering
+    }
+
     public abstract class ComponentSystem
     {
         /// <summary>

@@ -28,7 +28,7 @@ namespace Automata.Rendering.OpenGL
         {
             if (vertices == null)
             {
-                throw new NullReferenceException($"Argument '{nameof(vertices)}' cannot be null.");
+                throw new NullReferenceException(nameof(vertices));
             }
 
             float[] finalArray = new float[vertices.Length * 3];
@@ -45,11 +45,11 @@ namespace Automata.Rendering.OpenGL
         {
             if (vertices == null)
             {
-                throw new NullReferenceException($"Argument '{nameof(vertices)}' cannot be null.");
+                throw new NullReferenceException(nameof(vertices));
             }
             else if (colors == null)
             {
-                throw new NullReferenceException($"Argument '{nameof(colors)}' cannot be null.");
+                throw new NullReferenceException(nameof(colors));
             }
             else if (vertices.Length != colors.Length)
             {
