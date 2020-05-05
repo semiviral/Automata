@@ -1,13 +1,14 @@
+#region
+
 using Automata.Core;
+
+#endregion
 
 namespace Automata.Rendering
 {
     public class MeshRenderingSystem : ComponentSystem
     {
-        public override void Registered()
-        {
-
-        }
+        public override void Registered() { }
 
         public override void Update()
         {

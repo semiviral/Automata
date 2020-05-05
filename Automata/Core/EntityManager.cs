@@ -30,11 +30,17 @@ namespace Automata.Core
 
         #region Register .. Data
 
+        /// <summary>
+        ///     Registers given entity with <see cref="EntityManager" />.
+        /// </summary>
+        /// <param name="entity">Entity to register.</param>
+        /// <exception cref="AsynchronousAccessException">Thrown when method is called from outside main thread.</exception>
+        /// <exception cref="NullReferenceException">Thrown when given <see cref="IEntity" /> is null.</exception>
         public static void RegisterEntity(IEntity entity)
         {
             if (Thread.CurrentThread.ManagedThreadId != MainThreadID)
             {
-                throw new Exception("Cannot modify entity collection asynchronously.");
+                throw new AsynchronousAccessException(ExceptionFormats.EntityManagerAsynchronousAccessException);
             }
 
             if (entity == null)
@@ -44,9 +50,17 @@ namespace Automata.Core
 
             Entities.Add(entity.ID, entity);
 
-            Log.Verbose($"{nameof(EntityManager)} registered new entity '{entity.ID}' (#{Entities.Count}).");
+            Log.Verbose($"{nameof(EntityManager)} registered new {nameof(IEntity)} '{entity.ID}' (#{Entities.Count}).");
         }
 
+        /// <summary>
+        ///     Registers the specified component instance to the given <see cref="IEntity" />.
+        /// </summary>
+        /// <param name="entity"><see cref="IEntity" /> to add component to.</param>
+        /// <param name="component">Component to add.</param>
+        /// <remarks>
+        ///     Use this method to ensure <see cref="EntityManager" /> caches remain accurate.
+        /// </remarks>
         public static void RegisterComponent(IEntity entity, IComponent component)
         {
             if (!entity.TryAddComponent(component))
@@ -64,6 +78,14 @@ namespace Automata.Core
             EntitiesByComponent[type].Add(entity);
         }
 
+        /// <summary>
+        ///     Adds the specified component to the given <see cref="IEntity" />.
+        /// </summary>
+        /// <param name="entity"><see cref="IEntity" /> to add component to.</param>
+        /// <typeparam name="T">Type of component to add.</typeparam>
+        /// <remarks>
+        ///     Use this method to ensure <see cref="EntityManager" /> caches remain accurate.
+        /// </remarks>
         public static void RegisterComponent<T>(IEntity entity) where T : IComponent
         {
             if (!entity.TryAddComponent<T>())
@@ -80,26 +102,18 @@ namespace Automata.Core
             EntitiesByComponent[typeT].Add(entity);
         }
 
-        public static void RegisterComponent<T>(Guid entityID) where T : IComponent
-        {
-            IEntity entity = Entities[entityID];
-
-            if (entity.TryAddComponent<T>())
-            {
-                Type typeT = typeof(T);
-                if (!EntitiesByComponent.ContainsKey(typeT))
-                {
-                    EntitiesByComponent.Add(typeof(T), new List<IEntity>());
-                }
-
-                EntitiesByComponent[typeT].Add(entity);
-            }
-        }
-
         #endregion
 
         #region Remove .. Data
 
+        /// <summary>
+        ///     Removes the specified component instance from given <see cref="IEntity" />.
+        /// </summary>
+        /// <param name="entity"><see cref="IEntity" /> to remove component from.</param>
+        /// <typeparam name="T">Type of component to remove.</typeparam>
+        /// <remarks>
+        ///     Use this method to ensure <see cref="EntityManager" /> caches remain accurate.
+        /// </remarks>
         public static void RemoveComponent<T>(IEntity entity) where T : IComponent
         {
             Type typeT = typeof(T);
@@ -114,20 +128,17 @@ namespace Automata.Core
 
         #region Get .. Data
 
+        /// <summary>
+        ///     Returns <see cref="IEnumerable{T}" /> of entities containing component <see cref="T" />.
+        /// </summary>
+        /// <typeparam name="T"><see cref="IComponent" /> type to retrieve by.</typeparam>
+        /// <returns><see cref="IEnumerable{T}" /> of entities containing component <see cref="T" />.</returns>
+        /// <exception />
         public static IEnumerable<IEntity> GetEntitiesWithComponent<T>() where T : IComponent
         {
             Type typeT = typeof(T);
 
-            if (!IComponentType.IsAssignableFrom(typeT))
-            {
-                throw new TypeLoadException(typeT.ToString());
-            }
-            else if (!EntitiesByComponent.ContainsKey(typeT))
-            {
-                return Enumerable.Empty<IEntity>();
-            }
-
-            return EntitiesByComponent[typeT];
+            return !EntitiesByComponent.ContainsKey(typeT) ? Enumerable.Empty<IEntity>() : EntitiesByComponent[typeT];
         }
 
         // todo this should accept only component types
@@ -173,6 +184,11 @@ namespace Automata.Core
             }
         }
 
+        /// <summary>
+        ///     Returns all instances of components of type <see cref="T" />
+        /// </summary>
+        /// <typeparam name="T">Type of <see cref="IComponent" /> to return.</typeparam>
+        /// <returns><see cref="IEnumerable{T}" /> of all instances of <see cref="IComponent" /> type <see cref="T" />.</returns>
         public static IEnumerable<T> GetComponents<T>() where T : IComponent
         {
             Type typeT = typeof(T);

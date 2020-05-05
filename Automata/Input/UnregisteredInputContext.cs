@@ -1,5 +1,9 @@
+#region
+
 using Automata.Core;
 using Silk.NET.Input.Common;
+
+#endregion
 
 namespace Automata.Input
 {

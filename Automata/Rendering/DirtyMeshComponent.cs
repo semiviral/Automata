@@ -1,6 +1,10 @@
+#region
+
 using System.Collections.Generic;
 using System.Numerics;
 using Automata.Core;
+
+#endregion
 
 namespace Automata.Rendering
 {
