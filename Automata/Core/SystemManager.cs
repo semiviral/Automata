@@ -10,57 +10,61 @@ namespace Automata.Core
 {
     public static class SystemManager
     {
-        public const int NATIVE_SYSTEM_ORDER = int.MinValue;
+        public const int INITIAL_SYSTEM_ORDER = int.MinValue;
         public const int INPUT_SYSTEM_ORDER = -100000;
         public const int DEFAULT_SYSTEM_ORDER = 0;
         public const int MESH_COMPOSITION_SYSTEM_ORDER = 99000;
         public const int RENDER_SYSTEM_ORDER = 100000;
-        public const int FINAL_SYSTEM_ORDER = int.MinValue;
+        public const int FINAL_SYSTEM_ORDER = int.MaxValue;
 
-        private static readonly SortedList<int, List<ComponentSystem>> _systems;
+        private static readonly SortedList<int, ComponentSystem> _systems;
         private static readonly Dictionary<Type, ComponentSystem> _systemsByType;
 
         static SystemManager()
         {
-            _systems = new SortedList<int, List<ComponentSystem>>();
+            _systems = new SortedList<int, ComponentSystem>();
             _systemsByType = new Dictionary<Type, ComponentSystem>();
         }
 
-        public static void GlobalUpdate()
+        public static void Update()
         {
             // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
-            foreach ((int _, List<ComponentSystem> systems) in _systems)
+            foreach ((int _, ComponentSystem system) in _systems)
             {
-                foreach (ComponentSystem system in systems)
+                if (!system.IsEnabled)
                 {
-                    if (!system.IsEnabled)
-                    {
-                        system.Enabled();
-                        system.IsEnabled = true;
-                    }
-
-                    if (system.UtilizedComponentTypes.Any(type => EntityManager.GetComponentCount(type) <= 0))
-                    {
-                        continue;
-                    }
-
-                    system.Update();
+                    system.Enabled();
+                    system.IsEnabled = true;
                 }
+
+                if (system.UtilizedComponentTypes.Any(type => EntityManager.GetComponentCount(type) <= 0))
+                {
+                    continue;
+                }
+
+                system.Update();
             }
         }
 
         public static void RegisterSystem<T>(int order = DEFAULT_SYSTEM_ORDER) where T : ComponentSystem
         {
-            Type typeT = typeof(T);
+            Type componentSystemTypeT = typeof(T);
 
-            if (_systemsByType.ContainsKey(typeT))
+            if (_systemsByType.ContainsKey(componentSystemTypeT))
             {
                 throw new Exception("System type already instantiated.");
             }
 
-            if (!_systems.ContainsKey(order))
+            int finalOrder = order;
+
+            while (_systems.ContainsKey(finalOrder))
             {
-                _systems.Add(order, new List<ComponentSystem>());
+                finalOrder += 1;
+
+                if (finalOrder == int.MaxValue)
+                {
+                    throw new Exception($"{nameof(SystemManager)} has run out of keys to assign after order {order}.");
+                }
             }
 
             T componentSystem = Activator.CreateInstance<T>();
@@ -74,8 +78,8 @@ namespace Automata.Core
                 }
             }
 
-            _systems[order].Add(componentSystem);
-            _systemsByType.Add(typeT, componentSystem);
+            _systems.Add(finalOrder, componentSystem);
+            _systemsByType.Add(componentSystemTypeT, componentSystem);
 
             componentSystem.Registered();
         }

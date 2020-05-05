@@ -68,6 +68,8 @@ namespace Automata.Rendering
                 PendingMeshDataComponent pendingMeshData = entity.GetComponent<PendingMeshDataComponent>();
                 gpuMeshComponent.VertexBuffer.SetBufferData(pendingMeshData.Vertices ?? new Vector3[0], pendingMeshData.Colors ?? new Color64[0]);
                 gpuMeshComponent.BufferObject.SetBufferData(pendingMeshData.Triangles);
+                gpuMeshComponent.VertexArrayObject.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, 7, 0);
+                gpuMeshComponent.VertexArrayObject.VertexAttributePointer(1, 4, VertexAttribPointerType.Float, 7, 3);
 
                 // remove now processed mesh data component
                 entity.TryRemoveComponent<PendingMeshDataComponent>();

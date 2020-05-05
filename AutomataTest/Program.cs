@@ -84,25 +84,38 @@ namespace AutomataTest
             options.Position = new Point(500, 400);
 
             _Window = Window.Create(options);
-            _Window.Load += OnLoad;
+            _Window.Load += Initialize;
             _Window.Render += OnRender;
             _Window.Update += OnUpdate;
             _Window.Closing += OnClose;
             _Projection = Matrix4x4.CreatePerspective(Mathf.ToRadians(90f),
                 (float)_Window.Size.Width / _Window.Size.Height, 0.1f, 100f);
 
-            _Window.Run();
+            _Window.Initialize();
+            Initialize();
+
+            while (!_Window.IsClosing)
+            {
+                _Window.DoEvents();
+
+                if (!_Window.IsClosing)
+                {
+                    SystemManager.Update();
+                }
+            }
+
         }
 
-        private static void OnLoad()
+        private static void Initialize()
         {
-            Entity gameEntity = new Entity();
-            EntityManager.RegisterEntity(gameEntity);
-
+            SystemManager.RegisterSystem<ViewDoUpdateSystem>(SystemManager.INITIAL_SYSTEM_ORDER);
+            SystemManager.RegisterSystem<ViewDoRenderSystem>(SystemManager.RENDER_SYSTEM_ORDER);
             SystemManager.RegisterSystem<InputSystem>(SystemManager.INPUT_SYSTEM_ORDER);
             SystemManager.RegisterSystem<MeshCompositionSystem>();
             SystemManager.RegisterSystem<KeyboardInputStringOutputSystem>();
 
+            Entity gameEntity = new Entity();
+            EntityManager.RegisterEntity(gameEntity);
             EntityManager.RegisterComponent<KeyboardInputComponent>(gameEntity);
             EntityManager.RegisterComponent(gameEntity, new UnregisteredInputContextComponent
             {
@@ -148,7 +161,7 @@ namespace AutomataTest
 
         private static void OnUpdate(double delta)
         {
-            SystemManager.GlobalUpdate();
+            SystemManager.Update();
         }
 
         private static void OnClose()
