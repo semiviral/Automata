@@ -12,19 +12,20 @@ namespace Automata.Core
 {
     public static class EntityManager
     {
+        // ReSharper disable once InconsistentNaming
         private static readonly Type IComponentType = typeof(IComponent);
 
         public static int MainThreadID { get; }
 
-        private static Dictionary<Guid, IEntity> _Entities { get; }
-        private static Dictionary<Type, List<IEntity>> _EntitiesByComponent { get; }
+        private static Dictionary<Guid, IEntity> Entities { get; }
+        private static Dictionary<Type, List<IEntity>> EntitiesByComponent { get; }
 
         static EntityManager()
         {
             MainThreadID = Thread.CurrentThread.ManagedThreadId;
 
-            _Entities = new Dictionary<Guid, IEntity>();
-            _EntitiesByComponent = new Dictionary<Type, List<IEntity>>();
+            Entities = new Dictionary<Guid, IEntity>();
+            EntitiesByComponent = new Dictionary<Type, List<IEntity>>();
         }
 
         #region Register .. Data
@@ -41,45 +42,40 @@ namespace Automata.Core
                 throw new NullReferenceException(nameof(entity));
             }
 
-            _Entities.Add(entity.ID, entity);
+            Entities.Add(entity.ID, entity);
 
-            Log.Verbose($"{nameof(EntityManager)} registered new entity '{entity.ID}' (#{_Entities.Count}).");
+            Log.Verbose($"{nameof(EntityManager)} registered new entity '{entity.ID}' (#{Entities.Count}).");
         }
 
-        public static void RegisterComponent(IEntity entity, ComponentSystem componentSystem)
-        {
-            Type type = componentSystem.GetType();
-
-            if (entity.)
-        }
+        public static void RegisterComponent(IEntity entity, IComponent component) => entity.AddComponent(component);
 
         public static void RegisterComponent<T>(IEntity entity) where T : IComponent
         {
             if (entity.TryAddComponent<T>())
             {
                 Type typeT = typeof(T);
-                if (!_EntitiesByComponent.ContainsKey(typeT))
+                if (!EntitiesByComponent.ContainsKey(typeT))
                 {
-                    _EntitiesByComponent.Add(typeof(T), new List<IEntity>());
+                    EntitiesByComponent.Add(typeof(T), new List<IEntity>());
                 }
 
-                _EntitiesByComponent[typeT].Add(entity);
+                EntitiesByComponent[typeT].Add(entity);
             }
         }
 
         public static void RegisterComponent<T>(Guid entityID) where T : IComponent
         {
-            IEntity entity = _Entities[entityID];
+            IEntity entity = Entities[entityID];
 
             if (entity.TryAddComponent<T>())
             {
                 Type typeT = typeof(T);
-                if (!_EntitiesByComponent.ContainsKey(typeT))
+                if (!EntitiesByComponent.ContainsKey(typeT))
                 {
-                    _EntitiesByComponent.Add(typeof(T), new List<IEntity>());
+                    EntitiesByComponent.Add(typeof(T), new List<IEntity>());
                 }
 
-                _EntitiesByComponent[typeT].Add(entity);
+                EntitiesByComponent[typeT].Add(entity);
             }
         }
 
@@ -97,7 +93,7 @@ namespace Automata.Core
                 throw new TypeLoadException(typeT.ToString());
             }
 
-            return _EntitiesByComponent[typeT];
+            return EntitiesByComponent[typeT];
         }
 
         // todo this should accept only component types
@@ -114,7 +110,7 @@ namespace Automata.Core
                 }
                 else if (!iteratedAny) // first iteration
                 {
-                    foreach (IEntity entity in _EntitiesByComponent[componentType])
+                    foreach (IEntity entity in EntitiesByComponent[componentType])
                     {
                         matchingEntityIDs.Add(entity.ID);
                     }
@@ -124,7 +120,7 @@ namespace Automata.Core
 
                 List<Guid> matchedEntities = new List<Guid>();
 
-                foreach (IEntity entity in _EntitiesByComponent[componentType])
+                foreach (IEntity entity in EntitiesByComponent[componentType])
                 {
                     if (matchedEntities.Contains(entity.ID))
                     {
@@ -139,7 +135,7 @@ namespace Automata.Core
 
             foreach (Guid entityID in matchingEntityIDs)
             {
-                yield return _Entities[entityID];
+                yield return Entities[entityID];
             }
         }
 
@@ -147,12 +143,12 @@ namespace Automata.Core
         {
             Type typeT = typeof(T);
 
-            if (!_EntitiesByComponent.ContainsKey(typeT))
+            if (!EntitiesByComponent.ContainsKey(typeT))
             {
                 return Enumerable.Empty<T>();
             }
 
-            return _EntitiesByComponent[typeT].Select(entity => entity.GetComponent<T>());
+            return EntitiesByComponent[typeT].Select(entity => entity.GetComponent<T>());
         }
 
         #endregion

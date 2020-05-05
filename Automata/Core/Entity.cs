@@ -11,6 +11,7 @@ namespace Automata.Core
     {
         Guid ID { get; }
 
+        void AddComponent(IComponent component);
         T AddComponent<T>() where T : IComponent;
         void RemoveComponent<T>() where T : IComponent;
         T GetComponent<T>() where T : IComponent;
@@ -40,6 +41,8 @@ namespace Automata.Core
             {
                 throw new Exception(ExceptionFormats.ComponentInstanceExistsException);
             }
+
+            _Components.Add(type, component);
         }
 
         public T AddComponent<T>() where T : IComponent
