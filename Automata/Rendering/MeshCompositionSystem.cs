@@ -11,12 +11,13 @@ using Silk.NET.OpenGL;
 namespace Automata.Rendering
 {
     /// <summary>
-    ///     Consumes a <see cref="PendingMeshDataComponent"/> and creates relevant GPU buffers so a given mesh can be rendered.
+    ///     Consumes a <see cref="PendingMeshDataComponent" /> and creates relevant GPU buffers so a given mesh can be
+    ///     rendered.
     /// </summary>
     public class MeshCompositionSystem : ComponentSystem
     {
         /// <summary>
-        ///     <see cref="GL"/> instance to use for graphics operations.
+        ///     <see cref="GL" /> instance to use for graphics operations.
         /// </summary>
         private readonly GL _GL;
 

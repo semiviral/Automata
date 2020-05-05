@@ -1,7 +1,7 @@
 namespace Automata.Core
 {
     /// <summary>
-    ///     Runs the DoUpdate() method on all <see cref="WindowViewComponent"/>.
+    ///     Runs the DoUpdate() method on all <see cref="WindowViewComponent" />.
     /// </summary>
     public class ViewDoUpdateSystem : ComponentSystem
     {
