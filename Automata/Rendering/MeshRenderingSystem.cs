@@ -23,7 +23,7 @@ namespace Automata.Rendering
                 // create buffers if one doesn't exist
                 // apply new buffer data
 
-                entity.RemoveComponent<DirtyMeshComponent>();
+                entity.TryRemoveComponent<DirtyMeshComponent>();
             }
         }
     }

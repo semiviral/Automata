@@ -11,9 +11,9 @@ namespace Automata.Core
     {
         Guid ID { get; }
 
-        void AddComponent(IComponent component);
+        bool TryAddComponent(IComponent component);
         T AddComponent<T>() where T : IComponent;
-        void RemoveComponent<T>() where T : IComponent;
+        bool TryRemoveComponent<T>() where T : IComponent;
         T GetComponent<T>() where T : IComponent;
 
         bool TryAddComponent<T>() where T : IComponent;
@@ -33,16 +33,17 @@ namespace Automata.Core
             ID = Guid.NewGuid();
         }
 
-        public void AddComponent(IComponent component)
+        public bool TryAddComponent(IComponent component)
         {
             Type type = component.GetType();
 
             if (_Components.ContainsKey(type))
             {
-                throw new Exception(ExceptionFormats.ComponentInstanceExistsException);
+                return false;
             }
 
             _Components.Add(type, component);
+            return true;
         }
 
         public T AddComponent<T>() where T : IComponent
@@ -64,7 +65,7 @@ namespace Automata.Core
 
         public bool TryAddComponent<T>() where T : IComponent => _Components.TryAdd(typeof(T), Activator.CreateInstance<T>());
 
-        public void RemoveComponent<T>() where T : IComponent => _Components.Remove(typeof(T));
+        public bool TryRemoveComponent<T>() where T : IComponent => _Components.Remove(typeof(T));
 
         public T GetComponent<T>() where T : IComponent
         {

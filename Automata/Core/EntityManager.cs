@@ -47,20 +47,37 @@ namespace Automata.Core
             Log.Verbose($"{nameof(EntityManager)} registered new entity '{entity.ID}' (#{Entities.Count}).");
         }
 
-        public static void RegisterComponent(IEntity entity, IComponent component) => entity.AddComponent(component);
+        public static void RegisterComponent(IEntity entity, IComponent component)
+        {
+            if (!entity.TryAddComponent(component))
+            {
+                return;
+            }
+
+            Type type = component.GetType();
+
+            if (!EntitiesByComponent.ContainsKey(type))
+            {
+                EntitiesByComponent.Add(type, new List<IEntity>());
+            }
+
+            EntitiesByComponent[type].Add(entity);
+        }
 
         public static void RegisterComponent<T>(IEntity entity) where T : IComponent
         {
-            if (entity.TryAddComponent<T>())
+            if (!entity.TryAddComponent<T>())
             {
-                Type typeT = typeof(T);
-                if (!EntitiesByComponent.ContainsKey(typeT))
-                {
-                    EntitiesByComponent.Add(typeof(T), new List<IEntity>());
-                }
-
-                EntitiesByComponent[typeT].Add(entity);
+                return;
             }
+
+            Type typeT = typeof(T);
+            if (!EntitiesByComponent.ContainsKey(typeT))
+            {
+                EntitiesByComponent.Add(typeof(T), new List<IEntity>());
+            }
+
+            EntitiesByComponent[typeT].Add(entity);
         }
 
         public static void RegisterComponent<T>(Guid entityID) where T : IComponent
@@ -81,6 +98,19 @@ namespace Automata.Core
 
         #endregion
 
+        #region Remove .. Data
+
+        public static void RemoveComponent<T>(IEntity entity) where T : IComponent
+        {
+            Type typeT = typeof(T);
+
+            if (entity.TryRemoveComponent<T>())
+            {
+                EntitiesByComponent[typeT].Remove(entity);
+            }
+        }
+
+        #endregion
 
         #region Get .. Data
 
@@ -91,6 +121,10 @@ namespace Automata.Core
             if (!IComponentType.IsAssignableFrom(typeT))
             {
                 throw new TypeLoadException(typeT.ToString());
+            }
+            else if (!EntitiesByComponent.ContainsKey(typeT))
+            {
+                return Enumerable.Empty<IEntity>();
             }
 
             return EntitiesByComponent[typeT];

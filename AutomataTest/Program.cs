@@ -9,8 +9,10 @@ using Automata.Core;
 using Automata.Input;
 using Automata.Rendering;
 using Automata.Rendering.OpenGL;
+using Automata.Test;
 using Serilog;
 using Silk.NET.GLFW;
+using Silk.NET.Input;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using Silk.NET.Windowing.Common;
@@ -97,11 +99,15 @@ namespace AutomataTest
             Entity gameEntity = new Entity();
             EntityManager.RegisterEntity(gameEntity);
 
-            SystemManager.GetSystem<InputSystem>();
+            SystemManager.RegisterSystem<InputSystem>();
             SystemManager.RegisterSystem<MeshRenderingSystem>();
+            SystemManager.RegisterSystem<KeyboardInputStringOutputSystem>();
 
-            EntityManager.RegisterComponent<UnregisteredInputContext>(gameEntity);
             EntityManager.RegisterComponent<KeyboardInputComponent>(gameEntity);
+            EntityManager.RegisterComponent(gameEntity, new UnregisteredInputContext
+            {
+                InputContext = _Window.CreateInput()
+            });
 
             _GL = GL.GetApi();
 
@@ -117,7 +123,6 @@ namespace AutomataTest
             _Shader = new Shader(_GL, "default.vert", "shader.frag");
             _Shader.SetUniform("model", Matrix4x4.Identity);
             _Shader.SetUniform("projection", _Projection);
-
         }
 
         private static Matrix4x4 _View;
@@ -129,11 +134,12 @@ namespace AutomataTest
             _GL.Clear((uint)ClearBufferMask.ColorBufferBit);
 
             _VAO.Bind();
-_Shader.Use();
-_Shader.SetUniform("view", _View);
+            _Shader.Use();
+            _Shader.SetUniform("view", _View);
 
             const float radius = 10f;
-            _View = Matrix4x4.CreateLookAt(new Vector3((float)Math.Sin(radius * _glfw.GetTime()), 0f, (float)Math.Cos(radius * _glfw.GetTime())), new Vector3(0f, 0f, 0f), new Vector3(0f, 1f, 0f));
+            _View = Matrix4x4.CreateLookAt(new Vector3((float)Math.Sin(radius * _glfw.GetTime()), 0f, (float)Math.Cos(radius * _glfw.GetTime())),
+                new Vector3(0f, 0f, 0f), new Vector3(0f, 1f, 0f));
 
             _Shader.SetUniform("uBlue", (float)Math.Sin((DateTime.UtcNow.Millisecond / 1000f) * Math.PI));
 

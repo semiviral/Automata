@@ -1,6 +1,7 @@
 #region
 
 using System.Collections.Generic;
+using System.Linq;
 using Automata.Core;
 using Silk.NET.Input.Common;
 
@@ -21,13 +22,20 @@ namespace Automata.Input
 
         public override void Update()
         {
-            foreach (IEntity entity in EntityManager.GetEntitiesWithComponent<UnregisteredInputContext>())
+            List<IEntity> registeredInputContextEntities = EntityManager.GetEntitiesWithComponent<UnregisteredInputContext>().ToList();
+
+            foreach (IEntity entity in registeredInputContextEntities)
             {
+                if (entity == null)
+                {
+                    continue;
+                }
+
                 UnregisteredInputContext unregisteredInputContext = entity.GetComponent<UnregisteredInputContext>();
 
                 RegisterInputContext(unregisteredInputContext.InputContext);
 
-                entity.RemoveComponent<UnregisteredInputContext>();
+                EntityManager.RemoveComponent<UnregisteredInputContext>(entity);
             }
 
             if ((_KeysUp.Count == 0) && (_KeysDown.Count == 0))
