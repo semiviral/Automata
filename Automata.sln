@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Automata", "Automata\Automata.csproj", "{A3968439-BA40-44CF-A7A6-608EA452B96D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutomataTest", "AutomataTest\AutomataTest.csproj", "{EC9BB4FA-8EEE-4890-A510-87D4D77E3AF7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A3968439-BA40-44CF-A7A6-608EA452B96D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3968439-BA40-44CF-A7A6-608EA452B96D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3968439-BA40-44CF-A7A6-608EA452B96D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3968439-BA40-44CF-A7A6-608EA452B96D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC9BB4FA-8EEE-4890-A510-87D4D77E3AF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC9BB4FA-8EEE-4890-A510-87D4D77E3AF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC9BB4FA-8EEE-4890-A510-87D4D77E3AF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC9BB4FA-8EEE-4890-A510-87D4D77E3AF7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
