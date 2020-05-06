@@ -84,7 +84,7 @@ namespace AutomataTest
             options.Position = new Point(500, 400);
 
             _Window = Window.Create(options);
-            _Window.Render += OnRender;
+            //_Window.Render += OnRender;
             _Window.Closing += OnClose;
             _Projection = Matrix4x4.CreatePerspective(Mathf.ToRadians(90f),
                 (float)_Window.Size.Width / _Window.Size.Height, 0.1f, 100f);
@@ -107,6 +107,7 @@ namespace AutomataTest
         {
             SystemManager.RegisterSystem<ViewDoUpdateSystem>(SystemManager.INITIAL_SYSTEM_ORDER);
             SystemManager.RegisterSystem<ViewDoRenderSystem>(SystemManager.RENDER_SYSTEM_ORDER);
+            SystemManager.RegisterSystem<RenderingSystem>();
             SystemManager.RegisterSystem<InputSystem>(SystemManager.INPUT_SYSTEM_ORDER);
             SystemManager.RegisterSystem<MeshCompositionSystem>();
             SystemManager.RegisterSystem<KeyboardInputStringOutputSystem>();
@@ -119,22 +120,22 @@ namespace AutomataTest
                 InputContext = _Window.CreateInput()
             });
             EntityManager.RegisterComponent<KeyboardInputComponent>(gameEntity);
+            EntityManager.RegisterComponent(gameEntity, new PendingMeshDataComponent
+            {
+                Vertices = _vertices,
+                Colors = _colors,
+                Indices = _indices
+            });
 
-
-            _GL = GL.GetApi();
-
-            _VBO = new VertexBuffer(_GL);
-            _VBO.SetBufferData(_vertices, _colors);
-            _EBO = new BufferObject<uint>(_GL, BufferTargetARB.ElementArrayBuffer);
-            _EBO.SetBufferData(_indices);
-            _VAO = new VertexArrayObject<float, uint>(_GL, _VBO, _EBO);
-
-            _VAO.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, 7, 0);
-            _VAO.VertexAttributePointer(1, 4, VertexAttribPointerType.Float, 7, 3);
-
-            _Shader = new Shader(_GL, "default.vert", "shader.frag");
+            _Shader = new Shader("default.vert", "shader.frag");
             _Shader.SetUniform("model", Matrix4x4.Identity);
             _Shader.SetUniform("projection", _Projection);
+            _Shader.SetUniform("view", Matrix4x4.CreateLookAt(new Vector3(0f, 0f, 3f), Vector3.Zero, Vector3.UnitY));
+
+            EntityManager.RegisterComponent(gameEntity, new RenderedShaderComponent
+            {
+                Shader = _Shader
+            });
         }
 
         private static Matrix4x4 _View;
@@ -160,10 +161,7 @@ namespace AutomataTest
 
         private static void OnClose()
         {
-            _VBO.Dispose();
-            _EBO.Dispose();
-            _VAO.Dispose();
-            _Shader.Dispose();
+            SystemManager.Destroy();
         }
     }
 }

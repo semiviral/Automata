@@ -24,7 +24,7 @@ namespace Automata.Rendering
         public float A => RawValue.W;
 
         public Color64(Vector4 rawValue) => RawValue = rawValue;
-        public Color64(float r, float g, float b, float a) : this(new Vector4(r, g, b, a)) { }
+        public Color64(float r, float g, float b, float a) : this(Vector4.Clamp(new Vector4(r, g, b, a), Vector4.Zero, Vector4.One)) { }
 
         public void CopyTo(float[] array) => CopyTo(array, 0);
 

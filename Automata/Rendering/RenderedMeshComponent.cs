@@ -7,7 +7,7 @@ using Automata.Rendering.OpenGL;
 
 namespace Automata.Rendering
 {
-    public class GPUMeshComponent : IComponent
+    public class RenderedMeshComponent : IComponent
     {
         public VertexBuffer? VertexBuffer { get; set; }
         public BufferObject<uint>? BufferObject { get; set; }

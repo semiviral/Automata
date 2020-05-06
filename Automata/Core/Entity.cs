@@ -15,6 +15,8 @@ namespace Automata.Core
         bool TryRemoveComponent<T>() where T : IComponent;
         bool TryGetComponent<T>(out T component) where T : IComponent;
         T GetComponent<T>() where T : IComponent;
+
+        int GetHashCode() => ID.GetHashCode();
     }
 
     public class Entity : IEntity
@@ -73,7 +75,7 @@ namespace Automata.Core
             }
             else
             {
-                component = (T)Component.Default;
+                component = default!;
                 return false;
             }
         }

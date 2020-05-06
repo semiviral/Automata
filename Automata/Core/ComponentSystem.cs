@@ -41,5 +41,10 @@ namespace Automata.Core
         ///     method is skipped.
         /// </remarks>
         public virtual void Update() { }
+
+        /// <summary>
+        ///     Method called when the system is destroyed.
+        /// </summary>
+        public virtual void Destroy() { }
     }
 }

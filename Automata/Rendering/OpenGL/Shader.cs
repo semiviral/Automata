@@ -11,7 +11,7 @@ namespace Automata.Rendering.OpenGL
 {
     public class Shader : IDisposable
     {
-        public static string DefaultVertexShader =
+        private const string _DEFAULT_VERTEX_SHADER =
             @"#version 330 core
     
             layout (location = 0) in vec3 vPos;
@@ -31,9 +31,8 @@ namespace Automata.Rendering.OpenGL
                 fColor = color;
             }";
 
-        public static string DefaultFragmentShader =
+        private const string _DEFAULT_FRAGMENT_SHADER =
             @"#version 330 core
-
 
             in vec4 fColor;
             out vec4 FragColor;
@@ -46,12 +45,12 @@ namespace Automata.Rendering.OpenGL
         private readonly uint _Handle;
         private readonly GL _GL;
 
-        public Shader(GL gl)
+        public Shader()
         {
-            _GL = gl;
+            _GL = GL.GetApi();
 
-            uint vertexShader = LoadShader(ShaderType.VertexShader, DefaultVertexShader);
-            uint fragmentShader = LoadShader(ShaderType.FragmentShader, DefaultFragmentShader);
+            uint vertexShader = LoadShader(ShaderType.VertexShader, _DEFAULT_VERTEX_SHADER);
+            uint fragmentShader = LoadShader(ShaderType.FragmentShader, _DEFAULT_FRAGMENT_SHADER);
 
             _Handle = _GL.CreateProgram();
             _GL.AttachShader(_Handle, vertexShader);
@@ -70,9 +69,9 @@ namespace Automata.Rendering.OpenGL
             _GL.DeleteShader(fragmentShader);
         }
 
-        public Shader(GL gl, string vertexPath, string fragmentPath)
+        public Shader(string vertexPath, string fragmentPath)
         {
-            _GL = gl;
+            _GL = GL.GetApi();
 
             uint vertexShader = LoadShader(ShaderType.VertexShader, File.ReadAllText(vertexPath));
             uint fragmentShader = LoadShader(ShaderType.FragmentShader, File.ReadAllText(fragmentPath));
@@ -101,12 +100,7 @@ namespace Automata.Rendering.OpenGL
 
         public void SetUniform(string name, int value)
         {
-            int location = _GL.GetUniformLocation(_Handle, name);
-
-            if (location == -1)
-            {
-                throw new UniformNotFoundException(name);
-            }
+            int location = GetUniformLocation(name);
 
             Use();
             _GL.Uniform1(location, value);
@@ -114,18 +108,29 @@ namespace Automata.Rendering.OpenGL
 
         public void SetUniform(string name, float value)
         {
-            int location = _GL.GetUniformLocation(_Handle, name);
-
-            if (location == -1)
-            {
-                throw new UniformNotFoundException(name);
-            }
+            int location = GetUniformLocation(name);
 
             Use();
             _GL.Uniform1(location, value);
         }
 
+        public void SetUniform(string name, ref Vector4 vector4)
+        {
+            int location = GetUniformLocation(name);
+
+            Use();
+            _GL.Uniform4(location, ref vector4);
+        }
+
         public void SetUniform(string name, Matrix4x4 value)
+        {
+            int location = GetUniformLocation(name);
+
+            Use();
+            _GL.UniformMatrix4(location, 1, false, Mathf.UnrollMatrix4x4(value));
+        }
+
+        private int GetUniformLocation(string name)
         {
             int location = _GL.GetUniformLocation(_Handle, name);
 
@@ -134,8 +139,7 @@ namespace Automata.Rendering.OpenGL
                 throw new UniformNotFoundException(name);
             }
 
-            Use();
-            _GL.UniformMatrix4(location, 1, false, Mathf.UnrollMatrix4x4(value));
+            return location;
         }
 
         private uint LoadShader(ShaderType shaderType, string shader)

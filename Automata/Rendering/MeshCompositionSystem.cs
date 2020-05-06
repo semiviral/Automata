@@ -1,6 +1,8 @@
 #region
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using Automata.Core;
 using Automata.Rendering.OpenGL;
@@ -34,12 +36,14 @@ namespace Automata.Rendering
             };
 
             _GL = GL.GetApi();
-            _DefaultShader = new Shader(_GL);
+            _DefaultShader = new Shader();
         }
 
         public override void Update()
         {
-            foreach (IEntity entity in EntityManager.GetEntitiesWithComponent<PendingMeshDataComponent>())
+            List<IEntity> entities = EntityManager.GetEntitiesWithComponents<PendingMeshDataComponent>().ToList();
+
+            foreach (IEntity entity in entities)
             {
                 // create a shader component if one doesn't exist on object
                 if (!entity.TryGetComponent(out RenderedShaderComponent _))
@@ -51,39 +55,43 @@ namespace Automata.Rendering
                 }
 
                 // create gpu buffers object if one doesn't exist on entity
-                if (!entity.TryGetComponent(out GPUMeshComponent gpuMeshComponent))
+                if (!entity.TryGetComponent(out RenderedMeshComponent renderedMeshComponent))
                 {
-                    EntityManager.RegisterComponent(entity, gpuMeshComponent = new GPUMeshComponent
+                    renderedMeshComponent = new RenderedMeshComponent
                     {
                         VertexBuffer = new VertexBuffer(_GL),
                         BufferObject = new BufferObject<uint>(_GL, BufferTargetARB.ElementArrayBuffer),
-                        VertexArrayObject = new VertexArrayObject<float, uint>(_GL, gpuMeshComponent.VertexBuffer!, gpuMeshComponent.BufferObject!),
-                    });
+                    };
+                    renderedMeshComponent.VertexArrayObject =
+                        new VertexArrayObject<float, uint>(_GL, renderedMeshComponent.VertexBuffer, renderedMeshComponent.BufferObject);
+
+                    EntityManager.RegisterComponent(entity, renderedMeshComponent);
                 }
 
                 // null checks for C#8 null safety
-                if (gpuMeshComponent.VertexBuffer == null)
+                if (renderedMeshComponent.VertexBuffer == null)
                 {
-                    throw new NullReferenceException(nameof(gpuMeshComponent.VertexBuffer));
+                    throw new NullReferenceException(nameof(renderedMeshComponent.VertexBuffer));
                 }
-                else if (gpuMeshComponent.BufferObject == null)
+                else if (renderedMeshComponent.BufferObject == null)
                 {
-                    throw new NullReferenceException(nameof(gpuMeshComponent.BufferObject));
+                    throw new NullReferenceException(nameof(renderedMeshComponent.BufferObject));
                 }
-                else if (gpuMeshComponent.VertexArrayObject == null)
+                else if (renderedMeshComponent.VertexArrayObject == null)
                 {
-                    throw new NullReferenceException(nameof(gpuMeshComponent.VertexArrayObject));
+                    throw new NullReferenceException(nameof(renderedMeshComponent.VertexArrayObject));
                 }
 
                 // apply pending mesh data
                 PendingMeshDataComponent pendingMeshData = entity.GetComponent<PendingMeshDataComponent>();
-                gpuMeshComponent.VertexBuffer.SetBufferData(pendingMeshData.Vertices ?? new Vector3[0], pendingMeshData.Colors ?? new Color64[0]);
-                gpuMeshComponent.BufferObject.SetBufferData(pendingMeshData.Triangles);
-                gpuMeshComponent.VertexArrayObject.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, 7, 0);
-                gpuMeshComponent.VertexArrayObject.VertexAttributePointer(1, 4, VertexAttribPointerType.Float, 7, 3);
+                renderedMeshComponent.VertexBuffer.SetBufferData(pendingMeshData.Vertices ?? new Vector3[0],
+                    pendingMeshData.Colors ?? new Color64[0]);
+                renderedMeshComponent.BufferObject.SetBufferData(pendingMeshData.Indices);
+                renderedMeshComponent.VertexArrayObject.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, 7, 0);
+                renderedMeshComponent.VertexArrayObject.VertexAttributePointer(1, 4, VertexAttribPointerType.Float, 7, 3);
 
                 // remove now processed mesh data component
-                entity.TryRemoveComponent<PendingMeshDataComponent>();
+                EntityManager.RemoveComponent<PendingMeshDataComponent>(entity);
             }
         }
     }

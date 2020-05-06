@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
 using Automata.Exceptions;
 using Serilog;
@@ -121,59 +122,42 @@ namespace Automata.Core
         #region Get .. Data
 
         /// <summary>
-        ///     Returns <see cref="IEnumerable{T}" /> of entities containing component <see cref="T" />.
+        ///     Returns <see cref="IEnumerable{T}" /> of entities containing component <see cref="T1" />.
         /// </summary>
-        /// <typeparam name="T"><see cref="IComponent" /> type to retrieve by.</typeparam>
-        /// <returns><see cref="IEnumerable{T}" /> of entities containing component <see cref="T" />.</returns>
-        /// <exception />
-        public static IEnumerable<IEntity> GetEntitiesWithComponent<T>() where T : IComponent
+        /// <typeparam name="T1"><see cref="IComponent" /> type to retrieve by.</typeparam>
+        /// <returns><see cref="IEnumerable{T}" /> of entities containing component <see cref="T1" />.</returns>
+        /// <remarks>
+        ///    Be cautious of registering or removing <see cref="IComponent"/>s when iterating entities from this function, as any
+        ///    additions or subtractions from the collection will throw a collection modified exception.
+        /// </remarks>
+        public static IEnumerable<IEntity> GetEntitiesWithComponents<T1>() where T1 : IComponent
         {
-            Type typeT = typeof(T);
+            Type typeT = typeof(T1);
 
             return !EntitiesByComponent.ContainsKey(typeT) ? Enumerable.Empty<IEntity>() : EntitiesByComponent[typeT];
         }
 
-        // todo this should accept only component types
-        public static IEnumerable<IEntity> GetEntitiesWithComponents(params Type[] componentTypes)
+
+        public static IEnumerable<IEntity> GetEntitiesWithComponents<T1, T2>()
+            where T1 : IComponent
+            where T2 : IComponent
         {
-            bool iteratedAny = false;
-            HashSet<Guid> matchingEntityIDs = new HashSet<Guid>();
+            HashSet<IEntity> matchingEntityIDs = new HashSet<IEntity>(GetEntitiesWithComponents<T1>());
+            matchingEntityIDs.IntersectWith(GetEntitiesWithComponents<T2>());
 
-            foreach (Type componentType in componentTypes)
-            {
-                if (!typeof(IComponent).IsAssignableFrom(componentType))
-                {
-                    throw new TypeLoadException(componentType.ToString());
-                }
-                else if (!iteratedAny) // first iteration
-                {
-                    foreach (IEntity entity in EntitiesByComponent[componentType])
-                    {
-                        matchingEntityIDs.Add(entity.ID);
-                    }
+            return matchingEntityIDs;
+        }
 
-                    continue;
-                }
+        public static IEnumerable<IEntity> GetEntitiesWithComponents<T1, T2, T3>()
+            where T1 : IComponent
+            where T2 : IComponent
+            where T3 : IComponent
+        {
+            HashSet<IEntity> matchingEntityIDs = new HashSet<IEntity>(GetEntitiesWithComponents<T1>());
+            matchingEntityIDs.IntersectWith(GetEntitiesWithComponents<T2>());
+            matchingEntityIDs.IntersectWith(GetEntitiesWithComponents<T3>());
 
-                List<Guid> matchedEntities = new List<Guid>();
-
-                foreach (IEntity entity in EntitiesByComponent[componentType])
-                {
-                    if (matchedEntities.Contains(entity.ID))
-                    {
-                        matchedEntities.Add(entity.ID);
-                    }
-                }
-
-                matchingEntityIDs = new HashSet<Guid>(matchedEntities);
-
-                iteratedAny = true;
-            }
-
-            foreach (Guid entityID in matchingEntityIDs)
-            {
-                yield return Entities[entityID];
-            }
+            return matchingEntityIDs;
         }
 
         /// <summary>

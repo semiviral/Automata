@@ -9,6 +9,8 @@ using Silk.NET.Input.Common;
 
 namespace Automata.Input
 {
+    public delegate void KeyboardInputEventHandler(IKeyboard keyboard, Key key, int arg);
+
     /// <summary>
     ///     System used for capturing and dispatching input updates.
     /// </summary>
@@ -31,7 +33,7 @@ namespace Automata.Input
 
         public override void Update()
         {
-            List<IEntity> registeredInputContextEntities = EntityManager.GetEntitiesWithComponent<UnregisteredInputContextComponent>().ToList();
+            List<IEntity> registeredInputContextEntities = EntityManager.GetEntitiesWithComponents<UnregisteredInputContextComponent>().ToList();
 
             foreach (IEntity entity in registeredInputContextEntities)
             {

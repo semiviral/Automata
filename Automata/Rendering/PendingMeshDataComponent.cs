@@ -14,6 +14,6 @@ namespace Automata.Rendering
     {
         public Vector3[] Vertices { get; set; }
         public Color64[] Colors { get; set; }
-        public uint[] Triangles { get; set; }
+        public uint[] Indices { get; set; }
     }
 }

@@ -80,6 +80,14 @@ namespace Automata.Core
             }
         }
 
+        public static void Destroy()
+        {
+            foreach ((int _, ComponentSystem system) in _systems)
+            {
+                system.Destroy();
+            }
+        }
+
         /// <summary>
         ///     Registers a new system of type <see cref="T" />.
         /// </summary>
@@ -151,5 +159,7 @@ namespace Automata.Core
 
             return (T)_systemsByType[typeT];
         }
+
+
     }
 }

@@ -13,6 +13,8 @@ namespace Automata.Rendering.OpenGL
         private readonly BufferTargetARB _BufferType;
         private readonly GL _GL;
 
+        public uint Length { get; private set; }
+
         public BufferObject(GL gl, BufferTargetARB bufferType)
         {
             _GL = gl;
@@ -26,7 +28,8 @@ namespace Automata.Rendering.OpenGL
         {
             fixed (void* d = data)
             {
-                _GL.BufferData(_BufferType, (uint)(data.Length * sizeof(TDataType)), d, BufferUsageARB.StaticDraw);
+                Length = (uint)(data.Length * sizeof(TDataType));
+                _GL.BufferData(_BufferType, Length, d, BufferUsageARB.StaticDraw);
             }
         }
 
