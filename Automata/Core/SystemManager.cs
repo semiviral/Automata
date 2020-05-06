@@ -2,10 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using Automata.Input;
-using Automata.Rendering;
 
 // ReSharper disable MemberCanBePrivate.Global
 
@@ -74,7 +71,9 @@ namespace Automata.Core
                 //     system.IsEnabled = true;
                 // }
 
-                if (system.UtilizedComponentTypes.Any(type => entityManager.GetComponentCount(type) <= 0))
+                if ((system.UtilizedComponentTypes != null)
+                    && (system.UtilizedComponentTypes.Length > 0)
+                    && system.UtilizedComponentTypes.Any(type => entityManager.GetComponentCount(type) <= 0))
                 {
                     continue;
                 }
