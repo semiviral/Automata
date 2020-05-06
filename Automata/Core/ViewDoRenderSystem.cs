@@ -13,9 +13,9 @@ namespace Automata.Core
             };
         }
 
-        public override void Update()
+        public override void Update(EntityManager entityManager, double deltaTime)
         {
-            foreach (WindowViewComponent windowViewComponent in EntityManager.GetComponents<WindowViewComponent>())
+            foreach (WindowViewComponent windowViewComponent in entityManager.GetComponents<WindowViewComponent>())
             {
                 if (windowViewComponent.View.IsClosing)
                 {

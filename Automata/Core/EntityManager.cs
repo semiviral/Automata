@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
 using Automata.Exceptions;
 using Serilog;
@@ -12,18 +11,14 @@ using Serilog;
 
 namespace Automata.Core
 {
-    public static class EntityManager
+    public class EntityManager
     {
-        public static int MainThreadID { get; }
+        private Dictionary<Guid, IEntity> Entities { get; }
+        private Dictionary<Type, List<IEntity>> EntitiesByComponent { get; }
+        private Dictionary<Type, int> ComponentCountByType { get; }
 
-        private static Dictionary<Guid, IEntity> Entities { get; }
-        private static Dictionary<Type, List<IEntity>> EntitiesByComponent { get; }
-        private static Dictionary<Type, int> ComponentCountByType { get; }
-
-        static EntityManager()
+        public EntityManager()
         {
-            MainThreadID = Thread.CurrentThread.ManagedThreadId;
-
             Entities = new Dictionary<Guid, IEntity>();
             EntitiesByComponent = new Dictionary<Type, List<IEntity>>();
             ComponentCountByType = new Dictionary<Type, int>();
@@ -37,13 +32,8 @@ namespace Automata.Core
         /// <param name="entity">Entity to register.</param>
         /// <exception cref="AsynchronousAccessException">Thrown when method is called from outside main thread.</exception>
         /// <exception cref="NullReferenceException">Thrown when given <see cref="IEntity" /> is null.</exception>
-        public static void RegisterEntity(IEntity entity)
+        public void RegisterEntity(IEntity entity)
         {
-            if (Thread.CurrentThread.ManagedThreadId != MainThreadID)
-            {
-                throw new AsynchronousAccessException(ExceptionFormats.EntityManagerAsynchronousAccessException);
-            }
-
             if (entity == null)
             {
                 throw new NullReferenceException(nameof(entity));
@@ -62,7 +52,7 @@ namespace Automata.Core
         /// <remarks>
         ///     Use this method to ensure <see cref="EntityManager" /> caches remain accurate.
         /// </remarks>
-        public static void RegisterComponent(IEntity entity, IComponent component) =>
+        public void RegisterComponent(IEntity entity, IComponent component) =>
             RegisterComponentInternal(entity, component.GetType(), component);
 
         /// <summary>
@@ -73,10 +63,10 @@ namespace Automata.Core
         /// <remarks>
         ///     Use this method to ensure <see cref="EntityManager" /> caches remain accurate.
         /// </remarks>
-        public static void RegisterComponent<T>(IEntity entity) where T : IComponent =>
+        public void RegisterComponent<T>(IEntity entity) where T : IComponent =>
             RegisterComponentInternal(entity, typeof(T), null);
 
-        private static void RegisterComponentInternal(IEntity entity, Type type, IComponent? component)
+        private void RegisterComponentInternal(IEntity entity, Type type, IComponent? component)
         {
             if (!EntitiesByComponent.ContainsKey(type))
             {
@@ -107,7 +97,7 @@ namespace Automata.Core
         /// <remarks>
         ///     Use this method to ensure <see cref="EntityManager" /> caches remain accurate.
         /// </remarks>
-        public static void RemoveComponent<T>(IEntity entity) where T : IComponent
+        public void RemoveComponent<T>(IEntity entity) where T : IComponent
         {
             Type typeT = typeof(T);
 
@@ -127,10 +117,11 @@ namespace Automata.Core
         /// <typeparam name="T1"><see cref="IComponent" /> type to retrieve by.</typeparam>
         /// <returns><see cref="IEnumerable{T}" /> of entities containing component <see cref="T1" />.</returns>
         /// <remarks>
-        ///    Be cautious of registering or removing <see cref="IComponent"/>s when iterating entities from this function, as any
-        ///    additions or subtractions from the collection will throw a collection modified exception.
+        ///     Be cautious of registering or removing <see cref="IComponent" />s when iterating entities from this function, as
+        ///     any
+        ///     additions or subtractions from the collection will throw a collection modified exception.
         /// </remarks>
-        public static IEnumerable<IEntity> GetEntitiesWithComponents<T1>() where T1 : IComponent
+        public IEnumerable<IEntity> GetEntitiesWithComponents<T1>() where T1 : IComponent
         {
             Type typeT = typeof(T1);
 
@@ -138,7 +129,7 @@ namespace Automata.Core
         }
 
 
-        public static IEnumerable<IEntity> GetEntitiesWithComponents<T1, T2>()
+        public IEnumerable<IEntity> GetEntitiesWithComponents<T1, T2>()
             where T1 : IComponent
             where T2 : IComponent
         {
@@ -148,7 +139,7 @@ namespace Automata.Core
             return matchingEntityIDs;
         }
 
-        public static IEnumerable<IEntity> GetEntitiesWithComponents<T1, T2, T3>()
+        public IEnumerable<IEntity> GetEntitiesWithComponents<T1, T2, T3>()
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
@@ -165,7 +156,7 @@ namespace Automata.Core
         /// </summary>
         /// <typeparam name="T">Type of <see cref="IComponent" /> to return.</typeparam>
         /// <returns><see cref="IEnumerable{T}" /> of all instances of <see cref="IComponent" /> type <see cref="T" />.</returns>
-        public static IEnumerable<T> GetComponents<T>() where T : IComponent
+        public IEnumerable<T> GetComponents<T>() where T : IComponent
         {
             Type typeT = typeof(T);
 
@@ -177,9 +168,9 @@ namespace Automata.Core
             return EntitiesByComponent[typeT].Select(entity => entity.GetComponent<T>());
         }
 
-        public static int GetComponentCount<T>() where T : IComponent => ComponentCountByType[typeof(T)];
+        public int GetComponentCount<T>() where T : IComponent => ComponentCountByType[typeof(T)];
 
-        public static int GetComponentCount(Type type)
+        public int GetComponentCount(Type type)
         {
             if (!typeof(IComponent).IsAssignableFrom(type))
             {

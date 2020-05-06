@@ -39,16 +39,16 @@ namespace Automata.Rendering
             _DefaultShader = new Shader();
         }
 
-        public override void Update()
+        public override void Update(EntityManager entityManager, double deltaTime)
         {
-            List<IEntity> entities = EntityManager.GetEntitiesWithComponents<PendingMeshDataComponent>().ToList();
+            List<IEntity> entities = entityManager.GetEntitiesWithComponents<PendingMeshDataComponent>().ToList();
 
             foreach (IEntity entity in entities)
             {
                 // create a shader component if one doesn't exist on object
                 if (!entity.TryGetComponent(out RenderedShaderComponent _))
                 {
-                    EntityManager.RegisterComponent(entity, new RenderedShaderComponent
+                    entityManager.RegisterComponent(entity, new RenderedShaderComponent
                     {
                         Shader = _DefaultShader
                     });
@@ -65,7 +65,7 @@ namespace Automata.Rendering
                     renderedMeshComponent.VertexArrayObject =
                         new VertexArrayObject<float, uint>(_GL, renderedMeshComponent.VertexBuffer, renderedMeshComponent.BufferObject);
 
-                    EntityManager.RegisterComponent(entity, renderedMeshComponent);
+                    entityManager.RegisterComponent(entity, renderedMeshComponent);
                 }
 
                 // null checks for C#8 null safety
@@ -91,7 +91,7 @@ namespace Automata.Rendering
                 renderedMeshComponent.VertexArrayObject.VertexAttributePointer(1, 4, VertexAttribPointerType.Float, 7, 3);
 
                 // remove now processed mesh data component
-                EntityManager.RemoveComponent<PendingMeshDataComponent>(entity);
+                entityManager.RemoveComponent<PendingMeshDataComponent>(entity);
             }
         }
     }

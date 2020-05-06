@@ -10,9 +10,9 @@ namespace Automata.Test
 {
     public class KeyboardInputStringOutputSystem : ComponentSystem
     {
-        public override void Update()
+        public override void Update(EntityManager entityManager, double deltaTime)
         {
-            foreach (KeyboardInputComponent inputComponent in EntityManager.GetComponents<KeyboardInputComponent>())
+            foreach (KeyboardInputComponent inputComponent in entityManager.GetComponents<KeyboardInputComponent>())
             {
                 if (inputComponent.KeysDown.Count == 0)
                 {

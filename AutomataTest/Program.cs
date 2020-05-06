@@ -28,7 +28,6 @@ namespace AutomataTest
                 Environment.SpecialFolderOption.Create);
 
         private static IWindow _Window;
-        private static InputSystem _InputSystem;
         private static GL _GL;
 
         private static VertexBuffer _VBO;
@@ -92,35 +91,38 @@ namespace AutomataTest
             _Window.Initialize();
             Initialize();
 
+            _Window.VSync = VSyncMode.Off;
+
             while (!_Window.IsClosing)
             {
                 _Window.DoEvents();
 
                 if (!_Window.IsClosing)
                 {
-                    SystemManager.Update();
+                    World.GlobalUpdate();
                 }
             }
         }
 
         private static void Initialize()
         {
-            SystemManager.RegisterSystem<ViewDoUpdateSystem>(SystemManager.INITIAL_SYSTEM_ORDER);
-            SystemManager.RegisterSystem<ViewDoRenderSystem>(SystemManager.RENDER_SYSTEM_ORDER);
-            SystemManager.RegisterSystem<RenderingSystem>();
-            SystemManager.RegisterSystem<InputSystem>(SystemManager.INPUT_SYSTEM_ORDER);
-            SystemManager.RegisterSystem<MeshCompositionSystem>();
-            SystemManager.RegisterSystem<KeyboardInputStringOutputSystem>();
+            World world = new GameWorld(true);
+            World.RegisterWorld("core", world);
+
+            world.SystemManager.RegisterSystem<ViewDoUpdateSystem>();
+            world.SystemManager.RegisterSystem<ViewDoRenderSystem>(SystemManager.FINAL_SYSTEM_ORDER);
+            world.SystemManager.RegisterSystem<MeshCompositionSystem>();
+            world.SystemManager.RegisterSystem<KeyboardInputStringOutputSystem>();
 
             Entity gameEntity = new Entity();
-            EntityManager.RegisterEntity(gameEntity);
-            EntityManager.RegisterComponent(gameEntity, new WindowViewComponent(_Window));
-            EntityManager.RegisterComponent(gameEntity, new UnregisteredInputContextComponent
+            world.EntityManager.RegisterEntity(gameEntity);
+            world.EntityManager.RegisterComponent(gameEntity, new WindowViewComponent(_Window));
+            world.EntityManager.RegisterComponent(gameEntity, new UnregisteredInputContextComponent
             {
                 InputContext = _Window.CreateInput()
             });
-            EntityManager.RegisterComponent<KeyboardInputComponent>(gameEntity);
-            EntityManager.RegisterComponent(gameEntity, new PendingMeshDataComponent
+            world.EntityManager.RegisterComponent<KeyboardInputComponent>(gameEntity);
+            world.EntityManager.RegisterComponent(gameEntity, new PendingMeshDataComponent
             {
                 Vertices = _vertices,
                 Colors = _colors,
@@ -132,7 +134,7 @@ namespace AutomataTest
             _Shader.SetUniform("projection", _Projection);
             _Shader.SetUniform("view", Matrix4x4.CreateLookAt(new Vector3(0f, 0f, 3f), Vector3.Zero, Vector3.UnitY));
 
-            EntityManager.RegisterComponent(gameEntity, new RenderedShaderComponent
+            world.EntityManager.RegisterComponent(gameEntity, new RenderedShaderComponent
             {
                 Shader = _Shader
             });
@@ -161,7 +163,7 @@ namespace AutomataTest
 
         private static void OnClose()
         {
-            SystemManager.Destroy();
+            //SystemManager.Destroy();
         }
     }
 }

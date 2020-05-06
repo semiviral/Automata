@@ -31,9 +31,9 @@ namespace Automata.Input
             };
         }
 
-        public override void Update()
+        public override void Update(EntityManager entityManager, double deltaTime)
         {
-            List<IEntity> registeredInputContextEntities = EntityManager.GetEntitiesWithComponents<UnregisteredInputContextComponent>().ToList();
+            List<IEntity> registeredInputContextEntities = entityManager.GetEntitiesWithComponents<UnregisteredInputContextComponent>().ToList();
 
             foreach (IEntity entity in registeredInputContextEntities)
             {
@@ -46,7 +46,7 @@ namespace Automata.Input
 
                 RegisterInputContext(unregisteredInputContextComponent.InputContext);
 
-                EntityManager.RemoveComponent<UnregisteredInputContextComponent>(entity);
+                entityManager.RemoveComponent<UnregisteredInputContextComponent>(entity);
             }
 
             if ((_KeysUp.Count == 0) && (_KeysDown.Count == 0))
@@ -54,7 +54,7 @@ namespace Automata.Input
                 return;
             }
 
-            foreach (KeyboardInputComponent inputComponent in EntityManager.GetComponents<KeyboardInputComponent>())
+            foreach (KeyboardInputComponent inputComponent in entityManager.GetComponents<KeyboardInputComponent>())
             {
                 inputComponent.KeysUp.Clear();
                 inputComponent.KeysDown.Clear();

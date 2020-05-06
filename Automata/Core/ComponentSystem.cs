@@ -11,7 +11,7 @@ namespace Automata.Core
         /// <summary>
         ///     The <see cref="SystemManager" /> uses this boolean to track whether it has enabled the given System.
         /// </summary>
-        public bool IsEnabled { get; set; } = false;
+        // public bool IsEnabled { get; set; } = false;
 
         /// <summary>
         ///     This is a hint to the <see cref="SystemManager" /> as to what types the system uses for updates.
@@ -31,7 +31,7 @@ namespace Automata.Core
         /// <remarks>
         ///     Enabling happens before the first execution of <see cref="Update" />.
         /// </remarks>
-        public virtual void Enabled() { }
+        // public virtual void Enabled(EntityManager entityManager) { }
 
         /// <summary>
         ///     Method called once per frame.
@@ -40,11 +40,11 @@ namespace Automata.Core
         ///     If none of the types in <see cref="UtilizedComponentTypes" /> are active in the <see cref="EntityManager" />, this
         ///     method is skipped.
         /// </remarks>
-        public virtual void Update() { }
+        public virtual void Update(EntityManager entityManager, double deltaTime) { }
 
         /// <summary>
         ///     Method called when the system is destroyed.
         /// </summary>
-        public virtual void Destroy() { }
+        public virtual void Destroy(EntityManager entityManager) { }
     }
 }

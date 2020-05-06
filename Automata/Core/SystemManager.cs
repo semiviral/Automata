@@ -2,7 +2,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using Automata.Input;
+using Automata.Rendering;
 
 // ReSharper disable MemberCanBePrivate.Global
 
@@ -10,7 +13,7 @@ using System.Linq;
 
 namespace Automata.Core
 {
-    public static class SystemManager
+    public class SystemManager
     {
         /// <summary>
         ///     The very first order updated.
@@ -51,40 +54,40 @@ namespace Automata.Core
         /// </summary>
         public const int FINAL_SYSTEM_ORDER = int.MaxValue;
 
-        private static readonly SortedList<int, ComponentSystem> _systems;
-        private static readonly Dictionary<Type, ComponentSystem> _systemsByType;
+        private readonly SortedList<int, ComponentSystem> _Systems;
+        private readonly Dictionary<Type, ComponentSystem> _SystemsByType;
 
-        static SystemManager()
+        public SystemManager()
         {
-            _systems = new SortedList<int, ComponentSystem>();
-            _systemsByType = new Dictionary<Type, ComponentSystem>();
+            _Systems = new SortedList<int, ComponentSystem>();
+            _SystemsByType = new Dictionary<Type, ComponentSystem>();
         }
 
-        public static void Update()
+        public void Update(EntityManager entityManager, double deltaTime)
         {
             // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
-            foreach ((int _, ComponentSystem system) in _systems)
+            foreach ((int _, ComponentSystem system) in _Systems)
             {
-                if (!system.IsEnabled)
-                {
-                    system.Enabled();
-                    system.IsEnabled = true;
-                }
+                // if (!system.IsEnabled)
+                // {
+                //     system.Enabled(entityManager);
+                //     system.IsEnabled = true;
+                // }
 
-                if (system.UtilizedComponentTypes.Any(type => EntityManager.GetComponentCount(type) <= 0))
+                if (system.UtilizedComponentTypes.Any(type => entityManager.GetComponentCount(type) <= 0))
                 {
                     continue;
                 }
 
-                system.Update();
+                system.Update(entityManager, deltaTime);
             }
         }
 
-        public static void Destroy()
+        public void Destroy(EntityManager entityManager)
         {
-            foreach ((int _, ComponentSystem system) in _systems)
+            foreach ((int _, ComponentSystem system) in _Systems)
             {
-                system.Destroy();
+                system.Destroy(entityManager);
             }
         }
 
@@ -102,18 +105,18 @@ namespace Automata.Core
         ///     For reference on what ordering to use, there are several constants within the <see cref="SystemManager" /> class to
         ///     act as default values for certain types of systems.
         /// </remarks>
-        public static void RegisterSystem<T>(int order = DEFAULT_SYSTEM_ORDER) where T : ComponentSystem
+        public void RegisterSystem<T>(int order = DEFAULT_SYSTEM_ORDER) where T : ComponentSystem
         {
             Type componentSystemTypeT = typeof(T);
 
-            if (_systemsByType.ContainsKey(componentSystemTypeT))
+            if (_SystemsByType.ContainsKey(componentSystemTypeT))
             {
                 throw new Exception("System type already instantiated.");
             }
 
             int finalOrder = order;
 
-            while (_systems.ContainsKey(finalOrder))
+            while (_Systems.ContainsKey(finalOrder))
             {
                 finalOrder += 1;
 
@@ -134,8 +137,8 @@ namespace Automata.Core
                 }
             }
 
-            _systems.Add(finalOrder, componentSystem);
-            _systemsByType.Add(componentSystemTypeT, componentSystem);
+            _Systems.Add(finalOrder, componentSystem);
+            _SystemsByType.Add(componentSystemTypeT, componentSystem);
 
             componentSystem.Registered();
         }
@@ -148,18 +151,16 @@ namespace Automata.Core
         /// <exception cref="KeyNotFoundException">
         ///     <see cref="ComponentSystem" /> of given type <see cref="T" /> has not been instantiated.
         /// </exception>
-        public static T GetSystem<T>() where T : ComponentSystem
+        public T GetSystem<T>() where T : ComponentSystem
         {
             Type typeT = typeof(T);
 
-            if (!_systemsByType.ContainsKey(typeT))
+            if (!_SystemsByType.ContainsKey(typeT))
             {
                 throw new KeyNotFoundException("System type has not been instantiated.");
             }
 
-            return (T)_systemsByType[typeT];
+            return (T)_SystemsByType[typeT];
         }
-
-
     }
 }

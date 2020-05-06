@@ -23,11 +23,11 @@ namespace Automata.Rendering
             _GL = GL.GetApi();
         }
 
-        public override unsafe void Update()
+        public override unsafe void Update(EntityManager entityManager, double deltaTime)
         {
             _GL.Clear((uint)ClearBufferMask.ColorBufferBit);
 
-            foreach (IEntity entity in EntityManager.GetEntitiesWithComponents<RenderedShaderComponent, RenderedMeshComponent>())
+            foreach (IEntity entity in entityManager.GetEntitiesWithComponents<RenderedShaderComponent, RenderedMeshComponent>())
             {
                 RenderedShaderComponent renderedShaderComponent = entity.GetComponent<RenderedShaderComponent>();
                 RenderedMeshComponent renderedMeshComponent = entity.GetComponent<RenderedMeshComponent>();
@@ -50,18 +50,20 @@ namespace Automata.Rendering
 
                 _GL.DrawElements(PrimitiveType.Triangles, renderedMeshComponent.BufferObject.Length, DrawElementsType.UnsignedInt, null);
             }
+
+
         }
 
-        public override void Destroy()
+        public override void Destroy(EntityManager entityManager)
         {
-            foreach (RenderedMeshComponent renderedMeshComponent in EntityManager.GetComponents<RenderedMeshComponent>())
+            foreach (RenderedMeshComponent renderedMeshComponent in entityManager.GetComponents<RenderedMeshComponent>())
             {
                 renderedMeshComponent.VertexBuffer?.Dispose();
                 renderedMeshComponent.BufferObject?.Dispose();
                 renderedMeshComponent.VertexArrayObject?.Dispose();
             }
 
-            foreach (RenderedShaderComponent renderedShaderComponent in EntityManager.GetComponents<RenderedShaderComponent>())
+            foreach (RenderedShaderComponent renderedShaderComponent in entityManager.GetComponents<RenderedShaderComponent>())
             {
                 renderedShaderComponent.Shader?.Dispose();
             }
