@@ -121,13 +121,14 @@ namespace AutomataTest
                 InputContext = _Window.CreateInput()
             });
             world.EntityManager.RegisterComponent<KeyboardInput>(gameEntity);
+            world.EntityManager.RegisterComponent<MouseInput>(gameEntity);
             world.EntityManager.RegisterComponent(gameEntity, new PendingMeshDataComponent
             {
                 Vertices = _vertices,
                 Colors = _colors,
                 Indices = _indices
             });
-            world.EntityManager.RegisterComponent(gameEntity, new Translation { Position = new Vector3(3f, 0f, 3f) });
+            world.EntityManager.RegisterComponent(gameEntity, new Translation { Position = new Vector3(0f, 0f, 3f) });
             world.EntityManager.RegisterComponent<Rotation>(gameEntity);
             world.EntityManager.RegisterComponent<Camera>(gameEntity);
             world.EntityManager.RegisterComponent<KeyboardInputTranslation>(gameEntity);

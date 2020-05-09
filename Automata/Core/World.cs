@@ -66,7 +66,7 @@ namespace Automata.Core
             }
         }
 
-        protected World(bool active = false)
+        protected World(bool active)
         {
             _DeltaTimer = new Stopwatch();
 
@@ -74,8 +74,6 @@ namespace Automata.Core
             SystemManager = new SystemManager();
 
             Active = active;
-
-            //Task.Run(DebugUpdatedDeltaTimeCheck);
         }
 
         protected virtual void Update()
@@ -88,22 +86,6 @@ namespace Automata.Core
 
             // update system manager for frame
             SystemManager.Update(EntityManager, (float)LastDeltaTime);
-        }
-
-        private async Task DebugUpdatedDeltaTimeCheck()
-        {
-            while (Active)
-            {
-                if (_LastDeltaTimeChanged)
-                {
-                    Console.Clear();
-                    Console.SetCursorPosition(0, 0);
-                    Console.WriteLine($"{1d / LastDeltaTime:0.00}");
-                    _LastDeltaTimeChanged = false;
-                }
-
-                await Task.Delay(1);
-            }
         }
     }
 }

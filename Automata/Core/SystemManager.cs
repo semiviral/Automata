@@ -49,7 +49,7 @@ namespace Automata.Core
         /// <summary>
         ///     Final order that will be executed on each frame.
         /// </summary>
-        public const int FINAL_SYSTEM_ORDER = int.MaxValue;
+        public const int FINAL_SYSTEM_ORDER = int.MaxValue - 10000;
 
         private readonly SortedList<int, ComponentSystem> _Systems;
         private readonly Dictionary<Type, ComponentSystem> _SystemsByType;
@@ -62,22 +62,8 @@ namespace Automata.Core
 
         public void Update(EntityManager entityManager, float deltaTime)
         {
-            // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
-            foreach ((int _, ComponentSystem system) in _Systems)
+            foreach ((int _, ComponentSystem system) in _Systems.Where(kvp => VerifyHandledTypes(entityManager, kvp.Value)))
             {
-                // if (!system.IsEnabled)
-                // {
-                //     system.Enabled(entityManager);
-                //     system.IsEnabled = true;
-                // }
-
-                if ((system.HandledComponentTypes != null)
-                    && (system.HandledComponentTypes.Length > 0)
-                    && system.HandledComponentTypes.Any(type => entityManager.GetComponentCount(type) <= 0))
-                {
-                    continue;
-                }
-
                 system.Update(entityManager, deltaTime);
             }
         }
@@ -106,11 +92,12 @@ namespace Automata.Core
         /// </remarks>
         public void RegisterSystem<T>(int order = DEFAULT_SYSTEM_ORDER) where T : ComponentSystem
         {
-            Type componentSystemTypeT = typeof(T);
-
-            if (_SystemsByType.ContainsKey(componentSystemTypeT))
+            if (_SystemsByType.ContainsKey(typeof(T)))
             {
                 throw new Exception("System type already instantiated.");
+            } else if (order == int.MaxValue)
+            {
+                throw new ArgumentException($"Parameter must be less than {int.MaxValue}.", nameof(order));
             }
 
             int finalOrder = order;
@@ -137,7 +124,7 @@ namespace Automata.Core
             }
 
             _Systems.Add(finalOrder, componentSystem);
-            _SystemsByType.Add(componentSystemTypeT, componentSystem);
+            _SystemsByType.Add(typeof(T), componentSystem);
 
             componentSystem.Registered();
         }
@@ -161,5 +148,14 @@ namespace Automata.Core
 
             return (T)_SystemsByType[typeT];
         }
+
+        #region Helper Methods
+
+        private static bool VerifyHandledTypes(EntityManager entityManager, ComponentSystem componentSystem) =>
+            (componentSystem.HandledComponentTypes == null)
+            || (componentSystem.HandledComponentTypes.Length == 0)
+            || componentSystem.HandledComponentTypes.All(type => entityManager.GetComponentCount(type) > 0);
+
+        #endregion
     }
 }

@@ -19,6 +19,10 @@ namespace Automata.Input
         private readonly HashSet<Key> _KeysUp;
         private readonly HashSet<Key> _KeysDown;
 
+        private Vector2 _LastMousePosition;
+        private bool _MousePositionChanged;
+        private Vector2 _MousePositionOffset;
+
         public InputSystem()
         {
             _KeysUp = new HashSet<Key>();
@@ -27,7 +31,8 @@ namespace Automata.Input
             HandledComponentTypes = new[]
             {
                 typeof(UnhandledInputContext),
-                typeof(KeyboardInput)
+                typeof(KeyboardInput),
+                typeof(MouseInput)
             };
         }
 
@@ -52,18 +57,26 @@ namespace Automata.Input
                 entityManager.RemoveComponent<UnhandledInputContext>(entity);
             }
 
-            if ((_KeysUp.Count == 0) && (_KeysDown.Count == 0))
+            if ((_KeysUp.Count > 0) || (_KeysDown.Count > 0))
             {
-                return;
+                foreach (KeyboardInput keyboardInput in entityManager.GetComponents<KeyboardInput>())
+                {
+                    keyboardInput.KeysUp.Clear();
+                    keyboardInput.KeysDown.Clear();
+
+                    keyboardInput.KeysUp.UnionWith(_KeysUp);
+                    keyboardInput.KeysDown.UnionWith(_KeysDown);
+                }
             }
 
-            foreach (KeyboardInput inputComponent in entityManager.GetComponents<KeyboardInput>())
+            if (_MousePositionChanged)
             {
-                inputComponent.KeysUp.Clear();
-                inputComponent.KeysDown.Clear();
+                foreach (MouseInput mouseInput in entityManager.GetComponents<MouseInput>())
+                {
+                    mouseInput.Value = _MousePositionOffset;
+                }
 
-                inputComponent.KeysUp.UnionWith(_KeysUp);
-                inputComponent.KeysDown.UnionWith(_KeysDown);
+                _MousePositionChanged = false;
             }
         }
 
@@ -126,7 +139,12 @@ namespace Automata.Input
 
         private void OnMouseMoved(IMouse mouse, PointF point)
         {
-            MouseMoved?.Invoke(mouse, new Vector2(point.X, point.Y));
+            Vector2 newMousePosition = new Vector2(-point.X, point.Y);
+            _MousePositionOffset = Vector2.Clamp(_LastMousePosition - newMousePosition, new Vector2(-1f), Vector2.One);
+            _LastMousePosition = newMousePosition;
+            _MousePositionChanged = true;
+
+            MouseMoved?.Invoke(mouse, _LastMousePosition);
         }
 
         private void OnMouseScrolled(IMouse mouse, ScrollWheel scrollWheel)
