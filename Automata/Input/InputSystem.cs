@@ -31,7 +31,7 @@ namespace Automata.Input
             };
         }
 
-        public override void Update(EntityManager entityManager, double deltaTime)
+        public override void Update(EntityManager entityManager, float deltaTime)
         {
             List<IEntity> registeredInputContextEntities = entityManager.GetEntitiesWithComponents<UnregisteredInputContextComponent>().ToList();
 

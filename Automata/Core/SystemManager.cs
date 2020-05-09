@@ -60,7 +60,7 @@ namespace Automata.Core
             _SystemsByType = new Dictionary<Type, ComponentSystem>();
         }
 
-        public void Update(EntityManager entityManager, double deltaTime)
+        public void Update(EntityManager entityManager, float deltaTime)
         {
             // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
             foreach ((int _, ComponentSystem system) in _Systems)

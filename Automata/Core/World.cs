@@ -75,7 +75,7 @@ namespace Automata.Core
 
             Active = active;
 
-            Task.Run(DebugUpdatedDeltaTimeCheck);
+            //Task.Run(DebugUpdatedDeltaTimeCheck);
         }
 
         protected virtual void Update()
@@ -87,7 +87,7 @@ namespace Automata.Core
             _DeltaTimer.Restart();
 
             // update system manager for frame
-            SystemManager.Update(EntityManager, LastDeltaTime);
+            SystemManager.Update(EntityManager, (float)LastDeltaTime);
         }
 
         private async Task DebugUpdatedDeltaTimeCheck()

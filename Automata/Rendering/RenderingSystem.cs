@@ -23,7 +23,7 @@ namespace Automata.Rendering
             _GL = GL.GetApi();
         }
 
-        public override unsafe void Update(EntityManager entityManager, double deltaTime)
+        public override unsafe void Update(EntityManager entityManager, float deltaTime)
         {
             _GL.Clear((uint)ClearBufferMask.ColorBufferBit);
 

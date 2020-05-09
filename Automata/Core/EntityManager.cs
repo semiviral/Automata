@@ -151,6 +151,20 @@ namespace Automata.Core
             return matchingEntityIDs;
         }
 
+        public IEnumerable<IEntity> GetEntitiesWithComponents<T1, T2, T3, T4>()
+            where T1 : IComponent
+            where T2 : IComponent
+            where T3 : IComponent
+            where T4 : IComponent
+        {
+            HashSet<IEntity> matchingEntityIDs = new HashSet<IEntity>(GetEntitiesWithComponents<T1>());
+            matchingEntityIDs.IntersectWith(GetEntitiesWithComponents<T2>());
+            matchingEntityIDs.IntersectWith(GetEntitiesWithComponents<T3>());
+            matchingEntityIDs.IntersectWith(GetEntitiesWithComponents<T4>());
+
+            return matchingEntityIDs;
+        }
+
         /// <summary>
         ///     Returns all instances of components of type <see cref="T" />
         /// </summary>

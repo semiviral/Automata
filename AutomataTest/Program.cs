@@ -112,7 +112,8 @@ namespace AutomataTest
             world.SystemManager.RegisterSystem<ViewDoUpdateSystem>();
             world.SystemManager.RegisterSystem<ViewDoRenderSystem>(SystemManager.FINAL_SYSTEM_ORDER);
             world.SystemManager.RegisterSystem<MeshCompositionSystem>();
-            world.SystemManager.RegisterSystem<KeyboardInputStringOutputSystem>();
+            world.SystemManager.RegisterSystem<KeyboardInputStringOutputSystem>(SystemManager.INPUT_SYSTEM_ORDER);
+            world.SystemManager.RegisterSystem<InputCameraViewMoverSystem>(SystemManager.INPUT_SYSTEM_ORDER);
 
             Entity gameEntity = new Entity();
             world.EntityManager.RegisterEntity(gameEntity);
@@ -128,6 +129,8 @@ namespace AutomataTest
                 Colors = _colors,
                 Indices = _indices
             });
+            world.EntityManager.RegisterComponent(gameEntity, new Translation { Position = new Vector3(3f, 0f, 3f) });
+            world.EntityManager.RegisterComponent<CameraEntityComponent>(gameEntity);
 
             _Shader = new Shader("default.vert", "shader.frag");
             _Shader.SetUniform("model", Matrix4x4.Identity);

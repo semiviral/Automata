@@ -39,7 +39,7 @@ namespace Automata.Rendering
             _DefaultShader = new Shader();
         }
 
-        public override void Update(EntityManager entityManager, double deltaTime)
+        public override void Update(EntityManager entityManager, float deltaTime)
         {
             List<IEntity> entities = entityManager.GetEntitiesWithComponents<PendingMeshDataComponent>().ToList();
 
