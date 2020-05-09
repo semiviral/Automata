@@ -12,9 +12,10 @@ namespace Automata.Core
         public GameWorld(bool active) : base(active)
         {
             // input systems
-            SystemManager.RegisterSystem<InputSystem>(SystemManager.INPUT_SYSTEM_ORDER);
+            SystemManager.RegisterSystem<InputSystem>(SystemManager.INPUT_SYSTEM_ORDER - 1);
             SystemManager.RegisterSystem<KeyboardInputTranslationSystem>(SystemManager.INPUT_SYSTEM_ORDER);
-            SystemManager.RegisterSystem<KeyboardInputTranslationToTranslationSystem>(SystemManager.INPUT_SYSTEM_ORDER);
+            SystemManager.RegisterSystem<KeyboardInputTranslationToWorldTranslationSystem>(SystemManager.INPUT_SYSTEM_ORDER);
+            SystemManager.RegisterSystem<MouseInputToRotationSystem>(SystemManager.INPUT_SYSTEM_ORDER);
 
             // meshing systems
             SystemManager.RegisterSystem<MeshCompositionSystem>(SystemManager.MESH_COMPOSITION_SYSTEM_ORDER);
@@ -24,6 +25,7 @@ namespace Automata.Core
 
             // cleanup systems
             SystemManager.RegisterSystem<TranslationChangedCleanupSystem>(SystemManager.FINAL_SYSTEM_ORDER);
+            SystemManager.RegisterSystem<RotationChangedCleanupSystem>(SystemManager.FINAL_SYSTEM_ORDER);
             SystemManager.RegisterSystem<MouseInputChangedCleanupSystem>(SystemManager.FINAL_SYSTEM_ORDER);
         }
     }

@@ -6,9 +6,9 @@ using Automata.Core;
 
 namespace Automata.Input
 {
-    public class KeyboardInputTranslationToTranslationSystem : ComponentSystem
+    public class KeyboardInputTranslationToWorldTranslationSystem : ComponentSystem
     {
-        public KeyboardInputTranslationToTranslationSystem()
+        public KeyboardInputTranslationToWorldTranslationSystem()
         {
             HandledComponentTypes = new[]
             {
@@ -22,7 +22,7 @@ namespace Automata.Input
             foreach ((KeyboardInputTranslation inputTranslation, Translation translation) in entityManager
                 .GetComponents<KeyboardInputTranslation, Translation>())
             {
-                translation.Position += inputTranslation.Value * deltaTime;
+                translation.Value += inputTranslation.Value * deltaTime;
             }
         }
     }

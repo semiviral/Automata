@@ -9,7 +9,6 @@ using Automata.Core;
 using Automata.Input;
 using Automata.Rendering;
 using Automata.Rendering.OpenGL;
-using Automata.Test;
 using Serilog;
 using Silk.NET.GLFW;
 using Silk.NET.Input;
@@ -38,29 +37,28 @@ namespace AutomataTest
         //Vertex data, uploaded to the VBO.
         private static readonly Vector3[] _vertices =
         {
-            //X    Y      Z     R  G  B  A
-            new Vector3(0.5f, 0.5f, 0.0f),
-            new Vector3(0.5f, -0.5f, 0.0f),
-            new Vector3(-0.5f, -0.5f, 0.0f),
-            new Vector3(-0.5f, 0.5f, 0.0f)
+            new Vector3(0f, 0f, 0f),
+            new Vector3(0f, 1f, 0f),
+            new Vector3(1f, 0f, 0f),
+            new Vector3(1f, 1f, 0f)
         };
 
         private static readonly Color64[] _colors =
         {
-            new Color64(1f, 0f, 0f, 1f),
             new Color64(0f, 0f, 0f, 1f),
-            new Color64(0f, 0f, 1f, 1f),
-            new Color64(0f, 0f, 0f, 1f)
+            new Color64(1f, 1f, 1f, 1f),
+            new Color64(1f, 1f, 1f, 1f),
+            new Color64(0f, 0f, 0f, 1f),
         };
 
         private static readonly uint[] _indices =
         {
             0,
-            1,
-            3,
+            2,
             1,
             2,
-            3
+            3,
+            1
         };
 
         private static void Main(string[] args)
@@ -111,7 +109,7 @@ namespace AutomataTest
 
             world.SystemManager.RegisterSystem<ViewDoUpdateSystem>();
             world.SystemManager.RegisterSystem<ViewDoRenderSystem>(SystemManager.FINAL_SYSTEM_ORDER);
-           world.SystemManager.RegisterSystem<InputCameraViewMoverSystem>(SystemManager.INPUT_SYSTEM_ORDER);
+            world.SystemManager.RegisterSystem<InputCameraViewMoverSystem>(SystemManager.INPUT_SYSTEM_ORDER);
 
             Entity gameEntity = new Entity();
             world.EntityManager.RegisterEntity(gameEntity);
@@ -128,7 +126,10 @@ namespace AutomataTest
                 Colors = _colors,
                 Indices = _indices
             });
-            world.EntityManager.RegisterComponent(gameEntity, new Translation { Position = new Vector3(0f, 0f, 3f) });
+            world.EntityManager.RegisterComponent(gameEntity, new Translation
+            {
+                Value = new Vector3(0f, 0f, -1f)
+            });
             world.EntityManager.RegisterComponent<Rotation>(gameEntity);
             world.EntityManager.RegisterComponent<Camera>(gameEntity);
             world.EntityManager.RegisterComponent<KeyboardInputTranslation>(gameEntity);

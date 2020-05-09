@@ -21,7 +21,6 @@ namespace Automata.Rendering.OpenGL
             uniform mat4 view;
             uniform mat4 model;
     
-    
             out vec4 fColor;
     
             void main()

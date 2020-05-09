@@ -26,15 +26,17 @@ namespace AutomataTest
             foreach ((Camera _, RenderedShader renderedShader, Translation translation, Rotation rotation) in entityManager
                 .GetComponents<Camera, RenderedShader, Translation, Rotation>())
             {
-                if (!translation.Changed)
+                if (!translation.Changed && !rotation.Changed)
                 {
                     continue;
                 }
 
-                renderedShader.Shader.SetUniform("view", Matrix4x4.CreateLookAt(translation.Position,
-                    Vector3.Transform(Vector3.UnitZ, rotation.Quaternion),
-                    Vector3.Transform(Vector3.UnitY, rotation.Quaternion)));
-                //Matrix4x4.CreateLookAt(new Vector3((float)Math.Sin(translation.Position.X * deltaTime), 0f, (float)Math.Cos(translation.Position.Z * deltaTime)), new Vector3(0f, 0f, 0f), new Vector3(0f, 1f, 0)));
+                Matrix4x4 translationMatrix = Matrix4x4.CreateTranslation(translation.Value);
+                Matrix4x4 rotationMatrix = Matrix4x4.CreateFromQuaternion(rotation.Value);
+                Matrix4x4 finalMatrix = Matrix4x4.Multiply(translationMatrix, rotationMatrix);
+
+                //renderedShader.Shader.SetUniform("view", Matrix4x4.CreateWorld(translation.Value, forward, up));
+                renderedShader.Shader.SetUniform("view", finalMatrix);
             }
         }
     }

@@ -1,6 +1,9 @@
+#region
+
 using System.Linq;
 using Automata.Core;
-using Serilog;
+
+#endregion
 
 namespace Automata.Input
 {
@@ -18,7 +21,11 @@ namespace Automata.Input
         {
             foreach (MouseInput mouseInput in entityManager.GetComponents<MouseInput>().Where(mouseInput => mouseInput.Changed))
             {
-                Log.Information(mouseInput.Value.ToString());
+                if (!mouseInput.Changed)
+                {
+                    continue;
+                }
+
                 mouseInput.Changed = false;
             }
         }

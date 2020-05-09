@@ -8,14 +8,14 @@ namespace Automata.Core
 {
     public class Translation : IComponent
     {
-        private Vector3 _Position;
+        private Vector3 _Value;
 
-        public Vector3 Position
+        public Vector3 Value
         {
-            get => _Position;
+            get => _Value;
             set
             {
-                _Position = value;
+                _Value = value;
                 Changed = true;
             }
         }
