@@ -1,7 +1,9 @@
 #region
 
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
+using System.Numerics;
 using Automata.Core;
 using Silk.NET.Input.Common;
 
@@ -9,8 +11,6 @@ using Silk.NET.Input.Common;
 
 namespace Automata.Input
 {
-    public delegate void KeyboardInputEventHandler(IKeyboard keyboard, Key key, int arg);
-
     /// <summary>
     ///     System used for capturing and dispatching input updates.
     /// </summary>
@@ -26,14 +26,14 @@ namespace Automata.Input
 
             HandledComponentTypes = new[]
             {
-                typeof(UnregisteredInputContextComponent),
+                typeof(UnhandledInputContext),
                 typeof(KeyboardInput)
             };
         }
 
         public override void Update(EntityManager entityManager, float deltaTime)
         {
-            List<IEntity> registeredInputContextEntities = entityManager.GetEntitiesWithComponents<UnregisteredInputContextComponent>().ToList();
+            List<IEntity> registeredInputContextEntities = entityManager.GetEntitiesWithComponents<UnhandledInputContext>().ToList();
 
             foreach (IEntity entity in registeredInputContextEntities)
             {
@@ -42,11 +42,14 @@ namespace Automata.Input
                     continue;
                 }
 
-                UnregisteredInputContextComponent unregisteredInputContextComponent = entity.GetComponent<UnregisteredInputContextComponent>();
+                UnhandledInputContext unhandledInputContext = entity.GetComponent<UnhandledInputContext>();
 
-                RegisterInputContext(unregisteredInputContextComponent.InputContext);
+                if (unhandledInputContext.InputContext != null)
+                {
+                    RegisterInputContext(unhandledInputContext.InputContext);
+                }
 
-                entityManager.RemoveComponent<UnregisteredInputContextComponent>(entity);
+                entityManager.RemoveComponent<UnhandledInputContext>(entity);
             }
 
             if ((_KeysUp.Count == 0) && (_KeysDown.Count == 0))
@@ -71,9 +74,17 @@ namespace Automata.Input
                 keyboard.KeyUp += OnKeyUp;
                 keyboard.KeyDown += OnKeyDown;
             }
+
+            foreach (IMouse mouse in inputContext.Mice)
+            {
+                mouse.MouseDown += OnMouseButtonDown;
+                mouse.MouseUp += OnMouseButtonUp;
+                mouse.MouseMove += OnMouseMoved;
+                mouse.Scroll += OnMouseScrolled;
+            }
         }
 
-        #region Events
+        #region Keyboard Events
 
         public event KeyboardInputEventHandler? KeyUp;
         public event KeyboardInputEventHandler? KeyDown;
@@ -91,6 +102,36 @@ namespace Automata.Input
             _KeysDown.Add(key);
 
             KeyDown?.Invoke(keyboard, key, arg);
+        }
+
+        #endregion
+
+
+        #region Mouse Events
+
+        public event MouseInputEventHandler? MouseButtonDown;
+        public event MouseInputEventHandler? MouseButtonUp;
+        public event MouseMovedEventHandler? MouseMoved;
+        public event MouseScrolledEventHandler? MouseScrolled;
+
+        private void OnMouseButtonDown(IMouse mouse, MouseButton button)
+        {
+            MouseButtonDown?.Invoke(mouse, button);
+        }
+
+        private void OnMouseButtonUp(IMouse mouse, MouseButton button)
+        {
+            MouseButtonUp?.Invoke(mouse, button);
+        }
+
+        private void OnMouseMoved(IMouse mouse, PointF point)
+        {
+            MouseMoved?.Invoke(mouse, new Vector2(point.X, point.Y));
+        }
+
+        private void OnMouseScrolled(IMouse mouse, ScrollWheel scrollWheel)
+        {
+            MouseScrolled?.Invoke(mouse, new Vector2(scrollWheel.X, scrollWheel.Y));
         }
 
         #endregion

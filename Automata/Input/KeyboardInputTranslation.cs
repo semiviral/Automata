@@ -5,6 +5,6 @@ namespace Automata.Input
 {
     public class KeyboardInputTranslation : IComponent
     {
-        public Vector3 Input { get; set; }
+        public Vector3 Value { get; set; }
     }
 }

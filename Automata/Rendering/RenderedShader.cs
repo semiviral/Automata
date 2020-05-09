@@ -7,7 +7,7 @@ using Automata.Rendering.OpenGL;
 
 namespace Automata.Rendering
 {
-    public class RenderedShaderComponent : IComponent
+    public class RenderedShader : IComponent
     {
         public Shader Shader { get; set; }
     }

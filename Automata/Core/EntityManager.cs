@@ -232,6 +232,35 @@ namespace Automata.Core
             }
         }
 
+        public IEnumerable<(T1, T2, T3, T4)> GetComponents<T1, T2, T3, T4>()
+            where T1 : IComponent
+            where T2 : IComponent
+            where T3 : IComponent
+            where T4 : IComponent
+        {
+            if (!EntitiesByComponent.ContainsKey(typeof(T1)))
+            {
+                yield break;
+            }
+            else if (!EntitiesByComponent.ContainsKey(typeof(T2)))
+            {
+                yield break;
+            }
+            else if (!EntitiesByComponent.ContainsKey(typeof(T3)))
+            {
+                yield break;
+            }
+            else if (!EntitiesByComponent.ContainsKey(typeof(T4)))
+            {
+                yield break;
+            }
+
+            foreach (IEntity entity in GetEntitiesWithComponents<T1, T2, T3, T4>())
+            {
+                yield return (entity.GetComponent<T1>(), entity.GetComponent<T2>(), entity.GetComponent<T3>(), entity.GetComponent<T4>());
+            }
+        }
+
         public int GetComponentCount<T>() where T : IComponent => ComponentCountByType[typeof(T)];
 
         public int GetComponentCount(Type type)

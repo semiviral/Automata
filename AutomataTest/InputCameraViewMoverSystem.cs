@@ -1,10 +1,10 @@
-using System;
+#region
+
 using System.Numerics;
 using Automata.Core;
-using Automata.Input;
 using Automata.Rendering;
-using Serilog;
-using Silk.NET.Input.Common;
+
+#endregion
 
 namespace AutomataTest
 {
@@ -14,42 +14,27 @@ namespace AutomataTest
         {
             HandledComponentTypes = new[]
             {
-                typeof(CameraEntityComponent),
-                typeof(RenderedShaderComponent),
-                typeof(KeyboardInput)
+                typeof(Camera),
+                typeof(RenderedShader),
+                typeof(Translation),
+                typeof(Rotation)
             };
         }
 
         public override void Update(EntityManager entityManager, float deltaTime)
         {
-            foreach (IEntity entity in entityManager
-                .GetEntitiesWithComponents<CameraEntityComponent, RenderedShaderComponent, KeyboardInput, Translation>())
+            foreach ((Camera _, RenderedShader renderedShader, Translation translation, Rotation rotation) in entityManager
+                .GetComponents<Camera, RenderedShader, Translation, Rotation>())
             {
-                RenderedShaderComponent renderedShaderComponent = entity.GetComponent<RenderedShaderComponent>();
-                KeyboardInput keyboardInput = entity.GetComponent<KeyboardInput>();
-                Translation inputDirectionVectorComponent = entity.GetComponent<Translation>();
-
-                Vector3 modificationVector = Vector3.Zero;
-
-                if (keyboardInput.KeysDown.Contains(Key.D))
+                if (!translation.Changed)
                 {
-                    modificationVector.X = 1f;
+                    continue;
                 }
 
-                if (keyboardInput.KeysDown.Contains(Key.A))
-                {
-                    modificationVector.X = -1f;
-                }
-
-                if (modificationVector == Vector3.Zero)
-                {
-                    return;
-                }
-
-                inputDirectionVectorComponent.Position += (modificationVector * deltaTime *  10f);
-
-                const float radius = 3f;
-                //renderedShaderComponent.Shader.SetUniform("view", Matrix4x4.CreateLookAt(, Vector3.Zero, Vector3.UnitY));
+                renderedShader.Shader.SetUniform("view", Matrix4x4.CreateLookAt(translation.Position,
+                    Vector3.Transform(Vector3.UnitZ, rotation.Quaternion),
+                    Vector3.Transform(Vector3.UnitY, rotation.Quaternion)));
+                //Matrix4x4.CreateLookAt(new Vector3((float)Math.Sin(translation.Position.X * deltaTime), 0f, (float)Math.Cos(translation.Position.Z * deltaTime)), new Vector3(0f, 0f, 0f), new Vector3(0f, 1f, 0)));
             }
         }
     }

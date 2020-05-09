@@ -6,5 +6,5 @@ using Automata.Core;
 
 namespace AutomataTest
 {
-    public class CameraEntityComponent : ComponentTag { }
+    public class Camera : ComponentTag { }
 }

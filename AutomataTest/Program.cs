@@ -111,13 +111,12 @@ namespace AutomataTest
 
             world.SystemManager.RegisterSystem<ViewDoUpdateSystem>();
             world.SystemManager.RegisterSystem<ViewDoRenderSystem>(SystemManager.FINAL_SYSTEM_ORDER);
-            world.SystemManager.RegisterSystem<MeshCompositionSystem>();
-           // world.SystemManager.RegisterSystem<InputCameraViewMoverSystem>(SystemManager.INPUT_SYSTEM_ORDER);
+           world.SystemManager.RegisterSystem<InputCameraViewMoverSystem>(SystemManager.INPUT_SYSTEM_ORDER);
 
             Entity gameEntity = new Entity();
             world.EntityManager.RegisterEntity(gameEntity);
             world.EntityManager.RegisterComponent(gameEntity, new WindowViewComponent(_Window));
-            world.EntityManager.RegisterComponent(gameEntity, new UnregisteredInputContextComponent
+            world.EntityManager.RegisterComponent(gameEntity, new UnhandledInputContext
             {
                 InputContext = _Window.CreateInput()
             });
@@ -129,7 +128,8 @@ namespace AutomataTest
                 Indices = _indices
             });
             world.EntityManager.RegisterComponent(gameEntity, new Translation { Position = new Vector3(3f, 0f, 3f) });
-            world.EntityManager.RegisterComponent<CameraEntityComponent>(gameEntity);
+            world.EntityManager.RegisterComponent<Rotation>(gameEntity);
+            world.EntityManager.RegisterComponent<Camera>(gameEntity);
             world.EntityManager.RegisterComponent<KeyboardInputTranslation>(gameEntity);
 
             _Shader = new Shader("default.vert", "shader.frag");
@@ -137,7 +137,7 @@ namespace AutomataTest
             _Shader.SetUniform("projection", _Projection);
             _Shader.SetUniform("view", Matrix4x4.CreateLookAt(new Vector3(0f, 0f, 3f), Vector3.Zero, Vector3.UnitY));
 
-            world.EntityManager.RegisterComponent(gameEntity, new RenderedShaderComponent
+            world.EntityManager.RegisterComponent(gameEntity, new RenderedShader
             {
                 Shader = _Shader
             });

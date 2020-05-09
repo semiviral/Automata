@@ -2,7 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Numerics;
 
 #endregion
 
@@ -59,11 +59,13 @@ namespace Automata.Core
 
         public T GetComponent<T>() where T : IComponent
         {
-            Type typeT = typeof(T);
-
-            if (!_Components.TryGetValue(typeT, out IComponent? component) || (component == null))
+            if (!_Components.TryGetValue(typeof(T), out IComponent? component))
             {
-                throw new TypeLoadException(typeT.ToString());
+                throw new KeyNotFoundException(nameof(T));
+            }
+            else if (component == null)
+            {
+                throw new NullReferenceException(nameof(component));
             }
             else
             {
@@ -87,7 +89,7 @@ namespace Automata.Core
 
         public IComponent GetComponent(Type componentType)
         {
-            if (!(typeof(IComponent).IsAssignableFrom(componentType)))
+            if (!typeof(IComponent).IsAssignableFrom(componentType))
             {
                 throw new ArgumentException($"Type must be assignable from {nameof(IComponent)}.", nameof(componentType));
             }
@@ -97,7 +99,7 @@ namespace Automata.Core
             }
             else if (component == null)
             {
-                throw new NullReferenceException($"Returned component is null.");
+                throw new NullReferenceException("Returned component is null.");
             }
             else
             {

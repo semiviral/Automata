@@ -16,7 +16,7 @@ namespace Automata.Rendering
         {
             HandledComponentTypes = new[]
             {
-                typeof(RenderedShaderComponent),
+                typeof(RenderedShader),
                 typeof(RenderedMeshComponent)
             };
 
@@ -27,14 +27,14 @@ namespace Automata.Rendering
         {
             _GL.Clear((uint)ClearBufferMask.ColorBufferBit);
 
-            foreach (IEntity entity in entityManager.GetEntitiesWithComponents<RenderedShaderComponent, RenderedMeshComponent>())
+            foreach (IEntity entity in entityManager.GetEntitiesWithComponents<RenderedShader, RenderedMeshComponent>())
             {
-                RenderedShaderComponent renderedShaderComponent = entity.GetComponent<RenderedShaderComponent>();
+                RenderedShader renderedShader = entity.GetComponent<RenderedShader>();
                 RenderedMeshComponent renderedMeshComponent = entity.GetComponent<RenderedMeshComponent>();
 
-                if (renderedShaderComponent.Shader == null)
+                if (renderedShader.Shader == null)
                 {
-                    throw new NullReferenceException(nameof(renderedShaderComponent.Shader));
+                    throw new NullReferenceException(nameof(renderedShader.Shader));
                 }
                 else if (renderedMeshComponent.BufferObject == null)
                 {
@@ -46,7 +46,7 @@ namespace Automata.Rendering
                 }
 
                 renderedMeshComponent.VertexArrayObject.Bind();
-                renderedShaderComponent.Shader.Use();
+                renderedShader.Shader.Use();
 
                 _GL.DrawElements(PrimitiveType.Triangles, renderedMeshComponent.BufferObject.Length, DrawElementsType.UnsignedInt, null);
             }
@@ -63,7 +63,7 @@ namespace Automata.Rendering
                 renderedMeshComponent.VertexArrayObject?.Dispose();
             }
 
-            foreach (RenderedShaderComponent renderedShaderComponent in entityManager.GetComponents<RenderedShaderComponent>())
+            foreach (RenderedShader renderedShaderComponent in entityManager.GetComponents<RenderedShader>())
             {
                 renderedShaderComponent.Shader?.Dispose();
             }

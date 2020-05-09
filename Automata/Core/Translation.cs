@@ -1,10 +1,25 @@
-using System.Numerics;
-using Automata.Core;
+#region
 
-namespace Automata.Input
+using System.Numerics;
+
+#endregion
+
+namespace Automata.Core
 {
     public class Translation : IComponent
     {
-        public Vector3 Position { get; set; }
+        private Vector3 _Position;
+
+        public Vector3 Position
+        {
+            get => _Position;
+            set
+            {
+                _Position = value;
+                Changed = true;
+            }
+        }
+
+        public bool Changed { get; set; } = true;
     }
 }

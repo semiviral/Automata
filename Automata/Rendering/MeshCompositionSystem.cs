@@ -46,9 +46,9 @@ namespace Automata.Rendering
             foreach (IEntity entity in entities)
             {
                 // create a shader component if one doesn't exist on object
-                if (!entity.TryGetComponent(out RenderedShaderComponent _))
+                if (!entity.TryGetComponent(out RenderedShader _))
                 {
-                    entityManager.RegisterComponent(entity, new RenderedShaderComponent
+                    entityManager.RegisterComponent(entity, new RenderedShader
                     {
                         Shader = _DefaultShader
                     });

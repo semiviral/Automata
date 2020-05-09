@@ -1,5 +1,7 @@
 #region
 
+using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using Automata.Core;
 using Silk.NET.Input.Common;
@@ -14,16 +16,16 @@ namespace Automata.Input
         {
             HandledComponentTypes = new[]
             {
-                typeof(KeyboardInput),
-                typeof(KeyboardInputTranslation)
+                typeof(KeyboardInput)
             };
         }
 
         public override void Update(EntityManager entityManager, float deltaTime)
         {
-            foreach ((KeyboardInput keyboardInput, KeyboardInputTranslation inputTranslation) in
-                entityManager.GetComponents<KeyboardInput, KeyboardInputTranslation>())
+            List<IEntity> entities = entityManager.GetEntitiesWithComponents<KeyboardInput>().ToList();
+            foreach (IEntity entity in entities)
             {
+                KeyboardInput keyboardInput = entity.GetComponent<KeyboardInput>();
                 Vector3 inputTranslationValue = Vector3.Zero;
 
                 if (keyboardInput.KeysDown.Contains(Key.D))
@@ -46,7 +48,20 @@ namespace Automata.Input
                     inputTranslationValue.Z += -1f;
                 }
 
-                inputTranslation.Input = inputTranslationValue;
+                if (inputTranslationValue == Vector3.Zero)
+                {
+                    if (entity.TryGetComponent(out KeyboardInputTranslation _))
+                    {
+                        entityManager.RemoveComponent<KeyboardInputTranslation>(entity);
+                    }
+                }
+                else
+                {
+                    entityManager.RegisterComponent(entity, new KeyboardInputTranslation
+                    {
+                        Value = inputTranslationValue
+                    });
+                }
             }
         }
     }
