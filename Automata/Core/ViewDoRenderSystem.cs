@@ -1,7 +1,7 @@
 namespace Automata.Core
 {
     /// <summary>
-    ///     Runs the DoRender() method on all <see cref="WindowViewComponent" />.
+    ///     Runs the DoRender() method on all <see cref="WindowIViewProvider" />.
     /// </summary>
     public class ViewDoRenderSystem : ComponentSystem
     {
@@ -9,13 +9,13 @@ namespace Automata.Core
         {
             HandledComponentTypes = new[]
             {
-                typeof(WindowViewComponent)
+                typeof(WindowIViewProvider)
             };
         }
 
         public override void Update(EntityManager entityManager, float deltaTime)
         {
-            foreach (WindowViewComponent windowViewComponent in entityManager.GetComponents<WindowViewComponent>())
+            foreach (WindowIViewProvider windowViewComponent in entityManager.GetComponents<WindowIViewProvider>())
             {
                 if (windowViewComponent.View.IsClosing)
                 {

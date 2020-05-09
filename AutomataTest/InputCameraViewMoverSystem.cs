@@ -35,7 +35,7 @@ namespace AutomataTest
                 Matrix4x4 rotationMatrix = Matrix4x4.CreateFromQuaternion(rotation.Value);
                 Matrix4x4 finalMatrix = Matrix4x4.Multiply(translationMatrix, rotationMatrix);
 
-                //renderedShader.Shader.SetUniform("view", Matrix4x4.CreateWorld(translation.Value, forward, up));
+                //renderedShader.Shader.SetUniform("view", Matrix4x4.CreateWorld(translation.Normal, forward, up));
                 renderedShader.Shader.SetUniform("view", finalMatrix);
             }
         }

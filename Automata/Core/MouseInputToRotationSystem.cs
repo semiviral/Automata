@@ -27,7 +27,7 @@ namespace Automata.Core
                     continue;
                 }
 
-                Vector3 mouseInputValue3d = new Vector3(mouseInput.Value, 0f);
+                Vector3 mouseInputValue3d = new Vector3(mouseInput.Normal, 0f);
                 Quaternion axisAngleQuaternion = Quaternion.CreateFromAxisAngle(mouseInputValue3d, 10f);
                 Quaternion finalRotationPosition = Quaternion.Add(rotation.Value, axisAngleQuaternion);
 

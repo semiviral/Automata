@@ -1,5 +1,6 @@
 #region
 
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -16,6 +17,8 @@ namespace Automata.Input
     /// </summary>
     public class InputSystem : ComponentSystem
     {
+        private readonly HashSet<Guid> _ProcessedInputContextIDs;
+
         private readonly HashSet<Key> _KeysUp;
         private readonly HashSet<Key> _KeysDown;
 
@@ -25,12 +28,14 @@ namespace Automata.Input
 
         public InputSystem()
         {
+            _ProcessedInputContextIDs = new HashSet<Guid>();
+
             _KeysUp = new HashSet<Key>();
             _KeysDown = new HashSet<Key>();
 
             HandledComponentTypes = new[]
             {
-                typeof(UnhandledInputContext),
+                typeof(InputContextProvider),
                 typeof(KeyboardInput),
                 typeof(MouseInput)
             };
@@ -38,23 +43,16 @@ namespace Automata.Input
 
         public override void Update(EntityManager entityManager, float deltaTime)
         {
-            List<IEntity> registeredInputContextEntities = entityManager.GetEntitiesWithComponents<UnhandledInputContext>().ToList();
-
-            foreach (IEntity entity in registeredInputContextEntities)
+            foreach (InputContextProvider inputContextProvider in entityManager.GetComponents<InputContextProvider>())
             {
-                if (entity == null)
+                if (_ProcessedInputContextIDs.Contains(inputContextProvider.InputContextID) || inputContextProvider.InputContext == null)
                 {
                     continue;
                 }
 
-                UnhandledInputContext unhandledInputContext = entity.GetComponent<UnhandledInputContext>();
-
-                if (unhandledInputContext.InputContext != null)
-                {
-                    RegisterInputContext(unhandledInputContext.InputContext);
-                }
-
-                entityManager.RemoveComponent<UnhandledInputContext>(entity);
+                RegisterInputContext(inputContextProvider.InputContext);
+                
+                _ProcessedInputContextIDs.Add(inputContextProvider.InputContextID);
             }
 
             if ((_KeysUp.Count > 0) || (_KeysDown.Count > 0))
@@ -73,7 +71,7 @@ namespace Automata.Input
             {
                 foreach (MouseInput mouseInput in entityManager.GetComponents<MouseInput>())
                 {
-                    mouseInput.Value = _MousePositionOffset;
+                    mouseInput.Absolute = _MousePositionOffset;
                 }
 
                 _MousePositionChanged = false;
@@ -139,7 +137,7 @@ namespace Automata.Input
 
         private void OnMouseMoved(IMouse mouse, PointF point)
         {
-            Vector2 newMousePosition = new Vector2(-point.X, point.Y);
+            Vector2 newMousePosition = new Vector2(point.X, point.Y);
             _MousePositionOffset = Vector2.Clamp(_LastMousePosition - newMousePosition, new Vector2(-1f), Vector2.One);
             _LastMousePosition = newMousePosition;
             _MousePositionChanged = true;

@@ -9,18 +9,20 @@ namespace Automata.Input
 {
     public class MouseInput : IComponent
     {
-        private Vector2 _Value;
+        private Vector2 _Absolute;
 
-        public Vector2 Value
+        public Vector2 Absolute
         {
-            get => _Value;
+            get => _Absolute;
             set
             {
-                _Value = value;
+                _Absolute = value;
+                Normal = Vector2.Clamp(_Absolute, new Vector2(1f), Vector2.One);
                 Changed = true;
             }
         }
 
+        public Vector2 Normal { get; private set; }
         public bool Changed { get; set; }
     }
 }

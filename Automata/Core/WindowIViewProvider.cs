@@ -10,10 +10,10 @@ namespace Automata.Core
     ///     Used to expose an <see cref="IView" /> to the <see cref="SystemManager" />, usually to run DoUpdate() and
     ///     DoRender().
     /// </summary>
-    public class WindowViewComponent : IComponent
+    public class WindowIViewProvider : IComponent
     {
         public IView View { get; }
 
-        public WindowViewComponent(IView view) => View = view;
+        public WindowIViewProvider(IView view) => View = view;
     }
 }

@@ -3,6 +3,7 @@
 using System;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Numerics;
 using Automata;
 using Automata.Core;
@@ -12,6 +13,7 @@ using Automata.Rendering.OpenGL;
 using Serilog;
 using Silk.NET.GLFW;
 using Silk.NET.Input;
+using Silk.NET.Input.Common;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using Silk.NET.Windowing.Common;
@@ -91,6 +93,9 @@ namespace AutomataTest
 
             _Window.VSync = VSyncMode.Off;
 
+            IInputContext inputContext = _Window.CreateInput();
+            IMouse mouse = inputContext.Mice[0];
+
             while (!_Window.IsClosing)
             {
                 _Window.DoEvents();
@@ -99,6 +104,8 @@ namespace AutomataTest
                 {
                     World.GlobalUpdate();
                 }
+
+                mouse.Position = new PointF(_Window.Size.Width / 2f, _Window.Size.Height / 2f);
             }
         }
 
@@ -113,8 +120,8 @@ namespace AutomataTest
 
             Entity gameEntity = new Entity();
             world.EntityManager.RegisterEntity(gameEntity);
-            world.EntityManager.RegisterComponent(gameEntity, new WindowViewComponent(_Window));
-            world.EntityManager.RegisterComponent(gameEntity, new UnhandledInputContext
+            world.EntityManager.RegisterComponent(gameEntity, new WindowIViewProvider(_Window));
+            world.EntityManager.RegisterComponent(gameEntity, new InputContextProvider
             {
                 InputContext = _Window.CreateInput()
             });
