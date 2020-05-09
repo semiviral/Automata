@@ -1,5 +1,9 @@
+#region
+
 using System.Numerics;
 using Automata.Core;
+
+#endregion
 
 namespace Automata.Input
 {

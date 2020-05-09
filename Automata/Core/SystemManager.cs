@@ -95,7 +95,8 @@ namespace Automata.Core
             if (_SystemsByType.ContainsKey(typeof(T)))
             {
                 throw new Exception("System type already instantiated.");
-            } else if (order == int.MaxValue)
+            }
+            else if (order == int.MaxValue)
             {
                 throw new ArgumentException($"Parameter must be less than {int.MaxValue}.", nameof(order));
             }

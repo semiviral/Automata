@@ -50,8 +50,6 @@ namespace Automata.Rendering
 
                 _GL.DrawElements(PrimitiveType.Triangles, renderedMeshComponent.BufferObject.Length, DrawElementsType.UnsignedInt, null);
             }
-
-
         }
 
         public override void Destroy(EntityManager entityManager)
