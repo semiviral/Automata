@@ -13,7 +13,7 @@ namespace Automata.Core
         ///     If the types aren't present in the <see cref="EntityManager" />, the system's <see cref="Update" /> will be
         ///     skipped.
         /// </summary>
-        public Type[] UtilizedComponentTypes { get; protected set; } = new Type[0];
+        public Type[] HandledComponentTypes { get; protected set; } = new Type[0];
 
         /// <summary>
         ///     Method called when the <see cref="SystemManager" /> registers the system.
@@ -24,7 +24,7 @@ namespace Automata.Core
         ///     Method called once per frame.
         /// </summary>
         /// <remarks>
-        ///     If none of the types in <see cref="UtilizedComponentTypes" /> are active in the <see cref="EntityManager" />, this
+        ///     If none of the types in <see cref="HandledComponentTypes" /> are active in the <see cref="EntityManager" />, this
         ///     method is skipped.
         /// </remarks>
         public virtual void Update(EntityManager entityManager, float deltaTime) { }

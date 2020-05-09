@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using Automata.Exceptions;
 using Serilog;
 
@@ -40,6 +39,16 @@ namespace Automata.Core
             }
 
             Entities.Add(entity.ID, entity);
+
+            foreach (Type type in entity.ComponentTypes)
+            {
+                if (!typeof(IComponent).IsAssignableFrom(type))
+                {
+                    throw new TypeLoadException($"Component types must be assignable from {nameof(IComponent)}.");
+                }
+
+                RegisterComponent(entity, entity.GetComponent(type));
+            }
 
             Log.Verbose($"{nameof(EntityManager)} registered new {nameof(IEntity)} '{entity.ID}' (#{Entities.Count}).");
         }
@@ -121,12 +130,8 @@ namespace Automata.Core
         ///     any
         ///     additions or subtractions from the collection will throw a collection modified exception.
         /// </remarks>
-        public IEnumerable<IEntity> GetEntitiesWithComponents<T1>() where T1 : IComponent
-        {
-            Type typeT = typeof(T1);
-
-            return !EntitiesByComponent.ContainsKey(typeT) ? Enumerable.Empty<IEntity>() : EntitiesByComponent[typeT];
-        }
+        public IEnumerable<IEntity> GetEntitiesWithComponents<T1>() where T1 : IComponent =>
+            !EntitiesByComponent.ContainsKey(typeof(T1)) ? Enumerable.Empty<IEntity>() : EntitiesByComponent[typeof(T1)];
 
 
         public IEnumerable<IEntity> GetEntitiesWithComponents<T1, T2>()
@@ -166,20 +171,65 @@ namespace Automata.Core
         }
 
         /// <summary>
-        ///     Returns all instances of components of type <see cref="T" />
+        ///     Returns all instances of components of type <see cref="T1" />
         /// </summary>
-        /// <typeparam name="T">Type of <see cref="IComponent" /> to return.</typeparam>
-        /// <returns><see cref="IEnumerable{T}" /> of all instances of <see cref="IComponent" /> type <see cref="T" />.</returns>
-        public IEnumerable<T> GetComponents<T>() where T : IComponent
+        /// <typeparam name="T1">Type of <see cref="IComponent" /> to return.</typeparam>
+        /// <returns><see cref="IEnumerable{T}" /> of all instances of <see cref="IComponent" /> type <see cref="T1" />.</returns>
+        public IEnumerable<T1> GetComponents<T1>()
+            where T1 : IComponent
         {
-            Type typeT = typeof(T);
-
-            if (!EntitiesByComponent.ContainsKey(typeT))
+            if (!EntitiesByComponent.ContainsKey(typeof(T1)))
             {
-                return Enumerable.Empty<T>();
+                yield break;
             }
 
-            return EntitiesByComponent[typeT].Select(entity => entity.GetComponent<T>());
+            foreach (IEntity entity in EntitiesByComponent[typeof(T1)])
+            {
+                yield return entity.GetComponent<T1>();
+            }
+        }
+
+        public IEnumerable<(T1, T2)> GetComponents<T1, T2>()
+            where T1 : IComponent
+            where T2 : IComponent
+        {
+            if (!EntitiesByComponent.ContainsKey(typeof(T1)))
+            {
+                yield break;
+            }
+            else if (!EntitiesByComponent.ContainsKey(typeof(T2)))
+            {
+                yield break;
+            }
+
+            foreach (IEntity entity in GetEntitiesWithComponents<T1, T2>())
+            {
+                yield return (entity.GetComponent<T1>(), entity.GetComponent<T2>());
+            }
+        }
+
+        public IEnumerable<(T1, T2, T3)> GetComponents<T1, T2, T3>()
+            where T1 : IComponent
+            where T2 : IComponent
+            where T3 : IComponent
+        {
+            if (!EntitiesByComponent.ContainsKey(typeof(T1)))
+            {
+                yield break;
+            }
+            else if (!EntitiesByComponent.ContainsKey(typeof(T2)))
+            {
+                yield break;
+            }
+            else if (!EntitiesByComponent.ContainsKey(typeof(T3)))
+            {
+                yield break;
+            }
+
+            foreach (IEntity entity in GetEntitiesWithComponents<T1, T2, T3>())
+            {
+                yield return (entity.GetComponent<T1>(), entity.GetComponent<T2>(), entity.GetComponent<T3>());
+            }
         }
 
         public int GetComponentCount<T>() where T : IComponent => ComponentCountByType[typeof(T)];

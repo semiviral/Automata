@@ -12,7 +12,7 @@ namespace Automata.Test
     {
         public override void Update(EntityManager entityManager, float deltaTime)
         {
-            foreach (KeyboardInputComponent inputComponent in entityManager.GetComponents<KeyboardInputComponent>())
+            foreach (KeyboardInput inputComponent in entityManager.GetComponents<KeyboardInput>())
             {
                 if (inputComponent.KeysDown.Count == 0)
                 {

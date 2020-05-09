@@ -71,9 +71,9 @@ namespace Automata.Core
                 //     system.IsEnabled = true;
                 // }
 
-                if ((system.UtilizedComponentTypes != null)
-                    && (system.UtilizedComponentTypes.Length > 0)
-                    && system.UtilizedComponentTypes.Any(type => entityManager.GetComponentCount(type) <= 0))
+                if ((system.HandledComponentTypes != null)
+                    && (system.HandledComponentTypes.Length > 0)
+                    && system.HandledComponentTypes.Any(type => entityManager.GetComponentCount(type) <= 0))
                 {
                     continue;
                 }
@@ -127,12 +127,12 @@ namespace Automata.Core
 
             T componentSystem = Activator.CreateInstance<T>();
 
-            foreach (Type type in componentSystem.UtilizedComponentTypes)
+            foreach (Type type in componentSystem.HandledComponentTypes)
             {
                 if (!typeof(IComponent).IsAssignableFrom(type))
                 {
                     throw new TypeLoadException(
-                        $"A given type in '{nameof(componentSystem.UtilizedComponentTypes)}' does not inherit '{nameof(IComponent)}' ({componentSystem.GetType()}: {type}).");
+                        $"A given type in '{nameof(componentSystem.HandledComponentTypes)}' does not inherit '{nameof(IComponent)}' ({componentSystem.GetType()}: {type}).");
                 }
             }
 

@@ -30,7 +30,7 @@ namespace Automata.Rendering
 
         public MeshCompositionSystem()
         {
-            UtilizedComponentTypes = new[]
+            HandledComponentTypes = new[]
             {
                 typeof(PendingMeshDataComponent)
             };

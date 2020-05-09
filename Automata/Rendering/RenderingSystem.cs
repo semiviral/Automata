@@ -14,7 +14,7 @@ namespace Automata.Rendering
 
         public RenderingSystem()
         {
-            UtilizedComponentTypes = new[]
+            HandledComponentTypes = new[]
             {
                 typeof(RenderedShaderComponent),
                 typeof(RenderedMeshComponent)

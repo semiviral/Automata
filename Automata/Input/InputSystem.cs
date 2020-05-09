@@ -24,10 +24,10 @@ namespace Automata.Input
             _KeysUp = new HashSet<Key>();
             _KeysDown = new HashSet<Key>();
 
-            UtilizedComponentTypes = new[]
+            HandledComponentTypes = new[]
             {
                 typeof(UnregisteredInputContextComponent),
-                typeof(KeyboardInputComponent)
+                typeof(KeyboardInput)
             };
         }
 
@@ -54,7 +54,7 @@ namespace Automata.Input
                 return;
             }
 
-            foreach (KeyboardInputComponent inputComponent in entityManager.GetComponents<KeyboardInputComponent>())
+            foreach (KeyboardInput inputComponent in entityManager.GetComponents<KeyboardInput>())
             {
                 inputComponent.KeysUp.Clear();
                 inputComponent.KeysDown.Clear();

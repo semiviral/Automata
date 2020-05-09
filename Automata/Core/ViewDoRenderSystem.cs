@@ -7,7 +7,7 @@ namespace Automata.Core
     {
         public ViewDoRenderSystem()
         {
-            UtilizedComponentTypes = new[]
+            HandledComponentTypes = new[]
             {
                 typeof(WindowViewComponent)
             };

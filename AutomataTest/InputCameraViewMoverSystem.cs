@@ -12,31 +12,31 @@ namespace AutomataTest
     {
         public InputCameraViewMoverSystem()
         {
-            UtilizedComponentTypes = new[]
+            HandledComponentTypes = new[]
             {
                 typeof(CameraEntityComponent),
                 typeof(RenderedShaderComponent),
-                typeof(KeyboardInputComponent)
+                typeof(KeyboardInput)
             };
         }
 
         public override void Update(EntityManager entityManager, float deltaTime)
         {
             foreach (IEntity entity in entityManager
-                .GetEntitiesWithComponents<CameraEntityComponent, RenderedShaderComponent, KeyboardInputComponent, Translation>())
+                .GetEntitiesWithComponents<CameraEntityComponent, RenderedShaderComponent, KeyboardInput, Translation>())
             {
                 RenderedShaderComponent renderedShaderComponent = entity.GetComponent<RenderedShaderComponent>();
-                KeyboardInputComponent keyboardInputComponent = entity.GetComponent<KeyboardInputComponent>();
+                KeyboardInput keyboardInput = entity.GetComponent<KeyboardInput>();
                 Translation inputDirectionVectorComponent = entity.GetComponent<Translation>();
 
                 Vector3 modificationVector = Vector3.Zero;
 
-                if (keyboardInputComponent.KeysDown.Contains(Key.D))
+                if (keyboardInput.KeysDown.Contains(Key.D))
                 {
                     modificationVector.X = 1f;
                 }
 
-                if (keyboardInputComponent.KeysDown.Contains(Key.A))
+                if (keyboardInput.KeysDown.Contains(Key.A))
                 {
                     modificationVector.X = -1f;
                 }
@@ -49,7 +49,7 @@ namespace AutomataTest
                 inputDirectionVectorComponent.Position += (modificationVector * deltaTime *  10f);
 
                 const float radius = 3f;
-                renderedShaderComponent.Shader.SetUniform("view", Matrix4x4.CreateLookAt(, Vector3.Zero, Vector3.UnitY));
+                //renderedShaderComponent.Shader.SetUniform("view", Matrix4x4.CreateLookAt(, Vector3.Zero, Vector3.UnitY));
             }
         }
     }

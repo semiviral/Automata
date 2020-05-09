@@ -8,7 +8,7 @@ using Silk.NET.Input.Common;
 
 namespace Automata.Input
 {
-    public class KeyboardInputComponent : IComponent
+    public class KeyboardInput : IComponent
     {
         public HashSet<Key> KeysUp { get; } = new HashSet<Key>();
         public HashSet<Key> KeysDown { get; } = new HashSet<Key>();
