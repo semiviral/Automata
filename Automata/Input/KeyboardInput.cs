@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using Automata.Core;
+using Automata.Core.Components;
 using Silk.NET.Input.Common;
 
 #endregion

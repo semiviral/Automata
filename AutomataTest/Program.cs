@@ -7,6 +7,8 @@ using System.Linq;
 using System.Numerics;
 using Automata;
 using Automata.Core;
+using Automata.Core.Components;
+using Automata.Core.Systems;
 using Automata.Input;
 using Automata.Rendering;
 using Automata.Rendering.OpenGL;
@@ -121,25 +123,13 @@ namespace AutomataTest
             Entity gameEntity = new Entity();
             world.EntityManager.RegisterEntity(gameEntity);
             world.EntityManager.RegisterComponent(gameEntity, new WindowIViewProvider(_Window));
-            world.EntityManager.RegisterComponent(gameEntity, new InputContextProvider
-            {
-                InputContext = _Window.CreateInput()
-            });
-            world.EntityManager.RegisterComponent<KeyboardInput>(gameEntity);
-            world.EntityManager.RegisterComponent<MouseInput>(gameEntity);
+            world.EntityManager.RegisterComponent(gameEntity, new InputContextProvider(_Window.CreateInput()));
             world.EntityManager.RegisterComponent(gameEntity, new PendingMeshDataComponent
             {
                 Vertices = _vertices,
                 Colors = _colors,
                 Indices = _indices
             });
-            world.EntityManager.RegisterComponent(gameEntity, new Translation
-            {
-                Value = new Vector3(0f, 0f, -1f)
-            });
-            world.EntityManager.RegisterComponent<Rotation>(gameEntity);
-            world.EntityManager.RegisterComponent<Camera>(gameEntity);
-            world.EntityManager.RegisterComponent<KeyboardInputTranslation>(gameEntity);
 
             _Shader = new Shader("default.vert", "shader.frag");
             _Shader.SetUniform("model", Matrix4x4.Identity);
@@ -150,6 +140,20 @@ namespace AutomataTest
             {
                 Shader = _Shader
             });
+
+            Entity playerEntity = new Entity();
+            world.EntityManager.RegisterEntity(playerEntity);
+            world.EntityManager.RegisterComponent<KeyboardInput>(playerEntity);
+            world.EntityManager.RegisterComponent<MouseInput>(playerEntity);
+            world.EntityManager.RegisterComponent(playerEntity, new Translation
+            {
+                Value = new Vector3(0f, 0f, -1f)
+            });
+            world.EntityManager.RegisterComponent<Rotation>(playerEntity);
+            world.EntityManager.RegisterComponent<Camera>(playerEntity);
+            world.EntityManager.RegisterComponent<KeyboardInputTranslation>(playerEntity);
+
+
         }
 
         private static Matrix4x4 _View;

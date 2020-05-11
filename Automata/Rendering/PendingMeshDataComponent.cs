@@ -2,6 +2,7 @@
 
 using System.Numerics;
 using Automata.Core;
+using Automata.Core.Components;
 
 #endregion
 

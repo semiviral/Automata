@@ -4,7 +4,7 @@ using System;
 
 #endregion
 
-namespace Automata.Core
+namespace Automata.Core.Systems
 {
     public abstract class ComponentSystem
     {

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Automata.Core.Components;
 using Automata.Exceptions;
 using Serilog;
 

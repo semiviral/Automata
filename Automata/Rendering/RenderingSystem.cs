@@ -2,6 +2,7 @@
 
 using System;
 using Automata.Core;
+using Automata.Core.Systems;
 using Silk.NET.OpenGL;
 
 #endregion

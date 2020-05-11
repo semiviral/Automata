@@ -2,6 +2,7 @@
 
 using System.Linq;
 using Automata.Core;
+using Automata.Core.Systems;
 
 #endregion
 

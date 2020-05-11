@@ -3,12 +3,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Automata.Core.Components;
 
 // ReSharper disable MemberCanBePrivate.Global
 
 #endregion
 
-namespace Automata.Core
+namespace Automata.Core.Systems
 {
     public class SystemManager
     {
@@ -36,7 +37,7 @@ namespace Automata.Core
         /// <summary>
         ///     Order used for composing meshes.
         /// </summary>
-        public const int MESH_COMPOSITION_SYSTEM_ORDER = 99000;
+        public const int MESH_COMPOSITION_SYSTEM_ORDER = 990000;
 
         /// <summary>
         ///     Order used for rendering operations.
@@ -44,7 +45,7 @@ namespace Automata.Core
         /// <remarks>
         ///     This is also the order that any IView.DoRender() will be called.
         /// </remarks>
-        public const int RENDER_SYSTEM_ORDER = 100000;
+        public const int RENDER_SYSTEM_ORDER = 1000000;
 
         /// <summary>
         ///     Final order that will be executed on each frame.

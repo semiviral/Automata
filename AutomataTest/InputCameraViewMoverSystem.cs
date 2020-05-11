@@ -2,6 +2,8 @@
 
 using System.Numerics;
 using Automata.Core;
+using Automata.Core.Components;
+using Automata.Core.Systems;
 using Automata.Rendering;
 
 #endregion
@@ -23,8 +25,8 @@ namespace AutomataTest
 
         public override void Update(EntityManager entityManager, float deltaTime)
         {
-            foreach ((Camera _, RenderedShader renderedShader, Translation translation, Rotation rotation) in entityManager
-                .GetComponents<Camera, RenderedShader, Translation, Rotation>())
+            foreach (RenderedShader renderedShader in entityManager.GetComponents<RenderedShader>())
+            foreach ((Camera _, Translation translation, Rotation rotation) in entityManager.GetComponents<Camera, Translation, Rotation>())
             {
                 if (!translation.Changed && !rotation.Changed)
                 {

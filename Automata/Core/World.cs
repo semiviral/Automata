@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using Automata.Core.Systems;
 using Serilog;
 
 #endregion
@@ -17,13 +19,13 @@ namespace Automata.Core
 
         public static void RegisterWorld(string name, World world)
         {
-            if (Worlds.ContainsKey(name))
-            {
-                throw new ArgumentException(name);
-            }
-            else if (world == null)
+            if (world == null)
             {
                 throw new NullReferenceException(nameof(world));
+            }
+            else if (Worlds.ContainsKey(name))
+            {
+                throw new ArgumentException(name);
             }
 
             Worlds.Add(name, world);
@@ -35,12 +37,9 @@ namespace Automata.Core
 
         public static void GlobalUpdate()
         {
-            foreach ((string _, World world) in Worlds)
+            foreach ((string _, World world) in Worlds.Where(kvp => kvp.Value.Active))
             {
-                if (!world.Active)
-                {
-                    continue;
-                }
+                Debug.Assert(world.Active, "World must be active to update.");
 
                 world.Update();
             }

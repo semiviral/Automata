@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Numerics;
 using Automata.Core;
+using Automata.Core.Systems;
 using Silk.NET.Input.Common;
 
 #endregion
@@ -51,7 +52,7 @@ namespace Automata.Input
                 }
 
                 RegisterInputContext(inputContextProvider.InputContext);
-                
+
                 _ProcessedInputContextIDs.Add(inputContextProvider.InputContextID);
             }
 

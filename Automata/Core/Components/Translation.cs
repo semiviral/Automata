@@ -4,7 +4,7 @@ using System.Numerics;
 
 #endregion
 
-namespace Automata.Core
+namespace Automata.Core.Components
 {
     public class Translation : IComponent
     {

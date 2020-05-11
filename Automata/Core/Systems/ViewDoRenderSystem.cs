@@ -1,11 +1,13 @@
-namespace Automata.Core
+using Automata.Core.Components;
+
+namespace Automata.Core.Systems
 {
     /// <summary>
-    ///     Runs the DoUpdate() method on all <see cref="WindowIViewProvider" />.
+    ///     Runs the DoRender() method on all <see cref="WindowIViewProvider" />.
     /// </summary>
-    public class ViewDoUpdateSystem : ComponentSystem
+    public class ViewDoRenderSystem : ComponentSystem
     {
-        public ViewDoUpdateSystem()
+        public ViewDoRenderSystem()
         {
             HandledComponentTypes = new[]
             {
@@ -22,8 +24,7 @@ namespace Automata.Core
                     continue;
                 }
 
-                windowViewComponent.View.DoEvents();
-                windowViewComponent.View.DoUpdate();
+                windowViewComponent.View.DoRender();
             }
         }
     }

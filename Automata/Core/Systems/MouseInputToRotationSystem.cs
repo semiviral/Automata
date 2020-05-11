@@ -1,11 +1,12 @@
 #region
 
 using System.Numerics;
+using Automata.Core.Components;
 using Automata.Input;
 
 #endregion
 
-namespace Automata.Core
+namespace Automata.Core.Systems
 {
     public class MouseInputToRotationSystem : ComponentSystem
     {

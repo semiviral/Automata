@@ -1,4 +1,6 @@
-namespace Automata.Core
+using Automata.Core.Components;
+
+namespace Automata.Core.Systems
 {
     public class TranslationChangedCleanupSystem : ComponentSystem
     {
