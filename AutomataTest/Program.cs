@@ -114,9 +114,9 @@ namespace AutomataTest
             InputSingleton inputSingleton = new InputSingleton(_Window);
 
             World world = new GameWorld(true);
-            world.SystemManager.RegisterSystem<ViewDoUpdateSystem>();
-            world.SystemManager.RegisterSystem<ViewDoRenderSystem>(SystemManager.FINAL_SYSTEM_ORDER);
-            world.SystemManager.RegisterSystem<InputCameraViewMoverSystem>(SystemManager.INPUT_SYSTEM_ORDER);
+            world.SystemManager.RegisterSystem<ViewDoUpdateSystem, DefaultOrderSystem>();
+            world.SystemManager.RegisterSystem<ViewDoRenderSystem, LastOrderSystem>();
+            world.SystemManager.RegisterSystem<InputCameraViewMoverSystem, RenderOrderSystem>();
             World.RegisterWorld("core", world);
 
             Entity gameEntity = new Entity();

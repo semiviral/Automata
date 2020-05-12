@@ -109,11 +109,9 @@ namespace Automata.Core
         /// </remarks>
         public void RemoveComponent<T>(IEntity entity) where T : IComponent
         {
-            Type typeT = typeof(T);
-
             if (entity.TryRemoveComponent<T>())
             {
-                EntitiesByComponent[typeT].Remove(entity);
+                EntitiesByComponent[typeof(T)].Remove(entity);
             }
         }
 
