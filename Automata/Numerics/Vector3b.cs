@@ -3,8 +3,6 @@
 using System;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
-using System.Threading;
-using Silk.NET.Input.Common;
 
 // ReSharper disable NotAccessedField.Local
 // ReSharper disable UnusedMember.Global

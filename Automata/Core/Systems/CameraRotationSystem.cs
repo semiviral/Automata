@@ -26,7 +26,7 @@ namespace Automata.Core.Systems
         {
             foreach ((Camera _, Rotation rotation) in entityManager.GetComponents<Camera, Rotation>())
             {
-                Vector2 offset = InputSingleton.Instance.ViewCenter - InputSingleton.Instance.GetMousePosition(0);
+                Vector2 offset = Input.Instance.ViewCenter - Input.Instance.GetMousePosition(0);
 
                 if (offset == _LastFrameMouseOffset)
                 {

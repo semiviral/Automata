@@ -1,8 +1,6 @@
 #region
 
-using System;
-using System.Runtime.Intrinsics;
-using System.Runtime.Intrinsics.X86;
+
 
 // ReSharper disable InconsistentNaming
 // ReSharper disable UnusedMember.Global

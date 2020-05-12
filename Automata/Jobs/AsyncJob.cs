@@ -22,7 +22,7 @@ namespace Automata.Jobs
         /// <summary>
         ///     Token that can be passed into constructor to allow jobs to observe cancellation.
         /// </summary>
-        public CancellationToken CancellationToken { get; }
+        public CancellationToken CancellationToken { get; protected set; }
 
         /// <summary>
         ///     Thread-safe determination of execution status.
@@ -63,7 +63,7 @@ namespace Automata.Jobs
         /// <summary>
         ///     Begins executing the <see cref="AsyncJob" />.
         /// </summary>
-        public async Task Execute()
+        internal async Task Execute()
         {
             try
             {

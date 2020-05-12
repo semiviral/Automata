@@ -111,7 +111,7 @@ namespace AutomataTest
 
         private static void Initialize()
         {
-            InputSingleton inputSingleton = new InputSingleton(_Window);
+            Input input = new Input(_Window);
 
             World world = new GameWorld(true);
             world.SystemManager.RegisterSystem<ViewDoUpdateSystem, DefaultOrderSystem>();

@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
-using Automata.Numerics;
 using Silk.NET.Input;
 using Silk.NET.Input.Common;
 using Silk.NET.Windowing.Common;
@@ -22,7 +21,7 @@ namespace Automata
 
     public delegate void MouseScrolledEventHandler(IMouse mouse, Vector2 scrollPosition);
 
-    public sealed class InputSingleton : Singleton<InputSingleton>
+    public sealed class Input : Singleton<Input>
     {
         private readonly IView _View;
         private readonly IInputContext _InputContext;
@@ -32,7 +31,7 @@ namespace Automata
 
         public Vector2 ViewCenter { get; private set; }
 
-        public InputSingleton(IView view)
+        public Input(IView view)
         {
             AssignSingletonInstance(this);
 

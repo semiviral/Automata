@@ -1,56 +1,54 @@
 #region
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+
+// ReSharper disable UnusedMember.Global
+// ReSharper disable MemberCanBePrivate.Global
 
 #endregion
 
 namespace Automata.Jobs
 {
+    public delegate Task AsyncInvocation();
+
     public static class AsyncJobScheduler
     {
-        private static readonly CancellationTokenSource _abortTokenSource;
-        private static readonly SemaphoreSlim _workerSemaphore;
+        private static readonly CancellationTokenSource _AbortTokenSource;
+        private static readonly SemaphoreSlim _WorkerSemaphore;
+        private static long _MaximumProcessingJobs;
         private static long _QueuedJobs;
         private static long _ProcessingJobs;
 
-        public static CancellationToken AbortToken => _abortTokenSource.Token;
+        public static CancellationToken AbortToken => _AbortTokenSource.Token;
         public static long QueuedJobs => Interlocked.Read(ref _QueuedJobs);
         public static long ProcessingJobs => Interlocked.Read(ref _ProcessingJobs);
 
-        public static int MaximumProcessingJobs { get; }
+        public static long MaximumProcessingJobs
+        {
+            get => Interlocked.Read(ref _MaximumProcessingJobs);
+            set => Interlocked.Exchange(ref _MaximumProcessingJobs, value);
+        }
 
         /// <summary>
         ///     Initializes a new instance of <see cref="AsyncJobScheduler" /> class.
         /// </summary>
         static AsyncJobScheduler()
         {
-            _abortTokenSource = new CancellationTokenSource();
+            _AbortTokenSource = new CancellationTokenSource();
 
-            MaximumProcessingJobs = Environment.ProcessorCount - 2;
-
-            JobQueued += (sender, args) =>
-            {
-                Interlocked.Increment(ref _QueuedJobs);
-
-                return Task.CompletedTask;
-            };
+            JobQueued += (sender, args) => { Interlocked.Increment(ref _QueuedJobs); };
             JobStarted += (sender, args) =>
             {
                 Interlocked.Decrement(ref _QueuedJobs);
                 Interlocked.Increment(ref _ProcessingJobs);
-
-                return Task.CompletedTask;
             };
-            JobFinished += (sender, args) =>
-            {
-                Interlocked.Decrement(ref _ProcessingJobs);
+            JobFinished += (sender, args) => { Interlocked.Decrement(ref _ProcessingJobs); };
 
-                return Task.CompletedTask;
-            };
-
-            _workerSemaphore = new SemaphoreSlim(MaximumProcessingJobs);
+            MaximumProcessingJobs = Environment.ProcessorCount - 2;
+            _WorkerSemaphore = new SemaphoreSlim((int)MaximumProcessingJobs, (int)MaximumProcessingJobs);
         }
 
 
@@ -63,10 +61,17 @@ namespace Automata.Jobs
         {
             if (abort)
             {
-                _abortTokenSource.Cancel();
+                _AbortTokenSource.Cancel();
             }
         }
 
+        /// <summary>
+        ///     Queues given <see cref="AsyncInvocation" /> for execution by <see cref="AsyncJobScheduler" />.
+        /// </summary>
+        /// <param name="asyncJob"><see cref="AsyncJob" /> to execute.</param>
+        /// <remarks>
+        ///     For performance reasons, the internal execution method utilizes ConfigureAwait(false).
+        /// </remarks>
         public static void QueueAsyncJob(AsyncJob asyncJob)
         {
             if (AbortToken.IsCancellationRequested)
@@ -74,32 +79,84 @@ namespace Automata.Jobs
                 return;
             }
 
-            OnJobQueued(new AsyncJobEventArgs(asyncJob));
+            OnJobQueued(asyncJob);
 
             Task.Run(() => ExecuteJob(asyncJob));
         }
+
+        /// <summary>
+        ///     Queues given <see cref="AsyncInvocation" /> for execution by <see cref="AsyncJobScheduler" />.
+        /// </summary>
+        /// <param name="asyncInvocation"><see cref="AsyncInvocation" /> to invoke.</param>
+        /// <remarks>
+        ///     For performance reasons, the internal execution method utilizes ConfigureAwait(false).
+        /// </remarks>
+        public static void QueueAsyncInvocation(AsyncInvocation asyncInvocation)
+        {
+            if (AbortToken.IsCancellationRequested)
+            {
+                return;
+            }
+            else if (asyncInvocation == null)
+            {
+                throw new NullReferenceException(nameof(asyncInvocation));
+            }
+
+            Task.Run(() => ExecuteInvocation(asyncInvocation));
+        }
+
+        /// <summary>
+        ///     Waits asynchronously until work is ready to be done.
+        /// </summary>
+        public static async Task WaitAsync() => await _WorkerSemaphore.WaitAsync();
+
+        /// <summary>
+        ///     Waits asynchronously until work is ready to be done, or until timeout is reached..
+        /// </summary>
+        /// <param name="timeout"><see cref="TimeSpan" /> to wait until returning without successful wait.</param>
+        public static async Task<bool> WaitAsync(TimeSpan timeout) => await _WorkerSemaphore.WaitAsync(timeout);
 
         #endregion
 
 
         #region Runtime
 
-        private static async Task ExecuteJob(AsyncJob asyncJob)
+        private static async Task ExecuteInvocation(AsyncInvocation invocation)
         {
-            if (_abortTokenSource.IsCancellationRequested)
+            Debug.Assert(invocation != null);
+
+            if (AbortToken.IsCancellationRequested)
             {
                 return;
             }
 
-            await _workerSemaphore.WaitAsync().ConfigureAwait(false);
+            await _WorkerSemaphore.WaitAsync().ConfigureAwait(false);
 
-            OnJobStarted(new AsyncJobEventArgs(asyncJob));
+            await invocation.Invoke().ConfigureAwait(false);
+
+            _WorkerSemaphore.Release();
+        }
+
+        private static async Task ExecuteJob(AsyncJob asyncJob)
+        {
+            Debug.Assert(asyncJob != null);
+
+            // observe cancellation token
+            if (_AbortTokenSource.IsCancellationRequested)
+            {
+                return;
+            }
+
+            // if semaphore is empty, wait until it is released
+            await _WorkerSemaphore.WaitAsync().ConfigureAwait(false);
+
+            OnJobStarted(asyncJob);
 
             await asyncJob.Execute().ConfigureAwait(false);
 
-            OnJobFinished(new AsyncJobEventArgs(asyncJob));
+            OnJobFinished(asyncJob);
 
-            _workerSemaphore.Release();
+            _WorkerSemaphore.Release();
         }
 
         #endregion
@@ -111,32 +168,32 @@ namespace Automata.Jobs
         ///     Called when a job is queued.
         /// </summary>
         /// <remarks>This event will not necessarily happen synchronously with the main thread.</remarks>
-        public static event AsyncJobEventHandler JobQueued;
+        public static event EventHandler<AsyncJob>? JobQueued;
 
         /// <summary>
         ///     Called when a job starts execution.
         /// </summary>
         /// <remarks>This event will not necessarily happen synchronously with the main thread.</remarks>
-        public static event AsyncJobEventHandler JobStarted;
+        public static event EventHandler<AsyncJob>? JobStarted;
 
         /// <summary>
         ///     Called when a job finishes execution.
         /// </summary>
         /// <remarks>This event will not necessarily happen synchronously with the main thread.</remarks>
-        public static event AsyncJobEventHandler JobFinished;
+        public static event EventHandler<AsyncJob>? JobFinished;
 
 
-        private static void OnJobQueued(AsyncJobEventArgs args)
+        private static void OnJobQueued(AsyncJob args)
         {
             JobQueued?.Invoke(JobQueued, args);
         }
 
-        private static void OnJobStarted(AsyncJobEventArgs args)
+        private static void OnJobStarted(AsyncJob args)
         {
             JobStarted?.Invoke(JobStarted, args);
         }
 
-        private static void OnJobFinished(AsyncJobEventArgs args)
+        private static void OnJobFinished(AsyncJob args)
         {
             JobFinished?.Invoke(JobFinished, args);
         }

@@ -1,7 +1,6 @@
 #region
 
 using Automata.Core.Components;
-using Serilog;
 
 #endregion
 
