@@ -1,3 +1,6 @@
+// ReSharper disable InconsistentNaming
+// ReSharper disable UnusedMember.Global
+
 namespace Automata.Numerics
 {
     public readonly partial struct Vector2b

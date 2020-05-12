@@ -53,6 +53,7 @@ namespace Automata.Core.Systems
         public const int FINAL_SYSTEM_ORDER = int.MaxValue - 10000;
 
         private readonly SortedList<int, ComponentSystem> _Systems;
+        
         private readonly Dictionary<Type, ComponentSystem> _SystemsByType;
 
         public SystemManager()
@@ -63,9 +64,10 @@ namespace Automata.Core.Systems
 
         public void Update(EntityManager entityManager, float deltaTime)
         {
-            foreach ((int _, ComponentSystem system) in _Systems.Where(kvp => VerifyHandledTypes(entityManager, kvp.Value)))
+            foreach ((int _, ComponentSystem componentSystem) in _Systems.Where(kvp =>
+                VerifyHandledTypesExist(entityManager, kvp.Value)))
             {
-                system.Update(entityManager, deltaTime);
+                componentSystem.Update(entityManager, deltaTime);
             }
         }
 
@@ -153,7 +155,7 @@ namespace Automata.Core.Systems
 
         #region Helper Methods
 
-        private static bool VerifyHandledTypes(EntityManager entityManager, ComponentSystem componentSystem) =>
+        private static bool VerifyHandledTypesExist(EntityManager entityManager, ComponentSystem componentSystem) =>
             (componentSystem.HandledComponentTypes == null)
             || (componentSystem.HandledComponentTypes.Length == 0)
             || componentSystem.HandledComponentTypes.All(type => entityManager.GetComponentCount(type) > 0);

@@ -23,7 +23,6 @@ namespace Automata.Core
             // cleanup systems
             SystemManager.RegisterSystem<TranslationChangedCleanupSystem>(SystemManager.FINAL_SYSTEM_ORDER);
             SystemManager.RegisterSystem<RotationChangedCleanupSystem>(SystemManager.FINAL_SYSTEM_ORDER);
-            SystemManager.RegisterSystem<MouseInputChangedCleanupSystem>(SystemManager.FINAL_SYSTEM_ORDER);
         }
     }
 }

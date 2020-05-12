@@ -3,8 +3,12 @@
 using System;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
+using System.Threading;
+using Silk.NET.Input.Common;
 
 // ReSharper disable NotAccessedField.Local
+// ReSharper disable UnusedMember.Global
+// ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable InconsistentNaming
 
 #endregion
@@ -40,6 +44,22 @@ namespace Automata.Numerics
         public unsafe Vector3b(bool x, bool y, bool z) =>
             (_X, _Y, _Z, _W) = (-(*(int*)&x), -(*(int*)&y), -(*(int*)&z), VectorConstants.INTEGER_BOOLEAN_FALSE_VALUE);
 
+        public override bool Equals(object? obj)
+        {
+            if (obj is Vector3b a)
+            {
+                return All(a == this);
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public override int GetHashCode() => _X.GetHashCode() ^ _Y.GetHashCode() ^ _Z.GetHashCode();
+
+        public static Vector3b operator ==(Vector3b a, Vector3b b) => (Vector3b)VectorConstants.EqualsImpl((Vector128<int>)a, (Vector128<int>)b);
+        public static Vector3b operator !=(Vector3b a, Vector3b b) => !(Vector3b)VectorConstants.EqualsImpl((Vector128<int>)a, (Vector128<int>)b);
         public static Vector3b operator !(Vector3b a) => new Vector3b(!a.X, !a.Y, !a.Z);
 
         public static unsafe explicit operator Vector128<int>(Vector3b a) => Sse2.LoadVector128((int*)&a);

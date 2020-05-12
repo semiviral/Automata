@@ -111,6 +111,8 @@ namespace AutomataTest
 
         private static void Initialize()
         {
+            InputSingleton inputSingleton = new InputSingleton(_Window);
+
             World world = new GameWorld(true);
             world.SystemManager.RegisterSystem<ViewDoUpdateSystem>();
             world.SystemManager.RegisterSystem<ViewDoRenderSystem>(SystemManager.FINAL_SYSTEM_ORDER);
@@ -120,7 +122,6 @@ namespace AutomataTest
             Entity gameEntity = new Entity();
             world.EntityManager.RegisterEntity(gameEntity);
             world.EntityManager.RegisterComponent(gameEntity, new WindowIViewProvider(_Window));
-            world.EntityManager.RegisterComponent(gameEntity, new InputContextProvider(_Window.CreateInput()));
             world.EntityManager.RegisterComponent(gameEntity, new PendingMeshDataComponent
             {
                 Vertices = _vertices,
@@ -140,37 +141,17 @@ namespace AutomataTest
 
             Entity playerEntity = new Entity();
             world.EntityManager.RegisterEntity(playerEntity);
-            world.EntityManager.RegisterComponent<KeyboardInput>(playerEntity);
-            world.EntityManager.RegisterComponent<MouseInput>(playerEntity);
             world.EntityManager.RegisterComponent(playerEntity, new Translation
             {
                 Value = new Vector3(0f, 0f, -1f)
             });
             world.EntityManager.RegisterComponent<Rotation>(playerEntity);
             world.EntityManager.RegisterComponent<Camera>(playerEntity);
-            world.EntityManager.RegisterComponent<KeyboardInputTranslation>(playerEntity);
         }
 
         private static Matrix4x4 _View;
         private static Matrix4x4 _Projection;
         private static readonly Glfw _glfw = Glfw.GetApi();
-
-        private static unsafe void OnRender(double delta)
-        {
-            _GL.Clear((uint)ClearBufferMask.ColorBufferBit);
-
-            _VAO.Bind();
-            _Shader.Use();
-            _Shader.SetUniform("view", _View);
-
-            const float radius = 10f;
-            _View = Matrix4x4.CreateLookAt(new Vector3((float)Math.Sin(radius * _glfw.GetTime()), 0f, (float)Math.Cos(radius * _glfw.GetTime())),
-                new Vector3(0f, 0f, 0f), new Vector3(0f, 1f, 0f));
-
-            _Shader.SetUniform("uBlue", (float)Math.Sin((DateTime.UtcNow.Millisecond / 1000f) * Math.PI));
-
-            _GL.DrawElements(PrimitiveType.Triangles, (uint)_indices.Length, DrawElementsType.UnsignedInt, null);
-        }
 
         private static void OnClose()
         {

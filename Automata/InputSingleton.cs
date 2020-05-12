@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Numerics;
 using Automata.Numerics;
 using Silk.NET.Input;
 using Silk.NET.Input.Common;
@@ -17,9 +18,9 @@ namespace Automata
 
     public delegate void MouseInputEventHandler(IMouse mouse, MouseButton button);
 
-    public delegate void MouseMovedEventHandler(IMouse mouse, Vector2i pointerPosition);
+    public delegate void MouseMovedEventHandler(IMouse mouse, Vector2 pointerPosition);
 
-    public delegate void MouseScrolledEventHandler(IMouse mouse, Vector2i scrollPosition);
+    public delegate void MouseScrolledEventHandler(IMouse mouse, Vector2 scrollPosition);
 
     public sealed class InputSingleton : Singleton<InputSingleton>
     {
@@ -29,7 +30,7 @@ namespace Automata
         private readonly List<IKeyboard> _Keyboards;
         private readonly List<IMouse> _Mice;
 
-        public Vector2i ViewCenter { get; private set; }
+        public Vector2 ViewCenter { get; private set; }
 
         public InputSingleton(IView view)
         {
@@ -43,7 +44,7 @@ namespace Automata
 
             RegisterInputContext(_InputContext);
 
-            _View.Resize += size => { ViewCenter = new Vector2i(size.Width / 2, size.Height / 2); };
+            _View.Resize += size => { ViewCenter = new Vector2(size.Width / 2f, size.Height / 2f); };
         }
 
         private void RegisterInputContext(IInputContext inputContext)
@@ -70,7 +71,7 @@ namespace Automata
         public bool IsKeyPressed(Key key) => _Keyboards.Any(keyboard => keyboard.IsKeyPressed(key));
         public bool IsButtonPressed(MouseButton mouseButton) => _Mice.Any(mouse => mouse.IsButtonPressed(mouseButton));
 
-        public Vector2i GetMousePosition(int mouseIndex)
+        public Vector2 GetMousePosition(int mouseIndex)
         {
             if ((mouseIndex < 0) || (mouseIndex >= _Mice.Count))
             {
@@ -79,7 +80,7 @@ namespace Automata
 
             PointF position = _Mice[mouseIndex].Position;
 
-            return new Vector2i((int)position.X, (int)position.Y);
+            return new Vector2(position.X, position.Y);
         }
 
         #region Keyboard Events
@@ -119,12 +120,12 @@ namespace Automata
 
         private void OnMouseMoved(IMouse mouse, PointF point)
         {
-            MouseMoved?.Invoke(mouse, new Vector2i((int)point.X, (int)point.Y));
+            MouseMoved?.Invoke(mouse, new Vector2(point.X, point.Y));
         }
 
         private void OnMouseScrolled(IMouse mouse, ScrollWheel scrollWheel)
         {
-            MouseScrolled?.Invoke(mouse, new Vector2i((int)scrollWheel.X, (int)scrollWheel.Y));
+            MouseScrolled?.Invoke(mouse, new Vector2(scrollWheel.X, scrollWheel.Y));
         }
 
         #endregion

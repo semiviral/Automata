@@ -2,7 +2,6 @@
 
 using System.Numerics;
 using Automata.Core.Components;
-using Automata.Numerics;
 
 #endregion
 
@@ -10,11 +9,11 @@ namespace Automata.Core.Systems
 {
     public class CameraRotationSystem : ComponentSystem
     {
-        private Vector2i _LastFrameMouseOffset;
+        private Vector2 _LastFrameMouseOffset;
 
         public CameraRotationSystem()
         {
-            _LastFrameMouseOffset = Vector2i.Zero;
+            _LastFrameMouseOffset = Vector2.Zero;
 
             HandledComponentTypes = new[]
             {
@@ -27,12 +26,16 @@ namespace Automata.Core.Systems
         {
             foreach ((Camera _, Rotation rotation) in entityManager.GetComponents<Camera, Rotation>())
             {
-                Vector2i offset = InputSingleton.Instance.GetMousePosition(0);
+                Vector2 offset = InputSingleton.Instance.ViewCenter - InputSingleton.Instance.GetMousePosition(0);
 
-                if (offset == _LastFrameMouseOffset) { }
+                if (offset == _LastFrameMouseOffset)
+                {
+                    continue;
+                }
 
-                Vector3 mouseInputValue3d = new Vector3(mouseInput.Normal, 0f);
-                Quaternion axisAngleQuaternion = Quaternion.CreateFromAxisAngle(mouseInputValue3d, 10f);
+                _LastFrameMouseOffset = offset;
+
+                Quaternion axisAngleQuaternion = Quaternion.CreateFromAxisAngle(new Vector3(offset, 0f), deltaTime);
                 Quaternion finalRotationPosition = Quaternion.Add(rotation.Value, axisAngleQuaternion);
 
                 rotation.Value = Quaternion.Slerp(rotation.Value, finalRotationPosition, deltaTime);

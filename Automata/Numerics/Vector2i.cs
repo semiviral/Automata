@@ -4,9 +4,13 @@ using System;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
-#endregion
-
+// ReSharper disable ConvertToAutoProperty
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable UnusedMember.Global
+// ReSharper disable InconsistentNaming
 // ReSharper disable RedundantCast
+
+#endregion
 
 namespace Automata.Numerics
 {
@@ -15,57 +19,78 @@ namespace Automata.Numerics
         public static Vector2i Zero { get; } = new Vector2i(0);
         public static Vector2i One { get; } = new Vector2i(1);
 
+        private readonly int _X;
+        private readonly int _Y;
+        private readonly int _Z;
         private readonly int _W;
 
-        public int X { get; }
-
-        public int Y { get; }
-
-        public int Z { get; }
+        public int X => _X;
+        public int Y => _Y;
 
         public int this[int index] => index switch
         {
             0 => X,
             1 => Y,
-            2 => Z,
             _ => throw new IndexOutOfRangeException(nameof(index))
         };
 
         #region Constructors
 
-        public Vector2i(int xyz) => (X, Y, Z, _W) = (xyz, xyz, xyz, 0);
+        public Vector2i(int xyz) => (_X, _Y, _Z, _W) = (xyz, xyz, xyz, 0);
 
-        public Vector2i(int x, int y) => (X, Y, Z, _W) = (x, y, 0, 0);
+        public Vector2i(int x, int y) => (_X, _Y, _Z, _W) = (x, y, 0, 0);
 
-        public Vector2i(int x, int y, int z) => (X, Y, Z, _W) = (x, y, z, 0);
+        public Vector2i(int x, int y, int z) => (_X, _Y, _Z, _W) = (x, y, z, 0);
 
         #endregion
 
-        #region Mathematic Operators
+        #region Overrides
 
-        public static Vector2i operator &(Vector2i a, Vector2i b) => (Vector2i)BitwiseAndImpl((Vector128<int>)a, (Vector128<int>)b);
-        public static Vector2i operator |(Vector2i a, Vector2i b) => (Vector2i)BitwiseOrImpl((Vector128<int>)a, (Vector128<int>)b);
+        public override bool Equals(object? obj)
+        {
+            if (obj is Vector2i a)
+            {
+                return Vector2b.All(a == this);
+            }
+            else
+            {
+                return false;
+            }
+        }
 
-        public static Vector2i operator +(Vector2i a, Vector2i b) => (Vector2i)AddImpl((Vector128<int>)a, (Vector128<int>)b);
-        public static Vector2i operator +(Vector2i a, int b) => (Vector2i)AddImpl((Vector128<int>)a, Vector128.Create(b));
-        public static Vector2i operator +(int a, Vector2i b) => (Vector2i)AddImpl(Vector128.Create(a), (Vector128<int>)b);
+        public override int GetHashCode() => _X.GetHashCode() ^ _Y.GetHashCode();
 
-        public static Vector2i operator -(Vector2i a, Vector2i b) => (Vector2i)SubtractImpl((Vector128<int>)a, (Vector128<int>)b);
-        public static Vector2i operator -(Vector2i a, int b) => (Vector2i)SubtractImpl((Vector128<int>)a, Vector128.Create(b));
-        public static Vector2i operator -(int a, Vector2i b) => (Vector2i)SubtractImpl(Vector128.Create(a), (Vector128<int>)b);
+        #endregion
 
-        public static Vector2i operator *(Vector2i a, Vector2i b) => (Vector2i)MultiplyImpl((Vector128<int>)a, (Vector128<int>)b);
-        public static Vector2i operator *(Vector2i a, int b) => (Vector2i)MultiplyImpl((Vector128<int>)a, Vector128.Create(b));
-        public static Vector2i operator *(int a, Vector2i b) => (Vector2i)MultiplyImpl(Vector128.Create(a), (Vector128<int>)b);
 
-        public static Vector2b operator >(Vector2i a, Vector2i b) => (Vector2b)GreaterThanImpl((Vector128<int>)a, (Vector128<int>)b);
-        public static Vector2b operator <(Vector2i a, Vector2i b) => (Vector2b)LessThanImpl((Vector128<int>)a, (Vector128<int>)b);
+        #region Operators
 
-        public static Vector2b operator >(Vector2i a, int b) => (Vector2b)GreaterThanImpl((Vector128<int>)a, Vector128.Create(b));
-        public static Vector2b operator <(Vector2i a, int b) => (Vector2b)LessThanImpl((Vector128<int>)a, Vector128.Create(b));
+        public static Vector2b operator ==(Vector2i a, Vector2i b) => (Vector2b)VectorConstants.EqualsImpl((Vector128<int>)a, (Vector128<int>)b);
+        public static Vector2b operator !=(Vector2i a, Vector2i b) => !(Vector2b)VectorConstants.EqualsImpl((Vector128<int>)a, (Vector128<int>)b);
 
-        public static Vector2b operator >(int a, Vector2i b) => (Vector2b)GreaterThanImpl(Vector128.Create(a), (Vector128<int>)b);
-        public static Vector2b operator <(int a, Vector2i b) => (Vector2b)LessThanImpl(Vector128.Create(a), (Vector128<int>)b);
+        public static Vector2i operator &(Vector2i a, Vector2i b) => (Vector2i)VectorConstants.BitwiseAndImpl((Vector128<int>)a, (Vector128<int>)b);
+        public static Vector2i operator |(Vector2i a, Vector2i b) => (Vector2i)VectorConstants.BitwiseOrImpl((Vector128<int>)a, (Vector128<int>)b);
+
+        public static Vector2i operator +(Vector2i a, Vector2i b) => (Vector2i)VectorConstants.AddImpl((Vector128<int>)a, (Vector128<int>)b);
+        public static Vector2i operator +(Vector2i a, int b) => (Vector2i)VectorConstants.AddImpl((Vector128<int>)a, Vector128.Create(b));
+        public static Vector2i operator +(int a, Vector2i b) => (Vector2i)VectorConstants.AddImpl(Vector128.Create(a), (Vector128<int>)b);
+
+        public static Vector2i operator -(Vector2i a, Vector2i b) => (Vector2i)VectorConstants.SubtractImpl((Vector128<int>)a, (Vector128<int>)b);
+        public static Vector2i operator -(Vector2i a, int b) => (Vector2i)VectorConstants.SubtractImpl((Vector128<int>)a, Vector128.Create(b));
+        public static Vector2i operator -(int a, Vector2i b) => (Vector2i)VectorConstants.SubtractImpl(Vector128.Create(a), (Vector128<int>)b);
+
+        public static Vector2i operator *(Vector2i a, Vector2i b) => (Vector2i)VectorConstants.MultiplyImpl((Vector128<int>)a, (Vector128<int>)b);
+        public static Vector2i operator *(Vector2i a, int b) => (Vector2i)VectorConstants.MultiplyImpl((Vector128<int>)a, Vector128.Create(b));
+        public static Vector2i operator *(int a, Vector2i b) => (Vector2i)VectorConstants.MultiplyImpl(Vector128.Create(a), (Vector128<int>)b);
+
+        public static Vector2b operator >(Vector2i a, Vector2i b) => (Vector2b)VectorConstants.GreaterThanImpl((Vector128<int>)a, (Vector128<int>)b);
+        public static Vector2b operator <(Vector2i a, Vector2i b) => (Vector2b)VectorConstants.LessThanImpl((Vector128<int>)a, (Vector128<int>)b);
+
+        public static Vector2b operator >(Vector2i a, int b) => (Vector2b)VectorConstants.GreaterThanImpl((Vector128<int>)a, Vector128.Create(b));
+        public static Vector2b operator <(Vector2i a, int b) => (Vector2b)VectorConstants.LessThanImpl((Vector128<int>)a, Vector128.Create(b));
+
+        public static Vector2b operator >(int a, Vector2i b) => (Vector2b)VectorConstants.GreaterThanImpl(Vector128.Create(a), (Vector128<int>)b);
+        public static Vector2b operator <(int a, Vector2i b) => (Vector2b)VectorConstants.LessThanImpl(Vector128.Create(a), (Vector128<int>)b);
 
         #endregion
 
