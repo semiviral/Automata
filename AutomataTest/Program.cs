@@ -3,13 +3,11 @@
 using System;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Numerics;
 using Automata;
 using Automata.Core;
 using Automata.Core.Components;
 using Automata.Core.Systems;
-using Automata.Input;
 using Automata.Rendering;
 using Automata.Rendering.OpenGL;
 using Serilog;
@@ -114,11 +112,10 @@ namespace AutomataTest
         private static void Initialize()
         {
             World world = new GameWorld(true);
-            World.RegisterWorld("core", world);
-
             world.SystemManager.RegisterSystem<ViewDoUpdateSystem>();
             world.SystemManager.RegisterSystem<ViewDoRenderSystem>(SystemManager.FINAL_SYSTEM_ORDER);
             world.SystemManager.RegisterSystem<InputCameraViewMoverSystem>(SystemManager.INPUT_SYSTEM_ORDER);
+            World.RegisterWorld("core", world);
 
             Entity gameEntity = new Entity();
             world.EntityManager.RegisterEntity(gameEntity);
@@ -152,8 +149,6 @@ namespace AutomataTest
             world.EntityManager.RegisterComponent<Rotation>(playerEntity);
             world.EntityManager.RegisterComponent<Camera>(playerEntity);
             world.EntityManager.RegisterComponent<KeyboardInputTranslation>(playerEntity);
-
-
         }
 
         private static Matrix4x4 _View;

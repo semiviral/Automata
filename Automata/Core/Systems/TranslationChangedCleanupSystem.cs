@@ -1,4 +1,8 @@
+#region
+
 using Automata.Core.Components;
+
+#endregion
 
 namespace Automata.Core.Systems
 {

@@ -1,6 +1,5 @@
 #region
 
-using Automata.Core;
 using Automata.Core.Components;
 using Automata.Rendering.OpenGL;
 

@@ -34,11 +34,11 @@ namespace Automata.Rendering.OpenGL
             @"#version 330 core
 
             in vec4 fColor;
-            out vec4 FragColor;
+            out vec4 fragColor;
 
             void main()
             {
-                FragColor = fColor;
+                fragColor = fColor;
             }";
 
         private readonly uint _Handle;
