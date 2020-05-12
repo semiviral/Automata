@@ -3,12 +3,10 @@
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Numerics;
-using System.Threading;
 using Automata.Collections;
 using Automata.Jobs;
+using Automata.Numerics;
 using AutomataTest.Blocks;
-using Random = System.Random;
 
 #endregion
 
@@ -20,17 +18,16 @@ namespace AutomataTest.Chunks.Generation
 
         protected readonly Stopwatch Stopwatch;
 
-        protected Vector3 _OriginPoint;
-        protected Random _SeededRandom;
-        protected INodeCollection<ushort> _Blocks;
+        protected Vector3i _OriginPoint;
+        protected Random? _SeededRandom;
+        protected INodeCollection<ushort>? _Blocks;
 
         protected ChunkTerrainJob() : base(GenerationConstants.CHUNK_SIZE_CUBED, 256) => Stopwatch = new Stopwatch();
 
-        protected void SetData(CancellationToken cancellationToken, Vector3 originPoint)
+        protected void SetData(Vector3i originPoint)
         {
-            CancellationToken = CancellationTokenSource.CreateLinkedTokenSource(AsyncJobScheduler.AbortToken, cancellationToken).Token;
+            CancellationToken = AsyncJobScheduler.AbortToken;
             _OriginPoint = originPoint;
-
             _SeededRandom = new Random(_OriginPoint.GetHashCode());
         }
 
@@ -46,9 +43,19 @@ namespace AutomataTest.Chunks.Generation
                 return id;
             }
 
-            throw new ArgumentException("Block with given name does not exist.", nameof(blockName));
+            throw new ArgumentException("Block does not exist.", nameof(blockName));
         }
 
-        public INodeCollection<ushort> GetGeneratedBlockData() => _Blocks;
+        public INodeCollection<ushort> GetGeneratedBlockData()
+        {
+            if (_Blocks == null)
+            {
+                throw new NullReferenceException("Blocks collection has not been built.");
+            }
+            else
+            {
+                return _Blocks;
+            }
+        }
     }
 }

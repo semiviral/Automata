@@ -39,7 +39,7 @@ namespace Automata.Jobs
         /// </summary>
         public TimeSpan ExecutionTime { get; private set; }
 
-        public event AsyncJobEventHandler WorkFinished;
+        public event EventHandler<AsyncJob> WorkFinished;
 
         public AsyncJob()
         {
@@ -85,7 +85,7 @@ namespace Automata.Jobs
                 ExecutionTime = _Stopwatch.Elapsed;
 
                 IsWorkFinished = true;
-                WorkFinished?.Invoke(this, new AsyncJobEventArgs(this));
+                WorkFinished?.Invoke(this, this);
             }
             catch (Exception ex)
             {

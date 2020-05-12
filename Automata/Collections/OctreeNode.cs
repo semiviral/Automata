@@ -180,7 +180,7 @@ namespace Automata.Collections
             // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (OctreeNode<T> octreeNode in _Nodes)
             {
-                if (!octreeNode.IsUniform || octreeNode.Value.Equals(firstValue))
+                if (!octreeNode.IsUniform || !octreeNode.Value.Equals(firstValue))
                 {
                     return false;
                 }

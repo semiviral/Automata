@@ -3,8 +3,8 @@ using Automata.Core.Components;
 
 namespace AutomataTest.Chunks
 {
-    public class ChunkData : IComponent
+    public class BlockCollection : IComponent
     {
-        private INodeCollection<ushort> Blocks { get; set; }
+        public INodeCollection<ushort> Blocks { get; set; }
     }
 }

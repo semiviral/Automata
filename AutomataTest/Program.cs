@@ -10,6 +10,8 @@ using Automata.Core.Components;
 using Automata.Core.Systems;
 using Automata.Rendering;
 using Automata.Rendering.OpenGL;
+using AutomataTest.Blocks;
+using AutomataTest.Chunks;
 using Serilog;
 using Silk.NET.GLFW;
 using Silk.NET.Input;
@@ -113,12 +115,45 @@ namespace AutomataTest
         {
             Singleton.InstantiateSingleton<Diagnostics>();
             Singleton.InstantiateSingleton<Input>();
+            Singleton.InstantiateSingleton<BlockRegistry>();
+
+            Diagnostics.Instance.RegisterDiagnosticTimeEntry("NoiseRetrieval");
+            Diagnostics.Instance.RegisterDiagnosticTimeEntry("TerrainGeneration");
+
             Input.Instance.RegisterView(_Window);
+
+            BlockRegistry.Instance.RegisterBlockDefinition("bedrock", null,
+                BlockDefinition.Property.Collideable);
+
+            BlockRegistry.Instance.RegisterBlockDefinition("grass", null,
+                BlockDefinition.Property.Collectible, BlockDefinition.Property.Collideable,
+                BlockDefinition.Property.Destroyable);
+
+            BlockRegistry.Instance.RegisterBlockDefinition("dirt", null,
+                BlockDefinition.Property.Collectible, BlockDefinition.Property.Collideable,
+                BlockDefinition.Property.Destroyable);
+
+            BlockRegistry.Instance.RegisterBlockDefinition("dirt_coarse", null,
+                BlockDefinition.Property.Collectible, BlockDefinition.Property.Collideable,
+                BlockDefinition.Property.Destroyable);
+
+            BlockRegistry.Instance.RegisterBlockDefinition("stone", null,
+                BlockDefinition.Property.Collectible, BlockDefinition.Property.Collideable,
+                BlockDefinition.Property.Destroyable);
+
+            BlockRegistry.Instance.RegisterBlockDefinition("glass", null,
+                BlockDefinition.Property.Transparent, BlockDefinition.Property.Collectible,
+                BlockDefinition.Property.Collideable, BlockDefinition.Property.Destroyable);
+
+            BlockRegistry.Instance.RegisterBlockDefinition("coal_ore", null,
+                BlockDefinition.Property.Collectible, BlockDefinition.Property.Collideable,
+                BlockDefinition.Property.Destroyable);
 
             World world = new GameWorld(true);
             world.SystemManager.RegisterSystem<ViewDoUpdateSystem, DefaultOrderSystem>();
             world.SystemManager.RegisterSystem<ViewDoRenderSystem, LastOrderSystem>();
             world.SystemManager.RegisterSystem<InputCameraViewMoverSystem, RenderOrderSystem>();
+            world.SystemManager.RegisterSystem<ChunkBuildingSystem, ViewDoUpdateSystem>();
             World.RegisterWorld("core", world);
 
             Entity gameEntity = new Entity();
@@ -149,6 +184,11 @@ namespace AutomataTest
             });
             world.EntityManager.RegisterComponent<Rotation>(playerEntity);
             world.EntityManager.RegisterComponent<Camera>(playerEntity);
+
+            Entity chunk = new Entity();
+            world.EntityManager.RegisterComponent<Translation>(chunk);
+            world.EntityManager.RegisterComponent<BlockCollection>(chunk);
+            world.EntityManager.RegisterComponent<GenerationState>(chunk);
         }
 
         private static Matrix4x4 _View;

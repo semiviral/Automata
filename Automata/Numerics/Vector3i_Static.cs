@@ -1,6 +1,7 @@
 #region
 
 using System;
+using System.Numerics;
 using System.Runtime.Intrinsics;
 
 // ReSharper disable UnusedMember.Global
@@ -34,5 +35,7 @@ namespace Automata.Numerics
         }
 
         public static int Project1D(Vector3i a, int size) => a.X + (size * (a.Z + (size * a.Y)));
+
+        public static Vector3i FromVector3(Vector3 a) => new Vector3i((int)a.X, (int)a.Y, (int)a.Z);
     }
 }

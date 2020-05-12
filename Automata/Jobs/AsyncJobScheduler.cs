@@ -147,16 +147,25 @@ namespace Automata.Jobs
                 return;
             }
 
-            // if semaphore is empty, wait until it is released
-            await _WorkerSemaphore.WaitAsync().ConfigureAwait(false);
+            try
+            {
+                // if semaphore is empty, wait until it is released
+                await _WorkerSemaphore.WaitAsync().ConfigureAwait(false);
 
-            OnJobStarted(asyncJob);
+                // signal JobStarted event
+                OnJobStarted(asyncJob);
 
-            await asyncJob.Execute().ConfigureAwait(false);
+                // execute job without context dependence
+                await asyncJob.Execute().ConfigureAwait(false);
 
-            OnJobFinished(asyncJob);
-
-            _WorkerSemaphore.Release();
+                // signal JobFinished event
+                OnJobFinished(asyncJob);
+            }
+            finally
+            {
+                // release semaphore
+                _WorkerSemaphore.Release();
+            }
         }
 
         #endregion

@@ -19,17 +19,17 @@ namespace AutomataTest.Blocks
         public static ushort AirID;
 
         private List<BlockDefinition.Property> _BlockPropertiesCache;
-
-        public Dictionary<string, ushort> BlockNamesByID;
-        public List<IBlockDefinition> BlockDefinitions;
-
         private Dictionary<BlockDefinition.Property, HashSet<ushort>> _PropertiesBuckets;
 
-        private void Awake()
+        public readonly Dictionary<string, ushort> BlockNamesByID;
+        public readonly List<IBlockDefinition> BlockDefinitions;
+
+        public BlockRegistry()
         {
             AssignSingletonInstance(this);
 
             _BlockPropertiesCache = new List<BlockDefinition.Property>(EnumExtensions.GetEnumsList<BlockDefinition.Property>());
+            _PropertiesBuckets = new Dictionary<BlockDefinition.Property, HashSet<ushort>>();
 
             BlockNamesByID = new Dictionary<string, ushort>();
             BlockDefinitions = new List<IBlockDefinition>();
@@ -77,7 +77,7 @@ namespace AutomataTest.Blocks
         /// <param name="properties">
         ///     Optional <see cref="BlockDefinition.Property" />s to full qualify the <see cref="BlockDefinition" />.
         /// </param>
-        public void RegisterBlockDefinition(string blockName, Func<Direction, string> uvsRule, params BlockDefinition.Property[] properties)
+        public void RegisterBlockDefinition(string blockName, Func<Direction, string>? uvsRule, params BlockDefinition.Property[] properties)
         {
             if (string.IsNullOrWhiteSpace(blockName))
             {

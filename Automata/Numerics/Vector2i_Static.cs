@@ -23,12 +23,11 @@ namespace Automata.Numerics
 
         public static int Sum(Vector2i a) => a.X + a.Y;
 
-        public static Vector2i Project3D(int index, int bounds)
+        public static Vector2i Project2D(int index, int bounds)
         {
             int xQuotient = Math.DivRem(index, bounds, out int x);
-            int zQuotient = Math.DivRem(xQuotient, bounds, out int z);
-            int y = zQuotient % bounds;
-            return new Vector2i(x, y, z);
+            Math.DivRem(xQuotient, bounds, out int z);
+            return new Vector2i(x, z);
         }
 
         public static int Project1D(Vector2i a, int size) => a.X + (size * a.Y);

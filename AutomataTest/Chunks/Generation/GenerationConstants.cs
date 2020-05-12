@@ -1,6 +1,7 @@
 #region
 
 using System.Numerics;
+using Windows.Devices.Bluetooth.Advertisement;
 
 #endregion
 
@@ -17,10 +18,13 @@ namespace AutomataTest.Chunks.Generation
         public const int CHUNK_SIZE = 1 << (CHUNK_SIZE_BIT_SHIFT - 1);
         public const int CHUNK_SIZE_SQUARED = CHUNK_SIZE * CHUNK_SIZE;
         public const int CHUNK_SIZE_CUBED = CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE;
-
+        public const int WORLD_HEIGHT_IN_CHUNKS = 8;
+        public const int WORLD_HEIGHT = CHUNK_SIZE * WORLD_HEIGHT_IN_CHUNKS;
 
         // '8' is the 'numthreads[]' value in the compute shader
         public const int CHUNK_THREAD_GROUP_SIZE = CHUNK_SIZE / 8;
+
+        public static int Seed { get; set; }
 
         public static readonly int[] IndexStepByNormalIndex =
         {

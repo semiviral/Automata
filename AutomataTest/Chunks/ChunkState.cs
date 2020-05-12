@@ -11,7 +11,7 @@ namespace AutomataTest.Chunks
         Meshed
     }
 
-    public struct ChunkGenerationState : IComponent
+    public class GenerationState : IComponent
     {
         public ChunkState State { get; set; }
     }

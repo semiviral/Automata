@@ -20,7 +20,7 @@ namespace Automata
         {
             get
             {
-                if (_Instance is object)
+                if (!(_Instance is object))
                 {
                     throw new NullReferenceException("Singleton has not been instantiated.");
                 }
