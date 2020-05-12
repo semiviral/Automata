@@ -14,17 +14,17 @@ using System.Threading.Tasks;
 
 namespace Automata.Jobs
 {
-    public class AsyncJob
+    public abstract class AsyncJob
     {
         private readonly object _IsWorkFinishedLock;
-        private readonly Stopwatch _Stopwatch;
 
         private bool _IsWorkFinished;
 
         /// <summary>
         ///     Token that can be passed into constructor to allow jobs to observe cancellation.
         /// </summary>
-        protected CancellationToken _CancellationToken { get; set; }
+        protected CancellationToken _CancellationToken { get; }
+        protected Stopwatch _Stopwatch { get; }
 
         /// <summary>
         ///     Identity of the <see cref="AsyncJob" />.
@@ -57,18 +57,24 @@ namespace Automata.Jobs
         }
 
         /// <summary>
-        ///     Elapsed time of specifically the <see cref="Process" /> function.
+        ///     Elapsed execution time of the <see cref="Process" /> function.
         /// </summary>
-        public TimeSpan ProcessTime { get; private set; }
+        /// <remarks>
+        ///     This member is null in the case that the job has not finished processing.
+        /// </remarks>
+        public TimeSpan? ProcessTime { get; private set; }
 
         /// <summary>
-        ///     Total elapsed time of execution in milliseconds.
+        ///     Elapsed execution time of job.
         /// </summary>
-        public TimeSpan ExecutionTime { get; private set; }
+        /// <remarks>
+        ///     This members is null in the case that the job has not finished execution.
+        /// </remarks>
+        public TimeSpan? ExecutionTime { get; private set; }
 
         public event EventHandler<AsyncJob>? WorkFinished;
 
-        public AsyncJob()
+        protected AsyncJob()
         {
             _IsWorkFinishedLock = new object();
             _Stopwatch = new Stopwatch();
@@ -82,7 +88,7 @@ namespace Automata.Jobs
         /// <summary>
         ///     Instantiates a new instance of the <see cref="AsyncJob" /> class.
         /// </summary>
-        public AsyncJob(CancellationToken cancellationToken)
+        protected AsyncJob(CancellationToken cancellationToken)
         {
             _IsWorkFinishedLock = new object();
             _Stopwatch = new Stopwatch();

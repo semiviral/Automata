@@ -26,7 +26,6 @@ namespace AutomataTest.Chunks.Generation
 
         protected void SetData(Vector3i originPoint)
         {
-            _CancellationToken = AsyncJobScheduler.AbortToken;
             _OriginPoint = originPoint;
             _SeededRandom = new Random(_OriginPoint.GetHashCode());
         }

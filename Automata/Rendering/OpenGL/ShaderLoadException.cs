@@ -12,9 +12,7 @@ namespace Automata.Rendering.OpenGL
         private ShaderType Type { get; }
         private string InfoLog { get; }
 
-        public ShaderLoadException(ShaderType type, string infoLog)
-            : base($"Error compiling shader of type `{type}`: {infoLog}")
-
+        public ShaderLoadException(ShaderType type, string infoLog) : base($"Error compiling shader of type '{type}': {infoLog}")
         {
             Type = type;
             InfoLog = infoLog;

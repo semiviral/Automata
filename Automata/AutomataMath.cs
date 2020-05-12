@@ -5,10 +5,14 @@ using System.Numerics;
 
 #endregion
 
+// ReSharper disable InconsistentNaming
+
 namespace Automata
 {
-    public static class Mathf
+    public class AutomataMath
     {
+        public static float UnLerp(float a, float b, float interpolant) => (interpolant - a) / (b - a);
+
         public static float ToRadians(float degrees) => degrees * ((float)Math.PI / 180f);
 
         public static float[] UnrollMatrix4x4(Matrix4x4 matrix) =>
@@ -31,5 +35,13 @@ namespace Automata
                 matrix.M43,
                 matrix.M44
             };
+
+        public static int Wrap(int v, int delta, int minVal, int maxVal)
+        {
+            int mod = (maxVal + 1) - minVal;
+            v += delta - minVal;
+            v += (1 - (v / mod)) * mod;
+            return (v % mod) + minVal;
+        }
     }
 }

@@ -16,32 +16,30 @@ namespace Automata.Rendering.OpenGL
 
         public void SetBufferData(IEnumerable<Vector3> vertices)
         {
-            SetBufferData(TranslateVector3Data(vertices.ToArray()));
+            SetBufferData(TranslateVector3Data(vertices).ToArray());
         }
 
         public void SetBufferData(IEnumerable<Vector3> vertices, IEnumerable<Color64> colors)
         {
-            SetBufferData(TranslateVector3AndColorData(vertices.ToArray(), colors.ToArray()));
+            SetBufferData(TranslateVector3AndColorData(vertices, colors).ToArray());
         }
 
-        private static float[] TranslateVector3Data(Vector3[] vertices)
+        private static IEnumerable<float> TranslateVector3Data(IEnumerable<Vector3> vertices)
         {
             if (vertices == null)
             {
                 throw new NullReferenceException(nameof(vertices));
             }
 
-            float[] finalArray = new float[vertices.Length * 3];
-
-            for (int i = 0; i < vertices.Length; i++)
+            foreach (Vector3 vertex in vertices)
             {
-                vertices[i].CopyTo(finalArray, i * 3);
+                yield return vertex.X;
+                yield return vertex.Y;
+                yield return vertex.Z;
             }
-
-            return finalArray;
         }
 
-        private static float[] TranslateVector3AndColorData(Vector3[] vertices, Color64[] colors)
+        private static IEnumerable<float> TranslateVector3AndColorData(IEnumerable<Vector3> vertices, IEnumerable<Color64> colors)
         {
             if (vertices == null)
             {
@@ -51,22 +49,26 @@ namespace Automata.Rendering.OpenGL
             {
                 throw new NullReferenceException(nameof(colors));
             }
-            else if (vertices.Length != colors.Length)
+
+            using IEnumerator<Color64> colorsEnumerator = colors.GetEnumerator();
+
+            foreach (Vector3 vertex in vertices)
             {
-                throw new ArgumentException("Given arrays must match in size.");
+                if (!colorsEnumerator.MoveNext())
+                {
+                    throw new ArgumentException("Given enumerables must match in length.");
+                }
+
+                yield return vertex.X;
+                yield return vertex.Y;
+                yield return vertex.Z;
+
+                Color64 color = colorsEnumerator.Current;
+                yield return color.R;
+                yield return color.G;
+                yield return color.B;
+                yield return color.A;
             }
-
-            int finalArrayLength = vertices.Length * 7;
-            float[] finalArray = new float[finalArrayLength];
-
-            for (int i = 0; i < vertices.Length; i++)
-            {
-                int adjustedIndex = i * 7;
-                vertices[i].CopyTo(finalArray, adjustedIndex);
-                colors[i].CopyTo(finalArray, adjustedIndex + 3);
-            }
-
-            return finalArray;
         }
     }
 }

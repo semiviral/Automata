@@ -21,10 +21,24 @@ namespace Automata.Jobs
         private static long _QueuedJobs;
         private static long _ProcessingJobs;
 
+        /// <summary>
+        ///     <see cref="CancellationToken"/> signalled whenever <see cref="Abort"/> is called.
+        /// </summary>
         public static CancellationToken AbortToken => _AbortTokenSource.Token;
-        public static long QueuedJobs => Interlocked.Read(ref _QueuedJobs);
-        public static long ProcessingJobs => Interlocked.Read(ref _ProcessingJobs);
 
+        /// <summary>
+        ///     Number of jobs current queued.
+        /// </summary>
+        public static long QueuedJobsCount => Interlocked.Read(ref _QueuedJobs);
+
+        /// <summary>
+        ///     Number of jobs current being executed.
+        /// </summary>
+        public static long ProcessingJobsCount => Interlocked.Read(ref _ProcessingJobs);
+
+        /// <summary>
+        ///     Maximum number of jobs that are able to run concurrently.
+        /// </summary>
         public static int MaximumConcurrentJobs { get; }
 
         /// <summary>
@@ -36,7 +50,7 @@ namespace Automata.Jobs
             // remark: two is subtracted from total logical core count to avoid bogging
             //     down the main thread, with an extra logical core omitted as a buffer.
             //
-            //     Largely, the goal here is to ensure this tool remains lightweight and doesn't
+            //     Largely, the goal here is to ensure this class remains lightweight and doesn't
             //     interfere with other critical processes.
             MaximumConcurrentJobs = Environment.ProcessorCount - 2;
 

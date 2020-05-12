@@ -2,6 +2,8 @@
 
 using System;
 
+// ReSharper disable MemberCanBePrivate.Global
+
 #endregion
 
 namespace Automata.Rendering.OpenGL
@@ -10,6 +12,6 @@ namespace Automata.Rendering.OpenGL
     {
         public string Name { get; }
 
-        public UniformNotFoundException(string name) : base($"Uniform `{name}` not found in shader.") => Name = name;
+        public UniformNotFoundException(string name) : base($"Uniform '{name}' not found in shader.") => Name = name;
     }
 }

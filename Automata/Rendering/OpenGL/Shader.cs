@@ -126,7 +126,7 @@ namespace Automata.Rendering.OpenGL
             int location = GetUniformLocation(name);
 
             Use();
-            _GL.UniformMatrix4(location, 1, false, Mathf.UnrollMatrix4x4(value));
+            _GL.UniformMatrix4(location, 1, false, AutomataMath.UnrollMatrix4x4(value));
         }
 
         private int GetUniformLocation(string name)

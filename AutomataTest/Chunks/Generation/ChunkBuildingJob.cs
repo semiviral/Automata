@@ -53,7 +53,7 @@ namespace AutomataTest.Chunks.Generation
 
             _Blocks = new Octree<ushort>(GenerationConstants.CHUNK_SIZE, BlockRegistry.AirID, false);
 
-            await BatchTasksAndAwait().ConfigureAwait(false);
+            await BatchTasksAndAwaitAll().ConfigureAwait(false);
 
             Array.Clear(_Heightmap, 0, _Heightmap.Length);
             Array.Clear(_Cavemap, 0, _Cavemap.Length);
@@ -100,7 +100,6 @@ namespace AutomataTest.Chunks.Generation
 
         public void ClearData()
         {
-            _CancellationToken = default;
             _OriginPoint = default;
             _Frequency = default;
             _Persistence = default;

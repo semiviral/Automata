@@ -8,6 +8,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 #endregion
 
@@ -21,7 +22,7 @@ namespace Automata.Collections
 
         public bool IsUniform => _Nodes == null;
 
-        public T Value { get; set; }
+        public T Value { get; private set; }
 
         public OctreeNode<T> this[int index]
         {
@@ -47,6 +48,7 @@ namespace Automata.Collections
 
         #region Data Operations
 
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public T GetPoint(int extent, int x, int y, int z)
         {
             if (IsUniform)
@@ -61,6 +63,7 @@ namespace Automata.Collections
             return _Nodes[octant].GetPoint(extent >> 1, x, y, z);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public void SetPoint(int extent, int x, int y, int z, T newValue)
         {
             if (IsUniform)
@@ -102,7 +105,7 @@ namespace Automata.Collections
 
         #region Helper Methods
 
-        public void Populate()
+        private void Populate()
         {
             _Nodes = new[]
             {
@@ -136,32 +139,12 @@ namespace Automata.Collections
             }
         }
 
-        public void Collapse()
+        private void Collapse()
         {
             Debug.Assert(_Nodes != null);
 
             Value = _Nodes[0].Value;
             _Nodes = null;
-        }
-
-        public void CollapseRecursive()
-        {
-            if (IsUniform)
-            {
-                return;
-            }
-
-            Debug.Assert(_Nodes != null);
-
-            foreach (OctreeNode<T> octreeNode in _Nodes)
-            {
-                octreeNode.CollapseRecursive();
-            }
-
-            if (CheckShouldCollapse())
-            {
-                Collapse();
-            }
         }
 
         private bool CheckShouldCollapse()
@@ -187,6 +170,26 @@ namespace Automata.Collections
             }
 
             return true;
+        }
+
+        public void CollapseRecursive()
+        {
+            if (IsUniform)
+            {
+                return;
+            }
+
+            Debug.Assert(_Nodes != null);
+
+            foreach (OctreeNode<T> octreeNode in _Nodes)
+            {
+                octreeNode.CollapseRecursive();
+            }
+
+            if (CheckShouldCollapse())
+            {
+                Collapse();
+            }
         }
 
         #endregion

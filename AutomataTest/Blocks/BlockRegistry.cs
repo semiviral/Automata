@@ -98,7 +98,7 @@ namespace AutomataTest.Blocks
             BlockNamesByID.Add(blockName, blockId);
             SortBlockDefinitionPropertiesToBuckets(blockDefinition);
 
-            Log.Information($"Added block `{blockName}` with ID: {blockId}");
+            Log.Information($"Added block '{blockName}' with ID: {blockId}");
         }
 
         // public bool GetUVs(ushort blockId, Direction direction, out ushort textureId)
@@ -161,15 +161,13 @@ namespace AutomataTest.Blocks
             return BlockDefinitions[blockId];
         }
 
-        public bool TryGetBlockDefinition(ushort blockId, out IReadOnlyBlockDefinition blockDefinition)
+        public bool TryGetBlockDefinition(ushort blockId, out IReadOnlyBlockDefinition? blockDefinition)
         {
             if (BlockIdExists(blockId))
             {
                 blockDefinition = BlockDefinitions[blockId];
                 return true;
             }
-
-            Log.Error($"Failed to return block rule for block with id `{blockId}`: block does not exist.");
 
             blockDefinition = default;
             return false;

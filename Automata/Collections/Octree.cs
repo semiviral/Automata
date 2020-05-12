@@ -45,9 +45,13 @@ namespace Automata.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T GetPoint(Vector3i point) => GetPointIterative(point.X, point.Y, point.Z);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public T GetPoint(int x, int y, int z) => GetPointIterative(x, y, z);
+
         // [MethodImpl(MethodImplOptions.AggressiveInlining)]
         // private T GetPointRecursive(Vector3 point) => _RootNode.GetPoint(_Extent, point.x, point.y, point.z);
 
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         private T GetPointIterative(int x, int y, int z)
         {
             Debug.Assert((x >= 0) && (x < (_Extent * 2)), "Given coordinates are not within local bounds.");
@@ -72,49 +76,10 @@ namespace Automata.Collections
         #region SetPoint
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetPoint(Vector3i point, T value) => SetPointRecursive(point, value);
+        public void SetPoint(Vector3i point, T value) => _RootNode.SetPoint(_Extent, point.X, point.Y, point.Z, value);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetPointNoCollapse(Vector3i point, T value) => SetPointIterative(point.X, point.Y, point.Z, value);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void SetPointRecursive(Vector3i point, T value) => _RootNode.SetPoint(_Extent, point.X, point.Y, point.Z, value);
-
-        private void SetPointIterative(int x, int y, int z, T value)
-        {
-            Debug.Assert((x >= 0) && (x < (_Extent * 2)), "Given coordinates are not within local bounds.");
-            Debug.Assert((y >= 0) && (y < (_Extent * 2)), "Given coordinates are not within local bounds.");
-            Debug.Assert((z >= 0) && (z < (_Extent * 2)), "Given coordinates are not within local bounds.");
-
-            OctreeNode<T> currentNode = _RootNode;
-
-            for (int extent = _Extent;; extent >>= 1)
-            {
-                if (currentNode.IsUniform)
-                {
-                    if (currentNode.Value.Equals(value))
-                    {
-                        return;
-                    }
-                    else if (extent < 1)
-                    {
-                        // reached smallest possible depth (usually 1x1x1) so
-                        // set value and return
-                        currentNode.Value = value;
-                        return;
-                    }
-                    else
-                    {
-                        currentNode.Populate();
-                    }
-                }
-
-                Octree.DetermineOctant(extent, ref x, ref y, ref z, out int octant);
-
-                // recursively dig into octree and set
-                currentNode = currentNode[octant];
-            }
-        }
+        public void SetPoint(int x, int y, int z, T value) => _RootNode.SetPoint(_Extent, x, y, z, value);
 
         #endregion
 
@@ -151,11 +116,6 @@ namespace Automata.Collections
                 destinationArray[index] = GetPoint(Vector3i.Project3D(index, size));
             }
         }
-
-        public void CollapseRecursive()
-        {
-            _RootNode.CollapseRecursive();
-        }
     }
 
     public static class Octree
@@ -167,7 +127,7 @@ namespace Automata.Collections
         // top half quadrant indexes:
         // 5 7
         // 4 6
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public static void DetermineOctant(int extent, ref int x, ref int y, ref int z, out int octant)
         {
             octant = 0;

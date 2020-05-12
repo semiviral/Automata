@@ -2,6 +2,7 @@
 
 using System.Numerics;
 using Windows.Devices.Bluetooth.Advertisement;
+using Automata.Numerics;
 
 #endregion
 
@@ -9,7 +10,7 @@ namespace AutomataTest.Chunks.Generation
 {
     public static class GenerationConstants
     {
-        public const float FREQUENCY = 0.0075f;
+        public const float _FREQUENCY = 0.0075f;
         public const float PERSISTENCE = 0.6f;
 
         public const int CHUNK_SIZE_BIT_SHIFT = 6;
@@ -20,9 +21,6 @@ namespace AutomataTest.Chunks.Generation
         public const int CHUNK_SIZE_CUBED = CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE;
         public const int WORLD_HEIGHT_IN_CHUNKS = 8;
         public const int WORLD_HEIGHT = CHUNK_SIZE * WORLD_HEIGHT_IN_CHUNKS;
-
-        // '8' is the 'numthreads[]' value in the compute shader
-        public const int CHUNK_THREAD_GROUP_SIZE = CHUNK_SIZE / 8;
 
         public static int Seed { get; set; }
 
@@ -36,14 +34,14 @@ namespace AutomataTest.Chunks.Generation
             -CHUNK_SIZE,
         };
 
-        public static readonly Vector3[] NormalVectorByIteration =
+        public static readonly Vector3i[] NormalVectorByIteration =
         {
-            new Vector3(1f, 0f, 0f),
-            new Vector3(0f, 1f, 0f),
-            new Vector3(0f, 0f, 1f),
-            new Vector3(-1f, 0f, 0f),
-            new Vector3(0f, -1f, 0f),
-            new Vector3(0f, 0f, -1f),
+            new Vector3i(1, 0, 0),
+            new Vector3i(0, 1, 0),
+            new Vector3i(0, 0, 1),
+            new Vector3i(-1, 0, 0),
+            new Vector3i(0, -1, 0),
+            new Vector3i(0, 0, -1),
         };
 
         public static readonly int[] NormalByIteration =
@@ -106,28 +104,6 @@ namespace AutomataTest.Chunks.Generation
                 0b000000_000000_000000,
                 0b000000_000001_000000,
             },
-        };
-
-        public static readonly int[][] UVIndexAdjustments =
-        {
-            new[]
-            {
-                -1, // iterating x axis
-                1,
-                0,
-            },
-            new[]
-            {
-                0,
-                -1, // iterating y axis
-                1,
-            },
-            new[]
-            {
-                0,
-                1,
-                -1, // iterating z axis
-            }
         };
     }
 }
