@@ -18,7 +18,6 @@ namespace Automata.Jobs
     {
         private static readonly CancellationTokenSource _AbortTokenSource;
         private static readonly SemaphoreSlim _WorkerSemaphore;
-        private static long _MaximumProcessingJobs;
         private static long _QueuedJobs;
         private static long _ProcessingJobs;
 
@@ -26,18 +25,23 @@ namespace Automata.Jobs
         public static long QueuedJobs => Interlocked.Read(ref _QueuedJobs);
         public static long ProcessingJobs => Interlocked.Read(ref _ProcessingJobs);
 
-        public static long MaximumProcessingJobs
-        {
-            get => Interlocked.Read(ref _MaximumProcessingJobs);
-            set => Interlocked.Exchange(ref _MaximumProcessingJobs, value);
-        }
+        public static int MaximumConcurrentJobs { get; }
 
         /// <summary>
-        ///     Initializes a new instance of <see cref="AsyncJobScheduler" /> class.
+        ///     Initializes the static instance of the <see cref="AsyncJobScheduler" /> class.
         /// </summary>
         static AsyncJobScheduler()
         {
+            // set maximum concurrent jobs to logical core count - 2
+            // remark: two is subtracted from total logical core count to avoid bogging
+            //     down the main thread, with an extra logical core omitted as a buffer.
+            //
+            //     Largely, the goal here is to ensure this tool remains lightweight and doesn't
+            //     interfere with other critical processes.
+            MaximumConcurrentJobs = Environment.ProcessorCount - 2;
+
             _AbortTokenSource = new CancellationTokenSource();
+            _WorkerSemaphore = new SemaphoreSlim(MaximumConcurrentJobs, MaximumConcurrentJobs);
 
             JobQueued += (sender, args) => { Interlocked.Increment(ref _QueuedJobs); };
             JobStarted += (sender, args) =>
@@ -46,27 +50,13 @@ namespace Automata.Jobs
                 Interlocked.Increment(ref _ProcessingJobs);
             };
             JobFinished += (sender, args) => { Interlocked.Decrement(ref _ProcessingJobs); };
-
-            MaximumProcessingJobs = Environment.ProcessorCount - 2;
-            _WorkerSemaphore = new SemaphoreSlim((int)MaximumProcessingJobs, (int)MaximumProcessingJobs);
         }
 
 
         #region State
 
         /// <summary>
-        ///     Aborts execution of job scheduler.
-        /// </summary>
-        public static void Abort(bool abort)
-        {
-            if (abort)
-            {
-                _AbortTokenSource.Cancel();
-            }
-        }
-
-        /// <summary>
-        ///     Queues given <see cref="AsyncInvocation" /> for execution by <see cref="AsyncJobScheduler" />.
+        ///     Queues given <see cref="AsyncJob" /> for execution by <see cref="AsyncJobScheduler" />.
         /// </summary>
         /// <param name="asyncJob"><see cref="AsyncJob" /> to execute.</param>
         /// <remarks>
@@ -111,10 +101,29 @@ namespace Automata.Jobs
         public static async Task WaitAsync() => await _WorkerSemaphore.WaitAsync();
 
         /// <summary>
-        ///     Waits asynchronously until work is ready to be done, or until timeout is reached..
+        ///     Waits asynchronously until work is ready to be done, or until timeout is reached.
         /// </summary>
-        /// <param name="timeout"><see cref="TimeSpan" /> to wait until returning without successful wait.</param>
+        /// <param name="timeout">
+        ///     Maximum <see cref="TimeSpan" /> to wait until returning without successful wait.
+        /// </param>
+        /// <returns>
+        ///     <c>true</c> if the wait did not exceed given timeout, otherwise <c>false</c>.
+        /// </returns>
         public static async Task<bool> WaitAsync(TimeSpan timeout) => await _WorkerSemaphore.WaitAsync(timeout);
+
+        /// <summary>
+        ///     Aborts execution of job scheduler.
+        /// </summary>
+        /// <param name="abort">
+        ///     Whether or not to abort <see cref="AsyncJobScheduler" /> execution.
+        /// </param>
+        public static void Abort(bool abort)
+        {
+            if (abort)
+            {
+                _AbortTokenSource.Cancel();
+            }
+        }
 
         #endregion
 
@@ -130,11 +139,17 @@ namespace Automata.Jobs
                 return;
             }
 
-            await _WorkerSemaphore.WaitAsync().ConfigureAwait(false);
+            try
+            {
+                await _WorkerSemaphore.WaitAsync().ConfigureAwait(false);
 
-            await invocation.Invoke().ConfigureAwait(false);
-
-            _WorkerSemaphore.Release();
+                await invocation.Invoke().ConfigureAwait(false);
+            }
+            finally
+            {
+                // release semaphore regardless of any invocation errors
+                _WorkerSemaphore.Release();
+            }
         }
 
         private static async Task ExecuteJob(AsyncJob asyncJob)
@@ -163,7 +178,7 @@ namespace Automata.Jobs
             }
             finally
             {
-                // release semaphore
+                // release semaphore regardless of any job errors
                 _WorkerSemaphore.Release();
             }
         }

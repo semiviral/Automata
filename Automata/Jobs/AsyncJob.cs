@@ -4,7 +4,11 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Serilog;
+
+// ReSharper disable MemberCanBeProtected.Global
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable UnusedMember.Global
 
 #endregion
 
@@ -12,22 +16,45 @@ namespace Automata.Jobs
 {
     public class AsyncJob
     {
+        private readonly object _IsWorkFinishedLock;
         private readonly Stopwatch _Stopwatch;
 
-        /// <summary>
-        ///     Identity of the <see cref="AsyncJob" />.
-        /// </summary>
-        public object Identity { get; }
+        private bool _IsWorkFinished;
 
         /// <summary>
         ///     Token that can be passed into constructor to allow jobs to observe cancellation.
         /// </summary>
-        public CancellationToken CancellationToken { get; protected set; }
+        protected CancellationToken _CancellationToken { get; set; }
+
+        /// <summary>
+        ///     Identity of the <see cref="AsyncJob" />.
+        /// </summary>
+        public Guid Identity { get; }
 
         /// <summary>
         ///     Thread-safe determination of execution status.
         /// </summary>
-        public bool IsWorkFinished { get; set; }
+        public bool IsWorkFinished
+        {
+            get
+            {
+                bool tmp;
+
+                lock (_IsWorkFinishedLock)
+                {
+                    tmp = _IsWorkFinished;
+                }
+
+                return tmp;
+            }
+            set
+            {
+                lock (_IsWorkFinishedLock)
+                {
+                    _IsWorkFinished = value;
+                }
+            }
+        }
 
         /// <summary>
         ///     Elapsed time of specifically the <see cref="Process" /> function.
@@ -39,13 +66,16 @@ namespace Automata.Jobs
         /// </summary>
         public TimeSpan ExecutionTime { get; private set; }
 
-        public event EventHandler<AsyncJob> WorkFinished;
+        public event EventHandler<AsyncJob>? WorkFinished;
 
         public AsyncJob()
         {
+            _IsWorkFinishedLock = new object();
             _Stopwatch = new Stopwatch();
+
+            // create new, unique job identity
             Identity = Guid.NewGuid();
-            CancellationToken = AsyncJobScheduler.AbortToken;
+            _CancellationToken = AsyncJobScheduler.AbortToken;
             IsWorkFinished = false;
         }
 
@@ -54,9 +84,14 @@ namespace Automata.Jobs
         /// </summary>
         public AsyncJob(CancellationToken cancellationToken)
         {
+            _IsWorkFinishedLock = new object();
             _Stopwatch = new Stopwatch();
+
+            // create new, unique job identity
             Identity = Guid.NewGuid();
-            CancellationToken = CancellationTokenSource.CreateLinkedTokenSource(AsyncJobScheduler.AbortToken, cancellationToken).Token;
+
+            // combine AsyncJobScheduler's cancellation token with the given token, to effectively observe both
+            _CancellationToken = CancellationTokenSource.CreateLinkedTokenSource(AsyncJobScheduler.AbortToken, cancellationToken).Token;
             IsWorkFinished = false;
         }
 
@@ -67,7 +102,8 @@ namespace Automata.Jobs
         {
             try
             {
-                if (CancellationToken.IsCancellationRequested)
+                // observe cancellation token
+                if (_CancellationToken.IsCancellationRequested)
                 {
                     return;
                 }
@@ -84,18 +120,21 @@ namespace Automata.Jobs
 
                 ExecutionTime = _Stopwatch.Elapsed;
 
-                IsWorkFinished = true;
+                // and signal WorkFinished event
                 WorkFinished?.Invoke(this, this);
             }
-            catch (Exception ex)
+            finally
             {
-                Log.Error($"Error in {nameof(AsyncJob)} execution: {ex.Message}\r\n{ex.StackTrace}");
+                // work is finished, so flip IsWorkFinished bool
                 IsWorkFinished = true;
+
+                // dereference any subscriptors to avoid memory leaks
+                WorkFinished = null;
             }
         }
 
         /// <summary>
-        ///     This is the main method that is executed.
+        ///     This is the primary method that is executed.
         /// </summary>
         protected virtual Task Process() => Task.CompletedTask;
 

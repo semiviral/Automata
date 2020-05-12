@@ -78,7 +78,7 @@ namespace AutomataTest.Chunks.Generation
 
         protected override Task ProcessFinished()
         {
-            if (!CancellationToken.IsCancellationRequested)
+            if (!_CancellationToken.IsCancellationRequested)
             {
                 Diagnostics.Instance["NoiseRetrieval"].Enqueue(_NoiseRetrievalTimeSpan);
                 Diagnostics.Instance["TerrainGeneration"].Enqueue(_TerrainGenerationTimeSpan);
@@ -100,7 +100,7 @@ namespace AutomataTest.Chunks.Generation
 
         public void ClearData()
         {
-            CancellationToken = default;
+            _CancellationToken = default;
             _OriginPoint = default;
             _Frequency = default;
             _Persistence = default;
