@@ -7,11 +7,12 @@ using System.Numerics;
 using System.Threading;
 using Automata.Collections;
 using Automata.Jobs;
+using AutomataTest.Blocks;
 using Random = System.Random;
 
 #endregion
 
-namespace AutomataTest
+namespace AutomataTest.Chunks.Generation
 {
     public abstract class ChunkTerrainJob : AsyncParallelJob
     {
@@ -39,7 +40,7 @@ namespace AutomataTest
             {
                 return id;
             }
-            else if (BlockController.Current.TryGetBlockId(blockName, out id))
+            else if (BlockRegistry.Instance.TryGetBlockId(blockName, out id))
             {
                 _BlockIDCache.TryAdd(blockName, id);
                 return id;

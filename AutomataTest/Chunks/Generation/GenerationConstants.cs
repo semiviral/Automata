@@ -4,7 +4,7 @@ using System.Numerics;
 
 #endregion
 
-namespace AutomataTest
+namespace AutomataTest.Chunks.Generation
 {
     public static class GenerationConstants
     {

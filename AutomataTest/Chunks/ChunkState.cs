@@ -1,6 +1,6 @@
 using Automata.Core.Components;
 
-namespace AutomataTest
+namespace AutomataTest.Chunks
 {
     public enum ChunkState
     {

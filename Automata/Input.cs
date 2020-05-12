@@ -23,32 +23,30 @@ namespace Automata
 
     public sealed class Input : Singleton<Input>
     {
-        private readonly IView _View;
-        private readonly IInputContext _InputContext;
-
         private readonly List<IKeyboard> _Keyboards;
         private readonly List<IMouse> _Mice;
 
+        private IView? _View;
+        private IInputContext? _InputContext;
+
         public Vector2 ViewCenter { get; private set; }
 
-        public Input(IView view)
+        public Input()
         {
             AssignSingletonInstance(this);
 
             _Keyboards = new List<IKeyboard>();
             _Mice = new List<IMouse>();
-
-            _View = view;
-            _InputContext = _View.CreateInput();
-
-            RegisterInputContext(_InputContext);
-
-            _View.Resize += size => { ViewCenter = new Vector2(size.Width / 2f, size.Height / 2f); };
         }
 
-        private void RegisterInputContext(IInputContext inputContext)
+        public void RegisterView(IView view)
         {
-            foreach (IKeyboard keyboard in inputContext.Keyboards)
+            _View = view;
+            _InputContext = _View.CreateInput();
+            _View.Resize += size => { ViewCenter = new Vector2(size.Width / 2f, size.Height / 2f); };
+
+
+            foreach (IKeyboard keyboard in _InputContext.Keyboards)
             {
                 keyboard.KeyUp += OnKeyUp;
                 keyboard.KeyDown += OnKeyDown;
@@ -56,7 +54,7 @@ namespace Automata
                 _Keyboards.Add(keyboard);
             }
 
-            foreach (IMouse mouse in inputContext.Mice)
+            foreach (IMouse mouse in _InputContext.Mice)
             {
                 mouse.MouseDown += OnMouseButtonDown;
                 mouse.MouseUp += OnMouseButtonUp;

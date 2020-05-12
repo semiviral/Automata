@@ -5,10 +5,11 @@ using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using Automata.Collections;
+using AutomataTest.Blocks;
 
 #endregion
 
-namespace AutomataTest
+namespace AutomataTest.Chunks.Generation
 {
     public class ChunkTerrainBuilderJob : ChunkTerrainJob
     {
@@ -40,7 +41,7 @@ namespace AutomataTest
 
             Stopwatch.Restart();
 
-            _Blocks = new Octree(GenerationConstants.CHUNK_SIZE, BlockController.AirID, false);
+            _Blocks = new Octree<ushort>(GenerationConstants.CHUNK_SIZE, BlockRegistry.AirID, false);
 
             await BatchTasksAndAwait().ConfigureAwait(false);
 
@@ -76,8 +77,7 @@ namespace AutomataTest
             return Task.CompletedTask;
         }
 
-        public void SetData(CancellationToken cancellationToken, Vector3 originPoint, int seed, float frequency, float persistence,
-            ComputeBuffer heightmapBuffer = null, ComputeBuffer caveNoiseBuffer = null)
+        public void SetData(CancellationToken cancellationToken, Vector3 originPoint, int seed, float frequency, float persistence)
         {
             SetData(cancellationToken, originPoint);
 
@@ -86,8 +86,6 @@ namespace AutomataTest
 
             _Frequency = frequency;
             _Persistence = persistence;
-            _HeightmapBuffer = heightmapBuffer;
-            _CaveNoiseBuffer = caveNoiseBuffer;
         }
 
         public void ClearData()

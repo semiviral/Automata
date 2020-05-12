@@ -1,9 +1,9 @@
 using Automata.Collections;
 using Automata.Core.Components;
 
-namespace AutomataTest
+namespace AutomataTest.Chunks
 {
-    public class BlockData : IComponent
+    public class ChunkData : IComponent
     {
         private INodeCollection<ushort> Blocks { get; set; }
     }
