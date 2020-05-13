@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
@@ -33,13 +34,9 @@ namespace Automata.Singletons
 
         public Input()
         {
-            if (GameWindow.Instance == null)
+            if (!GameWindow.Validate())
             {
-                throw new InvalidOperationException($"Singleton '{nameof(GameWindow)}' has not been instantiated.");
-            }
-            else if (GameWindow.Instance.Window == null)
-            {
-                throw new InvalidOperationException($"Singleton '{nameof(GameWindow)}' does not have a valid '{nameof(IWindow)}' assigned.");
+                throw new InvalidOperationException();
             }
 
             AssignSingletonInstance(this);
@@ -47,6 +44,9 @@ namespace Automata.Singletons
             _Keyboards = new List<IKeyboard>();
             _Mice = new List<IMouse>();
 
+            Debug.Assert(GameWindow.Instance != null);
+            Debug.Assert(GameWindow.Instance.Window != null);
+    
             RegisterView(GameWindow.Instance.Window);
         }
 

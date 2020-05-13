@@ -10,6 +10,11 @@ namespace Automata.Singletons
     {
         public GL GL { get; }
 
-        public GLAPI() => GL = GL.GetApi();
+        public GLAPI()
+        {
+            AssignSingletonInstance(this);
+
+            GL = GL.GetApi();
+        }
     }
 }

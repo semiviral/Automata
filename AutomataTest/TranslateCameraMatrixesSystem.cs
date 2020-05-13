@@ -10,14 +10,13 @@ using Automata.Rendering;
 
 namespace AutomataTest
 {
-    public class InputCameraViewMoverSystem : ComponentSystem
+    public class TranslateCameraMatrixesSystem : ComponentSystem
     {
-        public InputCameraViewMoverSystem()
+        public TranslateCameraMatrixesSystem()
         {
             HandledComponentTypes = new[]
             {
                 typeof(Camera),
-                typeof(RenderedShader),
                 typeof(Translation),
                 typeof(Rotation)
             };
@@ -25,8 +24,7 @@ namespace AutomataTest
 
         public override void Update(EntityManager entityManager, float deltaTime)
         {
-            foreach (RenderedShader renderedShader in entityManager.GetComponents<RenderedShader>())
-            foreach ((Camera _, Translation translation, Rotation rotation) in entityManager.GetComponents<Camera, Translation, Rotation>())
+            foreach ((Camera camera, Translation translation, Rotation rotation) in entityManager.GetComponents<Camera, Translation, Rotation>())
             {
                 if (!translation.Changed && !rotation.Changed)
                 {
@@ -35,10 +33,9 @@ namespace AutomataTest
 
                 Matrix4x4 translationMatrix = Matrix4x4.CreateTranslation(translation.Value);
                 Matrix4x4 rotationMatrix = Matrix4x4.CreateFromQuaternion(rotation.Value);
-                Matrix4x4 finalMatrix = Matrix4x4.Multiply(translationMatrix, rotationMatrix);
+                Matrix4x4 finalViewMatrix = Matrix4x4.Multiply(translationMatrix, rotationMatrix);
 
-                //renderedShader.Shader.SetUniform("view", Matrix4x4.CreateWorld(translation.Normal, forward, up));
-                renderedShader.Shader.SetUniform("view", finalMatrix);
+                camera.View = finalViewMatrix;
             }
         }
     }

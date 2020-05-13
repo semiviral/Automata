@@ -1,11 +1,9 @@
 ﻿#region
 
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Numerics;
-using Automata;
 using Automata.Core;
 using Automata.Core.Components;
 using Automata.Core.Systems;
@@ -16,11 +14,9 @@ using AutomataTest.Blocks;
 using AutomataTest.Chunks;
 using Serilog;
 using Silk.NET.GLFW;
-using Silk.NET.Input;
-using Silk.NET.Input.Common;
 using Silk.NET.OpenGL;
+using Silk.NET.Windowing;
 using Silk.NET.Windowing.Common;
-using Window = Silk.NET.Windowing.Window;
 
 #endregion
 
@@ -150,7 +146,7 @@ namespace AutomataTest
             world = new GameWorld(true);
             world.SystemManager.RegisterSystem<ViewDoUpdateSystem, FirstOrderSystem>();
             world.SystemManager.RegisterSystem<ViewDoRenderSystem, LastOrderSystem>();
-            world.SystemManager.RegisterSystem<InputCameraViewMoverSystem, RenderOrderSystem>();
+            world.SystemManager.RegisterSystem<TranslateCameraMatrixesSystem, RenderOrderSystem>();
             world.SystemManager.RegisterSystem<ChunkBuildingSystem, DefaultOrderSystem>();
             World.RegisterWorld("core", world);
         }
@@ -167,10 +163,10 @@ namespace AutomataTest
                 Indices = _indices
             });
 
-            _Shader = new Shader("default.vert", "shader.frag");
-            _Shader.SetUniform("model", Matrix4x4.Identity);
-            _Shader.SetUniform("projection", Matrix4x4.Identity);
-            _Shader.SetUniform("view", Matrix4x4.Identity);
+            _Shader = new Shader();
+            _Shader.SetUniform("Model", Matrix4x4.Identity);
+            _Shader.SetUniform("Projection", Matrix4x4.Identity);
+            _Shader.SetUniform("View", Matrix4x4.Identity);
 
             world.EntityManager.RegisterComponent(gameEntity, new RenderedShader
             {
@@ -187,20 +183,7 @@ namespace AutomataTest
                 Value = new Vector3(0f, 0f, -1f)
             });
             world.EntityManager.RegisterComponent<Rotation>(playerEntity);
-
-            Camera playerCamera = new Camera
-            {
-                View = Matrix4x4.CreateLookAt(new Vector3(0f, 0f, 3f), Vector3.Zero, Vector3.UnitY),
-            };
-
-            void AdjustPerspective(Size size)
-            {
-                playerCamera.Projection = Matrix4x4.CreatePerspective(AutomataMath.ToRadians(90f), size.Width / (float)size.Height, 0.1f, 100f);
-            }
-
-            _Window.Resize += AdjustPerspective;
-
-            AdjustPerspective(_Window.Size);
+            world.EntityManager.RegisterComponent<Camera>(playerEntity);
         }
 
         private static void Initialize()
