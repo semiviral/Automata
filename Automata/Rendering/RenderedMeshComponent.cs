@@ -9,7 +9,7 @@ namespace Automata.Rendering
 {
     public class RenderedMeshComponent : IComponent
     {
-        public VertexBuffer? VertexBuffer { get; set; }
+        public VertexBuffer<float>? VertexBuffer { get; set; }
         public BufferObject<uint>? BufferObject { get; set; }
         public VertexArrayObject<float, uint>? VertexArrayObject { get; set; }
     }

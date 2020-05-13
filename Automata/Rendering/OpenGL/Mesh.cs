@@ -3,54 +3,44 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using Silk.NET.OpenGL;
+
+// ReSharper disable InconsistentNaming
 
 #endregion
 
 namespace Automata.Rendering.OpenGL
 {
-    public class Mesh
+    public class Mesh<TVertexType> where TVertexType : unmanaged
     {
         private GL _GL { get; }
-        private VertexBuffer VertexBuffer { get; }
-        private BufferObject<uint> TrisBuffer { get; }
+        private VertexBuffer<TVertexType> VerticesBuffer { get; }
+        private BufferObject<uint> TrianglesBuffer { get; }
 
-        public IEnumerable<Vector3> Vertices { get; set; }
-        public IEnumerable<Color64> Colors { get; set; }
-        public IEnumerable<uint> Triangles { get; set; }
+        public IEnumerable<TVertexType> Vertices { get; set; } = Enumerable.Empty<TVertexType>();
+        public IEnumerable<uint> Triangles { get; set; } = Enumerable.Empty<uint>();
 
         public Mesh()
         {
             _GL = GL.GetApi();
 
-            VertexBuffer = new VertexBuffer(_GL);
-            TrisBuffer = new BufferObject<uint>(_GL, BufferTargetARB.ElementArrayBuffer);
+            VerticesBuffer = new VertexBuffer<TVertexType>(_GL);
+            TrianglesBuffer = new BufferObject<uint>(_GL, BufferTargetARB.ElementArrayBuffer);
         }
 
         public void Flush()
         {
             if ((Vertices == null) || !Vertices.Any())
             {
-                throw new ArgumentNullException(string.Format(ExceptionFormats.ArgumentNullException,
-                    nameof(Vertices)));
+                throw new ArgumentNullException(string.Format(ExceptionFormats.ArgumentNullException, nameof(Vertices)));
             }
             else if ((Triangles == null) || !Triangles.Any())
             {
-                throw new ArgumentNullException(string.Format(ExceptionFormats.ArgumentNullException,
-                    nameof(Triangles)));
+                throw new ArgumentNullException(string.Format(ExceptionFormats.ArgumentNullException, nameof(Triangles)));
             }
 
-            if ((Colors == null) || !Colors.Any())
-            {
-                VertexBuffer.SetBufferData(Vertices);
-            }
-            else
-            {
-                VertexBuffer.SetBufferData(Vertices, Colors);
-            }
-
-            TrisBuffer.SetBufferData(Triangles.ToArray());
+            VerticesBuffer.SetBufferData(Vertices.ToArray());
+            TrianglesBuffer.SetBufferData(Triangles.ToArray());
         }
     }
 }

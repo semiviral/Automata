@@ -60,7 +60,7 @@ namespace Automata.Rendering
                 {
                     renderedMeshComponent = new RenderedMeshComponent
                     {
-                        VertexBuffer = new VertexBuffer(_GL),
+                        VertexBuffer = new VertexBuffer<float>(_GL),
                         BufferObject = new BufferObject<uint>(_GL, BufferTargetARB.ElementArrayBuffer),
                     };
                     renderedMeshComponent.VertexArrayObject =
@@ -85,14 +85,23 @@ namespace Automata.Rendering
 
                 // apply pending mesh data
                 PendingMeshDataComponent pendingMeshData = entity.GetComponent<PendingMeshDataComponent>();
-                renderedMeshComponent.VertexBuffer.SetBufferData(pendingMeshData.Vertices ?? new Vector3[0],
-                    pendingMeshData.Colors ?? new Color64[0]);
+                renderedMeshComponent.VertexBuffer.SetBufferData(UnrollVertices(pendingMeshData.Vertices ?? new Vector3[0]).ToArray());
                 renderedMeshComponent.BufferObject.SetBufferData(pendingMeshData.Indices);
                 renderedMeshComponent.VertexArrayObject.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, 7, 0);
                 renderedMeshComponent.VertexArrayObject.VertexAttributePointer(1, 4, VertexAttribPointerType.Float, 7, 3);
 
                 // remove now processed mesh data component
                 entityManager.RemoveComponent<PendingMeshDataComponent>(entity);
+            }
+        }
+
+        private IEnumerable<float> UnrollVertices(IEnumerable<Vector3> vertices)
+        {
+            foreach (Vector3 vertex in vertices)
+            {
+                yield return vertex.X;
+                yield return vertex.Y;
+                yield return vertex.Z;
             }
         }
     }

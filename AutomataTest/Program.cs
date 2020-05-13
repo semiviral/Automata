@@ -26,16 +26,12 @@ namespace AutomataTest
 {
     internal class Program
     {
-        private static readonly string _localDataPath =
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData,
-                Environment.SpecialFolderOption.Create);
+        private static readonly string _LocalDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData,
+            Environment.SpecialFolderOption.Create);
 
         private static IWindow _Window;
         private static GL _GL;
 
-        private static VertexBuffer _VBO;
-        private static BufferObject<uint> _EBO;
-        private static VertexArrayObject<float, uint> _VAO;
         private static Shader _Shader;
 
         //Vertex data, uploaded to the VBO.
@@ -67,17 +63,14 @@ namespace AutomataTest
 
         private static void Main(string[] args)
         {
-            Log.Logger = new LoggerConfiguration()
-                .WriteTo.Console()
-                .CreateLogger();
+            Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
             Log.Information("Static logger initialized.");
 
-            if (!Directory.Exists($@"{_localDataPath}/Wyd/"))
+            if (!Directory.Exists($@"{_LocalDataPath}/Wyd/"))
             {
                 Log.Information("Local data folder missing, creating...");
-                Directory.CreateDirectory($@"{_localDataPath}/Wyd/");
+                Directory.CreateDirectory($@"{_LocalDataPath}/Wyd/");
             }
-
 
             WindowOptions options = WindowOptions.Default;
             options.Title = "Wyd: A Journey";
@@ -87,8 +80,14 @@ namespace AutomataTest
             _Window = Window.Create(options);
             //_Window.Render += OnRender;
             _Window.Closing += OnClose;
-            _Projection = Matrix4x4.CreatePerspective(Mathf.ToRadians(90f),
-                (float)_Window.Size.Width / _Window.Size.Height, 0.1f, 100f);
+            _Window.Resize += AdjustPerspective;
+
+            static void AdjustPerspective(Size size)
+            {
+                _Projection = Matrix4x4.CreatePerspective(AutomataMath.ToRadians(90f), (float)size.Width / (float)size.Height, 0.1f, 100f);
+            }
+
+            AdjustPerspective(_Window.Size);
 
             _Window.Initialize();
             Initialize();
