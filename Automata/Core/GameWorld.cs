@@ -19,6 +19,8 @@ namespace Automata.Core
 
             // rendering systems
             SystemManager.RegisterSystem<RenderSystem, RenderOrderSystem>();
+            SystemManager.RegisterSystem<CameraMatrixesSystem, RenderOrderSystem>();
+
 
             // cleanup systems
             SystemManager.RegisterSystem<ComponentChangedCleanupSystem, LastOrderSystem>();

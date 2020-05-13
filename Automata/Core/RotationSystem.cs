@@ -2,11 +2,12 @@
 
 using System.Numerics;
 using Automata.Core.Components;
+using Automata.Core.Systems;
 using Automata.Singletons;
 
 #endregion
 
-namespace Automata.Core.Systems
+namespace Automata.Core
 {
     public class RotationSystem : ComponentSystem
     {

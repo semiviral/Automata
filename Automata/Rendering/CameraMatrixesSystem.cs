@@ -1,9 +1,12 @@
 #region
 
+using System.Diagnostics;
+using System.Drawing;
 using System.Numerics;
 using Automata.Core;
 using Automata.Core.Components;
 using Automata.Core.Systems;
+using Automata.Singletons;
 
 #endregion
 
@@ -11,6 +14,9 @@ namespace Automata.Rendering
 {
     public class CameraMatrixesSystem : ComponentSystem
     {
+        private bool _HasGameWindowResized;
+        private float _NewFOV;
+
         public CameraMatrixesSystem()
         {
             HandledComponentTypes = new[]
@@ -19,23 +25,44 @@ namespace Automata.Rendering
                 typeof(Translation),
                 typeof(Rotation)
             };
+
+            GameWindow.Validate();
+
+            Debug.Assert(GameWindow.Instance != null);
+            Debug.Assert(GameWindow.Instance.Window != null);
+
+            GameWindowResized(GameWindow.Instance.Window.Size);
+            GameWindow.Instance.Window.Resize += GameWindowResized;
         }
 
         public override void Update(EntityManager entityManager, float deltaTime)
         {
-            foreach ((Camera camera, Translation translation, Rotation rotation) in entityManager.GetComponents<Camera, Translation, Rotation>())
+            foreach (IEntity entity in entityManager.GetEntitiesWithComponents<Camera>())
             {
-                if (!translation.Changed && !rotation.Changed)
+                Camera camera = entity.GetComponent<Camera>();
+
+                // adjust perspective
+                if (_HasGameWindowResized)
                 {
-                    continue;
+                    camera.Projection = Matrix4x4.CreatePerspectiveFieldOfView(AutomataMath.ToRadians(90f), _NewFOV, 0.1f, 1000f);
                 }
 
-                Matrix4x4 translationMatrix = Matrix4x4.CreateTranslation(translation.Value);
-                Matrix4x4 rotationMatrix = Matrix4x4.CreateFromQuaternion(rotation.Value);
-                Matrix4x4 finalViewMatrix = Matrix4x4.Multiply(translationMatrix, rotationMatrix);
-
-                camera.View = finalViewMatrix;
+                // adjust view
+                if (entity.TryGetComponent(out Translation translation)
+                    && entity.TryGetComponent(out Rotation rotation)
+                    && (translation.Changed || rotation.Changed))
+                {
+                    camera.View = AutomataMath.MatrixFromTranslationAndRotationWithScale(1f, rotation, translation);
+                }
             }
+
+            _HasGameWindowResized = false;
+        }
+
+        private void GameWindowResized(Size size)
+        {
+            _HasGameWindowResized = true;
+            _NewFOV = (float)size.Width / size.Height;
         }
     }
 }

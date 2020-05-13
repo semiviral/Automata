@@ -56,8 +56,8 @@ namespace Automata.Rendering
 
                 // apply pending mesh data
                 PendingMeshDataComponent pendingMeshData = entity.GetComponent<PendingMeshDataComponent>();
-                mesh.VertexesBuffer.SetBufferData(UnrollVertices(pendingMeshData.Vertices).ToArray());
-                mesh.IndexesBuffer.SetBufferData(pendingMeshData.Indices);
+                mesh.VertexesBuffer.SetBufferData(pendingMeshData.Vertexes.SelectMany(AutomataMath.UnrollVector3).ToArray());
+                mesh.IndexesBuffer.SetBufferData(pendingMeshData.Indexes);
                 mesh.VertexArrayObject.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, 3, 0);
 
                 // push entity for component removal
@@ -73,16 +73,6 @@ namespace Automata.Rendering
                 }
 
                 entityManager.RemoveComponent<PendingMeshDataComponent>(entity);
-            }
-        }
-
-        private static IEnumerable<float> UnrollVertices(IEnumerable<Vector3> vertices)
-        {
-            foreach (Vector3 vertex in vertices)
-            {
-                yield return vertex.X;
-                yield return vertex.Y;
-                yield return vertex.Z;
             }
         }
     }

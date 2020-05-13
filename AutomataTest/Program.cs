@@ -36,12 +36,17 @@ namespace AutomataTest
         //Vertex data, uploaded to the VBO.
         private static readonly Vector3[] _vertices =
         {
-            // bottom
-            new Vector3(0f, 0f, 0f),
-            new Vector3(0f, 0f, 1f),
-            new Vector3(1f, 0f, 0f),
-            new Vector3(1f, 0f, 1f),
+            new Vector3(0f, 0f, -1f),
+            new Vector3(0.5f, 0f, -1f),
+            new Vector3(0f, 0.5f, -1f),
+            new Vector3(0.5f, 0.5f, -1f),
 
+            // // bottom
+            // new Vector3(0f, 0f, 0f),
+            // new Vector3(0f, 0f, 1f),
+            // new Vector3(1f, 0f, 0f),
+            // new Vector3(1f, 0f, 1f),
+            //
             // // north
             // new Vector3(0f, 0f, 1f),
             // new Vector3(1f, 0f, 1f),
@@ -205,7 +210,6 @@ namespace AutomataTest
             world.SystemManager.RegisterSystem<ViewDoUpdateSystem, FirstOrderSystem>();
             world.SystemManager.RegisterSystem<ViewDoRenderSystem, LastOrderSystem>();
             world.SystemManager.RegisterSystem<ChunkBuildingSystem, DefaultOrderSystem>();
-            //world.SystemManager.RegisterSystem<CameraMatrixesSystem, RenderOrderSystem>();
             World.RegisterWorld("core", world);
         }
 
@@ -215,8 +219,8 @@ namespace AutomataTest
             world.EntityManager.RegisterEntity(gameEntity);
             world.EntityManager.RegisterComponent(gameEntity, new PendingMeshDataComponent
             {
-                Vertices = _vertices,
-                Indices = _indices
+                Vertexes = _vertices,
+                Indexes = _indices
             });
         }
 
@@ -226,15 +230,10 @@ namespace AutomataTest
             world.EntityManager.RegisterEntity(playerEntity);
             world.EntityManager.RegisterComponent(playerEntity, new Translation
             {
-                Value = new Vector3(0f, 0f, -3f)
+                Value = new Vector3(0f, 0f, -1.9f)
             });
             world.EntityManager.RegisterComponent<Rotation>(playerEntity);
-            world.EntityManager.RegisterComponent(playerEntity, new Camera
-            {
-                Model = Matrix4x4.Identity,
-                Projection = Matrix4x4.CreatePerspective(AutomataMath.ToRadians(90f), _Window.Size.Width / (float)_Window.Size.Height, 0.1f, 100f),
-                View = Matrix4x4.CreateLookAt(new Vector3(0f, 0f, 4f), Vector3.Zero, Vector3.UnitY)
-            });
+            world.EntityManager.RegisterComponent<Camera>(playerEntity);
         }
 
         private static void Initialize()

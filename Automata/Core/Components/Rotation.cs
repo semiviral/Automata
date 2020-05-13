@@ -8,7 +8,9 @@ namespace Automata.Core.Components
 {
     public class Rotation : IComponent
     {
-        private Quaternion _Value = Quaternion.Identity;
+        private Quaternion _Value;
+
+        public bool Changed { get; set; }
 
         public Quaternion Value
         {
@@ -20,6 +22,6 @@ namespace Automata.Core.Components
             }
         }
 
-        public bool Changed { get; set; }
+        public Rotation() => Value = Quaternion.Identity;
     }
 }

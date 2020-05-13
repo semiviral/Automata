@@ -10,6 +10,8 @@ namespace Automata.Core.Components
     {
         private Vector3 _Value;
 
+        public bool Changed { get; set; }
+
         public Vector3 Value
         {
             get => _Value;
@@ -20,6 +22,9 @@ namespace Automata.Core.Components
             }
         }
 
-        public bool Changed { get; set; } = true;
+        public Translation()
+        {
+            Value = Vector3.Zero;
+        }
     }
 }

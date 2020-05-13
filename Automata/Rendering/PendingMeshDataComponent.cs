@@ -12,7 +12,7 @@ namespace Automata.Rendering
     /// </summary>
     public class PendingMeshDataComponent : IComponent
     {
-        public Vector3[] Vertices { get; set; } = new Vector3[0];
-        public uint[] Indices { get; set; } = new uint[0];
+        public Vector3[] Vertexes { get; set; } = new Vector3[0];
+        public uint[] Indexes { get; set; } = new uint[0];
     }
 }

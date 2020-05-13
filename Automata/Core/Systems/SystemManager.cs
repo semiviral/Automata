@@ -22,10 +22,10 @@ namespace Automata.Core.Systems
             _ComponentSystemNodes = new Dictionary<Type, LinkedListNode<ComponentSystem>>
             {
                 // initialize first system
-                { typeof(FirstOrderSystem), _ComponentSystems.AddFirst(Activator.CreateInstance<FirstOrderSystem>()) },
-                { typeof(DefaultOrderSystem), _ComponentSystems.AddFirst(Activator.CreateInstance<DefaultOrderSystem>()) },
-                { typeof(RenderOrderSystem), _ComponentSystems.AddFirst(Activator.CreateInstance<RenderOrderSystem>()) },
-                { typeof(LastOrderSystem), _ComponentSystems.AddFirst(Activator.CreateInstance<LastOrderSystem>()) }
+                { typeof(FirstOrderSystem), _ComponentSystems.AddLast(Activator.CreateInstance<FirstOrderSystem>()) },
+                { typeof(DefaultOrderSystem), _ComponentSystems.AddLast(Activator.CreateInstance<DefaultOrderSystem>()) },
+                { typeof(RenderOrderSystem), _ComponentSystems.AddLast(Activator.CreateInstance<RenderOrderSystem>()) },
+                { typeof(LastOrderSystem), _ComponentSystems.AddLast(Activator.CreateInstance<LastOrderSystem>()) }
             };
         }
 

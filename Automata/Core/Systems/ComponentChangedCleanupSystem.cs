@@ -15,7 +15,6 @@ namespace Automata.Core.Systems
             {
                 typeof(Rotation),
                 typeof(Translation),
-                typeof(Camera),
             };
         }
 

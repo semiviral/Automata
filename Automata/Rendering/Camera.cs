@@ -12,9 +12,8 @@ namespace Automata.Rendering
     {
         private static readonly Shader _DefaultShader = new Shader();
 
-        private Matrix4x4 _View = Matrix4x4.Identity;
-        private Matrix4x4 _Projection = Matrix4x4.Identity;
-        private Matrix4x4 _Model = Matrix4x4.Identity;
+        private Matrix4x4 _View;
+        private Matrix4x4 _Projection;
 
         public Shader Shader { get; set; } = _DefaultShader;
 
@@ -37,17 +36,6 @@ namespace Automata.Rendering
                 _Projection = value;
 
                 Shader.SetUniform(nameof(Projection), _Projection);
-            }
-        }
-
-        public Matrix4x4 Model
-        {
-            get => _Model;
-            set
-            {
-                _Model = value;
-
-                Shader.SetUniform(nameof(Model), _Model);
             }
         }
     }
