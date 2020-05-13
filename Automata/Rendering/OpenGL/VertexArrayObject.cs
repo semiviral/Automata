@@ -24,11 +24,9 @@ namespace Automata.Rendering.OpenGL
             ebo.Bind();
         }
 
-        public unsafe void VertexAttributePointer(uint index, int count, VertexAttribPointerType type, uint vertexSize,
-            int offset)
+        public unsafe void VertexAttributePointer(uint index, int count, VertexAttribPointerType type, uint vertexSize, int offset)
         {
-            _GL.VertexAttribPointer(index, count, type, false, vertexSize * (uint)sizeof(TVertexType),
-                (void*)(offset * sizeof(TVertexType)));
+            _GL.VertexAttribPointer(index, count, type, false, vertexSize * (uint)sizeof(TVertexType), (void*)(offset * sizeof(TVertexType)));
             _GL.EnableVertexAttribArray(index);
         }
 

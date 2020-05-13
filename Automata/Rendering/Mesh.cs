@@ -7,10 +7,10 @@ using Automata.Rendering.OpenGL;
 
 namespace Automata.Rendering
 {
-    public class RenderedMeshComponent : IComponent
+    public class Mesh : IComponent
     {
-        public VertexBuffer<float>? VertexBuffer { get; set; }
-        public BufferObject<uint>? BufferObject { get; set; }
+        public BufferObject<float>? VertexBuffer { get; set; }
+        public BufferObject<uint>? IndicesBuffer { get; set; }
         public VertexArrayObject<float, uint>? VertexArrayObject { get; set; }
     }
 }

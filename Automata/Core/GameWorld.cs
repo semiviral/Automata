@@ -12,14 +12,13 @@ namespace Automata.Core
         public GameWorld(bool active) : base(active)
         {
             // input systems
-            SystemManager.RegisterSystem<RotationSystem, FirstOrderSystem>();
+            // SystemManager.RegisterSystem<RotationSystem, FirstOrderSystem>();
 
             // meshing systems
             SystemManager.RegisterSystem<MeshCompositionSystem, DefaultOrderSystem>();
 
             // rendering systems
-            SystemManager.RegisterSystem<PreRenderSystem, RenderOrderSystem>();
-            SystemManager.RegisterSystem<RenderSystem, PreRenderSystem>();
+            SystemManager.RegisterSystem<RenderSystem, RenderOrderSystem>();
 
             // cleanup systems
             SystemManager.RegisterSystem<ComponentChangedCleanupSystem, LastOrderSystem>();

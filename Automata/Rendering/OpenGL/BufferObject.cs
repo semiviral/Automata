@@ -19,17 +19,16 @@ namespace Automata.Rendering.OpenGL
         {
             _GL = gl;
             _BufferType = bufferType;
-
             _Handle = _GL.GenBuffer();
             Bind();
         }
 
         public unsafe void SetBufferData(Span<TDataType> data)
         {
-            fixed (void* d = data)
+            fixed (void* dataPtr = data)
             {
                 Length = (uint)(data.Length * sizeof(TDataType));
-                _GL.BufferData(_BufferType, Length, d, BufferUsageARB.StaticDraw);
+                _GL.BufferData(_BufferType, Length, dataPtr, BufferUsageARB.StaticDraw);
             }
         }
 

@@ -26,7 +26,7 @@ namespace Automata.Rendering.OpenGL
     
             void main()
             {
-                gl_Position = Projection * View * Model * vec4(vPos, 1.0);
+                gl_Position = View * Projection * Model * vec4(vPos, 1.0);
                 fColor = vec4(1.0, 1.0, 1.0, 1.0);
             }";
 

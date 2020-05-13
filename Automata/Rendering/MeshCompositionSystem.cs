@@ -46,36 +46,35 @@ namespace Automata.Rendering
             foreach (IEntity entity in entityManager.GetEntitiesWithComponents<PendingMeshDataComponent>())
             {
                 // create gpu buffers object if one doesn't exist on entity
-                if (!entity.TryGetComponent(out RenderedMeshComponent renderedMeshComponent))
+                if (!entity.TryGetComponent(out Mesh mesh))
                 {
-                    renderedMeshComponent = new RenderedMeshComponent
+                    mesh = new Mesh
                     {
-                        VertexBuffer = new VertexBuffer<float>(_GL),
-                        BufferObject = new BufferObject<uint>(_GL, BufferTargetARB.ElementArrayBuffer),
+                        VertexBuffer = new BufferObject<float>(_GL, BufferTargetARB.ArrayBuffer),
+                        IndicesBuffer = new BufferObject<uint>(_GL, BufferTargetARB.ElementArrayBuffer),
                     };
-                    renderedMeshComponent.VertexArrayObject =
-                        new VertexArrayObject<float, uint>(_GL, renderedMeshComponent.VertexBuffer, renderedMeshComponent.BufferObject);
+                    mesh.VertexArrayObject = new VertexArrayObject<float, uint>(_GL, mesh.VertexBuffer, mesh.IndicesBuffer);
 
-                    entityManager.RegisterComponent(entity, renderedMeshComponent);
-                } else if (renderedMeshComponent.VertexBuffer == null)
-                {
-                    throw new NullReferenceException(nameof(renderedMeshComponent.VertexBuffer));
+                    entityManager.RegisterComponent(entity, mesh);
                 }
-                else if (renderedMeshComponent.BufferObject == null)
+                else if (mesh.VertexBuffer == null)
                 {
-                    throw new NullReferenceException(nameof(renderedMeshComponent.BufferObject));
+                    throw new NullReferenceException(nameof(mesh.VertexBuffer));
                 }
-                else if (renderedMeshComponent.VertexArrayObject == null)
+                else if (mesh.IndicesBuffer == null)
                 {
-                    throw new NullReferenceException(nameof(renderedMeshComponent.VertexArrayObject));
+                    throw new NullReferenceException(nameof(mesh.IndicesBuffer));
+                }
+                else if (mesh.VertexArrayObject == null)
+                {
+                    throw new NullReferenceException(nameof(mesh.VertexArrayObject));
                 }
 
                 // apply pending mesh data
                 PendingMeshDataComponent pendingMeshData = entity.GetComponent<PendingMeshDataComponent>();
-                renderedMeshComponent.VertexArrayObject.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, 3, 0);
-                //renderedMeshComponent.VertexArrayObject.VertexAttributePointer(1, 4, VertexAttribPointerType.Float, 7, 3);
-                renderedMeshComponent.VertexBuffer.SetBufferData(UnrollVertices(pendingMeshData.Vertices).ToArray());
-                renderedMeshComponent.BufferObject.SetBufferData(pendingMeshData.Indices);
+                mesh.VertexBuffer.SetBufferData(UnrollVertices(pendingMeshData.Vertices).ToArray());
+                mesh.IndicesBuffer.SetBufferData(pendingMeshData.Indices);
+                mesh.VertexArrayObject.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, 3, 0);
 
                 // push entity for component removal
                 _RemovePendingMeshDataEntities.Push(entity);

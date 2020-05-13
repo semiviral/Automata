@@ -25,7 +25,7 @@ namespace Automata.Rendering
             {
                 _View = value;
 
-                Shader?.SetUniform(nameof(View), _View);
+                Shader.SetUniform(nameof(View), _View);
             }
         }
 
@@ -36,7 +36,7 @@ namespace Automata.Rendering
             {
                 _Projection = value;
 
-                Shader?.SetUniform(nameof(Projection), _Projection);
+                Shader.SetUniform(nameof(Projection), _Projection);
             }
         }
 
@@ -47,7 +47,7 @@ namespace Automata.Rendering
             {
                 _Model = value;
 
-                Shader?.SetUniform(nameof(Model), _Model);
+                Shader.SetUniform(nameof(Model), _Model);
             }
         }
     }
