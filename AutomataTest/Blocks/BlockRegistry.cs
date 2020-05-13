@@ -99,7 +99,7 @@ namespace AutomataTest.Blocks
             BlockNamesByID.Add(blockName, blockId);
             SortBlockDefinitionPropertiesToBuckets(blockDefinition);
 
-            Log.Information($"Added block '{blockName}' with ID: {blockId}");
+            Log.Information($"({nameof(BlockRegistry)}) ID {blockId}: '{blockName}'");
         }
 
         // public bool GetUVs(ushort blockId, Direction direction, out ushort textureId)

@@ -16,7 +16,7 @@ namespace Automata.Rendering.OpenGL
             @"#version 330 core
     
             layout (location = 0) in vec3 vPos;
-            layout (location = 1) in vec4 vColor;
+            //layout (location = 1) in vec4 vColor;
     
             uniform mat4 View;
             uniform mat4 Projection;
@@ -27,8 +27,7 @@ namespace Automata.Rendering.OpenGL
             void main()
             {
                 gl_Position = Projection * View * Model * vec4(vPos, 1.0);
-                vec4 color = vColor;
-                fColor = color;
+                fColor = vec4(1.0, 1.0, 1.0, 1.0);
             }";
 
         private const string _DEFAULT_FRAGMENT_SHADER =
@@ -47,10 +46,7 @@ namespace Automata.Rendering.OpenGL
 
         public Shader()
         {
-            if (GLAPI.Instance == null)
-            {
-                throw new InvalidOperationException($"Singleton '{GLAPI.Instance}' has not been instantiated.");
-            }
+            GLAPI.Validate();
 
             _GL = GLAPI.Instance.GL;
 
@@ -76,10 +72,7 @@ namespace Automata.Rendering.OpenGL
 
         public Shader(string vertexPath, string fragmentPath)
         {
-            if (GLAPI.Instance == null)
-            {
-                throw new InvalidOperationException($"Singleton '{GLAPI.Instance}' has not been instantiated.");
-            }
+            GLAPI.Validate();
 
             _GL = GLAPI.Instance.GL;
 

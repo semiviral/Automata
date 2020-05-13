@@ -61,7 +61,7 @@ namespace Automata.Core
         {
             if (!_Components.TryGetValue(typeof(T), out IComponent? component))
             {
-                throw new KeyNotFoundException(nameof(T));
+                throw new KeyNotFoundException(typeof(T).ToString());
             }
             else if (component == null)
             {

@@ -2,6 +2,7 @@
 
 using System.Numerics;
 using Automata.Core.Components;
+using Automata.Rendering.OpenGL;
 
 #endregion
 
@@ -9,19 +10,22 @@ namespace Automata.Rendering
 {
     public class Camera : IComponent
     {
+        private static readonly Shader _DefaultShader = new Shader();
+
         private Matrix4x4 _View = Matrix4x4.Identity;
         private Matrix4x4 _Projection = Matrix4x4.Identity;
         private Matrix4x4 _Model = Matrix4x4.Identity;
 
-        public bool Changed { get; set; }
+        public Shader Shader { get; set; } = _DefaultShader;
 
         public Matrix4x4 View
         {
             get => _View;
             set
             {
-                Changed = true;
                 _View = value;
+
+                Shader?.SetUniform(nameof(View), _View);
             }
         }
 
@@ -30,8 +34,9 @@ namespace Automata.Rendering
             get => _Projection;
             set
             {
-                Changed = true;
                 _Projection = value;
+
+                Shader?.SetUniform(nameof(Projection), _Projection);
             }
         }
 
@@ -40,8 +45,9 @@ namespace Automata.Rendering
             get => _Model;
             set
             {
-                Changed = true;
                 _Model = value;
+
+                Shader?.SetUniform(nameof(Model), _Model);
             }
         }
     }

@@ -23,10 +23,7 @@ namespace Automata.Rendering.OpenGL
 
         public Mesh()
         {
-            if (GLAPI.Instance == null)
-            {
-                throw new InvalidOperationException($"Singleton '{GLAPI.Instance}' has not been instantiated.");
-            }
+            GLAPI.Validate();
 
             _GL = GLAPI.Instance.GL;
 

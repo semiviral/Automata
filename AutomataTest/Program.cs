@@ -35,18 +35,41 @@ namespace AutomataTest
         //Vertex data, uploaded to the VBO.
         private static readonly Vector3[] _vertices =
         {
+            // bottom
+            new Vector3(0f, 0f, 0f),
+            new Vector3(0f, 0f, 1f),
+            new Vector3(1f, 0f, 0f),
+            new Vector3(1f, 0f, 1f),
+
+            // north
+            new Vector3(0f, 0f, 1f),
+            new Vector3(1f, 0f, 1f),
+            new Vector3(0f, 1f, 1f),
+            new Vector3(1f, 1f, 1f),
+
+            // east
+            new Vector3(1f, 0f, 1f),
+            new Vector3(1f, 0f, 0f),
+            new Vector3(1f, 1f, 0f),
+            new Vector3(1f, 1f, 1f),
+
+            // south
+            new Vector3(1f, 0f, 0f),
             new Vector3(0f, 0f, 0f),
             new Vector3(0f, 1f, 0f),
-            new Vector3(1f, 0f, 0f),
-            new Vector3(1f, 1f, 0f)
-        };
+            new Vector3(1f, 1f, 0f),
 
-        private static readonly Color64[] _colors =
-        {
-            new Color64(0f, 0f, 0f, 1f),
-            new Color64(1f, 1f, 1f, 1f),
-            new Color64(1f, 1f, 1f, 1f),
-            new Color64(0f, 0f, 0f, 1f),
+            // west
+            new Vector3(0f, 0f, 0f),
+            new Vector3(0f, 0f, 1f),
+            new Vector3(0f, 1f, 0f),
+            new Vector3(0f, 1f, 1f),
+
+            // up
+            new Vector3(0f, 1f, 0f),
+            new Vector3(0f, 1f, 1f),
+            new Vector3(1f, 1f, 0f),
+            new Vector3(1f, 1f, 1f),
         };
 
         private static readonly uint[] _indices =
@@ -56,7 +79,42 @@ namespace AutomataTest
             1,
             2,
             3,
-            1
+            1,
+
+            0,
+            2,
+            1,
+            2,
+            3,
+            1,
+
+            0,
+            2,
+            1,
+            2,
+            3,
+            1,
+
+            0,
+            2,
+            1,
+            2,
+            3,
+            1,
+
+            0,
+            2,
+            1,
+            2,
+            3,
+            1,
+
+            0,
+            2,
+            1,
+            2,
+            3,
+            1,
         };
 
         private static void Main(string[] args)
@@ -76,7 +134,6 @@ namespace AutomataTest
             options.Position = new Point(500, 400);
 
             _Window = Window.Create(options);
-            //_Window.Render += OnRender;
             _Window.Closing += OnClose;
 
             _Window.Initialize();
@@ -146,8 +203,8 @@ namespace AutomataTest
             world = new GameWorld(true);
             world.SystemManager.RegisterSystem<ViewDoUpdateSystem, FirstOrderSystem>();
             world.SystemManager.RegisterSystem<ViewDoRenderSystem, LastOrderSystem>();
-            world.SystemManager.RegisterSystem<TranslateCameraMatrixesSystem, RenderOrderSystem>();
             world.SystemManager.RegisterSystem<ChunkBuildingSystem, DefaultOrderSystem>();
+            world.SystemManager.RegisterSystem<CameraMatrixesSystem, RenderOrderSystem>();
             World.RegisterWorld("core", world);
         }
 
@@ -155,22 +212,10 @@ namespace AutomataTest
         {
             gameEntity = new Entity();
             world.EntityManager.RegisterEntity(gameEntity);
-            world.EntityManager.RegisterComponent(gameEntity, new WindowIViewProvider(_Window));
             world.EntityManager.RegisterComponent(gameEntity, new PendingMeshDataComponent
             {
                 Vertices = _vertices,
-                Colors = _colors,
                 Indices = _indices
-            });
-
-            _Shader = new Shader();
-            _Shader.SetUniform("Model", Matrix4x4.Identity);
-            _Shader.SetUniform("Projection", Matrix4x4.Identity);
-            _Shader.SetUniform("View", Matrix4x4.Identity);
-
-            world.EntityManager.RegisterComponent(gameEntity, new RenderedShader
-            {
-                Shader = _Shader
             });
         }
 
@@ -180,7 +225,7 @@ namespace AutomataTest
             world.EntityManager.RegisterEntity(playerEntity);
             world.EntityManager.RegisterComponent(playerEntity, new Translation
             {
-                Value = new Vector3(0f, 0f, -1f)
+                Value = new Vector3(0f, 0f, -3f)
             });
             world.EntityManager.RegisterComponent<Rotation>(playerEntity);
             world.EntityManager.RegisterComponent<Camera>(playerEntity);

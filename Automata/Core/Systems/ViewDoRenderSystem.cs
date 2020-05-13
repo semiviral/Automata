@@ -1,35 +1,25 @@
 #region
 
-using Automata.Core.Components;
+using System.Diagnostics;
+using Automata.Singletons;
 
 #endregion
 
 namespace Automata.Core.Systems
 {
-    /// <summary>
-    ///     Runs the DoRender() method on all <see cref="WindowIViewProvider" />.
-    /// </summary>
     public class ViewDoRenderSystem : ComponentSystem
     {
         public ViewDoRenderSystem()
         {
-            HandledComponentTypes = new[]
-            {
-                typeof(WindowIViewProvider)
-            };
+            GameWindow.Validate();
         }
 
         public override void Update(EntityManager entityManager, float deltaTime)
         {
-            foreach (WindowIViewProvider windowViewComponent in entityManager.GetComponents<WindowIViewProvider>())
-            {
-                if (windowViewComponent.View.IsClosing)
-                {
-                    continue;
-                }
+            Debug.Assert(GameWindow.Instance != null);
+            Debug.Assert(GameWindow.Instance.Window != null);
 
-                windowViewComponent.View.DoRender();
-            }
+            GameWindow.Instance.Window.DoRender();
         }
     }
 }

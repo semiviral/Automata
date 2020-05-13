@@ -1,6 +1,5 @@
 #region
 
-using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Numerics;
@@ -24,14 +23,10 @@ namespace Automata.Rendering
         {
             HandledComponentTypes = new[]
             {
-                typeof(Camera),
-                typeof(RenderedShader)
+                typeof(Camera)
             };
 
-            if (!GameWindow.Validate())
-            {
-                throw new InvalidOperationException();
-            }
+            GameWindow.Validate();
 
             Debug.Assert(GameWindow.Instance != null);
             Debug.Assert(GameWindow.Instance.Window != null);
@@ -47,17 +42,6 @@ namespace Automata.Rendering
                 if (_HasGameWindowResized)
                 {
                     camera.Projection = Matrix4x4.CreatePerspective(AutomataMath.ToRadians(90f), _ResizedSize.X / _ResizedSize.Y, 0.1f, 100f);
-                }
-                else if (!camera.Changed)
-                {
-                    continue;
-                }
-
-                foreach (RenderedShader renderedShader in entityManager.GetComponents<RenderedShader>())
-                {
-                    renderedShader.Shader.SetUniform(nameof(camera.View), camera.View);
-                    renderedShader.Shader.SetUniform(nameof(camera.Projection), camera.Projection);
-                    renderedShader.Shader.SetUniform(nameof(camera.Model), camera.Model);
                 }
             }
 

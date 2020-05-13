@@ -27,35 +27,26 @@ namespace Automata.Singletons
         private readonly List<IKeyboard> _Keyboards;
         private readonly List<IMouse> _Mice;
 
-        private IView? _View;
         private IInputContext? _InputContext;
-
-        public Vector2 ViewCenter { get; private set; }
 
         public Input()
         {
-            if (!GameWindow.Validate())
-            {
-                throw new InvalidOperationException();
-            }
-
             AssignSingletonInstance(this);
 
             _Keyboards = new List<IKeyboard>();
             _Mice = new List<IMouse>();
 
+            GameWindow.Validate();
+
             Debug.Assert(GameWindow.Instance != null);
             Debug.Assert(GameWindow.Instance.Window != null);
-    
+
             RegisterView(GameWindow.Instance.Window);
         }
 
         private void RegisterView(IView view)
         {
-            _View = view;
-            _InputContext = _View.CreateInput();
-            _View.Resize += size => { ViewCenter = new Vector2(size.Width / 2f, size.Height / 2f); };
-
+            _InputContext = view.CreateInput();
 
             foreach (IKeyboard keyboard in _InputContext.Keyboards)
             {

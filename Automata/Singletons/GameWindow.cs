@@ -1,6 +1,8 @@
 #region
 
 using System;
+using System.Diagnostics;
+using System.Numerics;
 using Silk.NET.Windowing.Common;
 
 #endregion
@@ -9,7 +11,7 @@ namespace Automata.Singletons
 {
     public class GameWindow : Singleton<GameWindow>
     {
-        public static bool Validate()
+        public new static void Validate()
         {
             if (Instance == null)
             {
@@ -18,10 +20,6 @@ namespace Automata.Singletons
             else if (Instance.Window == null)
             {
                 throw new InvalidOperationException($"Singleton '{nameof(GameWindow)}' does not have a valid '{nameof(IWindow)}' assigned.");
-            }
-            else
-            {
-                return true;
             }
         }
 
@@ -52,6 +50,16 @@ namespace Automata.Singletons
                     _Window = value;
                     _WindowSet = true;
                 }
+            }
+        }
+
+        public Vector2 Size
+        {
+            get
+            {
+                Debug.Assert(_Window != null);
+
+                return new Vector2(_Window.Size.Width, _Window.Size.Height);
             }
         }
 

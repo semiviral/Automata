@@ -1,36 +1,27 @@
 #region
 
+using System.Diagnostics;
 using Automata.Core.Components;
+using Automata.Singletons;
 
 #endregion
 
 namespace Automata.Core.Systems
 {
-    /// <summary>
-    ///     Runs the DoUpdate() method on all <see cref="WindowIViewProvider" />.
-    /// </summary>
     public class ViewDoUpdateSystem : ComponentSystem
     {
         public ViewDoUpdateSystem()
         {
-            HandledComponentTypes = new[]
-            {
-                typeof(WindowIViewProvider)
-            };
+            GameWindow.Validate();
         }
 
         public override void Update(EntityManager entityManager, float deltaTime)
         {
-            foreach (WindowIViewProvider windowViewComponent in entityManager.GetComponents<WindowIViewProvider>())
-            {
-                if (windowViewComponent.View.IsClosing)
-                {
-                    continue;
-                }
+            Debug.Assert(GameWindow.Instance != null);
+            Debug.Assert(GameWindow.Instance.Window != null);
 
-                windowViewComponent.View.DoEvents();
-                windowViewComponent.View.DoUpdate();
-            }
+            GameWindow.Instance.Window.DoEvents();
+            GameWindow.Instance.Window.DoUpdate();
         }
     }
 }

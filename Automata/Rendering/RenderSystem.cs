@@ -1,6 +1,5 @@
 #region
 
-using System;
 using Automata.Core;
 using Automata.Core.Systems;
 using Automata.Singletons;
@@ -18,42 +17,43 @@ namespace Automata.Rendering
         {
             HandledComponentTypes = new[]
             {
-                typeof(RenderedShader),
+                typeof(Camera),
                 typeof(RenderedMeshComponent)
             };
 
-            if (GLAPI.Instance == null)
-            {
-                throw new InvalidOperationException($"Singleton '{GLAPI.Instance}' has not been instantiated.");
-            }
+            GLAPI.Validate();
 
             _GL = GLAPI.Instance.GL;
         }
 
         public override unsafe void Update(EntityManager entityManager, float deltaTime)
         {
+            _GL.ClearColor(0.2f, 0.2f, 0.5f, 1.0f);
             _GL.Clear((uint)ClearBufferMask.ColorBufferBit);
 
-            foreach ((RenderedShader renderedShader, RenderedMeshComponent renderedMeshComponent) in entityManager
-                .GetComponents<RenderedShader, RenderedMeshComponent>())
+            foreach (Camera camera in entityManager.GetComponents<Camera>())
             {
-                if (renderedShader.Shader == null)
+                if (camera.Shader == null)
                 {
-                    throw new NullReferenceException(nameof(renderedShader.Shader));
-                }
-                else if (renderedMeshComponent.BufferObject == null)
-                {
-                    throw new NullReferenceException(nameof(renderedMeshComponent.BufferObject));
-                }
-                else if (renderedMeshComponent.VertexArrayObject == null)
-                {
-                    throw new NullReferenceException(nameof(renderedMeshComponent.VertexArrayObject));
+                    continue;
                 }
 
-                renderedMeshComponent.VertexArrayObject.Bind();
-                renderedShader.Shader.Use();
+                foreach (RenderedMeshComponent renderedMeshComponent in entityManager.GetComponents<RenderedMeshComponent>())
+                {
+                    if (renderedMeshComponent.BufferObject == null)
+                    {
+                        continue;
+                    }
+                    else if (renderedMeshComponent.VertexArrayObject == null)
+                    {
+                        continue;
+                    }
 
-                _GL.DrawElements(PrimitiveType.Triangles, renderedMeshComponent.BufferObject.Length, DrawElementsType.UnsignedInt, null);
+                    renderedMeshComponent.VertexArrayObject.Bind();
+                    camera.Shader.Use();
+
+                    _GL.DrawElements(PrimitiveType.Triangles, renderedMeshComponent.BufferObject.Length, DrawElementsType.UnsignedInt, null);
+                }
             }
         }
 
@@ -64,11 +64,6 @@ namespace Automata.Rendering
                 renderedMeshComponent.VertexBuffer?.Dispose();
                 renderedMeshComponent.BufferObject?.Dispose();
                 renderedMeshComponent.VertexArrayObject?.Dispose();
-            }
-
-            foreach (RenderedShader renderedShaderComponent in entityManager.GetComponents<RenderedShader>())
-            {
-                renderedShaderComponent.Shader?.Dispose();
             }
         }
     }

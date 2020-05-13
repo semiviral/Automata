@@ -36,14 +36,6 @@ namespace Automata.Core.Systems
                     translation.Changed = false;
                 }
             }
-
-            foreach (Camera camera in entityManager.GetComponents<Camera>())
-            {
-                if (camera.Changed)
-                {
-                    camera.Changed = false;
-                }
-            }
         }
     }
 }

@@ -2,33 +2,31 @@
 
 using System.Numerics;
 using Automata.Core.Components;
-using Automata.Rendering;
 using Automata.Singletons;
 
 #endregion
 
 namespace Automata.Core.Systems
 {
-    public class CameraRotationSystem : ComponentSystem
+    public class RotationSystem : ComponentSystem
     {
         private Vector2 _LastFrameMouseOffset;
 
-        public CameraRotationSystem()
+        public RotationSystem()
         {
             _LastFrameMouseOffset = Vector2.Zero;
 
             HandledComponentTypes = new[]
             {
-                typeof(Camera),
                 typeof(Rotation)
             };
         }
 
         public override void Update(EntityManager entityManager, float deltaTime)
         {
-            foreach ((Camera camera, Rotation rotation) in entityManager.GetComponents<Camera, Rotation>())
+            foreach (Rotation rotation in entityManager.GetComponents<Rotation>())
             {
-                Vector2 offset = Input.Instance.ViewCenter - Input.Instance.GetMousePosition(0);
+                Vector2 offset = GameWindow.Instance.Size - Input.Instance.GetMousePosition(0);
 
                 if (offset == _LastFrameMouseOffset)
                 {
@@ -40,9 +38,7 @@ namespace Automata.Core.Systems
                 Quaternion axisAngleQuaternion = Quaternion.CreateFromAxisAngle(new Vector3(offset, 0f), deltaTime);
                 Quaternion finalRotationPosition = Quaternion.Add(rotation.Value, axisAngleQuaternion);
 
-                rotation.Value = Quaternion.Slerp(rotation.Value, finalRotationPosition, deltaTime);
-                // update view
-                camera.View = Matrix4x4.CreateFromQuaternion(rotation.Value);
+                rotation.Value = Quaternion.Lerp(rotation.Value, finalRotationPosition, deltaTime);
             }
         }
     }

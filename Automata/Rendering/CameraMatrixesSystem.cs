@@ -4,15 +4,14 @@ using System.Numerics;
 using Automata.Core;
 using Automata.Core.Components;
 using Automata.Core.Systems;
-using Automata.Rendering;
 
 #endregion
 
-namespace AutomataTest
+namespace Automata.Rendering
 {
-    public class TranslateCameraMatrixesSystem : ComponentSystem
+    public class CameraMatrixesSystem : ComponentSystem
     {
-        public TranslateCameraMatrixesSystem()
+        public CameraMatrixesSystem()
         {
             HandledComponentTypes = new[]
             {

@@ -1,6 +1,9 @@
 #region
 
 using System;
+using Humanizer;
+using Serilog;
+using Silk.NET.Vulkan;
 
 #endregion
 
@@ -31,6 +34,14 @@ namespace Automata.Singletons
             }
         }
 
+        public static void Validate()
+        {
+            if (!(Instance is object))
+            {
+                throw new InvalidOperationException($"Singleton '{typeof(T)}' has not been instantiated.");
+            }
+        }
+
         protected void AssignSingletonInstance(T instance)
         {
             if ((_SingletonInstance != default) && (_SingletonInstance != this))
@@ -41,6 +52,8 @@ namespace Automata.Singletons
             {
                 _SingletonInstance = this;
                 _Instance = instance;
+
+                Log.Information($"Singleton '{typeof(T)}' has been instantiated.");
             }
         }
     }

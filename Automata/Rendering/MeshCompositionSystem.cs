@@ -25,10 +25,7 @@ namespace Automata.Rendering
         /// </summary>
         private readonly GL _GL;
 
-        /// <summary>
-        ///     Default shader to apply to graphics entities.
-        /// </summary>
-        private readonly Shader _DefaultShader;
+        private readonly Stack<IEntity> _RemovePendingMeshDataEntities;
 
         public MeshCompositionSystem()
         {
@@ -38,31 +35,16 @@ namespace Automata.Rendering
             };
 
 
-            if (GLAPI.Instance == null)
-            {
-                throw new InvalidOperationException($"Singleton '{GLAPI.Instance}' has not been instantiated.");
-            }
+            GLAPI.Validate();
 
             _GL = GLAPI.Instance.GL;
-
-            _DefaultShader = new Shader();
+            _RemovePendingMeshDataEntities = new Stack<IEntity>();
         }
 
         public override void Update(EntityManager entityManager, float deltaTime)
         {
-            List<IEntity> entities = entityManager.GetEntitiesWithComponents<PendingMeshDataComponent>().ToList();
-
-            foreach (IEntity entity in entities)
+            foreach (IEntity entity in entityManager.GetEntitiesWithComponents<PendingMeshDataComponent>())
             {
-                // create a shader component if one doesn't exist on object
-                if (!entity.TryGetComponent(out RenderedShader _))
-                {
-                    entityManager.RegisterComponent(entity, new RenderedShader
-                    {
-                        Shader = _DefaultShader
-                    });
-                }
-
                 // create gpu buffers object if one doesn't exist on entity
                 if (!entity.TryGetComponent(out RenderedMeshComponent renderedMeshComponent))
                 {
@@ -75,10 +57,7 @@ namespace Automata.Rendering
                         new VertexArrayObject<float, uint>(_GL, renderedMeshComponent.VertexBuffer, renderedMeshComponent.BufferObject);
 
                     entityManager.RegisterComponent(entity, renderedMeshComponent);
-                }
-
-                // null checks for C#8 null safety
-                if (renderedMeshComponent.VertexBuffer == null)
+                } else if (renderedMeshComponent.VertexBuffer == null)
                 {
                     throw new NullReferenceException(nameof(renderedMeshComponent.VertexBuffer));
                 }
@@ -93,17 +72,28 @@ namespace Automata.Rendering
 
                 // apply pending mesh data
                 PendingMeshDataComponent pendingMeshData = entity.GetComponent<PendingMeshDataComponent>();
-                renderedMeshComponent.VertexBuffer.SetBufferData(UnrollVertices(pendingMeshData.Vertices ?? new Vector3[0]).ToArray());
+                renderedMeshComponent.VertexArrayObject.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, 3, 0);
+                //renderedMeshComponent.VertexArrayObject.VertexAttributePointer(1, 4, VertexAttribPointerType.Float, 7, 3);
+                renderedMeshComponent.VertexBuffer.SetBufferData(UnrollVertices(pendingMeshData.Vertices).ToArray());
                 renderedMeshComponent.BufferObject.SetBufferData(pendingMeshData.Indices);
-                renderedMeshComponent.VertexArrayObject.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, 7, 0);
-                renderedMeshComponent.VertexArrayObject.VertexAttributePointer(1, 4, VertexAttribPointerType.Float, 7, 3);
 
-                // remove now processed mesh data component
+                // push entity for component removal
+                _RemovePendingMeshDataEntities.Push(entity);
+            }
+
+            // remove now processed mesh data components
+            while (_RemovePendingMeshDataEntities.TryPop(out IEntity? entity))
+            {
+                if (entity == null)
+                {
+                    continue;
+                }
+
                 entityManager.RemoveComponent<PendingMeshDataComponent>(entity);
             }
         }
 
-        private IEnumerable<float> UnrollVertices(IEnumerable<Vector3> vertices)
+        private static IEnumerable<float> UnrollVertices(IEnumerable<Vector3> vertices)
         {
             foreach (Vector3 vertex in vertices)
             {

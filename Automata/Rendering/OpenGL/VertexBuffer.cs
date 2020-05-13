@@ -15,11 +15,11 @@ namespace Automata.Rendering.OpenGL
         {
             if (typeof(TDataType) == typeof(bool))
             {
-                throw new ArgumentException("Data type cannot be boolean.", nameof(TDataType));
+                throw new ArgumentException("Data type cannot be boolean.", typeof(TDataType).ToString());
             }
             else if (typeof(TDataType) == typeof(char))
             {
-                throw new ArgumentException("Data type cannot be char.", nameof(TDataType));
+                throw new ArgumentException("Data type cannot be char.", typeof(TDataType).ToString());
             }
         }
     }
