@@ -6,8 +6,6 @@ using System.Linq;
 using System.Numerics;
 using Automata.Core;
 using Automata.Core.Systems;
-using Automata.Rendering.OpenGL;
-using Automata.Singletons;
 using Silk.NET.OpenGL;
 
 #endregion
@@ -20,11 +18,6 @@ namespace Automata.Rendering
     /// </summary>
     public class MeshCompositionSystem : ComponentSystem
     {
-        /// <summary>
-        ///     <see cref="GL" /> instance to use for graphics operations.
-        /// </summary>
-        private readonly GL _GL;
-
         private readonly Stack<IEntity> _RemovePendingMeshDataEntities;
 
         public MeshCompositionSystem()
@@ -34,10 +27,6 @@ namespace Automata.Rendering
                 typeof(PendingMeshDataComponent)
             };
 
-
-            GLAPI.Validate();
-
-            _GL = GLAPI.Instance.GL;
             _RemovePendingMeshDataEntities = new Stack<IEntity>();
         }
 
@@ -48,22 +37,17 @@ namespace Automata.Rendering
                 // create gpu buffers object if one doesn't exist on entity
                 if (!entity.TryGetComponent(out Mesh mesh))
                 {
-                    mesh = new Mesh
-                    {
-                        VertexBuffer = new BufferObject<float>(_GL, BufferTargetARB.ArrayBuffer),
-                        IndicesBuffer = new BufferObject<uint>(_GL, BufferTargetARB.ElementArrayBuffer),
-                    };
-                    mesh.VertexArrayObject = new VertexArrayObject<float, uint>(_GL, mesh.VertexBuffer, mesh.IndicesBuffer);
+                    mesh = new Mesh();
 
                     entityManager.RegisterComponent(entity, mesh);
                 }
-                else if (mesh.VertexBuffer == null)
+                else if (mesh.VertexesBuffer == null)
                 {
-                    throw new NullReferenceException(nameof(mesh.VertexBuffer));
+                    throw new NullReferenceException(nameof(mesh.VertexesBuffer));
                 }
-                else if (mesh.IndicesBuffer == null)
+                else if (mesh.IndexesBuffer == null)
                 {
-                    throw new NullReferenceException(nameof(mesh.IndicesBuffer));
+                    throw new NullReferenceException(nameof(mesh.IndexesBuffer));
                 }
                 else if (mesh.VertexArrayObject == null)
                 {
@@ -72,8 +56,8 @@ namespace Automata.Rendering
 
                 // apply pending mesh data
                 PendingMeshDataComponent pendingMeshData = entity.GetComponent<PendingMeshDataComponent>();
-                mesh.VertexBuffer.SetBufferData(UnrollVertices(pendingMeshData.Vertices).ToArray());
-                mesh.IndicesBuffer.SetBufferData(pendingMeshData.Indices);
+                mesh.VertexesBuffer.SetBufferData(UnrollVertices(pendingMeshData.Vertices).ToArray());
+                mesh.IndexesBuffer.SetBufferData(pendingMeshData.Indices);
                 mesh.VertexArrayObject.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, 3, 0);
 
                 // push entity for component removal

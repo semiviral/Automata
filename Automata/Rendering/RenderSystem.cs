@@ -62,7 +62,7 @@ namespace Automata.Rendering
 
                 foreach (Mesh mesh in entityManager.GetComponents<Mesh>())
                 {
-                    if (mesh.IndicesBuffer == null)
+                    if (mesh.IndexesBuffer == null)
                     {
                         continue;
                     }
@@ -73,7 +73,7 @@ namespace Automata.Rendering
 
                     mesh.VertexArrayObject.Bind();
 
-                    _GL.DrawElements(PrimitiveType.Triangles, mesh.IndicesBuffer.Length, DrawElementsType.UnsignedInt, null);
+                    _GL.DrawElements(PrimitiveType.Triangles, mesh.IndexesBuffer.Length, DrawElementsType.UnsignedInt, null);
 
                     if (_GL.GetError() != GLEnum.NoError)
                     {
@@ -87,8 +87,8 @@ namespace Automata.Rendering
         {
             foreach (Mesh renderedMeshComponent in entityManager.GetComponents<Mesh>())
             {
-                renderedMeshComponent.VertexBuffer?.Dispose();
-                renderedMeshComponent.IndicesBuffer?.Dispose();
+                renderedMeshComponent.VertexesBuffer?.Dispose();
+                renderedMeshComponent.IndexesBuffer?.Dispose();
                 renderedMeshComponent.VertexArrayObject?.Dispose();
             }
         }

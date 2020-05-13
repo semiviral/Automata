@@ -4,6 +4,7 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Numerics;
+using Automata;
 using Automata.Core;
 using Automata.Core.Components;
 using Automata.Core.Systems;
@@ -204,7 +205,7 @@ namespace AutomataTest
             world.SystemManager.RegisterSystem<ViewDoUpdateSystem, FirstOrderSystem>();
             world.SystemManager.RegisterSystem<ViewDoRenderSystem, LastOrderSystem>();
             world.SystemManager.RegisterSystem<ChunkBuildingSystem, DefaultOrderSystem>();
-            world.SystemManager.RegisterSystem<CameraMatrixesSystem, RenderOrderSystem>();
+            //world.SystemManager.RegisterSystem<CameraMatrixesSystem, RenderOrderSystem>();
             World.RegisterWorld("core", world);
         }
 
@@ -228,7 +229,12 @@ namespace AutomataTest
                 Value = new Vector3(0f, 0f, -3f)
             });
             world.EntityManager.RegisterComponent<Rotation>(playerEntity);
-            world.EntityManager.RegisterComponent<Camera>(playerEntity);
+            world.EntityManager.RegisterComponent(playerEntity, new Camera
+            {
+                Model = Matrix4x4.Identity,
+                Projection = Matrix4x4.CreatePerspective(AutomataMath.ToRadians(90f), _Window.Size.Width / (float)_Window.Size.Height, 0.1f, 100f),
+                View = Matrix4x4.CreateLookAt(new Vector3(0f, 0f, 4f), Vector3.Zero, Vector3.UnitY)
+            });
         }
 
         private static void Initialize()
