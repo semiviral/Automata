@@ -3,6 +3,7 @@
 using System.Numerics;
 using Automata.Core.Components;
 using Automata.Rendering;
+using Automata.Singletons;
 
 #endregion
 

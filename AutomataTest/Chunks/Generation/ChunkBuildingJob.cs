@@ -7,6 +7,7 @@ using Automata;
 using Automata.Collections;
 using Automata.Noise;
 using Automata.Numerics;
+using Automata.Singletons;
 using AutomataTest.Blocks;
 using ComputeSharp;
 

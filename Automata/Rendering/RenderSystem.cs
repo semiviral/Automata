@@ -3,6 +3,7 @@
 using System;
 using Automata.Core;
 using Automata.Core.Systems;
+using Automata.Singletons;
 using Silk.NET.OpenGL;
 
 #endregion
@@ -21,7 +22,12 @@ namespace Automata.Rendering
                 typeof(RenderedMeshComponent)
             };
 
-            _GL = GL.GetApi();
+            if (GLAPI.Instance == null)
+            {
+                throw new InvalidOperationException($"Singleton '{GLAPI.Instance}' has not been instantiated.");
+            }
+
+            _GL = GLAPI.Instance.GL;
         }
 
         public override unsafe void Update(EntityManager entityManager, float deltaTime)

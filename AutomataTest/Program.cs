@@ -11,6 +11,7 @@ using Automata.Core.Components;
 using Automata.Core.Systems;
 using Automata.Rendering;
 using Automata.Rendering.OpenGL;
+using Automata.Singletons;
 using AutomataTest.Blocks;
 using AutomataTest.Chunks;
 using Serilog;
@@ -18,8 +19,8 @@ using Silk.NET.GLFW;
 using Silk.NET.Input;
 using Silk.NET.Input.Common;
 using Silk.NET.OpenGL;
-using Silk.NET.Windowing;
 using Silk.NET.Windowing.Common;
+using Window = Silk.NET.Windowing.Window;
 
 #endregion
 
@@ -81,16 +82,11 @@ namespace AutomataTest
             _Window = Window.Create(options);
             //_Window.Render += OnRender;
             _Window.Closing += OnClose;
-            _Window.Resize += AdjustPerspective;
-
 
             _Window.Initialize();
             Initialize();
 
             _Window.VSync = VSyncMode.Off;
-
-            IInputContext inputContext = _Window.CreateInput();
-            IMouse mouse = inputContext.Mice[0];
 
             while (!_Window.IsClosing)
             {
@@ -100,19 +96,21 @@ namespace AutomataTest
                 {
                     World.GlobalUpdate();
                 }
-
-                mouse.Position = new PointF(_Window.Size.Width / 2f, _Window.Size.Height / 2f);
             }
         }
 
         private static void InitializeSingletons()
         {
+            Singleton.InstantiateSingleton<GLAPI>();
+
             Singleton.InstantiateSingleton<Diagnostics>();
             Diagnostics.Instance.RegisterDiagnosticTimeEntry("NoiseRetrieval");
             Diagnostics.Instance.RegisterDiagnosticTimeEntry("TerrainGeneration");
 
+            Singleton.InstantiateSingleton<GameWindow>();
+            GameWindow.Instance.Window = _Window;
+
             Singleton.InstantiateSingleton<Input>();
-            Input.Instance.RegisterView(_Window);
 
             Singleton.InstantiateSingleton<BlockRegistry>();
         }
@@ -150,10 +148,10 @@ namespace AutomataTest
         private static void InitializeDefaultWorld(out World world)
         {
             world = new GameWorld(true);
-            world.SystemManager.RegisterSystem<ViewDoUpdateSystem, DefaultOrderSystem>();
+            world.SystemManager.RegisterSystem<ViewDoUpdateSystem, FirstOrderSystem>();
             world.SystemManager.RegisterSystem<ViewDoRenderSystem, LastOrderSystem>();
             world.SystemManager.RegisterSystem<InputCameraViewMoverSystem, RenderOrderSystem>();
-            world.SystemManager.RegisterSystem<ChunkBuildingSystem, ViewDoUpdateSystem>();
+            world.SystemManager.RegisterSystem<ChunkBuildingSystem, DefaultOrderSystem>();
             World.RegisterWorld("core", world);
         }
 
@@ -190,19 +188,17 @@ namespace AutomataTest
             });
             world.EntityManager.RegisterComponent<Rotation>(playerEntity);
 
-            static Matrix4x4 CalculatePerspective(Size size) =>
-                Matrix4x4.CreatePerspective(AutomataMath.ToRadians(90f), size.Width / (float)size.Height, 0.1f, 100f);
-
             Camera playerCamera = new Camera
             {
                 View = Matrix4x4.CreateLookAt(new Vector3(0f, 0f, 3f), Vector3.Zero, Vector3.UnitY),
-                Projection =
+            };
+
+            void AdjustPerspective(Size size)
+            {
+                playerCamera.Projection = Matrix4x4.CreatePerspective(AutomataMath.ToRadians(90f), size.Width / (float)size.Height, 0.1f, 100f);
             }
 
-            static void AdjustPerspective(Size size)
-            {
-                _Projection = ;
-            }
+            _Window.Resize += AdjustPerspective;
 
             AdjustPerspective(_Window.Size);
         }

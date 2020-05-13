@@ -3,6 +3,7 @@
 using System;
 using System.IO;
 using System.Numerics;
+using Automata.Singletons;
 using Silk.NET.OpenGL;
 
 #endregion
@@ -46,7 +47,12 @@ namespace Automata.Rendering.OpenGL
 
         public Shader()
         {
-            _GL = GL.GetApi();
+            if (GLAPI.Instance == null)
+            {
+                throw new InvalidOperationException($"Singleton '{GLAPI.Instance}' has not been instantiated.");
+            }
+
+            _GL = GLAPI.Instance.GL;
 
             uint vertexShader = LoadShader(ShaderType.VertexShader, _DEFAULT_VERTEX_SHADER);
             uint fragmentShader = LoadShader(ShaderType.FragmentShader, _DEFAULT_FRAGMENT_SHADER);
@@ -70,7 +76,12 @@ namespace Automata.Rendering.OpenGL
 
         public Shader(string vertexPath, string fragmentPath)
         {
-            _GL = GL.GetApi();
+            if (GLAPI.Instance == null)
+            {
+                throw new InvalidOperationException($"Singleton '{GLAPI.Instance}' has not been instantiated.");
+            }
+
+            _GL = GLAPI.Instance.GL;
 
             uint vertexShader = LoadShader(ShaderType.VertexShader, File.ReadAllText(vertexPath));
             uint fragmentShader = LoadShader(ShaderType.FragmentShader, File.ReadAllText(fragmentPath));

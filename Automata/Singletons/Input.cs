@@ -11,7 +11,7 @@ using Silk.NET.Windowing.Common;
 
 #endregion
 
-namespace Automata
+namespace Automata.Singletons
 {
     public delegate void KeyboardInputEventHandler(IKeyboard keyboard, Key key, int arg);
 
@@ -33,13 +33,24 @@ namespace Automata
 
         public Input()
         {
+            if (GameWindow.Instance == null)
+            {
+                throw new InvalidOperationException($"Singleton '{nameof(GameWindow)}' has not been instantiated.");
+            }
+            else if (GameWindow.Instance.Window == null)
+            {
+                throw new InvalidOperationException($"Singleton '{nameof(GameWindow)}' does not have a valid '{nameof(IWindow)}' assigned.");
+            }
+
             AssignSingletonInstance(this);
 
             _Keyboards = new List<IKeyboard>();
             _Mice = new List<IMouse>();
+
+            RegisterView(GameWindow.Instance.Window);
         }
 
-        public void RegisterView(IView view)
+        private void RegisterView(IView view)
         {
             _View = view;
             _InputContext = _View.CreateInput();

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Automata.Singletons;
 using Silk.NET.OpenGL;
 
 // ReSharper disable InconsistentNaming
@@ -22,7 +23,12 @@ namespace Automata.Rendering.OpenGL
 
         public Mesh()
         {
-            _GL = GL.GetApi();
+            if (GLAPI.Instance == null)
+            {
+                throw new InvalidOperationException($"Singleton '{GLAPI.Instance}' has not been instantiated.");
+            }
+
+            _GL = GLAPI.Instance.GL;
 
             VerticesBuffer = new VertexBuffer<TVertexType>(_GL);
             TrianglesBuffer = new BufferObject<uint>(_GL, BufferTargetARB.ElementArrayBuffer);

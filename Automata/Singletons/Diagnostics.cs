@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Automata.Collections;
 
-namespace Automata
+namespace Automata.Singletons
 {
     public class Diagnostics : Singleton<Diagnostics>
     {

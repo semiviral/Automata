@@ -4,7 +4,7 @@ using System;
 
 #endregion
 
-namespace Automata
+namespace Automata.Singletons
 {
     public static class Singleton
     {

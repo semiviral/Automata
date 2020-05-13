@@ -7,6 +7,7 @@ using System.Numerics;
 using Automata.Core;
 using Automata.Core.Systems;
 using Automata.Rendering.OpenGL;
+using Automata.Singletons;
 using Silk.NET.OpenGL;
 
 #endregion
@@ -36,7 +37,14 @@ namespace Automata.Rendering
                 typeof(PendingMeshDataComponent)
             };
 
-            _GL = GL.GetApi();
+
+            if (GLAPI.Instance == null)
+            {
+                throw new InvalidOperationException($"Singleton '{GLAPI.Instance}' has not been instantiated.");
+            }
+
+            _GL = GLAPI.Instance.GL;
+
             _DefaultShader = new Shader();
         }
 
