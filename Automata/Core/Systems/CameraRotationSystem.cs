@@ -25,7 +25,7 @@ namespace Automata.Core.Systems
 
         public override void Update(EntityManager entityManager, float deltaTime)
         {
-            foreach ((Camera _, Rotation rotation) in entityManager.GetComponents<Camera, Rotation>())
+            foreach ((Camera camera, Rotation rotation) in entityManager.GetComponents<Camera, Rotation>())
             {
                 Vector2 offset = Input.Instance.ViewCenter - Input.Instance.GetMousePosition(0);
 
@@ -40,6 +40,8 @@ namespace Automata.Core.Systems
                 Quaternion finalRotationPosition = Quaternion.Add(rotation.Value, axisAngleQuaternion);
 
                 rotation.Value = Quaternion.Slerp(rotation.Value, finalRotationPosition, deltaTime);
+                // update view
+                camera.View = Matrix4x4.CreateFromQuaternion(rotation.Value);
             }
         }
     }

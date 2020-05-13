@@ -28,11 +28,9 @@ namespace Automata.Rendering
         {
             _GL.Clear((uint)ClearBufferMask.ColorBufferBit);
 
-            foreach (IEntity entity in entityManager.GetEntitiesWithComponents<RenderedShader, RenderedMeshComponent>())
+            foreach ((RenderedShader renderedShader, RenderedMeshComponent renderedMeshComponent) in entityManager
+                .GetComponents<RenderedShader, RenderedMeshComponent>())
             {
-                RenderedShader renderedShader = entity.GetComponent<RenderedShader>();
-                RenderedMeshComponent renderedMeshComponent = entity.GetComponent<RenderedMeshComponent>();
-
                 if (renderedShader.Shader == null)
                 {
                     throw new NullReferenceException(nameof(renderedShader.Shader));
