@@ -1,6 +1,7 @@
 ﻿#region
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Numerics;
@@ -82,12 +83,6 @@ namespace AutomataTest
             _Window.Closing += OnClose;
             _Window.Resize += AdjustPerspective;
 
-            static void AdjustPerspective(Size size)
-            {
-                _Projection = Matrix4x4.CreatePerspective(AutomataMath.ToRadians(90f), (float)size.Width / (float)size.Height, 0.1f, 100f);
-            }
-
-            AdjustPerspective(_Window.Size);
 
             _Window.Initialize();
             Initialize();
@@ -110,17 +105,20 @@ namespace AutomataTest
             }
         }
 
-        private static void Initialize()
+        private static void InitializeSingletons()
         {
             Singleton.InstantiateSingleton<Diagnostics>();
-            Singleton.InstantiateSingleton<Input>();
-            Singleton.InstantiateSingleton<BlockRegistry>();
-
             Diagnostics.Instance.RegisterDiagnosticTimeEntry("NoiseRetrieval");
             Diagnostics.Instance.RegisterDiagnosticTimeEntry("TerrainGeneration");
 
+            Singleton.InstantiateSingleton<Input>();
             Input.Instance.RegisterView(_Window);
 
+            Singleton.InstantiateSingleton<BlockRegistry>();
+        }
+
+        private static void InitializeBlocks()
+        {
             BlockRegistry.Instance.RegisterBlockDefinition("bedrock", null,
                 BlockDefinition.Property.Collideable);
 
@@ -147,15 +145,21 @@ namespace AutomataTest
             BlockRegistry.Instance.RegisterBlockDefinition("coal_ore", null,
                 BlockDefinition.Property.Collectible, BlockDefinition.Property.Collideable,
                 BlockDefinition.Property.Destroyable);
+        }
 
-            World world = new GameWorld(true);
+        private static void InitializeDefaultWorld(out World world)
+        {
+            world = new GameWorld(true);
             world.SystemManager.RegisterSystem<ViewDoUpdateSystem, DefaultOrderSystem>();
             world.SystemManager.RegisterSystem<ViewDoRenderSystem, LastOrderSystem>();
             world.SystemManager.RegisterSystem<InputCameraViewMoverSystem, RenderOrderSystem>();
             world.SystemManager.RegisterSystem<ChunkBuildingSystem, ViewDoUpdateSystem>();
             World.RegisterWorld("core", world);
+        }
 
-            Entity gameEntity = new Entity();
+        private static void InitializeWorldEntity(World world, out IEntity gameEntity)
+        {
+            gameEntity = new Entity();
             world.EntityManager.RegisterEntity(gameEntity);
             world.EntityManager.RegisterComponent(gameEntity, new WindowIViewProvider(_Window));
             world.EntityManager.RegisterComponent(gameEntity, new PendingMeshDataComponent
@@ -167,26 +171,58 @@ namespace AutomataTest
 
             _Shader = new Shader("default.vert", "shader.frag");
             _Shader.SetUniform("model", Matrix4x4.Identity);
-            _Shader.SetUniform("projection", _Projection);
-            _Shader.SetUniform("view", Matrix4x4.CreateLookAt(new Vector3(0f, 0f, 3f), Vector3.Zero, Vector3.UnitY));
+            _Shader.SetUniform("projection", Matrix4x4.Identity);
+            _Shader.SetUniform("view", Matrix4x4.Identity);
 
             world.EntityManager.RegisterComponent(gameEntity, new RenderedShader
             {
                 Shader = _Shader
             });
+        }
 
-            Entity playerEntity = new Entity();
+        private static void InitializePlayerEntity(World world, out IEntity playerEntity)
+        {
+            playerEntity = new Entity();
             world.EntityManager.RegisterEntity(playerEntity);
             world.EntityManager.RegisterComponent(playerEntity, new Translation
             {
                 Value = new Vector3(0f, 0f, -1f)
             });
             world.EntityManager.RegisterComponent<Rotation>(playerEntity);
-            world.EntityManager.RegisterComponent<Camera>(playerEntity);
+
+            static Matrix4x4 CalculatePerspective(Size size) =>
+                Matrix4x4.CreatePerspective(AutomataMath.ToRadians(90f), size.Width / (float)size.Height, 0.1f, 100f);
+
+            Camera playerCamera = new Camera
+            {
+                View = Matrix4x4.CreateLookAt(new Vector3(0f, 0f, 3f), Vector3.Zero, Vector3.UnitY),
+                Projection =
+            }
+
+            static void AdjustPerspective(Size size)
+            {
+                _Projection = ;
+            }
+
+            AdjustPerspective(_Window.Size);
+        }
+
+        private static void Initialize()
+        {
+            InitializeSingletons();
+
+            InitializeBlocks();
+
+            InitializeDefaultWorld(out World world);
+
+            InitializeWorldEntity(world, out IEntity gameEntity);
+
+            InitializePlayerEntity(world, out IEntity playerEntity);
 
             Entity chunk = new Entity();
+            world.EntityManager.RegisterEntity(chunk);
             world.EntityManager.RegisterComponent<Translation>(chunk);
-            world.EntityManager.RegisterComponent<BlockCollection>(chunk);
+            world.EntityManager.RegisterComponent<BlocksCollection>(chunk);
             world.EntityManager.RegisterComponent<GenerationState>(chunk);
         }
 

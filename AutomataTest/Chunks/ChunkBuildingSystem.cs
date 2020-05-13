@@ -24,14 +24,14 @@ namespace AutomataTest.Chunks
             {
                 typeof(Translation),
                 typeof(GenerationState),
-                typeof(BlockCollection),
+                typeof(BlocksCollection),
             };
         }
 
         public override void Update(EntityManager entityManager, float deltaTime)
         {
-            foreach ((Translation translation, GenerationState generationState, BlockCollection blockCollection) in
-                entityManager.GetComponents<Translation, GenerationState, BlockCollection>())
+            foreach ((Translation translation, GenerationState generationState, BlocksCollection blockCollection) in
+                entityManager.GetComponents<Translation, GenerationState, BlocksCollection>())
             {
                 if (generationState.State > ChunkState.Unbuilt)
                 {

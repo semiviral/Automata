@@ -18,11 +18,11 @@ namespace Automata.Core
             SystemManager.RegisterSystem<MeshCompositionSystem, DefaultOrderSystem>();
 
             // rendering systems
-            SystemManager.RegisterSystem<RenderingSystem, RenderOrderSystem>();
+            SystemManager.RegisterSystem<PreRenderSystem, RenderOrderSystem>();
+            SystemManager.RegisterSystem<RenderSystem, PreRenderSystem>();
 
             // cleanup systems
-            SystemManager.RegisterSystem<TranslationChangedCleanupSystem, LastOrderSystem>();
-            SystemManager.RegisterSystem<RotationChangedCleanupSystem, LastOrderSystem>();
+            SystemManager.RegisterSystem<ComponentChangedCleanupSystem, LastOrderSystem>();
         }
     }
 }

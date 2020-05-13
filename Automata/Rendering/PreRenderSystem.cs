@@ -10,9 +10,9 @@ namespace Automata.Rendering
     /// <summary>
     ///     Pre-rendering system applies changed view matrices to their respective shaders.
     /// </summary>
-    public class PreRenderingSystem : ComponentSystem
+    public class PreRenderSystem : ComponentSystem
     {
-        public PreRenderingSystem()
+        public PreRenderSystem()
         {
             HandledComponentTypes = new[]
             {

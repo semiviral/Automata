@@ -110,7 +110,7 @@ namespace Automata.Core.Systems
         private static bool VerifyHandledTypesExist(EntityManager entityManager, ComponentSystem componentSystem) =>
             (componentSystem.HandledComponentTypes == null)
             || (componentSystem.HandledComponentTypes.Length == 0)
-            || componentSystem.HandledComponentTypes.All(type => entityManager.GetComponentCount(type) > 0);
+            || componentSystem.HandledComponentTypes.Any(type => entityManager.GetComponentCount(type) > 0);
 
         #endregion
     }

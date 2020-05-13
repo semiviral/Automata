@@ -9,11 +9,11 @@ using Silk.NET.OpenGL;
 
 namespace Automata.Rendering
 {
-    public class RenderingSystem : ComponentSystem
+    public class RenderSystem : ComponentSystem
     {
         private readonly GL _GL;
 
-        public RenderingSystem()
+        public RenderSystem()
         {
             HandledComponentTypes = new[]
             {
