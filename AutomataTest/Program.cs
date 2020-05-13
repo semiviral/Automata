@@ -234,6 +234,7 @@ namespace AutomataTest
             });
             world.EntityManager.RegisterComponent<Rotation>(playerEntity);
             world.EntityManager.RegisterComponent<Camera>(playerEntity);
+            world.EntityManager.RegisterComponent<InputListener>(playerEntity);
         }
 
         private static void Initialize()

@@ -12,7 +12,7 @@ namespace Automata.Core
         public GameWorld(bool active) : base(active)
         {
             // input systems
-            // SystemManager.RegisterSystem<RotationSystem, FirstOrderSystem>();
+            SystemManager.RegisterSystem<MovementSystem, FirstOrderSystem>();
 
             // meshing systems
             SystemManager.RegisterSystem<MeshCompositionSystem, DefaultOrderSystem>();
