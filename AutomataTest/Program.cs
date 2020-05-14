@@ -41,41 +41,41 @@ namespace AutomataTest
             new Vector3(0f, 0.5f, -1f),
             new Vector3(0.5f, 0.5f, -1f),
 
-            // // bottom
-            // new Vector3(0f, 0f, 0f),
-            // new Vector3(0f, 0f, 1f),
-            // new Vector3(1f, 0f, 0f),
-            // new Vector3(1f, 0f, 1f),
-            //
-            // // north
-            // new Vector3(0f, 0f, 1f),
-            // new Vector3(1f, 0f, 1f),
-            // new Vector3(0f, 1f, 1f),
-            // new Vector3(1f, 1f, 1f),
-            //
-            // // east
-            // new Vector3(1f, 0f, 1f),
-            // new Vector3(1f, 0f, 0f),
-            // new Vector3(1f, 1f, 0f),
-            // new Vector3(1f, 1f, 1f),
-            //
-            // // south
-            // new Vector3(1f, 0f, 0f),
-            // new Vector3(0f, 0f, 0f),
-            // new Vector3(0f, 1f, 0f),
-            // new Vector3(1f, 1f, 0f),
-            //
-            // // west
-            // new Vector3(0f, 0f, 0f),
-            // new Vector3(0f, 0f, 1f),
-            // new Vector3(0f, 1f, 0f),
-            // new Vector3(0f, 1f, 1f),
-            //
-            // // up
-            // new Vector3(0f, 1f, 0f),
-            // new Vector3(0f, 1f, 1f),
-            // new Vector3(1f, 1f, 0f),
-            // new Vector3(1f, 1f, 1f),
+            // bottom
+            new Vector3(0f, 0f, 0f),
+            new Vector3(0f, 0f, 1f),
+            new Vector3(1f, 0f, 0f),
+            new Vector3(1f, 0f, 1f),
+
+            // north
+            new Vector3(0f, 0f, 1f),
+            new Vector3(1f, 0f, 1f),
+            new Vector3(0f, 1f, 1f),
+            new Vector3(1f, 1f, 1f),
+
+            // east
+            new Vector3(1f, 0f, 1f),
+            new Vector3(1f, 0f, 0f),
+            new Vector3(1f, 1f, 0f),
+            new Vector3(1f, 1f, 1f),
+
+            // south
+            new Vector3(1f, 0f, 0f),
+            new Vector3(0f, 0f, 0f),
+            new Vector3(0f, 1f, 0f),
+            new Vector3(1f, 1f, 0f),
+
+            // west
+            new Vector3(0f, 0f, 0f),
+            new Vector3(0f, 0f, 1f),
+            new Vector3(0f, 1f, 0f),
+            new Vector3(0f, 1f, 1f),
+
+            // up
+            new Vector3(0f, 1f, 0f),
+            new Vector3(0f, 1f, 1f),
+            new Vector3(1f, 1f, 0f),
+            new Vector3(1f, 1f, 1f),
         };
 
         private static readonly uint[] _indices =
@@ -87,40 +87,40 @@ namespace AutomataTest
             3,
             1,
 
-            // 0,
-            // 2,
-            // 1,
-            // 2,
-            // 3,
-            // 1,
-            //
-            // 0,
-            // 2,
-            // 1,
-            // 2,
-            // 3,
-            // 1,
-            //
-            // 0,
-            // 2,
-            // 1,
-            // 2,
-            // 3,
-            // 1,
-            //
-            // 0,
-            // 2,
-            // 1,
-            // 2,
-            // 3,
-            // 1,
-            //
-            // 0,
-            // 2,
-            // 1,
-            // 2,
-            // 3,
-            // 1,
+            0,
+            2,
+            1,
+            2,
+            3,
+            1,
+
+            0,
+            2,
+            1,
+            2,
+            3,
+            1,
+
+            0,
+            2,
+            1,
+            2,
+            3,
+            1,
+
+            0,
+            2,
+            1,
+            2,
+            3,
+            1,
+
+            0,
+            2,
+            1,
+            2,
+            3,
+            1,
         };
 
         private static void Main(string[] args)

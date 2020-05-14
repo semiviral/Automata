@@ -53,6 +53,16 @@ namespace Automata.Singletons
             }
         }
 
+        public Vector2 Position
+        {
+            get
+            {
+                Debug.Assert(_Window != null);
+
+                return new Vector2(_Window.Position.X, _Window.Position.Y);
+            }
+        }
+
         public Vector2 Size
         {
             get

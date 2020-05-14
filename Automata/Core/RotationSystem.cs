@@ -11,12 +11,8 @@ namespace Automata.Core
 {
     public class RotationSystem : ComponentSystem
     {
-        private Vector2 _LastFrameMouseOffset;
-
         public RotationSystem()
         {
-            _LastFrameMouseOffset = Vector2.Zero;
-
             HandledComponentTypes = new[]
             {
                 typeof(Rotation)
@@ -27,20 +23,16 @@ namespace Automata.Core
         {
             foreach (Rotation rotation in entityManager.GetComponents<Rotation>())
             {
-                Vector2 offset = GameWindow.Instance.Size - Input.Instance.GetMousePosition(0);
+                Vector2 offset = Vector2.Clamp(Input.Instance.GetMousePositionRelative(), new Vector2(-1f), Vector2.One);
 
-                if (offset == _LastFrameMouseOffset)
+                if (offset == Vector2.Zero)
                 {
                     continue;
                 }
-
-                _LastFrameMouseOffset = offset;
-
-                Quaternion axisAngleQuaternion = Quaternion.CreateFromAxisAngle(new Vector3(offset, 0f), deltaTime);
-                Quaternion finalRotationPosition = Quaternion.Add(rotation.Value, axisAngleQuaternion);
-
-                rotation.Value = Quaternion.Lerp(rotation.Value, finalRotationPosition, deltaTime);
+                rotation.Value *=  Quaternion.CreateFromAxisAngle(new Vector3(offset.Y, offset.X, 0f), deltaTime);
             }
+
+            Input.Instance.SetMousePositionRelative(0, Vector2.Zero);
         }
     }
 }

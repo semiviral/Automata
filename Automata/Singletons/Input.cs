@@ -70,7 +70,7 @@ namespace Automata.Singletons
         public bool IsKeyPressed(Key key) => _Keyboards.Any(keyboard => keyboard.IsKeyPressed(key));
         public bool IsButtonPressed(MouseButton mouseButton) => _Mice.Any(mouse => mouse.IsButtonPressed(mouseButton));
 
-        public Vector2 GetMousePosition(int mouseIndex)
+        public Vector2 GetMousePosition(int mouseIndex = 0)
         {
             if ((mouseIndex < 0) || (mouseIndex >= _Mice.Count))
             {
@@ -81,6 +81,45 @@ namespace Automata.Singletons
 
             return new Vector2(position.X, position.Y);
         }
+
+        /// <summary>
+        ///     Returns mouse position relative to the center of the window.
+        /// </summary>
+        /// <param name="mouseIndex"></param>
+        /// <returns></returns>
+        /// <exception cref="IndexOutOfRangeException"></exception>
+        public Vector2 GetMousePositionRelative(int mouseIndex = 0)
+        {
+            if ((mouseIndex < 0) || mouseIndex >= _Mice.Count)
+            {
+                throw new IndexOutOfRangeException(nameof(mouseIndex));
+
+            }
+
+            Debug.Assert(GameWindow.Instance != null);
+            Debug.Assert(GameWindow.Instance.Window != null);
+
+            PointF pointerPosition = _Mice[mouseIndex].Position;
+
+            return new Vector2(pointerPosition.X, pointerPosition.Y) - (GameWindow.Instance.Size / 2f);
+        }
+
+        public void SetMousePositionRelative(int mouseIndex, Vector2 position)
+        {
+            if ((mouseIndex < 0) || mouseIndex >= _Mice.Count)
+            {
+                throw new IndexOutOfRangeException(nameof(mouseIndex));
+
+            }
+
+            Debug.Assert(GameWindow.Instance != null);
+            Debug.Assert(GameWindow.Instance.Window != null);
+
+            position += GameWindow.Instance.Size / 2f;
+
+            _Mice[mouseIndex].Position = new PointF(position.X, position.Y);
+        }
+
 
         #region Keyboard Events
 

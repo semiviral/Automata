@@ -38,12 +38,12 @@ namespace Automata.Core
 
                 if (Input.Instance.IsKeyPressed(Key.D))
                 {
-                    translation.Value += Vector3.UnitX * deltaTime;
+                    translation.Value -= Vector3.UnitX * deltaTime;
                 }
 
                 if (Input.Instance.IsKeyPressed(Key.A))
                 {
-                    translation.Value -= Vector3.UnitX * deltaTime;
+                    translation.Value += Vector3.UnitX * deltaTime;
                 }
             }
         }
