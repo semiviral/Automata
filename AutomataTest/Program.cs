@@ -3,6 +3,7 @@
 using System;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Numerics;
 using Automata;
 using Automata.Core;
@@ -209,7 +210,7 @@ namespace AutomataTest
             world = new GameWorld(true);
             world.SystemManager.RegisterSystem<ViewDoUpdateSystem, FirstOrderSystem>();
             world.SystemManager.RegisterSystem<ViewDoRenderSystem, LastOrderSystem>();
-            world.SystemManager.RegisterSystem<ChunkBuildingSystem, DefaultOrderSystem>();
+            //world.SystemManager.RegisterSystem<ChunkBuildingSystem, DefaultOrderSystem>();
             World.RegisterWorld("core", world);
         }
 
@@ -217,9 +218,9 @@ namespace AutomataTest
         {
             gameEntity = new Entity();
             world.EntityManager.RegisterEntity(gameEntity);
-            world.EntityManager.RegisterComponent(gameEntity, new PendingMeshDataComponent
+            world.EntityManager.RegisterComponent(gameEntity, new PendingMesh<float>
             {
-                Vertexes = _vertices,
+                Vertexes = _vertices.SelectMany(AutomataMath.UnrollVector3),
                 Indexes = _indices
             });
         }
@@ -253,7 +254,7 @@ namespace AutomataTest
             world.EntityManager.RegisterEntity(chunk);
             world.EntityManager.RegisterComponent<Translation>(chunk);
             world.EntityManager.RegisterComponent<BlocksCollection>(chunk);
-            world.EntityManager.RegisterComponent<GenerationState>(chunk);
+            world.EntityManager.RegisterComponent<ChunkState>(chunk);
         }
 
         private static Matrix4x4 _View;

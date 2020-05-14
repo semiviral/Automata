@@ -52,7 +52,7 @@ namespace Automata.Rendering
                     && entity.TryGetComponent(out Rotation rotation)
                     && (translation.Changed || rotation.Changed))
                 {
-                    camera.View = AutomataMath.MatrixFromTranslationAndRotationWithScale(1f, rotation, translation);
+                    camera.View = AutomataMath.MatrixFromTranslationAndRotationWithScaleToView(1f, rotation, translation);
                 }
             }
 

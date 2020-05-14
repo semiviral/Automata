@@ -13,18 +13,18 @@ using Silk.NET.OpenGL;
 namespace Automata.Rendering
 {
     /// <summary>
-    ///     Consumes a <see cref="PendingMeshDataComponent" /> and creates relevant GPU buffers so a given mesh can be
+    ///     Consumes a <see cref="PendingMesh{T}" /> and creates relevant GPU buffers so a given mesh can be
     ///     rendered.
     /// </summary>
-    public class MeshCompositionSystem : ComponentSystem
+    public class UnpackedMeshCompositionSystem : ComponentSystem
     {
         private readonly Stack<IEntity> _RemovePendingMeshDataEntities;
 
-        public MeshCompositionSystem()
+        public UnpackedMeshCompositionSystem()
         {
             HandledComponentTypes = new[]
             {
-                typeof(PendingMeshDataComponent)
+                typeof(PendingMesh<float>)
             };
 
             _RemovePendingMeshDataEntities = new Stack<IEntity>();
@@ -32,7 +32,7 @@ namespace Automata.Rendering
 
         public override void Update(EntityManager entityManager, float deltaTime)
         {
-            foreach (IEntity entity in entityManager.GetEntitiesWithComponents<PendingMeshDataComponent>())
+            foreach (IEntity entity in entityManager.GetEntitiesWithComponents<PendingMesh<float>>())
             {
                 // create gpu buffers object if one doesn't exist on entity
                 if (!entity.TryGetComponent(out Mesh mesh))
@@ -55,9 +55,9 @@ namespace Automata.Rendering
                 }
 
                 // apply pending mesh data
-                PendingMeshDataComponent pendingMeshData = entity.GetComponent<PendingMeshDataComponent>();
-                mesh.VertexesBuffer.SetBufferData(pendingMeshData.Vertexes.SelectMany(AutomataMath.UnrollVector3).ToArray());
-                mesh.IndexesBuffer.SetBufferData(pendingMeshData.Indexes);
+                PendingMesh<float> pendingMesh = entity.GetComponent<PendingMesh<float>>();
+                mesh.VertexesBuffer.SetBufferData(pendingMesh.Vertexes.ToArray());
+                mesh.IndexesBuffer.SetBufferData(pendingMesh.Indexes.ToArray());
                 mesh.VertexArrayObject.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, 3, 0);
 
                 // push entity for component removal
@@ -72,7 +72,7 @@ namespace Automata.Rendering
                     continue;
                 }
 
-                entityManager.RemoveComponent<PendingMeshDataComponent>(entity);
+                entityManager.RemoveComponent<PendingMesh<float>>(entity);
             }
         }
     }

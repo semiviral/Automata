@@ -17,11 +17,11 @@ namespace Automata
 
         public static float ToRadians(float degrees) => degrees * ((float)Math.PI / 180f);
 
-        public static Matrix4x4 MatrixFromTranslationAndRotationWithScale(float scale, Rotation rotation, Translation translation) =>
+        public static Matrix4x4 MatrixFromTranslationAndRotationWithScaleToView(float scale, Rotation rotation, Translation translation) =>
             Matrix4x4.Identity
             * Matrix4x4.CreateScale(scale)
-            * Matrix4x4.CreateFromQuaternion(rotation.Value)
-            * Matrix4x4.CreateTranslation(translation.Value);
+            * Matrix4x4.CreateTranslation(translation.Value)
+            * Matrix4x4.CreateFromQuaternion(rotation.Value);
 
         public static IEnumerable<float> UnrollMatrix4x4(Matrix4x4 matrix)
         {

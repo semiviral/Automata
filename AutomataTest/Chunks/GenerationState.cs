@@ -2,8 +2,9 @@ using Automata.Core.Components;
 
 namespace AutomataTest.Chunks
 {
-    public enum ChunkState
+    public enum GenerationState
     {
+        Deactivated,
         Unbuilt,
         AwaitingBuilding,
         Unmeshed,
@@ -11,8 +12,8 @@ namespace AutomataTest.Chunks
         Meshed
     }
 
-    public class GenerationState : IComponent
+    public class ChunkState : IComponent
     {
-        public ChunkState State { get; set; }
+        public GenerationState Value { get; set; }
     }
 }

@@ -13,10 +13,10 @@ namespace Automata.Core
         {
             // input systems
             SystemManager.RegisterSystem<MovementSystem, FirstOrderSystem>();
-            SystemManager.RegisterSystem<RotationSystem, FirstOrderSystem>();
+            SystemManager.RegisterSystem<CameraRotationSystem, FirstOrderSystem>();
 
             // meshing systems
-            SystemManager.RegisterSystem<MeshCompositionSystem, DefaultOrderSystem>();
+            SystemManager.RegisterSystem<UnpackedMeshCompositionSystem, DefaultOrderSystem>();
 
             // rendering systems
             SystemManager.RegisterSystem<RenderSystem, RenderOrderSystem>();
