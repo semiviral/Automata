@@ -1,7 +1,6 @@
 #region
 
 using System.Diagnostics;
-using Automata.Core.Components;
 using Automata.Singletons;
 
 #endregion

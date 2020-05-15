@@ -127,27 +127,27 @@ namespace AutomataTest.Chunks.Generation
 
             Gpu.Default.For(GenerationConstants.CHUNK_SIZE, GenerationConstants.CHUNK_SIZE, GenerationConstants.CHUNK_SIZE, NoiseKernel);
 
-                heightmapBuffer.GetData(_Heightmap);
-                cavemapBuffer.GetData(_Cavemap);
-            }
+            heightmapBuffer.GetData(_Heightmap);
+            cavemapBuffer.GetData(_Cavemap);
+        }
 
 
-            // for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++)
-            // for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
-            // {
-            //     Vector2i xzCoords = new Vector2i(x, z);
-            //     int heightmapIndex = Vector2i.Project1D(xzCoords, GenerationConstants.CHUNK_SIZE);
-            //     _Heightmap[heightmapIndex] = GetHeightByGlobalPosition(new Vector2i(_OriginPoint.X, _OriginPoint.Z) + xzCoords);
-            //
-            //     for (int y = 0; y < GenerationConstants.CHUNK_SIZE; y++)
-            //     {
-            //         Vector3i localPosition = new Vector3i(x, y, z);
-            //         Vector3i globalPosition = _OriginPoint + localPosition;
-            //         int caveNoiseIndex = Vector3i.Project1D(localPosition, GenerationConstants.CHUNK_SIZE);
-            //
-            //         _Cavemap[caveNoiseIndex] = GetCaveNoiseByGlobalPosition(globalPosition);
-            //     }
-            // }
+        // for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++)
+        // for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
+        // {
+        //     Vector2i xzCoords = new Vector2i(x, z);
+        //     int heightmapIndex = Vector2i.Project1D(xzCoords, GenerationConstants.CHUNK_SIZE);
+        //     _Heightmap[heightmapIndex] = GetHeightByGlobalPosition(new Vector2i(_OriginPoint.X, _OriginPoint.Z) + xzCoords);
+        //
+        //     for (int y = 0; y < GenerationConstants.CHUNK_SIZE; y++)
+        //     {
+        //         Vector3i localPosition = new Vector3i(x, y, z);
+        //         Vector3i globalPosition = _OriginPoint + localPosition;
+        //         int caveNoiseIndex = Vector3i.Project1D(localPosition, GenerationConstants.CHUNK_SIZE);
+        //
+        //         _Cavemap[caveNoiseIndex] = GetCaveNoiseByGlobalPosition(globalPosition);
+        //     }
+        // }
 
 
         private void GenerateIndex(int index)

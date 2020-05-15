@@ -73,39 +73,48 @@ namespace Automata.Numerics
 
         #region Operators
 
-        public static Vector3b operator ==(Vector3i a, Vector3i b) => (Vector3b)VectorConstants.EqualsImpl((Vector128<int>)a, (Vector128<int>)b);
-        public static Vector3b operator !=(Vector3i a, Vector3i b) => !(Vector3b)VectorConstants.EqualsImpl((Vector128<int>)a, (Vector128<int>)b);
+        public static Vector3b operator ==(Vector3i a, Vector3i b) => EqualsImpl(a, b);
+        public static Vector3b operator ==(Vector3i a, int b) => EqualsImpl(a, b);
+        public static Vector3b operator ==(int a, Vector3i b) => EqualsImpl(a, b);
 
-        public static Vector3i operator &(Vector3i a, Vector3i b) => (Vector3i)VectorConstants.BitwiseAndImpl((Vector128<int>)a, (Vector128<int>)b);
-        public static Vector3i operator |(Vector3i a, Vector3i b) => (Vector3i)VectorConstants.BitwiseOrImpl((Vector128<int>)a, (Vector128<int>)b);
+        public static Vector3b operator !=(Vector3i a, Vector3i b) => NotEqualsImpl(a, b);
+        public static Vector3b operator !=(Vector3i a, int b) => NotEqualsImpl(a, b);
+        public static Vector3b operator !=(int a, Vector3i b) => NotEqualsImpl(a, b);
 
-        public static Vector3i operator +(Vector3i a, Vector3i b) => (Vector3i)VectorConstants.AddImpl((Vector128<int>)a, (Vector128<int>)b);
-        public static Vector3i operator +(Vector3i a, int b) => (Vector3i)VectorConstants.AddImpl((Vector128<int>)a, Vector128.Create(b));
-        public static Vector3i operator +(int a, Vector3i b) => (Vector3i)VectorConstants.AddImpl(Vector128.Create(a), (Vector128<int>)b);
+        public static Vector3i operator &(Vector3i a, Vector3i b) => BitwiseAndImpl(a, b);
+        public static Vector3i operator &(Vector3i a, int b) => BitwiseAndImpl(a, b);
+        public static Vector3i operator &(int a, Vector3i b) => BitwiseAndImpl(a, b);
 
-        public static Vector3i operator -(Vector3i a, Vector3i b) => (Vector3i)VectorConstants.SubtractImpl((Vector128<int>)a, (Vector128<int>)b);
-        public static Vector3i operator -(Vector3i a, int b) => (Vector3i)VectorConstants.SubtractImpl((Vector128<int>)a, Vector128.Create(b));
-        public static Vector3i operator -(int a, Vector3i b) => (Vector3i)VectorConstants.SubtractImpl(Vector128.Create(a), (Vector128<int>)b);
+        public static Vector3i operator |(Vector3i a, Vector3i b) => BitwiseOrImpl(a, b);
+        public static Vector3i operator |(Vector3i a, int b) => BitwiseOrImpl(a, b);
+        public static Vector3i operator |(int a, Vector3i b) => BitwiseOrImpl(a, b);
 
-        public static Vector3i operator *(Vector3i a, Vector3i b) => (Vector3i)VectorConstants.MultiplyImpl((Vector128<int>)a, (Vector128<int>)b);
-        public static Vector3i operator *(Vector3i a, int b) => (Vector3i)VectorConstants.MultiplyImpl((Vector128<int>)a, Vector128.Create(b));
-        public static Vector3i operator *(int a, Vector3i b) => (Vector3i)VectorConstants.MultiplyImpl(Vector128.Create(a), (Vector128<int>)b);
+        public static Vector3i operator +(Vector3i a, Vector3i b) => AddImpl(a, b);
+        public static Vector3i operator +(Vector3i a, int b) => AddImpl(a, b);
+        public static Vector3i operator +(int a, Vector3i b) => AddImpl(a, b);
 
-        public static Vector3b operator >(Vector3i a, Vector3i b) => (Vector3b)VectorConstants.GreaterThanImpl((Vector128<int>)a, (Vector128<int>)b);
-        public static Vector3b operator <(Vector3i a, Vector3i b) => (Vector3b)VectorConstants.LessThanImpl((Vector128<int>)a, (Vector128<int>)b);
+        public static Vector3i operator -(Vector3i a, Vector3i b) => SubtractImpl(a, b);
+        public static Vector3i operator -(Vector3i a, int b) => SubtractImpl(a, b);
+        public static Vector3i operator -(int a, Vector3i b) => SubtractImpl(a, b);
 
-        public static Vector3b operator >(Vector3i a, int b) => (Vector3b)VectorConstants.GreaterThanImpl((Vector128<int>)a, Vector128.Create(b));
-        public static Vector3b operator <(Vector3i a, int b) => (Vector3b)VectorConstants.LessThanImpl((Vector128<int>)a, Vector128.Create(b));
+        public static Vector3i operator *(Vector3i a, Vector3i b) => MultiplyImpl(a, b);
+        public static Vector3i operator *(Vector3i a, int b) => MultiplyImpl(a, b);
+        public static Vector3i operator *(int a, Vector3i b) => MultiplyImpl(a, b);
 
-        public static Vector3b operator >(int a, Vector3i b) => (Vector3b)VectorConstants.GreaterThanImpl(Vector128.Create(a), (Vector128<int>)b);
-        public static Vector3b operator <(int a, Vector3i b) => (Vector3b)VectorConstants.LessThanImpl(Vector128.Create(a), (Vector128<int>)b);
+        public static Vector3b operator >(Vector3i a, Vector3i b) => GreaterThanImpl(a, b);
+        public static Vector3b operator >(Vector3i a, int b) => GreaterThanImpl(a, b);
+        public static Vector3b operator >(int a, Vector3i b) => GreaterThanImpl(a, b);
+
+        public static Vector3b operator <(Vector3i a, Vector3i b) => LessThanImpl(a, b);
+        public static Vector3b operator <(Vector3i a, int b) => LessThanImpl(a, b);
+        public static Vector3b operator <(int a, Vector3i b) => LessThanImpl(a, b);
 
         #endregion
+
 
         #region Conversions
 
         public static unsafe explicit operator Vector3i(Vector128<int> a) => *(Vector3i*)&a;
-        public static unsafe explicit operator Vector3i(Vector128<long> a) => *(Vector3i*)&a;
         public static unsafe explicit operator Vector128<int>(Vector3i a) => Sse2.LoadVector128((int*)&a);
 
         #endregion

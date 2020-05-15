@@ -1,15 +1,10 @@
 #region
 
 using System;
-using System.Diagnostics;
-using System.Drawing;
-using System.Numerics;
 using Automata.Core;
 using Automata.Core.Systems;
 using Automata.Singletons;
-using Silk.NET.Input.Common;
 using Silk.NET.OpenGL;
-using Vortice.Mathematics;
 
 #endregion
 
@@ -18,7 +13,6 @@ namespace Automata.Rendering
     public class RenderSystem : ComponentSystem
     {
         private readonly GL _GL;
-
 
 
         public RenderSystem()
@@ -40,7 +34,6 @@ namespace Automata.Rendering
 
             foreach (Camera camera in entityManager.GetComponents<Camera>())
             {
-
                 if (camera.Shader == null)
                 {
                     continue;

@@ -1,9 +1,7 @@
 #region
 
 using System;
-using Humanizer;
 using Serilog;
-using Silk.NET.Vulkan;
 
 #endregion
 

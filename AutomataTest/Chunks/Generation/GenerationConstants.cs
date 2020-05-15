@@ -1,7 +1,5 @@
 #region
 
-using System.Numerics;
-using Windows.Devices.Bluetooth.Advertisement;
 using Automata.Numerics;
 
 #endregion

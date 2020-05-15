@@ -1,4 +1,8 @@
+#region
+
 using Automata.Core.Components;
+
+#endregion
 
 namespace AutomataTest.Chunks
 {

@@ -22,9 +22,6 @@ namespace Automata.Core.Components
             }
         }
 
-        public Translation()
-        {
-            Value = Vector3.Zero;
-        }
+        public Translation() => Value = Vector3.Zero;
     }
 }

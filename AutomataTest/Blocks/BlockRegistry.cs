@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using Automata;
 using Automata.Extensions;
 using Automata.Singletons;
 using Serilog;

@@ -24,6 +24,7 @@ namespace Automata.Jobs
         ///     Token that can be passed into constructor to allow jobs to observe cancellation.
         /// </summary>
         protected CancellationToken _CancellationToken { get; }
+
         protected Stopwatch _Stopwatch { get; }
 
         /// <summary>

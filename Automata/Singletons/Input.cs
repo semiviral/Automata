@@ -91,10 +91,9 @@ namespace Automata.Singletons
         /// <exception cref="IndexOutOfRangeException"></exception>
         public Vector2 GetMousePositionRelative(int mouseIndex = 0)
         {
-            if ((mouseIndex < 0) || mouseIndex >= _Mice.Count)
+            if ((mouseIndex < 0) || (mouseIndex >= _Mice.Count))
             {
                 throw new IndexOutOfRangeException(nameof(mouseIndex));
-
             }
 
             Debug.Assert(GameWindow.Instance != null);
@@ -107,10 +106,9 @@ namespace Automata.Singletons
 
         public void SetMousePositionRelative(int mouseIndex, Vector2 position)
         {
-            if ((mouseIndex < 0) || mouseIndex >= _Mice.Count)
+            if ((mouseIndex < 0) || (mouseIndex >= _Mice.Count))
             {
                 throw new IndexOutOfRangeException(nameof(mouseIndex));
-
             }
 
             Debug.Assert(GameWindow.Instance != null);

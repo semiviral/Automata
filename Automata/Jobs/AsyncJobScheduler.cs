@@ -22,7 +22,7 @@ namespace Automata.Jobs
         private static long _ProcessingJobs;
 
         /// <summary>
-        ///     <see cref="CancellationToken"/> signalled whenever <see cref="Abort"/> is called.
+        ///     <see cref="CancellationToken" /> signalled whenever <see cref="Abort" /> is called.
         /// </summary>
         public static CancellationToken AbortToken => _AbortTokenSource.Token;
 

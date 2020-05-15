@@ -1,6 +1,10 @@
+#region
+
 using System;
 using System.Collections.Generic;
 using Automata.Collections;
+
+#endregion
 
 namespace Automata.Singletons
 {

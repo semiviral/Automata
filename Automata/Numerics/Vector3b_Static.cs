@@ -1,11 +1,4 @@
-#region
-
-
-
 // ReSharper disable InconsistentNaming
-// ReSharper disable UnusedMember.Global
-
-#endregion
 
 namespace Automata.Numerics
 {
