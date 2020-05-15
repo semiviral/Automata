@@ -15,7 +15,7 @@ namespace Automata.Rendering
     public class CameraMatrixesSystem : ComponentSystem
     {
         private bool _HasGameWindowResized;
-        private float _NewFOV;
+        private float _NewAspectRatio;
 
         public CameraMatrixesSystem()
         {
@@ -41,10 +41,10 @@ namespace Automata.Rendering
             {
                 Camera camera = entity.GetComponent<Camera>();
 
-                // adjust perspective
+                // adjust projection
                 if (_HasGameWindowResized)
                 {
-                    camera.Projection = Matrix4x4.CreatePerspectiveFieldOfView(AutomataMath.ToRadians(90f), _NewFOV, 0.1f, 1000f);
+                    camera.Projection = Matrix4x4.CreatePerspectiveFieldOfView(AutomataMath.ToRadians(90f), _NewAspectRatio, 0.1f, 1000f);
                 }
 
                 // adjust view
@@ -52,7 +52,7 @@ namespace Automata.Rendering
                     && entity.TryGetComponent(out Rotation rotation)
                     && (translation.Changed || rotation.Changed))
                 {
-                    camera.View = AutomataMath.MatrixFromTranslationAndRotationWithScaleToView(1f, rotation, translation);
+                    camera.View = AutomataMath.MatrixFromTranslationAndRotationWithScaleToView(1f, translation, rotation);
                 }
             }
 
@@ -62,7 +62,7 @@ namespace Automata.Rendering
         private void GameWindowResized(Size size)
         {
             _HasGameWindowResized = true;
-            _NewFOV = (float)size.Width / size.Height;
+            _NewAspectRatio = (float)size.Width / size.Height;
         }
     }
 }

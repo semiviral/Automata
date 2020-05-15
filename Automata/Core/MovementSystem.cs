@@ -35,9 +35,11 @@ namespace Automata.Core
 
             foreach (IEntity entity in entityManager.GetEntitiesWithComponents<InputListener, Translation>())
             {
-                entity.GetComponent<Translation>().Value += entity.TryGetComponent(out Rotation rotation)
-                    ? Vector3.Transform(movementVector, rotation.Value)
+                Vector3 transformedMovementVector = entity.TryGetComponent(out Rotation rotation)
+                    ? Vector3.Transform(movementVector, Quaternion.Conjugate(rotation.Value))
                     : movementVector;
+
+                entity.GetComponent<Translation>().Value += transformedMovementVector;
             }
         }
 

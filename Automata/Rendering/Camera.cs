@@ -2,6 +2,7 @@
 
 using System.Numerics;
 using Automata.Core.Components;
+using Automata.Numerics;
 using Automata.Rendering.OpenGL;
 
 #endregion
@@ -16,6 +17,8 @@ namespace Automata.Rendering
         private Matrix4x4 _Projection;
 
         public Shader Shader { get; set; } = _DefaultShader;
+
+        public Vector3 AccumulatedAngles { get; set; }
 
         public Matrix4x4 View
         {

@@ -58,6 +58,7 @@ namespace Automata.Singletons
 
             foreach (IMouse mouse in _InputContext.Mice)
             {
+                mouse.Cursor.CursorMode = CursorMode.Hidden;
                 mouse.MouseDown += OnMouseButtonDown;
                 mouse.MouseUp += OnMouseButtonUp;
                 mouse.MouseMove += OnMouseMoved;

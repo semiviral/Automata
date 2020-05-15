@@ -1,11 +1,11 @@
 #region
 
 using Automata.Core.Components;
-using Automata.Rendering;
+using Automata.Core.Systems;
 
 #endregion
 
-namespace Automata.Core.Systems
+namespace Automata.Core
 {
     public class ComponentChangedCleanupSystem : ComponentSystem
     {

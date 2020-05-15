@@ -38,9 +38,9 @@ namespace AutomataTest
         private static readonly Vector3[] _vertices =
         {
             new Vector3(0f, 0f, 0f),
-            new Vector3(0.5f, 0f, 0f),
-            new Vector3(0f, 0.5f, 0f),
-            new Vector3(0.5f, 0.5f, 0f),
+            new Vector3(1f, 0f, 0f),
+            new Vector3(0f, 1f, 0f),
+            new Vector3(1f, 1f, 0f),
 
             // bottom
             new Vector3(0f, 0f, 0f),
@@ -216,12 +216,23 @@ namespace AutomataTest
 
         private static void InitializeWorldEntity(World world, out IEntity gameEntity)
         {
+            uint[] newIndexes = new uint[_indices.Length];
+
+            for (int i = 0; i < _indices.Length; i += 6)
+            {
+                int iIndex = i / 6;
+                for (int j = i; j < i + 6; j++)
+                {
+                    newIndexes[j] = _indices[j] + (uint)(iIndex * 4);
+                }
+            }
+
             gameEntity = new Entity();
             world.EntityManager.RegisterEntity(gameEntity);
             world.EntityManager.RegisterComponent(gameEntity, new PendingMesh<float>
             {
                 Vertexes = _vertices.SelectMany(AutomataMath.UnrollVector3),
-                Indexes = _indices
+                Indexes = newIndexes
             });
         }
 
