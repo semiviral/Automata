@@ -5,13 +5,14 @@ using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
+#endregion
+
+// ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable UnusedMember.Global
 // ReSharper disable ConvertToAutoProperty
 // ReSharper disable InconsistentNaming
 // ReSharper disable RedundantCast
-
-#endregion
 
 namespace Automata.Numerics
 {

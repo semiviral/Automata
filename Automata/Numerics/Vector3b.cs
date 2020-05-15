@@ -5,18 +5,21 @@ using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
+#endregion
+
+// ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
 // ReSharper disable NotAccessedField.Local
 // ReSharper disable UnusedMember.Global
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable InconsistentNaming
-
-#endregion
 
 namespace Automata.Numerics
 {
     [StructLayout(LayoutKind.Sequential)]
     public readonly partial struct Vector3b
     {
+        #region Members
+
         private readonly int _X;
         private readonly int _Y;
         private readonly int _Z;
@@ -34,6 +37,11 @@ namespace Automata.Numerics
             _ => throw new IndexOutOfRangeException(nameof(index))
         };
 
+        #endregion
+
+
+        #region Constructors
+
         public unsafe Vector3b(bool value)
         {
             int intValue = -(*(int*)&value);
@@ -41,8 +49,16 @@ namespace Automata.Numerics
             (_X, _Y, _Z, _W) = (intValue, intValue, intValue, VectorConstants.INTEGER_BOOLEAN_FALSE_VALUE);
         }
 
+        public unsafe Vector3b(bool x, bool y) =>
+            (_X, _Y, _Z, _W) = (-(*(int*)&x), -(*(int*)&y), VectorConstants.INTEGER_BOOLEAN_FALSE_VALUE, VectorConstants.INTEGER_BOOLEAN_FALSE_VALUE);
+
         public unsafe Vector3b(bool x, bool y, bool z) =>
             (_X, _Y, _Z, _W) = (-(*(int*)&x), -(*(int*)&y), -(*(int*)&z), VectorConstants.INTEGER_BOOLEAN_FALSE_VALUE);
+
+        #endregion
+
+
+        #region Overrides
 
         public override bool Equals(object? obj)
         {
@@ -58,11 +74,23 @@ namespace Automata.Numerics
 
         public override int GetHashCode() => _X.GetHashCode() ^ _Y.GetHashCode() ^ _Z.GetHashCode();
 
-        public static Vector3b operator ==(Vector3b a, Vector3b b) => (Vector3b)VectorConstants.EqualsImpl((Vector128<int>)a, (Vector128<int>)b);
-        public static Vector3b operator !=(Vector3b a, Vector3b b) => !(Vector3b)VectorConstants.EqualsImpl((Vector128<int>)a, (Vector128<int>)b);
+        #endregion
+
+
+        #region Operators
+
+        public static Vector3b operator ==(Vector3b a, Vector3b b) => EqualsImpl(a, b);
+        public static Vector3b operator !=(Vector3b a, Vector3b b) => NotEqualsImpl(a, b);
         public static Vector3b operator !(Vector3b a) => new Vector3b(!a.X, !a.Y, !a.Z);
+
+        #endregion
+
+
+        #region Conversions
 
         public static unsafe explicit operator Vector128<int>(Vector3b a) => Sse2.LoadVector128((int*)&a);
         public static unsafe explicit operator Vector3b(Vector128<int> a) => *(Vector3b*)&a;
+
+        #endregion
     }
 }
