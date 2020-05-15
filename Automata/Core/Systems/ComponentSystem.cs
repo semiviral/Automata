@@ -27,7 +27,7 @@ namespace Automata.Core.Systems
         ///     If none of the types in <see cref="HandledComponentTypes" /> are active in the <see cref="EntityManager" />, this
         ///     method is skipped.
         /// </remarks>
-        public virtual void Update(EntityManager entityManager, float deltaTime) { }
+        public virtual void Update(EntityManager entityManager, TimeSpan delta) { }
 
         /// <summary>
         ///     Method called when the system is destroyed.

@@ -1,5 +1,6 @@
 #region
 
+using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Numerics;
@@ -35,7 +36,7 @@ namespace Automata.Rendering
             GameWindow.Instance.Window.Resize += GameWindowResized;
         }
 
-        public override void Update(EntityManager entityManager, float deltaTime)
+        public override void Update(EntityManager entityManager, TimeSpan delta)
         {
             foreach (IEntity entity in entityManager.GetEntitiesWithComponents<Camera>())
             {

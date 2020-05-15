@@ -27,9 +27,9 @@ namespace Automata.Rendering
             _GL = GLAPI.Instance.GL;
         }
 
-        public override unsafe void Update(EntityManager entityManager, float deltaTime)
+        public override unsafe void Update(EntityManager entityManager, TimeSpan delta)
         {
-            _GL.ClearColor(deltaTime, deltaTime, deltaTime, 1.0f);
+            _GL.ClearColor(delta, delta, delta, 1.0f);
             _GL.Clear((uint)ClearBufferMask.ColorBufferBit);
 
             foreach (Camera camera in entityManager.GetComponents<Camera>())

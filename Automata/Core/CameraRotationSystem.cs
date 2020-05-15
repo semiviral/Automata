@@ -1,8 +1,10 @@
 #region
 
+using System;
 using System.Numerics;
 using Automata.Core.Components;
 using Automata.Core.Systems;
+using Automata.Numerics;
 using Automata.Rendering;
 using Automata.Singletons;
 
@@ -20,7 +22,7 @@ namespace Automata.Core
             };
         }
 
-        public override void Update(EntityManager entityManager, float deltaTime)
+        public override void Update(EntityManager entityManager, TimeSpan delta)
         {
             Vector2 offset = Input.Instance.GetMousePositionRelative();
 
@@ -33,7 +35,7 @@ namespace Automata.Core
             // clamp offset values to get a normalized direction
             offset = Vector2.Clamp(Input.Instance.GetMousePositionRelative(), new Vector2(-1f), Vector2.One);
             // convert to axis angles (a la yaw/pitch/roll)
-            Vector3 axisAngles = new Vector3(offset.Y, offset.X, 0f) * deltaTime * 20f;
+            Vector3d axisAngles = new Vector3d(offset.Y, offset.X, 0d) * delta.TotalSeconds * 20f;
 
             foreach ((Camera camera, Rotation rotation) in entityManager.GetComponents<Camera, Rotation>())
             {

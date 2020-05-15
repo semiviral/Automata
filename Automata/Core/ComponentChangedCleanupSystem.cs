@@ -1,5 +1,6 @@
 #region
 
+using System;
 using Automata.Core.Components;
 using Automata.Core.Systems;
 
@@ -18,7 +19,7 @@ namespace Automata.Core
             };
         }
 
-        public override void Update(EntityManager entityManager, float deltaTime)
+        public override void Update(EntityManager entityManager, TimeSpan delta)
         {
             foreach (Rotation rotation in entityManager.GetComponents<Rotation>())
             {

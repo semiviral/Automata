@@ -29,7 +29,7 @@ namespace Automata.Rendering
             _RemovePendingMeshDataEntities = new Stack<IEntity>();
         }
 
-        public override void Update(EntityManager entityManager, float deltaTime)
+        public override void Update(EntityManager entityManager, TimeSpan delta)
         {
             foreach (IEntity entity in entityManager.GetEntitiesWithComponents<PendingMesh<float>>())
             {

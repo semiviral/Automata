@@ -1,5 +1,6 @@
 #region
 
+using System;
 using System.Diagnostics;
 using Automata.Singletons;
 
@@ -14,7 +15,7 @@ namespace Automata.Core.Systems
             GameWindow.Validate();
         }
 
-        public override void Update(EntityManager entityManager, float deltaTime)
+        public override void Update(EntityManager entityManager, TimeSpan delta)
         {
             Debug.Assert(GameWindow.Instance != null);
             Debug.Assert(GameWindow.Instance.Window != null);

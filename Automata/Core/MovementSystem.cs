@@ -1,5 +1,6 @@
 #region
 
+using System;
 using System.Numerics;
 using Automata.Core.Components;
 using Automata.Core.Systems;
@@ -24,9 +25,9 @@ namespace Automata.Core
             Input.Validate();
         }
 
-        public override void Update(EntityManager entityManager, float deltaTime)
+        public override void Update(EntityManager entityManager, TimeSpan delta)
         {
-            Vector3 movementVector = GetMovementVector(deltaTime);
+            Vector3 movementVector = GetMovementVector((float)delta.TotalSeconds);
 
             if (movementVector == Vector3.Zero)
             {

@@ -1,5 +1,6 @@
 #region
 
+using System;
 using Automata.Singletons;
 using Silk.NET.Input.Common;
 
@@ -9,7 +10,7 @@ namespace Automata.Core.Systems
 {
     public class FirstOrderSystem : ComponentSystem
     {
-        public override void Update(EntityManager entityManager, float deltaTime)
+        public override void Update(EntityManager entityManager, TimeSpan delta)
         {
             if (Input.Instance.IsKeyPressed(Key.Escape))
             {

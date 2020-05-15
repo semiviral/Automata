@@ -71,36 +71,36 @@ namespace Automata.Numerics
         #region Operators
 
         public static Vector3b operator ==(Vector3d a, Vector3d b) => EqualsImpl(a, b);
-        public static Vector3b operator ==(Vector3d a, int b) => EqualsImpl(a, b);
-        public static Vector3b operator ==(int a, Vector3d b) => EqualsImpl(a, b);
+        public static Vector3b operator ==(Vector3d a, double b) => EqualsImpl(a, b);
+        public static Vector3b operator ==(double a, Vector3d b) => EqualsImpl(a, b);
 
         public static Vector3b operator !=(Vector3d a, Vector3d b) => NotEqualsImpl(a, b);
-        public static Vector3b operator !=(Vector3d a, int b) => NotEqualsImpl(a, b);
-        public static Vector3b operator !=(int a, Vector3d b) => NotEqualsImpl(a, b);
+        public static Vector3b operator !=(Vector3d a, double b) => NotEqualsImpl(a, b);
+        public static Vector3b operator !=(double a, Vector3d b) => NotEqualsImpl(a, b);
 
         public static Vector3d operator +(Vector3d a, Vector3d b) => AddImpl(a, b);
-        public static Vector3d operator +(Vector3d a, int b) => AddImpl(a, b);
-        public static Vector3d operator +(int a, Vector3d b) => AddImpl(a, b);
+        public static Vector3d operator +(Vector3d a, double b) => AddImpl(a, b);
+        public static Vector3d operator +(double a, Vector3d b) => AddImpl(a, b);
 
         public static Vector3d operator -(Vector3d a, Vector3d b) => SubtractImpl(a, b);
-        public static Vector3d operator -(Vector3d a, int b) => SubtractImpl(a, b);
-        public static Vector3d operator -(int a, Vector3d b) => SubtractImpl(a, b);
+        public static Vector3d operator -(Vector3d a, double b) => SubtractImpl(a, b);
+        public static Vector3d operator -(double a, Vector3d b) => SubtractImpl(a, b);
 
         public static Vector3d operator *(Vector3d a, Vector3d b) => MultiplyImpl(a, b);
-        public static Vector3d operator *(Vector3d a, int b) => MultiplyImpl(a, b);
-        public static Vector3d operator *(int a, Vector3d b) => MultiplyImpl(a, b);
+        public static Vector3d operator *(Vector3d a, double b) => MultiplyImpl(a, b);
+        public static Vector3d operator *(double a, Vector3d b) => MultiplyImpl(a, b);
 
         public static Vector3d operator /(Vector3d a, Vector3d b) => DivideImpl(a, b);
-        public static Vector3d operator /(Vector3d a, int b) => DivideImpl(a, b);
-        public static Vector3d operator /(int a, Vector3d b) => DivideImpl(a, b);
+        public static Vector3d operator /(Vector3d a, double b) => DivideImpl(a, b);
+        public static Vector3d operator /(double a, Vector3d b) => DivideImpl(a, b);
 
         public static Vector3b operator >(Vector3d a, Vector3d b) => GreaterThanImpl(a, b);
-        public static Vector3b operator >(Vector3d a, int b) => GreaterThanImpl(a, b);
-        public static Vector3b operator >(int a, Vector3d b) => GreaterThanImpl(a, b);
+        public static Vector3b operator >(Vector3d a, double b) => GreaterThanImpl(a, b);
+        public static Vector3b operator >(double a, Vector3d b) => GreaterThanImpl(a, b);
 
         public static Vector3b operator <(Vector3d a, Vector3d b) => LessThanImpl(a, b);
-        public static Vector3b operator <(Vector3d a, int b) => LessThanImpl(a, b);
-        public static Vector3b operator <(int a, Vector3d b) => LessThanImpl(a, b);
+        public static Vector3b operator <(Vector3d a, double b) => LessThanImpl(a, b);
+        public static Vector3b operator <(double a, Vector3d b) => LessThanImpl(a, b);
 
         #endregion
 
