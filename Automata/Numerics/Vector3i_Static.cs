@@ -292,6 +292,28 @@ namespace Automata.Numerics
         }
 
 
+        private static Vector3i DivideImpl(Vector3i a, Vector3i b)
+        {
+            static Vector3i SoftwareFallback(Vector3i a0, Vector3i b0) => new Vector3i(a0.X / b0.X, a0.Y / b0.Y, a0.Z / b0.Z);
+
+            return SoftwareFallback(a, b);
+        }
+
+        private static Vector3i DivideImpl(Vector3i a, int b)
+        {
+            static Vector3i SoftwareFallback(Vector3i a0, int b0) => new Vector3i(a0.X / b0, a0.Y / b0, a0.Z / b0);
+
+            return SoftwareFallback(a, b);
+        }
+
+        private static Vector3i DivideImpl(int a, Vector3i b)
+        {
+            static Vector3i SoftwareFallback(int a0, Vector3i b0) => new Vector3i(a0 / b0.X, a0 / b0.Y, a0 / b0.Z);
+
+            return SoftwareFallback(a, b);
+        }
+
+
         private static Vector3b GreaterThanImpl(Vector3i a, Vector3i b)
         {
             if (Sse2.IsSupported)

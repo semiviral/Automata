@@ -14,7 +14,7 @@ using System.Runtime.Intrinsics.X86;
 namespace Automata.Numerics
 {
     [StructLayout(LayoutKind.Sequential)]
-    public readonly struct Vector3d
+    public readonly partial struct Vector3d
     {
         #region Members
 
@@ -64,6 +64,43 @@ namespace Automata.Numerics
         }
 
         public override int GetHashCode() => X.GetHashCode() ^ Y.GetHashCode() ^ Z.GetHashCode();
+
+        #endregion
+
+
+        #region Operators
+
+        public static Vector3b operator ==(Vector3d a, Vector3d b) => EqualsImpl(a, b);
+        public static Vector3b operator ==(Vector3d a, int b) => EqualsImpl(a, b);
+        public static Vector3b operator ==(int a, Vector3d b) => EqualsImpl(a, b);
+
+        public static Vector3b operator !=(Vector3d a, Vector3d b) => NotEqualsImpl(a, b);
+        public static Vector3b operator !=(Vector3d a, int b) => NotEqualsImpl(a, b);
+        public static Vector3b operator !=(int a, Vector3d b) => NotEqualsImpl(a, b);
+
+        public static Vector3d operator +(Vector3d a, Vector3d b) => AddImpl(a, b);
+        public static Vector3d operator +(Vector3d a, int b) => AddImpl(a, b);
+        public static Vector3d operator +(int a, Vector3d b) => AddImpl(a, b);
+
+        public static Vector3d operator -(Vector3d a, Vector3d b) => SubtractImpl(a, b);
+        public static Vector3d operator -(Vector3d a, int b) => SubtractImpl(a, b);
+        public static Vector3d operator -(int a, Vector3d b) => SubtractImpl(a, b);
+
+        public static Vector3d operator *(Vector3d a, Vector3d b) => MultiplyImpl(a, b);
+        public static Vector3d operator *(Vector3d a, int b) => MultiplyImpl(a, b);
+        public static Vector3d operator *(int a, Vector3d b) => MultiplyImpl(a, b);
+
+        public static Vector3d operator /(Vector3d a, Vector3d b) => DivideImpl(a, b);
+        public static Vector3d operator /(Vector3d a, int b) => DivideImpl(a, b);
+        public static Vector3d operator /(int a, Vector3d b) => DivideImpl(a, b);
+
+        public static Vector3b operator >(Vector3d a, Vector3d b) => GreaterThanImpl(a, b);
+        public static Vector3b operator >(Vector3d a, int b) => GreaterThanImpl(a, b);
+        public static Vector3b operator >(int a, Vector3d b) => GreaterThanImpl(a, b);
+
+        public static Vector3b operator <(Vector3d a, Vector3d b) => LessThanImpl(a, b);
+        public static Vector3b operator <(Vector3d a, int b) => LessThanImpl(a, b);
+        public static Vector3b operator <(int a, Vector3d b) => LessThanImpl(a, b);
 
         #endregion
 

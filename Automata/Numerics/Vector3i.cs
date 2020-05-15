@@ -102,6 +102,10 @@ namespace Automata.Numerics
         public static Vector3i operator *(Vector3i a, int b) => MultiplyImpl(a, b);
         public static Vector3i operator *(int a, Vector3i b) => MultiplyImpl(a, b);
 
+        public static Vector3i operator /(Vector3i a, Vector3i b) => DivideImpl(a, b);
+        public static Vector3i operator /(Vector3i a, int b) => DivideImpl(a, b);
+        public static Vector3i operator /(int a, Vector3i b) => DivideImpl(a, b);
+
         public static Vector3b operator >(Vector3i a, Vector3i b) => GreaterThanImpl(a, b);
         public static Vector3b operator >(Vector3i a, int b) => GreaterThanImpl(a, b);
         public static Vector3b operator >(int a, Vector3i b) => GreaterThanImpl(a, b);

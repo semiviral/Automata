@@ -90,6 +90,7 @@ namespace Automata.Numerics
 
         public static unsafe explicit operator Vector128<int>(Vector3b a) => Sse2.LoadVector128((int*)&a);
         public static unsafe explicit operator Vector3b(Vector128<int> a) => *(Vector3b*)&a;
+        public static explicit operator Vector3b(Vector256<double> a) => (Vector3b)Avx.ConvertToVector128Int32(a);
 
         #endregion
     }
