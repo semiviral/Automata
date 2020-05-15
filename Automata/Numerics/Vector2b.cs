@@ -5,12 +5,13 @@ using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
+#endregion
+
+// ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable UnusedMember.Global
 // ReSharper disable NotAccessedField.Local
 // ReSharper disable InconsistentNaming
-
-#endregion
 
 namespace Automata.Numerics
 {
@@ -73,9 +74,14 @@ namespace Automata.Numerics
 
         #region Operators
 
-        public static Vector2b operator ==(Vector2b a, Vector2b b) => (Vector2b)VectorConstants.EqualsImpl((Vector128<int>)a, (Vector128<int>)b);
-        public static Vector2b operator !=(Vector2b a, Vector2b b) => !(Vector2b)VectorConstants.EqualsImpl((Vector128<int>)a, (Vector128<int>)b);
+        public static Vector2b operator ==(Vector2b a, Vector2b b) => EqualsImpl(a, b);
+        public static Vector2b operator !=(Vector2b a, Vector2b b) => NotEqualsImpl(a, b);
         public static Vector2b operator !(Vector2b a) => new Vector2b(!a.X, !a.Y);
+
+        #endregion
+
+
+        #region Conversions
 
         public static unsafe explicit operator Vector128<int>(Vector2b a) => Sse2.LoadVector128((int*)&a);
         public static unsafe explicit operator Vector2b(Vector128<int> a) => *(Vector2b*)&a;

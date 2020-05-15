@@ -335,7 +335,7 @@ namespace Automata.Numerics
         }
 
 
-        public static Vector3b LessThanImpl(Vector3i a, Vector3i b)
+        private static Vector3b LessThanImpl(Vector3i a, Vector3i b)
         {
             if (Sse2.IsSupported)
             {
@@ -349,7 +349,7 @@ namespace Automata.Numerics
             }
         }
 
-        public static Vector3b LessThanImpl(Vector3i a, int b)
+        private static Vector3b LessThanImpl(Vector3i a, int b)
         {
             if (Sse2.IsSupported)
             {
@@ -363,7 +363,7 @@ namespace Automata.Numerics
             }
         }
 
-        public static Vector3b LessThanImpl(int a, Vector3i b)
+        private static Vector3b LessThanImpl(int a, Vector3i b)
         {
             if (Sse2.IsSupported)
             {

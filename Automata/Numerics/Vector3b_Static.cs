@@ -10,6 +10,9 @@ namespace Automata.Numerics
         public static bool All(Vector3b a) => a.X && a.Y && a.Z;
         public static bool Any(Vector3b a) => a.X || a.Y || a.Z;
 
+
+        #region Instrinsics
+
         private static Vector3b EqualsImpl(Vector3b a, Vector3b b)
         {
             if (Sse2.IsSupported)
@@ -30,5 +33,7 @@ namespace Automata.Numerics
 
             return SoftwareFallback(a, b);
         }
+
+        #endregion
     }
 }
