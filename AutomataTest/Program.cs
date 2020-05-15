@@ -37,10 +37,10 @@ namespace AutomataTest
         //Vertex data, uploaded to the VBO.
         private static readonly Vector3[] _vertices =
         {
-            new Vector3(0f, 0f, -1f),
-            new Vector3(0.5f, 0f, -1f),
-            new Vector3(0f, 0.5f, -1f),
-            new Vector3(0.5f, 0.5f, -1f),
+            new Vector3(0f, 0f, 0f),
+            new Vector3(0.5f, 0f, 0f),
+            new Vector3(0f, 0.5f, 0f),
+            new Vector3(0.5f, 0.5f, 0f),
 
             // bottom
             new Vector3(0f, 0f, 0f),

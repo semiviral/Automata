@@ -9,6 +9,7 @@ using Automata;
 using Automata.Collections;
 using Automata.Jobs;
 using Automata.Numerics;
+using Automata.Rendering;
 using Automata.Singletons;
 using AutomataTest.Blocks;
 
@@ -22,7 +23,7 @@ namespace AutomataTest.Chunks.Generation
 
         private readonly Stopwatch _RuntimeStopwatch;
         private readonly INodeCollection<ushort>[] _NeighborBlocksCollections;
-        private readonly List<int> _Vertices;
+        private readonly List<int> _Vertexes;
         private readonly List<uint> _Triangles;
 
         private INodeCollection<ushort>? _BlocksCollection;
@@ -35,7 +36,7 @@ namespace AutomataTest.Chunks.Generation
         {
             _RuntimeStopwatch = new Stopwatch();
             _NeighborBlocksCollections = new INodeCollection<ushort>[6];
-            _Vertices = new List<int>();
+            _Vertexes = new List<int>();
             _Triangles = new List<uint>();
         }
 
@@ -58,12 +59,18 @@ namespace AutomataTest.Chunks.Generation
         /// </summary>
         public void ClearData()
         {
-            _Vertices.Clear();
+            _Vertexes.Clear();
             _Triangles.Clear();
 
             _PreMeshingTimeSpan = default;
             _MeshingTimeSpan = default;
         }
+
+        public PendingMesh<int> GetData() => new PendingMesh<int>
+        {
+            Vertexes = _Vertexes,
+            Indexes = _Triangles
+        };
 
         #endregion
 
@@ -331,35 +338,35 @@ namespace AutomataTest.Chunks.Generation
                     int[] compressedVertices = GenerationConstants.VerticesByIteration[normalIndex];
 
 
-                    _Vertices.Add(aggregatePositionNormal
+                    _Vertexes.Add(aggregatePositionNormal
                                   + ((unaryTraversalShiftedMask & compressedVertices[3])
                                      | ((((compressedVertices[3] >> traversalNormalShift) * traversals) << traversalNormalShift)
                                         & traversalShiftedMask)));
                     //_MeshData.AddVertex(compressedUv & (int.MaxValue << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2)));
 
 
-                    _Vertices.Add(aggregatePositionNormal
+                    _Vertexes.Add(aggregatePositionNormal
                                   + ((unaryTraversalShiftedMask & compressedVertices[2])
                                      | ((((compressedVertices[2] >> traversalNormalShift) * traversals) << traversalNormalShift)
                                         & traversalShiftedMask)));
                     //_MeshData.AddVertex(compressedUv & (int.MaxValue << GenerationConstants.CHUNK_SIZE_BIT_SHIFT));
 
 
-                    _Vertices.Add(aggregatePositionNormal
-                                        + ((unaryTraversalShiftedMask & compressedVertices[1])
-                                           | ((((compressedVertices[1] >> traversalNormalShift) * traversals) << traversalNormalShift)
-                                              & traversalShiftedMask)));
+                    _Vertexes.Add(aggregatePositionNormal
+                                  + ((unaryTraversalShiftedMask & compressedVertices[1])
+                                     | ((((compressedVertices[1] >> traversalNormalShift) * traversals) << traversalNormalShift)
+                                        & traversalShiftedMask)));
                     //_MeshData.AddVertex(compressedUv & ~(GenerationConstants.CHUNK_SIZE_BIT_MASK << GenerationConstants.CHUNK_SIZE_BIT_SHIFT));
 
 
-                    _Vertices.Add(aggregatePositionNormal
+                    _Vertexes.Add(aggregatePositionNormal
                                   + ((unaryTraversalShiftedMask & compressedVertices[0])
                                      | ((((compressedVertices[0] >> traversalNormalShift) * traversals) << traversalNormalShift)
                                         & traversalShiftedMask)));
                     //_MeshData.AddVertex(compressedUv & int.MaxValue);
 
                     // add triangles
-                    uint verticesCount = (uint)(_Vertices.Count / 2);
+                    uint verticesCount = (uint)(_Vertexes.Count / 2);
 
                     _Triangles.Add(0 + verticesCount);
                     _Triangles.Add(2 + verticesCount);

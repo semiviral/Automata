@@ -31,7 +31,7 @@ namespace Automata.Core
 
             foreach ((Camera _, Rotation rotation) in entityManager.GetComponents<Camera, Rotation>())
             {
-                rotation.Value *= Quaternion.CreateFromAxisAngle(new Vector3(offset, 0f), deltaTime * 4f);
+                rotation.Value *= Quaternion.CreateFromAxisAngle(new Vector3(offset.Y, offset.X, 0f), deltaTime * 10f);
             }
 
             Input.Instance.SetMousePositionRelative(0, Vector2.Zero);
