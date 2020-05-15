@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Automata.Core.Components;
 using Automata.Exceptions;
@@ -78,20 +79,35 @@ namespace Automata.Core
 
         private void RegisterComponentInternal(IEntity entity, Type type, IComponent? component)
         {
-            if (!EntitiesByComponent.ContainsKey(type))
+            IComponent instance = component ?? (IComponent)Activator.CreateInstance(type);
+
+            Debug.Assert(instance != null);
+
+            if (!entity.TryAddComponent(instance))
             {
-                EntitiesByComponent.Add(type, new List<IEntity>());
+                return;
             }
 
-            if (!ComponentCountByType.ContainsKey(type))
+            List<Type> implementedTypes = new List<Type>
             {
-                ComponentCountByType.Add(type, 0);
-            }
+                type
+            };
+            implementedTypes.AddRange(type.GetInterfaces().Where(interfaceType => typeof(IComponent).IsAssignableFrom(interfaceType)));
 
-            if (entity.TryAddComponent(component ?? (IComponent)Activator.CreateInstance(type)))
+            foreach (Type implementedType in implementedTypes)
             {
-                EntitiesByComponent[type].Add(entity);
-                ComponentCountByType[type] += 1;
+                if (!EntitiesByComponent.ContainsKey(implementedType))
+                {
+                    EntitiesByComponent.Add(implementedType, new List<IEntity>());
+                }
+
+                if (!ComponentCountByType.ContainsKey(implementedType))
+                {
+                    ComponentCountByType.Add(implementedType, 0);
+                }
+
+                EntitiesByComponent[implementedType].Add(entity);
+                ComponentCountByType[implementedType] += 1;
             }
         }
 

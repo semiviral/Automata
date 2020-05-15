@@ -15,4 +15,13 @@
       <PackageReference Include="Silk.NET" Version="1.2.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Content Include="..\AutomataTest\bin\Debug\netcoreapp3.1\DefaultFragment.glsl">
+        <Link>DefaultFragment.glsl</Link>
+      </Content>
+      <Content Include="..\AutomataTest\bin\Debug\netcoreapp3.1\PackedVertexes.glsl">
+        <Link>PackedVertexes.glsl</Link>
+      </Content>
+    </ItemGroup>
+
 </Project>

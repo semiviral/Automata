@@ -1,5 +1,6 @@
 #region
 
+using System.Numerics;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
@@ -11,6 +12,30 @@ namespace Automata.Numerics
 {
     public readonly partial struct Vector3d
     {
+        public static Vector3 AsVector3(Vector3d a) => new Vector3((float)a.X, (float)a.Y, (float)a.Z);
+
+        public static Vector3d Transform(Vector3d value, Quaternion rotation)
+        {
+            double x2 = rotation.X + rotation.X;
+            double y2 = rotation.Y + rotation.Y;
+            double z2 = rotation.Z + rotation.Z;
+
+            double wx2 = rotation.W * x2;
+            double wy2 = rotation.W * y2;
+            double wz2 = rotation.W * z2;
+            double xx2 = rotation.X * x2;
+            double xy2 = rotation.X * y2;
+            double xz2 = rotation.X * z2;
+            double yy2 = rotation.Y * y2;
+            double yz2 = rotation.Y * z2;
+            double zz2 = rotation.Z * z2;
+
+            return new Vector3d(
+                (value.X * (1.0d - yy2 - zz2)) + (value.Y * (xy2 - wz2)) + (value.Z * (xz2 + wy2)),
+                (value.X * (xy2 + wz2)) + (value.Y * (1.0d - xx2 - zz2)) + (value.Z * (yz2 - wx2)),
+                (value.X * (xz2 - wy2)) + (value.Y * (yz2 + wx2)) + (value.Z * (1.0d - xx2 - yy2)));
+        }
+
         #region Intrinsics
 
         private static Vector3b EqualsImpl(Vector3d a, Vector3d b)

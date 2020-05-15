@@ -14,6 +14,8 @@ namespace Automata.Core
 {
     public class CameraRotationSystem : ComponentSystem
     {
+        private const double _SENSITIVITY = 10d;
+
         public CameraRotationSystem()
         {
             HandledComponentTypes = new[]
@@ -35,7 +37,7 @@ namespace Automata.Core
             // clamp offset values to get a normalized direction
             offset = Vector2.Clamp(Input.Instance.GetMousePositionRelative(), new Vector2(-1f), Vector2.One);
             // convert to axis angles (a la yaw/pitch/roll)
-            Vector3d axisAngles = new Vector3d(offset.Y, offset.X, 0d) * delta.TotalSeconds * 20f;
+            Vector3d axisAngles = new Vector3d(offset.Y, offset.X, 0d) * delta.TotalSeconds * _SENSITIVITY;
 
             foreach ((Camera camera, Rotation rotation) in entityManager.GetComponents<Camera, Rotation>())
             {
@@ -43,8 +45,8 @@ namespace Automata.Core
                 camera.AccumulatedAngles += axisAngles;
 
                 // create quaternions based on local angles
-                Quaternion pitch = Quaternion.CreateFromAxisAngle(Vector3.UnitX, camera.AccumulatedAngles.X);
-                Quaternion yaw = Quaternion.CreateFromAxisAngle(Vector3.UnitY, camera.AccumulatedAngles.Y);
+                Quaternion pitch = Quaternion.CreateFromAxisAngle(Vector3.UnitX, (float)camera.AccumulatedAngles.X);
+                Quaternion yaw = Quaternion.CreateFromAxisAngle(Vector3.UnitY, (float)camera.AccumulatedAngles.Y);
 
                 // rotate around (pitch as global) and (yaw as local)
                 rotation.Value = pitch * yaw;

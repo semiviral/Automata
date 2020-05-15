@@ -20,7 +20,7 @@ namespace Automata.Rendering
             HandledComponentTypes = new[]
             {
                 typeof(Camera),
-                typeof(Mesh)
+                typeof(PackedMesh)
             };
 
             GLAPI.Validate();
@@ -29,7 +29,7 @@ namespace Automata.Rendering
 
         public override unsafe void Update(EntityManager entityManager, TimeSpan delta)
         {
-            _GL.ClearColor(delta, delta, delta, 1.0f);
+            _GL.ClearColor(0f, 0f, 0f, 1f);
             _GL.Clear((uint)ClearBufferMask.ColorBufferBit);
 
             foreach (Camera camera in entityManager.GetComponents<Camera>())
@@ -41,20 +41,15 @@ namespace Automata.Rendering
 
                 camera.Shader.Use();
 
-                foreach (Mesh mesh in entityManager.GetComponents<Mesh>())
+                foreach (PackedMesh packedMesh in entityManager.GetComponents<PackedMesh>())
                 {
-                    if (mesh.IndexesBuffer == null)
-                    {
-                        continue;
-                    }
-                    else if (mesh.VertexArrayObject == null)
+                    if (packedMesh.IndexesBuffer.Length == 0)
                     {
                         continue;
                     }
 
-                    mesh.VertexArrayObject.Bind();
-
-                    _GL.DrawElements(PrimitiveType.Triangles, mesh.IndexesBuffer.Length, DrawElementsType.UnsignedInt, null);
+                    packedMesh.VertexArrayObject.Bind();
+                    _GL.DrawElements(PrimitiveType.Triangles, packedMesh.IndexesBuffer.Length, DrawElementsType.UnsignedInt, null);
 
                     if (_GL.GetError() != GLEnum.NoError)
                     {
@@ -66,12 +61,10 @@ namespace Automata.Rendering
 
         public override void Destroy(EntityManager entityManager)
         {
-            foreach (Mesh renderedMeshComponent in entityManager.GetComponents<Mesh>())
-            {
-                renderedMeshComponent.VertexesBuffer?.Dispose();
-                renderedMeshComponent.IndexesBuffer?.Dispose();
-                renderedMeshComponent.VertexArrayObject?.Dispose();
-            }
+            // foreach (IMesh renderedMeshComponent in entityManager.GetComponents<IMesh>())
+            // {
+            //     renderedMeshComponent.Dispose();
+            // }
         }
     }
 }

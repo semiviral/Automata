@@ -15,9 +15,6 @@ namespace Automata.Core
             SystemManager.RegisterSystem<CameraRotationSystem, FirstOrderSystem>();
             SystemManager.RegisterSystem<MovementSystem, CameraRotationSystem>();
 
-            // meshing systems
-            SystemManager.RegisterSystem<UnpackedMeshCompositionSystem, DefaultOrderSystem>();
-
             // rendering systems
             SystemManager.RegisterSystem<CameraMatrixesSystem, RenderOrderSystem>();
             SystemManager.RegisterSystem<RenderSystem, CameraMatrixesSystem>();

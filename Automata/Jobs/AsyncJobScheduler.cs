@@ -144,28 +144,6 @@ namespace Automata.Jobs
 
         #region Runtime
 
-        private static async Task ExecuteInvocation(AsyncInvocation invocation)
-        {
-            Debug.Assert(invocation != null);
-
-            if (AbortToken.IsCancellationRequested)
-            {
-                return;
-            }
-
-            try
-            {
-                await _WorkerSemaphore.WaitAsync().ConfigureAwait(false);
-
-                await invocation.Invoke().ConfigureAwait(false);
-            }
-            finally
-            {
-                // release semaphore regardless of any invocation errors
-                _WorkerSemaphore.Release();
-            }
-        }
-
         private static async Task ExecuteJob(AsyncJob asyncJob)
         {
             Debug.Assert(asyncJob != null);
@@ -193,6 +171,28 @@ namespace Automata.Jobs
             finally
             {
                 // release semaphore regardless of any job errors
+                _WorkerSemaphore.Release();
+            }
+        }
+
+        private static async Task ExecuteInvocation(AsyncInvocation invocation)
+        {
+            Debug.Assert(invocation != null);
+
+            if (AbortToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            try
+            {
+                await _WorkerSemaphore.WaitAsync().ConfigureAwait(false);
+
+                await invocation.Invoke().ConfigureAwait(false);
+            }
+            finally
+            {
+                // release semaphore regardless of any invocation errors
                 _WorkerSemaphore.Release();
             }
         }

@@ -4,6 +4,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Serilog;
 
 // ReSharper disable MemberCanBeProtected.Global
 // ReSharper disable MemberCanBePrivate.Global
@@ -63,7 +64,7 @@ namespace Automata.Jobs
         /// <remarks>
         ///     This member is null in the case that the job has not finished processing.
         /// </remarks>
-        public TimeSpan? ProcessTime { get; private set; }
+        public TimeSpan ProcessTime { get; private set; }
 
         /// <summary>
         ///     Elapsed execution time of job.
@@ -71,7 +72,7 @@ namespace Automata.Jobs
         /// <remarks>
         ///     This members is null in the case that the job has not finished execution.
         /// </remarks>
-        public TimeSpan? ExecutionTime { get; private set; }
+        public TimeSpan ExecutionTime { get; private set; }
 
         public event EventHandler<AsyncJob>? WorkFinished;
 
@@ -129,6 +130,12 @@ namespace Automata.Jobs
 
                 // and signal WorkFinished event
                 WorkFinished?.Invoke(this, this);
+            }
+            catch (Exception ex)
+            {
+                // errors are always consumed here due to usage of Task.Run further up the call stack
+                Log.Error($"({nameof(AsyncJob)}) {ex}");
+                throw;
             }
             finally
             {

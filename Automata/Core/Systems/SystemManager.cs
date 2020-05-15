@@ -29,7 +29,7 @@ namespace Automata.Core.Systems
             };
         }
 
-        public void Update(EntityManager entityManager, float deltaTime)
+        public void Update(EntityManager entityManager, TimeSpan deltaTime)
         {
             foreach (ComponentSystem componentSystem in _ComponentSystems.Where(componentSystem =>
                 VerifyHandledTypesExist(entityManager, componentSystem)))

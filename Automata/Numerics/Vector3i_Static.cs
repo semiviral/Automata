@@ -17,6 +17,7 @@ namespace Automata.Numerics
     public readonly partial struct Vector3i
     {
         public static Vector3i FromVector3(Vector3 a) => new Vector3i((int)a.X, (int)a.Y, (int)a.Z);
+        public static Vector3i FromVector3d(Vector3d a) => new Vector3i((int)a.X, (int)a.Y, (int)a.Z);
 
         public static Vector3i Project3D(int index, int bounds)
         {

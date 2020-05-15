@@ -121,7 +121,7 @@ namespace AutomataTest.Chunks.Generation
         #endregion
 
 
-        #region Mesh Generation
+        #region PackedMesh Generation
 
         private void PrepareMeshing()
         {
@@ -321,15 +321,24 @@ namespace AutomataTest.Chunks.Generation
                         continue;
                     }
 
-                    // if ((traversals == 0) || !BlockRegistry.Instance.GetUVs(currentBlockId, faceDirection, out ushort textureId))
-                    // {
-                    //     break;
-                    // }
+                    if ((traversals == 0) /*|| !BlockRegistry.Instance.GetUVs(currentBlockId, faceDirection, out ushort textureId)*/)
+                    {
+                        break;
+                    }
 
                     // int uvShift = (iModulo3 + traversalNormalIndex) % 2;
                     // int compressedUv = (textureId << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2))
                     //                    | (1 << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * ((uvShift + 1) % 2)))
                     //                    | (traversals << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * uvShift));
+
+                    uint verticesCount = (uint)_Vertexes.Count;
+
+                    _Triangles.Add(0 + verticesCount);
+                    _Triangles.Add(2 + verticesCount);
+                    _Triangles.Add(1 + verticesCount);
+                    _Triangles.Add(2 + verticesCount);
+                    _Triangles.Add(3 + verticesCount);
+                    _Triangles.Add(1 + verticesCount);
 
                     int traversalShiftedMask = GenerationConstants.CHUNK_SIZE_BIT_MASK << traversalNormalShift;
                     int unaryTraversalShiftedMask = ~traversalShiftedMask;
@@ -364,16 +373,6 @@ namespace AutomataTest.Chunks.Generation
                                      | ((((compressedVertices[0] >> traversalNormalShift) * traversals) << traversalNormalShift)
                                         & traversalShiftedMask)));
                     //_MeshData.AddVertex(compressedUv & int.MaxValue);
-
-                    // add triangles
-                    uint verticesCount = (uint)(_Vertexes.Count / 2);
-
-                    _Triangles.Add(0 + verticesCount);
-                    _Triangles.Add(2 + verticesCount);
-                    _Triangles.Add(1 + verticesCount);
-                    _Triangles.Add(2 + verticesCount);
-                    _Triangles.Add(3 + verticesCount);
-                    _Triangles.Add(1 + verticesCount);
 
                     break;
                 }

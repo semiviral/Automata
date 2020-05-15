@@ -11,9 +11,9 @@ namespace Automata.Rendering
     /// <summary>
     ///     Used to hold pending mesh data that needs to be uploaded to the GPU.
     /// </summary>
-    public class PendingMesh<T> : IComponent where T : unmanaged
+    public class PendingMesh<TDataType> : IComponent where TDataType : unmanaged
     {
-        public IEnumerable<T> Vertexes { get; set; } = Enumerable.Empty<T>();
+        public IEnumerable<TDataType> Vertexes { get; set; } = Enumerable.Empty<TDataType>();
         public IEnumerable<uint> Indexes { get; set; } = Enumerable.Empty<uint>();
     }
 }

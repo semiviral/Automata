@@ -20,6 +20,9 @@ namespace Automata.Numerics
 
         public static Vector3d Zero { get; } = new Vector3d(0d);
         public static Vector3d One { get; } = new Vector3d(1d);
+        public static Vector3d UnitX { get; } = new Vector3d(1d, 0d, 0d);
+        public static Vector3d UnitY { get; } = new Vector3d(0d, 1d, 0d);
+        public static Vector3d UnitZ { get; } = new Vector3d(0d, 0d, 1d);
 
         private readonly double _X;
         private readonly double _Y;
@@ -108,7 +111,7 @@ namespace Automata.Numerics
         #region Conversions
 
         public static unsafe explicit operator Vector3d(Vector256<double> a) => *(Vector3d*)&a;
-        public static unsafe explicit operator Vector256<double>(Vector3d a) => Avx.LoadAlignedVector256((double*)&a);
+        public static unsafe explicit operator Vector256<double>(Vector3d a) => Avx.LoadVector256((double*)&a);
 
         #endregion
     }

@@ -77,13 +77,13 @@ namespace Automata.Core
         protected virtual void Update()
         {
             // calculate delta time
-            LastDeltaTime = _DeltaTimer.Elapsed.TotalSeconds;
+            TimeSpan delta = _DeltaTimer.Elapsed;
 
             // reset delta timer
             _DeltaTimer.Restart();
 
             // update system manager for frame
-            SystemManager.Update(EntityManager, (float)LastDeltaTime);
+            SystemManager.Update(EntityManager, delta);
         }
     }
 }

@@ -9,11 +9,13 @@ using Automata;
 using Automata.Core;
 using Automata.Core.Components;
 using Automata.Core.Systems;
+using Automata.Numerics;
 using Automata.Rendering;
 using Automata.Rendering.OpenGL;
 using Automata.Singletons;
 using AutomataTest.Blocks;
 using AutomataTest.Chunks;
+using AutomataTest.Chunks.Generation;
 using Serilog;
 using Silk.NET.GLFW;
 using Silk.NET.OpenGL;
@@ -26,8 +28,8 @@ namespace AutomataTest
 {
     internal class Program
     {
-        private static readonly string _LocalDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData,
-            Environment.SpecialFolderOption.Create);
+        private static readonly string _LocalDataPath =
+            $@"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.Create)}/Automata/";
 
         private static IWindow _Window;
         private static GL _GL;
@@ -129,10 +131,11 @@ namespace AutomataTest
             Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
             Log.Information("Static logger initialized.");
 
-            if (!Directory.Exists($@"{_LocalDataPath}/Wyd/"))
+            if (!Directory.Exists(_LocalDataPath))
             {
-                Log.Information("Local data folder missing, creating...");
-                Directory.CreateDirectory($@"{_LocalDataPath}/Wyd/");
+                Log.Information("Application data folder missing.");
+                Log.Information("Creating application data folder.");
+                Directory.CreateDirectory(_LocalDataPath);
             }
 
             WindowOptions options = WindowOptions.Default;
@@ -166,6 +169,8 @@ namespace AutomataTest
             Singleton.InstantiateSingleton<Diagnostics>();
             Diagnostics.Instance.RegisterDiagnosticTimeEntry("NoiseRetrieval");
             Diagnostics.Instance.RegisterDiagnosticTimeEntry("TerrainGeneration");
+            Diagnostics.Instance.RegisterDiagnosticTimeEntry("PreMeshing");
+            Diagnostics.Instance.RegisterDiagnosticTimeEntry("Meshing");
 
             Singleton.InstantiateSingleton<GameWindow>();
             GameWindow.Instance.Window = _Window;
@@ -210,7 +215,8 @@ namespace AutomataTest
             world = new GameWorld(true);
             world.SystemManager.RegisterSystem<ViewDoUpdateSystem, FirstOrderSystem>();
             world.SystemManager.RegisterSystem<ViewDoRenderSystem, LastOrderSystem>();
-            //world.SystemManager.RegisterSystem<ChunkBuildingSystem, DefaultOrderSystem>();
+            world.SystemManager.RegisterSystem<ChunkGenerationSystem, DefaultOrderSystem>();
+            //world.SystemManager.RegisterSystem<MeshCompositionSystem, ChunkGenerationSystem>();
             World.RegisterWorld("core", world);
         }
 
@@ -242,10 +248,10 @@ namespace AutomataTest
             world.EntityManager.RegisterEntity(playerEntity);
             world.EntityManager.RegisterComponent(playerEntity, new Translation
             {
-                Value = new Vector3(0f, 0f, -1.9f)
+                Value = new Vector3d(0d, 0d, -1.9d)
             });
             world.EntityManager.RegisterComponent<Rotation>(playerEntity);
-            world.EntityManager.RegisterComponent<Camera>(playerEntity);
+            world.EntityManager.RegisterComponent(playerEntity, new Camera {Shader = new Shader("PackedVertexes.glsl", "DefaultFragment.glsl")});
             world.EntityManager.RegisterComponent<InputListener>(playerEntity);
         }
 
@@ -257,15 +263,19 @@ namespace AutomataTest
 
             InitializeDefaultWorld(out World world);
 
-            InitializeWorldEntity(world, out IEntity gameEntity);
+            InitializeWorldEntity(world, out IEntity _);
 
-            InitializePlayerEntity(world, out IEntity playerEntity);
+            InitializePlayerEntity(world, out IEntity _);
 
             Entity chunk = new Entity();
             world.EntityManager.RegisterEntity(chunk);
             world.EntityManager.RegisterComponent<Translation>(chunk);
+            world.EntityManager.RegisterComponent(chunk, new ChunkState
+            {
+                Value = GenerationState.Unbuilt
+            });
+            world.EntityManager.RegisterComponent<ChunkID>(chunk);
             world.EntityManager.RegisterComponent<BlocksCollection>(chunk);
-            world.EntityManager.RegisterComponent<ChunkState>(chunk);
         }
 
         private static Matrix4x4 _View;

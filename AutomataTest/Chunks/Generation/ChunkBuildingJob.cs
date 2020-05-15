@@ -121,8 +121,11 @@ namespace AutomataTest.Chunks.Generation
                 {
                     heightmapBuffer[threadIds.X + (GenerationConstants.CHUNK_SIZE * threadIds.Z)] = 128;
                 }
-
-                cavemapBuffer[threadIds.X + (GenerationConstants.CHUNK_SIZE * (threadIds.Z + (GenerationConstants.CHUNK_SIZE * threadIds.Y)))] = 0;
+                else
+                {
+                    cavemapBuffer[threadIds.X + (GenerationConstants.CHUNK_SIZE * (threadIds.Z + (GenerationConstants.CHUNK_SIZE * threadIds.Y)))] =
+                        0;
+                }
             }
 
             Gpu.Default.For(GenerationConstants.CHUNK_SIZE, GenerationConstants.CHUNK_SIZE, GenerationConstants.CHUNK_SIZE, NoiseKernel);
@@ -154,8 +157,15 @@ namespace AutomataTest.Chunks.Generation
         {
             Debug.Assert(_Blocks != null);
             Debug.Assert(_SeededRandom != null);
-
             Vector3i localPosition = Vector3i.Project3D(index, GenerationConstants.CHUNK_SIZE);
+
+            if (_SeededRandom.Next(0, 3) == 0)
+            {
+                _Blocks.SetPoint(localPosition, GetCachedBlockID("stone"));
+            }
+
+            return;
+
             int heightmapIndex = Vector2i.Project1D(new Vector2i(localPosition.X, localPosition.Z), GenerationConstants.CHUNK_SIZE);
 
             int noiseHeight = _Heightmap[heightmapIndex];

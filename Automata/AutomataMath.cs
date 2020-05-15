@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using Automata.Core.Components;
+using Automata.Numerics;
 
 #endregion
 
@@ -21,7 +22,7 @@ namespace Automata
         public static Matrix4x4 MatrixFromTranslationAndRotationWithScaleToView(float scale, Translation translation, Rotation rotation) =>
             Matrix4x4.Identity
             * Matrix4x4.CreateScale(scale)
-            * Matrix4x4.CreateTranslation(translation.Value)
+            * Matrix4x4.CreateTranslation(Vector3d.AsVector3(translation.Value))
             * Matrix4x4.CreateFromQuaternion(rotation.Value);
 
         public static IEnumerable<float> UnrollMatrix4x4(Matrix4x4 matrix)
