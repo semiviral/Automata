@@ -1,9 +1,8 @@
 #region
 
 using System;
-using Automata.Core;
-using Automata.Core.Systems;
-using Automata.Singletons;
+using Automata.Rendering.OpenGL;
+using Serilog;
 using Silk.NET.OpenGL;
 
 #endregion
@@ -13,7 +12,6 @@ namespace Automata.Rendering
     public class RenderSystem : ComponentSystem
     {
         private readonly GL _GL;
-
 
         public RenderSystem()
         {
@@ -25,37 +23,50 @@ namespace Automata.Rendering
 
             GLAPI.Validate();
             _GL = GLAPI.Instance.GL;
+            _GL.Enable(GLEnum.DepthTest);
+        }
+
+        public override void Registered()
+        {
         }
 
         public override unsafe void Update(EntityManager entityManager, TimeSpan delta)
         {
-            _GL.ClearColor(0f, 0f, 0f, 1f);
-            _GL.Clear((uint)ClearBufferMask.ColorBufferBit);
-
-            foreach (Camera camera in entityManager.GetComponents<Camera>())
+            try
             {
-                if (camera.Shader == null)
-                {
-                    continue;
-                }
+                _GL.ClearColor(0f, 0f, 0f, 1f);
+                _GL.Clear((uint)ClearBufferMask.ColorBufferBit);
+                _GL.Clear((uint)ClearBufferMask.DepthBufferBit);
 
-                camera.Shader.Use();
-
-                foreach (PackedMesh packedMesh in entityManager.GetComponents<PackedMesh>())
+                foreach (Camera camera in entityManager.GetComponents<Camera>())
                 {
-                    if (packedMesh.IndexesBuffer.Length == 0)
+                    if (camera.Shader == null)
                     {
                         continue;
                     }
 
-                    packedMesh.VertexArrayObject.Bind();
-                    _GL.DrawElements(PrimitiveType.Triangles, packedMesh.IndexesBuffer.Length, DrawElementsType.UnsignedInt, null);
+                    camera.Shader.Use();
 
-                    if (_GL.GetError() != GLEnum.NoError)
+                    foreach (PackedMesh packedMesh in entityManager.GetComponents<PackedMesh>())
                     {
-                        throw new Exception();
+                        if (packedMesh.IndexesBuffer.Length == 0)
+                        {
+                            continue;
+                        }
+
+                        packedMesh.VertexArrayObject.Bind();
+                        _GL.DrawElements(PrimitiveType.Triangles, packedMesh.IndexesBuffer.Length, DrawElementsType.UnsignedInt, null);
+
+                        if (_GL.GetError() != GLEnum.NoError)
+                        {
+                            throw new Exception();
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"({nameof(RenderSystem)}) Error: {ex.Message}");
             }
         }
 

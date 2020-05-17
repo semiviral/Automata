@@ -7,7 +7,6 @@ using Automata;
 using Automata.Collections;
 using Automata.Noise;
 using Automata.Numerics;
-using Automata.Singletons;
 using AutomataTest.Blocks;
 using ComputeSharp;
 
@@ -70,12 +69,7 @@ namespace AutomataTest.Chunks.Generation
             _TerrainGenerationTimeSpan = Stopwatch.Elapsed;
         }
 
-        protected override Task ProcessIndex(int index)
-        {
-            GenerateIndex(index);
-
-            return Task.CompletedTask;
-        }
+        protected override void ProcessIndex(int index) => GenerateIndex(index);
 
         protected override Task ProcessFinished()
         {
@@ -159,7 +153,7 @@ namespace AutomataTest.Chunks.Generation
             Debug.Assert(_SeededRandom != null);
             Vector3i localPosition = Vector3i.Project3D(index, GenerationConstants.CHUNK_SIZE);
 
-            if (_SeededRandom.Next(0, 3) == 0)
+            if (index < 21)
             {
                 _Blocks.SetPoint(localPosition, GetCachedBlockID("stone"));
             }

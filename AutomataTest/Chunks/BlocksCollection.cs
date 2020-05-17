@@ -1,7 +1,7 @@
 #region
 
+using Automata;
 using Automata.Collections;
-using Automata.Core.Components;
 using AutomataTest.Chunks.Generation;
 
 #endregion

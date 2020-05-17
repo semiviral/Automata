@@ -4,9 +4,9 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using Automata.Collections;
-using Automata.Jobs;
 using Automata.Numerics;
 using AutomataTest.Blocks;
+using ConcurrentAsyncScheduler;
 
 #endregion
 

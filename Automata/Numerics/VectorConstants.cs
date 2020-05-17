@@ -1,9 +1,5 @@
 #region
 
-using System;
-using System.Runtime.Intrinsics;
-using System.Runtime.Intrinsics.X86;
-
 #endregion
 
 namespace Automata.Numerics

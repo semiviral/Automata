@@ -4,7 +4,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Numerics;
-using Automata.Singletons;
 using Silk.NET.OpenGL;
 
 #endregion

@@ -1,25 +1,26 @@
 #region
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Automata;
 using Automata.Collections;
-using Automata.Jobs;
 using Automata.Numerics;
 using Automata.Rendering;
-using Automata.Singletons;
 using AutomataTest.Blocks;
+using ConcurrentAsyncScheduler;
 
 #endregion
 
 namespace AutomataTest.Chunks.Generation
 {
-    public class ChunkMeshingJob : AsyncJob
+    public class ChunkMeshingJob : AsyncParallelJob
     {
-        private static readonly ObjectPool<MeshingBlock[]> _MeshingBlockArrayPool = new ObjectPool<MeshingBlock[]>();
+        private static readonly ArrayPool<MeshingBlock> _MeshingBlocksPool =
+            ArrayPool<MeshingBlock>.Create(GenerationConstants.CHUNK_SIZE_CUBED, 8);
 
         private readonly Stopwatch _RuntimeStopwatch;
         private readonly INodeCollection<ushort>[] _NeighborBlocksCollections;
@@ -32,12 +33,13 @@ namespace AutomataTest.Chunks.Generation
         private TimeSpan _PreMeshingTimeSpan;
         private TimeSpan _MeshingTimeSpan;
 
-        public ChunkMeshingJob()
+        public ChunkMeshingJob() : base(GenerationConstants.CHUNK_SIZE, 64)
         {
             _RuntimeStopwatch = new Stopwatch();
             _NeighborBlocksCollections = new INodeCollection<ushort>[6];
             _Vertexes = new List<int>();
             _Triangles = new List<uint>();
+            _MeshingBlocks = null;
         }
 
 
@@ -77,13 +79,13 @@ namespace AutomataTest.Chunks.Generation
 
         #region AsyncJob Overrides
 
-        protected override Task Process()
+        protected override async Task Process()
         {
             Debug.Assert(_BlocksCollection != null);
 
             if (_BlocksCollection.IsUniform && (_BlocksCollection.Value == BlockRegistry.AirID))
             {
-                return Task.CompletedTask;
+                return;
             }
 
             _RuntimeStopwatch.Restart();
@@ -96,15 +98,44 @@ namespace AutomataTest.Chunks.Generation
 
             _RuntimeStopwatch.Restart();
 
-            GenerateTraversalMesh();
+            if (false)
+            {
+                GenerateTraversalMesh();
+            }
+            else
+            {
+                await BatchTasksAndAwaitAll().ConfigureAwait(false);
+            }
+
 
             FinishMeshing();
 
             _RuntimeStopwatch.Stop();
 
             _MeshingTimeSpan = _RuntimeStopwatch.Elapsed;
+        }
 
-            return Task.CompletedTask;
+        protected override void ProcessIndex(int index)
+        {
+            if (_CancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            Debug.Assert(_MeshingBlocks != null);
+
+            ushort currentBlockId = _MeshingBlocks[index].ID;
+
+            if (currentBlockId == BlockRegistry.AirID)
+            {
+                return;
+            }
+
+            int localPosition = CompressVertex(Vector3i.Project3D(index, GenerationConstants.CHUNK_SIZE));
+
+            bool transparentTraversal = BlockRegistry.Instance.CheckBlockHasProperty(currentBlockId, BlockDefinition.Property.Transparent);
+
+            NaiveMeshIndex(index, localPosition, currentBlockId, transparentTraversal);
         }
 
         protected override Task ProcessFinished()
@@ -133,7 +164,7 @@ namespace AutomataTest.Chunks.Generation
                 $"{nameof(_NeighborBlocksCollections)} should have a length of 6, one for each neighboring chunk.");
 
             // retrieve existing objects from object pool
-            _MeshingBlocks = _MeshingBlockArrayPool.Retrieve() ?? new MeshingBlock[GenerationConstants.CHUNK_SIZE_CUBED];
+            _MeshingBlocks = _MeshingBlocksPool.Rent(GenerationConstants.CHUNK_SIZE_CUBED);
 
             int index = 0;
 
@@ -151,9 +182,6 @@ namespace AutomataTest.Chunks.Generation
         /// <summary>
         ///     Generates the mesh data.
         /// </summary>
-        /// <remarks>
-        ///     The generated data is stored in the <see cref="MeshData" /> object <see cref="_MeshData" />.
-        /// </remarks>
         private void GenerateTraversalMesh()
         {
             Debug.Assert(_MeshingBlocks != null);
@@ -321,7 +349,7 @@ namespace AutomataTest.Chunks.Generation
                         continue;
                     }
 
-                    if ((traversals == 0) /*|| !BlockRegistry.Instance.GetUVs(currentBlockId, faceDirection, out ushort textureId)*/)
+                    if (traversals == 0 /*|| !BlockRegistry.Instance.GetUVs(currentBlockId, faceDirection, out ushort textureId)*/)
                     {
                         break;
                     }
@@ -379,13 +407,125 @@ namespace AutomataTest.Chunks.Generation
             }
         }
 
+        private void NaiveMeshIndex(int index, int localPosition, ushort currentBlockId, bool isCurrentBlockTransparent)
+        {
+            Debug.Assert(_MeshingBlocks != null);
+
+            // iterate once over all 6 faces of given cubic space
+            for (int normalIndex = 0; normalIndex < 6; normalIndex++)
+            {
+                // face direction always exists on a single bit, so shift 1 by the current normalIndex (0-5)
+                Direction faceDirection = (Direction)(1 << normalIndex);
+
+                if (_MeshingBlocks[index].HasFace(faceDirection))
+                {
+                    continue;
+                }
+
+                // indicates whether the current face checking direction is negative or positive
+                bool isNegativeFace = (normalIndex - 3) >= 0;
+                // normalIndex constrained to represent the 3 axes
+                int iModulo3 = normalIndex % 3;
+                int iModulo3Shift = GenerationConstants.CHUNK_SIZE_BIT_SHIFT * iModulo3;
+                // axis value of the current face check direction
+                // example: for iteration normalIndex == 0—which is positive X—it'd be equal to localPosition.x
+                int faceCheckAxisValue = (localPosition >> iModulo3Shift) & GenerationConstants.CHUNK_SIZE_BIT_MASK;
+                // indicates whether or not the face check is within the current chunk bounds
+                bool isFaceCheckOutOfBounds = (!isNegativeFace && (faceCheckAxisValue == (GenerationConstants.CHUNK_SIZE - 1)))
+                                              || (isNegativeFace && (faceCheckAxisValue == 0));
+
+                if (!isFaceCheckOutOfBounds)
+                {
+                    // amount by integer to add to current traversal index to get 3D->1D position of facing block
+                    int facedBlockIndex = index + GenerationConstants.IndexStepByNormalIndex[normalIndex];
+                    // if so, index into block ids and set facingBlockId
+                    ushort facedBlockId = _MeshingBlocks[facedBlockIndex].ID;
+
+                    // if transparent, traverse so long as facing block is not the same block id
+                    // if opaque, traverse so long as facing block is transparent
+                    if (isCurrentBlockTransparent)
+                    {
+                        if (currentBlockId == facedBlockId)
+                        {
+                            continue;
+                        }
+                    }
+                    else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockId, BlockDefinition.Property.Transparent))
+                    {
+                        Direction inverseFaceDirection = (Direction)(1 << ((normalIndex + 3) % 6));
+                        _MeshingBlocks[facedBlockIndex].SetFace(inverseFaceDirection);
+
+                        continue;
+                    }
+                }
+                else
+                {
+                    // this block of code translates the integer local position to the local position of the neighbor at [normalIndex]
+                    int sign = isNegativeFace ? -1 : 1;
+                    int iModuloComponentMask = GenerationConstants.CHUNK_SIZE_BIT_MASK << iModulo3Shift;
+                    int finalLocalPosition = (~iModuloComponentMask & localPosition)
+                                             | (AutomataMath.Wrap(((localPosition & iModuloComponentMask) >> iModulo3Shift) + sign,
+                                                    GenerationConstants.CHUNK_SIZE, 0, GenerationConstants.CHUNK_SIZE - 1)
+                                                << iModulo3Shift);
+
+                    // index into neighbor blocks collections, call .GetPoint() with adjusted local position
+                    // remark: if there's no neighbor at the index given, then no chunk exists there (for instance,
+                    //     chunks at the edge of render distance). In this case, return NullID so no face is rendered on edges.
+                    ushort facedBlockId = _NeighborBlocksCollections[normalIndex]?.GetPoint(DecompressVertex(finalLocalPosition))
+                                          ?? BlockRegistry.NullID;
+
+                    if (isCurrentBlockTransparent)
+                    {
+                        if (currentBlockId == facedBlockId)
+                        {
+                            continue;
+                        }
+                    }
+                    else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockId, BlockDefinition.Property.Transparent))
+                    {
+                        continue;
+                    }
+                }
+
+                // int compressedUv = (textureId << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2))
+                //                    ^ (1 << GenerationConstants.CHUNK_SIZE_BIT_SHIFT)
+                //                    ^ 1;
+
+                int normals = GenerationConstants.NormalByIteration[normalIndex];
+                int[] compressedVertices = GenerationConstants.VerticesByIteration[normalIndex];
+
+                _MeshingBlocks[index].SetFace(faceDirection);
+
+                uint verticesCount = (uint)_Vertexes.Count;
+                //int transparentAsInt = Convert.ToInt32(isCurrentBlockTransparent);
+
+                _Triangles.Add(0 + verticesCount);
+                _Triangles.Add(2 + verticesCount);
+                _Triangles.Add(1 + verticesCount);
+                _Triangles.Add(2 + verticesCount);
+                _Triangles.Add(3 + verticesCount);
+                _Triangles.Add(1 + verticesCount);
+
+                _Vertexes.Add(localPosition + compressedVertices[3]);
+                //_MeshData.AddVertex(compressedUv & (int.MaxValue << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2)));
+
+                _Vertexes.Add(localPosition + compressedVertices[2]);
+                //_MeshData.AddVertex(compressedUv & (int.MaxValue << GenerationConstants.CHUNK_SIZE_BIT_SHIFT));
+
+                _Vertexes.Add(localPosition + compressedVertices[1]);
+                //_MeshData.AddVertex(compressedUv & ~(GenerationConstants.CHUNK_SIZE_BIT_MASK << GenerationConstants.CHUNK_SIZE_BIT_SHIFT));
+
+                _Vertexes.Add(localPosition + compressedVertices[0]);
+                //_MeshData.AddVertex(compressedUv & int.MaxValue);
+            }
+        }
+
         private void FinishMeshing()
         {
             Debug.Assert(_MeshingBlocks != null);
 
             // clear mask, add to object pool, and unset reference
-            Array.Clear(_MeshingBlocks, 0, _MeshingBlocks.Length);
-            _MeshingBlockArrayPool.TryAdd(_MeshingBlocks);
+            _MeshingBlocksPool.Return(_MeshingBlocks, true);
             _MeshingBlocks = null;
 
             // clear array to free RAM until next execution

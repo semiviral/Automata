@@ -1,7 +1,7 @@
 #region
 
 using System;
-using Automata.Core.Components;
+using Automata;
 
 #endregion
 

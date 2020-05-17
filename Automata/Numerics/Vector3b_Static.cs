@@ -1,7 +1,11 @@
 // ReSharper disable InconsistentNaming
 
+#region
+
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
+
+#endregion
 
 namespace Automata.Numerics
 {

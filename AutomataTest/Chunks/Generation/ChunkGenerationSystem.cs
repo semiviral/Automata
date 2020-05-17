@@ -5,14 +5,13 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Automata;
 using Automata.Collections;
-using Automata.Core;
-using Automata.Core.Components;
-using Automata.Core.Systems;
 using Automata.Extensions;
-using Automata.Jobs;
 using Automata.Numerics;
 using Automata.Rendering;
+using Automata.Worlds;
+using ConcurrentAsyncScheduler;
 using Serilog;
 using Silk.NET.OpenGL;
 

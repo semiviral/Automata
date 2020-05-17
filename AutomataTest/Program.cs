@@ -6,18 +6,18 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using Automata;
-using Automata.Core;
-using Automata.Core.Components;
-using Automata.Core.Systems;
+using Automata.GLFW;
+using Automata.Input;
 using Automata.Numerics;
 using Automata.Rendering;
 using Automata.Rendering.OpenGL;
-using Automata.Singletons;
+using Automata.Worlds;
 using AutomataTest.Blocks;
 using AutomataTest.Chunks;
 using AutomataTest.Chunks.Generation;
 using Serilog;
 using Silk.NET.GLFW;
+using Silk.NET.Input.Common;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using Silk.NET.Windowing.Common;
@@ -33,98 +33,6 @@ namespace AutomataTest
 
         private static IWindow _Window;
         private static GL _GL;
-
-        private static Shader _Shader;
-
-        //Vertex data, uploaded to the VBO.
-        private static readonly Vector3[] _vertices =
-        {
-            new Vector3(0f, 0f, 0f),
-            new Vector3(1f, 0f, 0f),
-            new Vector3(0f, 1f, 0f),
-            new Vector3(1f, 1f, 0f),
-
-            // bottom
-            new Vector3(0f, 0f, 0f),
-            new Vector3(0f, 0f, 1f),
-            new Vector3(1f, 0f, 0f),
-            new Vector3(1f, 0f, 1f),
-
-            // north
-            new Vector3(0f, 0f, 1f),
-            new Vector3(1f, 0f, 1f),
-            new Vector3(0f, 1f, 1f),
-            new Vector3(1f, 1f, 1f),
-
-            // east
-            new Vector3(1f, 0f, 1f),
-            new Vector3(1f, 0f, 0f),
-            new Vector3(1f, 1f, 0f),
-            new Vector3(1f, 1f, 1f),
-
-            // south
-            new Vector3(1f, 0f, 0f),
-            new Vector3(0f, 0f, 0f),
-            new Vector3(0f, 1f, 0f),
-            new Vector3(1f, 1f, 0f),
-
-            // west
-            new Vector3(0f, 0f, 0f),
-            new Vector3(0f, 0f, 1f),
-            new Vector3(0f, 1f, 0f),
-            new Vector3(0f, 1f, 1f),
-
-            // up
-            new Vector3(0f, 1f, 0f),
-            new Vector3(0f, 1f, 1f),
-            new Vector3(1f, 1f, 0f),
-            new Vector3(1f, 1f, 1f),
-        };
-
-        private static readonly uint[] _indices =
-        {
-            0,
-            2,
-            1,
-            2,
-            3,
-            1,
-
-            0,
-            2,
-            1,
-            2,
-            3,
-            1,
-
-            0,
-            2,
-            1,
-            2,
-            3,
-            1,
-
-            0,
-            2,
-            1,
-            2,
-            3,
-            1,
-
-            0,
-            2,
-            1,
-            2,
-            3,
-            1,
-
-            0,
-            2,
-            1,
-            2,
-            3,
-            1,
-        };
 
         private static void Main(string[] args)
         {
@@ -153,6 +61,11 @@ namespace AutomataTest
 
             while (!_Window.IsClosing)
             {
+                if (Input.Instance.IsKeyPressed(Key.Escape))
+                {
+                    _Window.Close();
+                }
+
                 _Window.DoEvents();
 
                 if (!_Window.IsClosing)
@@ -213,33 +126,15 @@ namespace AutomataTest
         private static void InitializeDefaultWorld(out World world)
         {
             world = new GameWorld(true);
-            world.SystemManager.RegisterSystem<ViewDoUpdateSystem, FirstOrderSystem>();
-            world.SystemManager.RegisterSystem<ViewDoRenderSystem, LastOrderSystem>();
-            world.SystemManager.RegisterSystem<ChunkGenerationSystem, DefaultOrderSystem>();
-            //world.SystemManager.RegisterSystem<MeshCompositionSystem, ChunkGenerationSystem>();
+
+            world.SystemManager.RegisterSystem<ChunkGenerationSystem, DefaultOrderSystem>(SystemRegistrationOrder.After);
             World.RegisterWorld("core", world);
         }
 
         private static void InitializeWorldEntity(World world, out IEntity gameEntity)
         {
-            uint[] newIndexes = new uint[_indices.Length];
-
-            for (int i = 0; i < _indices.Length; i += 6)
-            {
-                int iIndex = i / 6;
-                for (int j = i; j < (i + 6); j++)
-                {
-                    newIndexes[j] = _indices[j] + (uint)(iIndex * 4);
-                }
-            }
-
             gameEntity = new Entity();
             world.EntityManager.RegisterEntity(gameEntity);
-            world.EntityManager.RegisterComponent(gameEntity, new PendingMesh<float>
-            {
-                Vertexes = _vertices.SelectMany(AutomataMath.UnrollVector3),
-                Indexes = newIndexes
-            });
         }
 
         private static void InitializePlayerEntity(World world, out IEntity playerEntity)
@@ -251,7 +146,10 @@ namespace AutomataTest
                 Value = new Vector3d(0d, 0d, -1.9d)
             });
             world.EntityManager.RegisterComponent<Rotation>(playerEntity);
-            world.EntityManager.RegisterComponent(playerEntity, new Camera {Shader = new Shader("PackedVertexes.glsl", "DefaultFragment.glsl")});
+            world.EntityManager.RegisterComponent(playerEntity, new Camera
+            {
+                Shader = new Shader("PackedVertexes.glsl", "DefaultFragment.glsl")
+            });
             world.EntityManager.RegisterComponent<InputListener>(playerEntity);
         }
 
@@ -277,10 +175,6 @@ namespace AutomataTest
             world.EntityManager.RegisterComponent<ChunkID>(chunk);
             world.EntityManager.RegisterComponent<BlocksCollection>(chunk);
         }
-
-        private static Matrix4x4 _View;
-        private static Matrix4x4 _Projection;
-        private static readonly Glfw _glfw = Glfw.GetApi();
 
         private static void OnClose()
         {

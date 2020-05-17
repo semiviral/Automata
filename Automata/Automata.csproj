@@ -24,4 +24,10 @@
       </Content>
     </ItemGroup>
 
+    <ItemGroup>
+      <Reference Include="ConcurrentAsyncScheduler, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+        <HintPath>..\..\ConcurrentAsyncScheduler\ConcurrentAsyncScheduler\bin\Release\netcoreapp3.1\ConcurrentAsyncScheduler.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
 </Project>

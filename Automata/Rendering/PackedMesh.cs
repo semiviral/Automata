@@ -1,8 +1,6 @@
 #region
 
-using Automata.Core.Components;
 using Automata.Rendering.OpenGL;
-using Automata.Singletons;
 using Silk.NET.OpenGL;
 
 #endregion
