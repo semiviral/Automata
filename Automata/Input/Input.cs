@@ -37,12 +37,12 @@ namespace Automata.Input
             _Keyboards = new List<IKeyboard>();
             _Mice = new List<IMouse>();
 
-            GameWindow.Validate();
+            AutomataWindow.Validate();
 
-            Debug.Assert(GameWindow.Instance != null);
-            Debug.Assert(GameWindow.Instance.Window != null);
+            Debug.Assert(AutomataWindow.Instance != null);
+            Debug.Assert(AutomataWindow.Instance.Window != null);
 
-            RegisterView(GameWindow.Instance.Window);
+            RegisterView(AutomataWindow.Instance.Window);
         }
 
         private void RegisterView(IView view)
@@ -97,12 +97,12 @@ namespace Automata.Input
                 throw new IndexOutOfRangeException(nameof(mouseIndex));
             }
 
-            Debug.Assert(GameWindow.Instance != null);
-            Debug.Assert(GameWindow.Instance.Window != null);
+            Debug.Assert(AutomataWindow.Instance != null);
+            Debug.Assert(AutomataWindow.Instance.Window != null);
 
             PointF pointerPosition = _Mice[mouseIndex].Position;
 
-            return new Vector2(pointerPosition.X, pointerPosition.Y) - (GameWindow.Instance.Size / 2f);
+            return new Vector2(pointerPosition.X, pointerPosition.Y) - ((Vector2)AutomataWindow.Instance.Size / 2f);
         }
 
         public void SetMousePositionRelative(int mouseIndex, Vector2 position)
@@ -112,10 +112,10 @@ namespace Automata.Input
                 throw new IndexOutOfRangeException(nameof(mouseIndex));
             }
 
-            Debug.Assert(GameWindow.Instance != null);
-            Debug.Assert(GameWindow.Instance.Window != null);
+            Debug.Assert(AutomataWindow.Instance != null);
+            Debug.Assert(AutomataWindow.Instance.Window != null);
 
-            position += GameWindow.Instance.Size / 2f;
+            position += (Vector2)AutomataWindow.Instance.Size / 2f;
 
             _Mice[mouseIndex].Position = new PointF(position.X, position.Y);
         }

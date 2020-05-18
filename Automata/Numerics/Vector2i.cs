@@ -1,6 +1,8 @@
 #region
 
 using System;
+using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
@@ -112,9 +114,9 @@ namespace Automata.Numerics
 
         #region Conversion Operators
 
-        public static unsafe explicit operator Vector2i(Vector128<int> a) => *(Vector2i*)&a;
-        public static unsafe explicit operator Vector2i(Vector128<long> a) => *(Vector2i*)&a;
+        public static explicit operator Vector2i(Vector128<int> a) => Unsafe.As<Vector128<int>, Vector2i>(ref a);
         public static unsafe explicit operator Vector128<int>(Vector2i a) => Sse2.LoadVector128((int*)&a);
+        public static explicit operator Vector2(Vector2i a) => Unsafe.As<Vector2i, Vector2>(ref a);
 
         #endregion
     }

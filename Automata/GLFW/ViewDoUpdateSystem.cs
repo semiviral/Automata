@@ -11,16 +11,16 @@ namespace Automata.GLFW
     {
         public override void Update(EntityManager entityManager, TimeSpan delta)
         {
-            if (!GameWindow.TryValidate())
+            if (!AutomataWindow.TryValidate())
             {
                 return;
             }
 
-            Debug.Assert(GameWindow.Instance != null);
-            Debug.Assert(GameWindow.Instance.Window != null);
+            Debug.Assert(AutomataWindow.Instance != null);
+            Debug.Assert(AutomataWindow.Instance.Window != null);
 
-            GameWindow.Instance.Window.DoEvents();
-            GameWindow.Instance.Window.DoUpdate();
+            AutomataWindow.Instance.Window.DoEvents();
+            AutomataWindow.Instance.Window.DoUpdate();
         }
     }
 }

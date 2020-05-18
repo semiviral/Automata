@@ -52,7 +52,7 @@ namespace AutomataTest.Chunks.Generation
             0b00_01_01_000000_000000_000000,
         };
 
-        public static readonly int[][] VerticesByIteration =
+        public static readonly int[][] VertexesByIteration =
         {
             // z y x
             new[]

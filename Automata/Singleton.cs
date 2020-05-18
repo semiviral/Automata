@@ -9,7 +9,7 @@ namespace Automata
 {
     public static class Singleton
     {
-        public static void InstantiateSingleton<T>() where T : Singleton<T>, new() => new T();
+        public static void CreateSingleton<T>() where T : Singleton<T>, new() => new T();
     }
 
     public class Singleton<T>
@@ -23,7 +23,7 @@ namespace Automata
             {
                 if (!(_Instance is object))
                 {
-                    throw new NullReferenceException("Singleton has not been instantiated.");
+                    throw new NullReferenceException($"'{typeof(T)}' has not been instantiated.");
                 }
                 else
                 {

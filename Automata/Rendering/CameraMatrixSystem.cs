@@ -26,13 +26,13 @@ namespace Automata.Rendering
                 typeof(Rotation)
             };
 
-            GameWindow.Validate();
+            AutomataWindow.Validate();
 
-            Debug.Assert(GameWindow.Instance != null);
-            Debug.Assert(GameWindow.Instance.Window != null);
+            Debug.Assert(AutomataWindow.Instance != null);
+            Debug.Assert(AutomataWindow.Instance.Window != null);
 
-            GameWindowResized(GameWindow.Instance.Window.Size);
-            GameWindow.Instance.Window.Resize += GameWindowResized;
+            GameWindowResized(AutomataWindow.Instance.Window.Size);
+            AutomataWindow.Instance.Window.Resize += GameWindowResized;
         }
 
         public override void Update(EntityManager entityManager, TimeSpan delta)

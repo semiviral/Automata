@@ -3,23 +3,18 @@
 using System;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Numerics;
 using Automata;
 using Automata.GLFW;
 using Automata.Input;
 using Automata.Numerics;
 using Automata.Rendering;
 using Automata.Rendering.OpenGL;
+using Automata.Rendering.Vulkan;
 using Automata.Worlds;
 using AutomataTest.Blocks;
 using AutomataTest.Chunks;
 using AutomataTest.Chunks.Generation;
 using Serilog;
-using Silk.NET.GLFW;
-using Silk.NET.Input.Common;
-using Silk.NET.OpenGL;
-using Silk.NET.Windowing;
 using Silk.NET.Windowing.Common;
 
 #endregion
@@ -30,9 +25,6 @@ namespace AutomataTest
     {
         private static readonly string _LocalDataPath =
             $@"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.Create)}/Automata/";
-
-        private static IWindow _Window;
-        private static GL _GL;
 
         private static void Main(string[] args)
         {
@@ -46,51 +38,38 @@ namespace AutomataTest
                 Directory.CreateDirectory(_LocalDataPath);
             }
 
-            WindowOptions options = WindowOptions.Default;
+            WindowOptions options = WindowOptions.DefaultVulkan;
             options.Title = "Wyd: A Journey";
             options.Size = new Size(800, 600);
             options.Position = new Point(500, 400);
+            options.VSync = VSyncMode.Off;
 
-            _Window = Window.Create(options);
-            _Window.Closing += OnClose;
+            Singleton.CreateSingleton<AutomataWindow>();
+            AutomataWindow.Instance.CreateWindow(options);
+            AutomataWindow.Instance.Window.Closing += OnClose;
+            AutomataWindow.Instance.Window.Initialize();
 
-            _Window.Initialize();
             Initialize();
 
-            _Window.VSync = VSyncMode.Off;
-
-            while (!_Window.IsClosing)
-            {
-                if (Input.Instance.IsKeyPressed(Key.Escape))
-                {
-                    _Window.Close();
-                }
-
-                _Window.DoEvents();
-
-                if (!_Window.IsClosing)
-                {
-                    World.GlobalUpdate();
-                }
-            }
+            AutomataWindow.Instance.Run();
         }
 
         private static void InitializeSingletons()
         {
-            Singleton.InstantiateSingleton<GLAPI>();
+            Singleton.CreateSingleton<GLAPI>();
 
-            Singleton.InstantiateSingleton<Diagnostics>();
+            Singleton.CreateSingleton<Diagnostics>();
             Diagnostics.Instance.RegisterDiagnosticTimeEntry("NoiseRetrieval");
             Diagnostics.Instance.RegisterDiagnosticTimeEntry("TerrainGeneration");
             Diagnostics.Instance.RegisterDiagnosticTimeEntry("PreMeshing");
             Diagnostics.Instance.RegisterDiagnosticTimeEntry("Meshing");
 
-            Singleton.InstantiateSingleton<GameWindow>();
-            GameWindow.Instance.Window = _Window;
+            Singleton.CreateSingleton<VKAPI>();
+            VKAPI.Instance.CreateVulkanInstance();
 
-            Singleton.InstantiateSingleton<Input>();
+            Singleton.CreateSingleton<Input>();
 
-            Singleton.InstantiateSingleton<BlockRegistry>();
+            Singleton.CreateSingleton<BlockRegistry>();
         }
 
         private static void InitializeBlocks()
@@ -143,7 +122,7 @@ namespace AutomataTest
             world.EntityManager.RegisterEntity(playerEntity);
             world.EntityManager.RegisterComponent(playerEntity, new Translation
             {
-                Value = new Vector3d(0d, 0d, -1.9d)
+                Value = new Vector3d(0d, 0d, 0d)
             });
             world.EntityManager.RegisterComponent<Rotation>(playerEntity);
             world.EntityManager.RegisterComponent(playerEntity, new Camera

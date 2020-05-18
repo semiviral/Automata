@@ -131,7 +131,18 @@ namespace AutomataTest.Chunks.Generation
                 return;
             }
 
-            int localPosition = CompressVertex(Vector3i.Project3D(index, GenerationConstants.CHUNK_SIZE));
+            static int GetLocalPositionFromIndex(int index0)
+            {
+                int xQuotient = Math.DivRem(index0, GenerationConstants.CHUNK_SIZE, out int x);
+                int zQuotient = Math.DivRem(xQuotient, GenerationConstants.CHUNK_SIZE, out int z);
+                int y = zQuotient % GenerationConstants.CHUNK_SIZE;
+
+                return x
+                       | (y << GenerationConstants.CHUNK_SIZE_BIT_SHIFT)
+                       | (z << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2));
+            }
+
+            int localPosition = GetLocalPositionFromIndex(index);
 
             bool transparentTraversal = BlockRegistry.Instance.CheckBlockHasProperty(currentBlockId, BlockDefinition.Property.Transparent);
 
@@ -371,32 +382,31 @@ namespace AutomataTest.Chunks.Generation
                     int traversalShiftedMask = GenerationConstants.CHUNK_SIZE_BIT_MASK << traversalNormalShift;
                     int unaryTraversalShiftedMask = ~traversalShiftedMask;
 
-                    int aggregatePositionNormal = localPosition | GenerationConstants.NormalByIteration[normalIndex];
-                    int[] compressedVertices = GenerationConstants.VerticesByIteration[normalIndex];
+                    int[] compressedVertices = GenerationConstants.VertexesByIteration[normalIndex];
 
 
-                    _Vertexes.Add(aggregatePositionNormal
+                    _Vertexes.Add(localPosition
                                   + ((unaryTraversalShiftedMask & compressedVertices[3])
                                      | ((((compressedVertices[3] >> traversalNormalShift) * traversals) << traversalNormalShift)
                                         & traversalShiftedMask)));
                     //_MeshData.AddVertex(compressedUv & (int.MaxValue << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2)));
 
 
-                    _Vertexes.Add(aggregatePositionNormal
+                    _Vertexes.Add(localPosition
                                   + ((unaryTraversalShiftedMask & compressedVertices[2])
                                      | ((((compressedVertices[2] >> traversalNormalShift) * traversals) << traversalNormalShift)
                                         & traversalShiftedMask)));
                     //_MeshData.AddVertex(compressedUv & (int.MaxValue << GenerationConstants.CHUNK_SIZE_BIT_SHIFT));
 
 
-                    _Vertexes.Add(aggregatePositionNormal
+                    _Vertexes.Add(localPosition
                                   + ((unaryTraversalShiftedMask & compressedVertices[1])
                                      | ((((compressedVertices[1] >> traversalNormalShift) * traversals) << traversalNormalShift)
                                         & traversalShiftedMask)));
                     //_MeshData.AddVertex(compressedUv & ~(GenerationConstants.CHUNK_SIZE_BIT_MASK << GenerationConstants.CHUNK_SIZE_BIT_SHIFT));
 
 
-                    _Vertexes.Add(aggregatePositionNormal
+                    _Vertexes.Add(localPosition
                                   + ((unaryTraversalShiftedMask & compressedVertices[0])
                                      | ((((compressedVertices[0] >> traversalNormalShift) * traversals) << traversalNormalShift)
                                         & traversalShiftedMask)));
@@ -491,13 +501,10 @@ namespace AutomataTest.Chunks.Generation
                 //                    ^ (1 << GenerationConstants.CHUNK_SIZE_BIT_SHIFT)
                 //                    ^ 1;
 
-                int normals = GenerationConstants.NormalByIteration[normalIndex];
-                int[] compressedVertices = GenerationConstants.VerticesByIteration[normalIndex];
 
                 _MeshingBlocks[index].SetFace(faceDirection);
 
                 uint verticesCount = (uint)_Vertexes.Count;
-                //int transparentAsInt = Convert.ToInt32(isCurrentBlockTransparent);
 
                 _Triangles.Add(0 + verticesCount);
                 _Triangles.Add(2 + verticesCount);
@@ -506,16 +513,18 @@ namespace AutomataTest.Chunks.Generation
                 _Triangles.Add(3 + verticesCount);
                 _Triangles.Add(1 + verticesCount);
 
-                _Vertexes.Add(localPosition + compressedVertices[3]);
+                int[] compressedVertexes = GenerationConstants.VertexesByIteration[normalIndex];
+
+                _Vertexes.Add(localPosition + compressedVertexes[3]);
                 //_MeshData.AddVertex(compressedUv & (int.MaxValue << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2)));
 
-                _Vertexes.Add(localPosition + compressedVertices[2]);
+                _Vertexes.Add(localPosition + compressedVertexes[2]);
                 //_MeshData.AddVertex(compressedUv & (int.MaxValue << GenerationConstants.CHUNK_SIZE_BIT_SHIFT));
 
-                _Vertexes.Add(localPosition + compressedVertices[1]);
+                _Vertexes.Add(localPosition + compressedVertexes[1]);
                 //_MeshData.AddVertex(compressedUv & ~(GenerationConstants.CHUNK_SIZE_BIT_MASK << GenerationConstants.CHUNK_SIZE_BIT_SHIFT));
 
-                _Vertexes.Add(localPosition + compressedVertices[0]);
+                _Vertexes.Add(localPosition + compressedVertexes[0]);
                 //_MeshData.AddVertex(compressedUv & int.MaxValue);
             }
         }
