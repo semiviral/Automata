@@ -22,14 +22,14 @@ namespace Automata.Rendering.Vulkan
         private const bool _ENABLE_VULKAN_VALIDATION = false;
 #endif
 
-        private readonly string[] _ValidationLayers =
+        private string[] _ValidationLayers =
         {
             "VK_LAYER_KHRONOS_validation"
         };
 
-        private readonly string[] _InstanceExtensions =
+        private string[] _InstanceExtensions =
         {
-            "VK_EXT_debug_utils"
+            ExtDebugUtils.ExtensionName
         };
 
         private Instance _VKInstance;
@@ -50,57 +50,56 @@ namespace Automata.Rendering.Vulkan
 
         public unsafe void CreateVulkanInstance()
         {
+            Log.Debug($"({nameof(VKAPI)}) Creating Vulkan instance: -begin-");
+
             if (_ENABLE_VULKAN_VALIDATION && !CheckValidationLayerSupport())
             {
                 throw new NotSupportedException($"Validation layers specified in '{nameof(_ValidationLayers)}' not present.");
             }
 
-            ApplicationInfo applicationInfo = GetApplicationInfo();
-            InstanceCreateInfo instanceCreateInfo = GetInstanceCreateInfo(applicationInfo);
-            List<ExtensionProperties> extensionProperties = GetExtensionProperties().ToList();
+            Log.Debug($"({nameof(VKAPI)}) Creating Vulkan instance: building application info.");
 
-            fixed (Instance* instance = &_VKInstance)
-            {
-                if (VK.CreateInstance(&instanceCreateInfo, null, instance) != Result.Success)
-                {
-                    throw new Exception("Failed to create Vulkan instance.");
-                }
-            }
-
-            Instance.VK.CurrentInstance = _VKInstance;
-
-            Marshal.FreeHGlobal((IntPtr)applicationInfo.PApplicationName);
-            Marshal.FreeHGlobal((IntPtr)applicationInfo.PEngineName);
-
-            if (_ENABLE_VULKAN_VALIDATION)
-            {
-                SilkMarshal.FreeStringArrayPtr((IntPtr)instanceCreateInfo.PpEnabledLayerNames, _ValidationLayers.Length);
-            }
-        }
-
-        private static unsafe ApplicationInfo GetApplicationInfo() =>
-            new ApplicationInfo
+            ApplicationInfo applicationInfo = new ApplicationInfo
             {
                 SType = StructureType.ApplicationInfo,
                 PApplicationName = (byte*)Marshal.StringToHGlobalAnsi("Automata"),
                 ApplicationVersion = new Version32(0, 0, 1),
                 PEngineName = (byte*)Marshal.StringToHGlobalAnsi("No Engine"),
-                EngineVersion = new Version32(0, 0, 0),
+                EngineVersion = new Version32(1, 0, 0),
                 ApiVersion = Vk.Version12
             };
 
-        private unsafe InstanceCreateInfo GetInstanceCreateInfo(ApplicationInfo applicationInfo)
-        {
+            Log.Debug($"({nameof(VKAPI)}) Creating Vulkan instance: building instance creation info.");
+
             InstanceCreateInfo instanceCreateInfo = new InstanceCreateInfo
             {
                 SType = StructureType.InstanceCreateInfo,
-                PApplicationInfo = &applicationInfo,
-                EnabledLayerCount = 0
+                PApplicationInfo = &applicationInfo
             };
 
-            GetExtensions(out uint extensionCount, out byte** extensions);
+
+            // get required extensions
+            byte** requiredExtensions = (byte**)AutomataWindow.Instance.Surface.GetRequiredExtensions(out uint extensionCount);
+
+            // create array to hold final extensions list (required by glfw + required by instance)
+            byte** aggregateExtensions = stackalloc byte*[(int)(extensionCount + _InstanceExtensions.Length)];
+
+            // copy glfw required extensions
+            for (int index = 0; index < extensionCount; index++)
+            {
+                aggregateExtensions[index] = requiredExtensions[index];
+            }
+
+            // copy instance required extensions
+            for (int index = 0; index < _InstanceExtensions.Length; index++)
+            {
+                aggregateExtensions[extensionCount + index] = (byte*)SilkMarshal.MarshalStringToPtr(_InstanceExtensions[index]);
+            }
+
+            extensionCount += (uint)_InstanceExtensions.Length;
+
             instanceCreateInfo.EnabledExtensionCount = extensionCount;
-            instanceCreateInfo.PpEnabledExtensionNames = extensions;
+            instanceCreateInfo.PpEnabledExtensionNames = aggregateExtensions;
 
             if (_ENABLE_VULKAN_VALIDATION)
             {
@@ -113,43 +112,43 @@ namespace Automata.Rendering.Vulkan
                 instanceCreateInfo.PpEnabledLayerNames = null;
             }
 
-            return instanceCreateInfo;
-        }
+            Log.Debug($"({nameof(VKAPI)}) Creating Vulkan instance: creating instance.");
 
-        private unsafe void GetExtensions(out uint extensionCount, out byte** extensions)
-        {
-            // get required extensions
-            byte** requiredExtensions = (byte**)AutomataWindow.Instance.Surface.GetRequiredExtensions(out extensionCount);
-
-            // create array to hold final extensions list (required by glfw + required by instance)
-            byte** newExtensions = stackalloc byte*[(int)(extensionCount + _InstanceExtensions.Length)];
-
-            // copy glfw required extensions
-            for (int index = 0; index < extensionCount; index++)
+            fixed (Instance* instance = &_VKInstance)
             {
-                newExtensions[index] = requiredExtensions[index];
+                if (VK.CreateInstance(&instanceCreateInfo, null, instance) != Result.Success)
+                {
+                    throw new Exception("Failed to create Vulkan instance.");
+                }
             }
 
-            // copy instance required extensions
-            for (int index = 0; index < _InstanceExtensions.Length; index++)
+            Log.Debug($"({nameof(VKAPI)}) Creating Vulkan instance: applying instance.");
+
+            VK.CurrentInstance = _VKInstance;
+
+            Log.Debug($"({nameof(VKAPI)}) Creating Vulkan instance: freeing unmanaged memory.");
+
+            Marshal.FreeHGlobal((IntPtr)applicationInfo.PApplicationName);
+            Marshal.FreeHGlobal((IntPtr)applicationInfo.PEngineName);
+
+            if (_ENABLE_VULKAN_VALIDATION)
             {
-                newExtensions[extensionCount + index] = (byte*)SilkMarshal.MarshalStringToPtr(_InstanceExtensions[index]);
+                SilkMarshal.FreeStringArrayPtr((IntPtr)instanceCreateInfo.PpEnabledLayerNames, _ValidationLayers.Length);
             }
 
-            extensionCount += (uint)_InstanceExtensions.Length;
-            extensions = newExtensions;
+            Log.Debug($"({nameof(VKAPI)}) Creating Vulkan instance: -success-");
         }
 
-        private static unsafe IEnumerable<ExtensionProperties> GetExtensionProperties()
+        private unsafe IEnumerable<ExtensionProperties> GetExtensionProperties()
         {
             uint extensionCount = 0;
 
-            Instance.VK.EnumerateInstanceExtensionProperties(string.Empty, &extensionCount, null);
+            VK.EnumerateInstanceExtensionProperties(string.Empty, &extensionCount, null);
             ExtensionProperties[] extensionProperties = new ExtensionProperties[extensionCount];
 
             fixed (ExtensionProperties* extensionPropertiesFixed = &extensionProperties[0])
             {
-                Instance.VK.EnumerateInstanceExtensionProperties(string.Empty, &extensionCount, extensionPropertiesFixed);
+                VK.EnumerateInstanceExtensionProperties(string.Empty, &extensionCount, extensionPropertiesFixed);
             }
 
             return extensionProperties;
@@ -157,14 +156,16 @@ namespace Automata.Rendering.Vulkan
 
         private unsafe bool CheckValidationLayerSupport()
         {
+            Log.Debug($"({nameof(VKAPI)}) Creating Vulkan instance: checking validation layers.");
+
             uint layerCount;
-            Instance.VK.EnumerateInstanceLayerProperties(&layerCount, null);
+            VK.EnumerateInstanceLayerProperties(&layerCount, null);
 
             LayerProperties[] layerProperties = new LayerProperties[layerCount];
 
             fixed (LayerProperties* layerProperty = &layerProperties[0])
             {
-                Instance.VK.EnumerateInstanceLayerProperties(&layerCount, layerProperty);
+                VK.EnumerateInstanceLayerProperties(&layerCount, layerProperty);
             }
 
             foreach (string validationLayer in _ValidationLayers)
@@ -241,6 +242,11 @@ namespace Automata.Rendering.Vulkan
 
         public unsafe void DestroyVulkanInstance()
         {
+            if (_ENABLE_VULKAN_VALIDATION)
+            {
+                _ExtDebugUtils.DestroyDebugUtilsMessenger(VKInstance, _DebugMessenger, null);
+            }
+
             VK.DestroyInstance(VKInstance, null);
         }
     }

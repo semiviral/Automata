@@ -15,6 +15,7 @@ using AutomataTest.Blocks;
 using AutomataTest.Chunks;
 using AutomataTest.Chunks.Generation;
 using Serilog;
+using Serilog.Events;
 using Silk.NET.Windowing.Common;
 
 #endregion
@@ -28,7 +29,7 @@ namespace AutomataTest
 
         private static void Main(string[] args)
         {
-            Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
+            Log.Logger = new LoggerConfiguration().WriteTo.Console().MinimumLevel.Is(LogEventLevel.Verbose).CreateLogger();
             Log.Information("Static logger initialized.");
 
             if (!Directory.Exists(_LocalDataPath))
@@ -56,14 +57,6 @@ namespace AutomataTest
 
         private static void InitializeSingletons()
         {
-            Singleton.CreateSingleton<GLAPI>();
-
-            Singleton.CreateSingleton<Diagnostics>();
-            Diagnostics.Instance.RegisterDiagnosticTimeEntry("NoiseRetrieval");
-            Diagnostics.Instance.RegisterDiagnosticTimeEntry("TerrainGeneration");
-            Diagnostics.Instance.RegisterDiagnosticTimeEntry("PreMeshing");
-            Diagnostics.Instance.RegisterDiagnosticTimeEntry("Meshing");
-
             Singleton.CreateSingleton<VKAPI>();
             VKAPI.Instance.CreateVulkanInstance();
             VKAPI.Instance.AttemptEnableDebugMessenger();
@@ -71,6 +64,12 @@ namespace AutomataTest
             Singleton.CreateSingleton<Input>();
 
             Singleton.CreateSingleton<BlockRegistry>();
+
+            Singleton.CreateSingleton<Diagnostics>();
+            Diagnostics.Instance.RegisterDiagnosticTimeEntry("NoiseRetrieval");
+            Diagnostics.Instance.RegisterDiagnosticTimeEntry("TerrainGeneration");
+            Diagnostics.Instance.RegisterDiagnosticTimeEntry("PreMeshing");
+            Diagnostics.Instance.RegisterDiagnosticTimeEntry("Meshing");
         }
 
         private static void InitializeBlocks()
