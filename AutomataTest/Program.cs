@@ -66,6 +66,7 @@ namespace AutomataTest
 
             Singleton.CreateSingleton<VKAPI>();
             VKAPI.Instance.CreateVulkanInstance();
+            VKAPI.Instance.AttemptEnableDebugMessenger();
 
             Singleton.CreateSingleton<Input>();
 

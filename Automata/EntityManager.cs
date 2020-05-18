@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Automata.Exceptions;
 using Serilog;
@@ -23,6 +22,29 @@ namespace Automata
             EntitiesByComponent = new Dictionary<Type, List<IEntity>>();
             ComponentCountByType = new Dictionary<Type, int>();
         }
+
+        #region Remove .. Data
+
+        /// <summary>
+        ///     Removes the specified component instance from given <see cref="IEntity" />.
+        /// </summary>
+        /// <param name="entity"><see cref="IEntity" /> to remove component from.</param>
+        /// <typeparam name="T">Type of component to remove.</typeparam>
+        /// <remarks>
+        ///     Use this method to ensure <see cref="EntityManager" /> caches remain accurate.
+        /// </remarks>
+        public void RemoveComponent<T>(IEntity entity) where T : IComponent
+        {
+            if (!entity.TryRemoveComponent<T>())
+            {
+                return;
+            }
+
+            EntitiesByComponent[typeof(T)].Remove(entity);
+            ComponentCountByType.Remove(typeof(T));
+        }
+
+        #endregion
 
         #region Register .. Data
 
@@ -78,9 +100,12 @@ namespace Automata
 
         private void RegisterComponentInternal(IEntity entity, Type type, IComponent? component)
         {
-            IComponent instance = component ?? (IComponent)Activator.CreateInstance(type);
+            IComponent? instance = component ?? (IComponent?)Activator.CreateInstance(type);
 
-            Debug.Assert(instance != null);
+            if (instance == null)
+            {
+                throw new TypeLoadException($"Failed to initialize {nameof(IComponent)} of type '{type.FullName}'.");
+            }
 
             if (!entity.TryAddComponent(instance))
             {
@@ -99,29 +124,6 @@ namespace Automata
 
             EntitiesByComponent[type].Add(entity);
             ComponentCountByType[type] += 1;
-        }
-
-        #endregion
-
-        #region Remove .. Data
-
-        /// <summary>
-        ///     Removes the specified component instance from given <see cref="IEntity" />.
-        /// </summary>
-        /// <param name="entity"><see cref="IEntity" /> to remove component from.</param>
-        /// <typeparam name="T">Type of component to remove.</typeparam>
-        /// <remarks>
-        ///     Use this method to ensure <see cref="EntityManager" /> caches remain accurate.
-        /// </remarks>
-        public void RemoveComponent<T>(IEntity entity) where T : IComponent
-        {
-            if (!entity.TryRemoveComponent<T>())
-            {
-                return;
-            }
-
-            EntitiesByComponent[typeof(T)].Remove(entity);
-            ComponentCountByType.Remove(typeof(T));
         }
 
         #endregion
