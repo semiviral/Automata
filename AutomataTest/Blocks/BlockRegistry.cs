@@ -47,7 +47,7 @@ namespace AutomataTest.Blocks
         {
             _PropertiesBuckets = new Dictionary<BlockDefinition.Property, HashSet<ushort>>();
 
-            Log.Verbose($"Initializing property buckets for all '{nameof(BlockDefinition)}.{nameof(BlockDefinition.Property)}'s.");
+            Log.Information($"({nameof(BlockRegistry)}) Creating property buckets.");
 
             foreach (BlockDefinition.Property property in EnumExtensions.GetEnumsList<BlockDefinition.Property>())
             {
@@ -98,7 +98,7 @@ namespace AutomataTest.Blocks
             BlockNamesByID.Add(blockName, blockId);
             SortBlockDefinitionPropertiesToBuckets(blockDefinition);
 
-            Log.Information($"({nameof(BlockRegistry)}) ID {blockId}: '{blockName}'");
+            Log.Information($"({nameof(BlockRegistry)}) Registered ID {blockId}: '{blockName}'");
         }
 
         // public bool GetUVs(ushort blockId, Direction direction, out ushort textureId)

@@ -58,18 +58,17 @@ namespace AutomataTest
         private static void InitializeSingletons()
         {
             Singleton.CreateSingleton<VKAPI>();
-            VKAPI.Instance.CreateVulkanInstance();
-            VKAPI.Instance.AttemptEnableDebugMessenger();
-
-            Singleton.CreateSingleton<Input>();
-
-            Singleton.CreateSingleton<BlockRegistry>();
+            VKAPI.Instance.DefaultInitialize();
 
             Singleton.CreateSingleton<Diagnostics>();
             Diagnostics.Instance.RegisterDiagnosticTimeEntry("NoiseRetrieval");
             Diagnostics.Instance.RegisterDiagnosticTimeEntry("TerrainGeneration");
             Diagnostics.Instance.RegisterDiagnosticTimeEntry("PreMeshing");
             Diagnostics.Instance.RegisterDiagnosticTimeEntry("Meshing");
+
+            Singleton.CreateSingleton<Input>();
+
+            Singleton.CreateSingleton<BlockRegistry>();
         }
 
         private static void InitializeBlocks()
@@ -157,6 +156,7 @@ namespace AutomataTest
 
         private static void OnClose()
         {
+            VKAPI.Instance.DestroyVulkanInstance();
             //SystemManager.Destroy();
         }
     }
