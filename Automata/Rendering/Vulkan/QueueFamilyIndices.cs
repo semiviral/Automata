@@ -19,6 +19,6 @@ namespace Automata.Rendering.Vulkan
         };
 
         public bool IsCompleted() => GraphicsFamily.HasValue && PresentationFamily.HasValue;
-        public uint GetLength => 0u + (GraphicsFamily.HasValue ? 1u : 0u) + (PresentationFamily.HasValue ? 1u : 0u);
+        public uint GetLength => 0u + (GraphicsFamily.HasValue ? 1u : 0u); // + (PresentationFamily.HasValue ? 1u : 0u);
     }
 }
