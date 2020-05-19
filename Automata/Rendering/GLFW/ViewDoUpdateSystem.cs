@@ -5,9 +5,9 @@ using System.Diagnostics;
 
 #endregion
 
-namespace Automata.GLFW
+namespace Automata.Rendering.GLFW
 {
-    public class ViewDoRenderSystem : ComponentSystem
+    public class ViewDoUpdateSystem : ComponentSystem
     {
         public override void Update(EntityManager entityManager, TimeSpan delta)
         {
@@ -19,7 +19,8 @@ namespace Automata.GLFW
             Debug.Assert(AutomataWindow.Instance != null);
             Debug.Assert(AutomataWindow.Instance.Window != null);
 
-            AutomataWindow.Instance.Window.DoRender();
+            AutomataWindow.Instance.Window.DoEvents();
+            AutomataWindow.Instance.Window.DoUpdate();
         }
     }
 }

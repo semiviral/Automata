@@ -5,10 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Windows.Graphics.Printing.PrintTicket;
-using Windows.UI.Xaml.Hosting;
-using Automata.GLFW;
-using ICSharpCode.Decompiler.CSharp.Syntax;
+using Automata.Rendering.GLFW;
 using Serilog;
 using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
@@ -16,6 +13,9 @@ using Silk.NET.Vulkan.Extensions.EXT;
 using Silk.NET.Vulkan.Extensions.KHR;
 
 #endregion
+
+// ReSharper disable HeuristicUnreachableCode
+
 
 namespace Automata.Rendering.Vulkan
 {
@@ -67,7 +67,6 @@ namespace Automata.Rendering.Vulkan
         private ExtDebugUtils _ExtDebugUtils;
 
         private PhysicalDevice _PhysicalDevice;
-        private PhysicalDeviceFeatures _PhysicalDeviceFeatures;
         private QueueFamilyIndices _QueueFamilyIndices;
         private Device _LogicalDevice;
 
@@ -86,7 +85,7 @@ namespace Automata.Rendering.Vulkan
 
         #region Vulkan Initialization
 
-        public unsafe void DefaultInitialize()
+        public void DefaultInitialize()
         {
             Log.Information($"({nameof(VKAPI)}) Initializing Vulkan: -begin-");
 
@@ -96,15 +95,6 @@ namespace Automata.Rendering.Vulkan
             SelectPhysicalDevice();
             CreateLogicalDevice();
 
-            Log.Information($"({nameof(VKAPI)}) Assigning graphics queue.");
-
-            fixed (Queue* graphicsQueueFixed = &_GraphicsQueue)
-            {
-                Debug.Assert(_QueueFamilyIndices.GraphicsFamily != null);
-
-                VK.GetDeviceQueue(_LogicalDevice, _QueueFamilyIndices.GraphicsFamily.Value, 0, graphicsQueueFixed);
-            }
-
             Log.Information($"({nameof(VKAPI)}) Initializing Vulkan: -success-");
         }
 
@@ -112,14 +102,14 @@ namespace Automata.Rendering.Vulkan
 
         private unsafe void CreateInstance()
         {
-           Log.Information(string.Format(_VulkanInstanceCreationFormat, "-begin-"));
+            Log.Information(string.Format(_VulkanInstanceCreationFormat, "-begin-"));
 
             if (_ENABLE_VULKAN_VALIDATION && !CheckValidationLayerSupport())
             {
                 throw new NotSupportedException($"Validation layers specified in '{nameof(_ValidationLayers)}' not present.");
             }
 
-           Log.Information(string.Format(_VulkanInstanceCreationFormat, "building application info."));
+            Log.Information(string.Format(_VulkanInstanceCreationFormat, "building application info."));
 
             ApplicationInfo applicationInfo = new ApplicationInfo
             {
@@ -131,7 +121,7 @@ namespace Automata.Rendering.Vulkan
                 ApiVersion = Vk.Version12
             };
 
-           Log.Information(string.Format(_VulkanInstanceCreationFormat, "building instance creation info."));
+            Log.Information(string.Format(_VulkanInstanceCreationFormat, "building instance creation info."));
 
 
             InstanceCreateInfo instanceCreateInfo = new InstanceCreateInfo
@@ -163,7 +153,7 @@ namespace Automata.Rendering.Vulkan
                 instanceCreateInfo.EnabledLayerCount = (uint)_ValidationLayers.Length;
                 instanceCreateInfo.PpEnabledLayerNames = (byte**)SilkMarshal.MarshalStringArrayToPtr(_ValidationLayers);
 
-               Log.Information(string.Format(_VulkanInstanceCreationFormat, "creating debug instance info."));
+                Log.Information(string.Format(_VulkanInstanceCreationFormat, "creating debug instance info."));
 
                 DebugUtilsMessengerCreateInfoEXT debugMessengerCreationInfo = new DebugUtilsMessengerCreateInfoEXT();
                 PopulateDebugMessengerCreateInfo(ref debugMessengerCreationInfo, _MESSAGE_SEVERITY_IMPORTANT);
@@ -176,7 +166,7 @@ namespace Automata.Rendering.Vulkan
                 instanceCreateInfo.PNext = null;
             }
 
-           Log.Information(string.Format(_VulkanInstanceCreationFormat, "creating instance."));
+            Log.Information(string.Format(_VulkanInstanceCreationFormat, "creating instance."));
 
             fixed (Instance* instance = &_VKInstance)
             {
@@ -186,9 +176,9 @@ namespace Automata.Rendering.Vulkan
                 }
             }
 
-           Log.Information(string.Format(_VulkanInstanceCreationFormat, "applying instance."));
+            Log.Information(string.Format(_VulkanInstanceCreationFormat, "assigning Vulkan instance."));
 
-            VK.CurrentInstance = _VKInstance;
+            VK.CurrentInstance = VKInstance;
 
             Log.Information(string.Format(_VulkanInstanceCreationFormat, "querying surface extension."));
 
@@ -198,7 +188,7 @@ namespace Automata.Rendering.Vulkan
             }
 
 
-           Log.Information(string.Format(_VulkanInstanceCreationFormat, "freeing unmanaged memory."));
+            Log.Information(string.Format(_VulkanInstanceCreationFormat, "freeing unmanaged memory."));
 
             Marshal.FreeHGlobal((IntPtr)applicationInfo.PApplicationName);
             Marshal.FreeHGlobal((IntPtr)applicationInfo.PEngineName);
@@ -208,7 +198,7 @@ namespace Automata.Rendering.Vulkan
                 SilkMarshal.FreeStringArrayPtr((IntPtr)instanceCreateInfo.PpEnabledLayerNames, _ValidationLayers.Length);
             }
 
-           Log.Information(string.Format(_VulkanInstanceCreationFormat, "-success-"));
+            Log.Information(string.Format(_VulkanInstanceCreationFormat, "-success-"));
         }
 
         private unsafe IEnumerable<ExtensionProperties> GetExtensionProperties()
@@ -228,7 +218,7 @@ namespace Automata.Rendering.Vulkan
 
         private unsafe bool CheckValidationLayerSupport()
         {
-           Log.Information(string.Format(_VulkanInstanceCreationFormat, "checking validation layers."));
+            Log.Information(string.Format(_VulkanInstanceCreationFormat, "checking validation layers."));
 
             uint layerCount;
             VK.EnumerateInstanceLayerProperties(&layerCount, null);
@@ -262,7 +252,7 @@ namespace Automata.Rendering.Vulkan
         {
             Log.Information(string.Format(_VulkanSurfaceCreationFormat, $"retrieving surface from '{nameof(AutomataWindow)}'"));
 
-            _Surface = AutomataWindow.Instance.Surface.Create<AllocationCallbacks>(_VKInstance.ToHandle(), null).ToSurface();
+            _Surface = AutomataWindow.Instance.Surface.Create<AllocationCallbacks>(VKInstance.ToHandle(), null).ToSurface();
         }
 
         #endregion
@@ -283,11 +273,11 @@ namespace Automata.Rendering.Vulkan
             DebugUtilsMessengerCreateInfoEXT createInfo = new DebugUtilsMessengerCreateInfoEXT();
             PopulateDebugMessengerCreateInfo(ref createInfo, _MESSAGE_SEVERITY_IMPORTANT);
 
-            Log.Information(string.Format(_VulkanDebugMessengerCreationFormat, "assigning instance."));
+            Log.Information(string.Format(_VulkanDebugMessengerCreationFormat, "assigning debug messenger instance."));
 
             fixed (DebugUtilsMessengerEXT* debugMessengerFixed = &_DebugMessenger)
             {
-                if (_ExtDebugUtils.CreateDebugUtilsMessenger(_VKInstance, &createInfo, null, debugMessengerFixed) != Result.Success)
+                if (_ExtDebugUtils.CreateDebugUtilsMessenger(VKInstance, &createInfo, null, debugMessengerFixed) != Result.Success)
                 {
                     throw new Exception($"Failed to create '{typeof(DebugUtilsMessengerEXT)}'");
                 }
@@ -339,71 +329,12 @@ namespace Automata.Rendering.Vulkan
 
         private unsafe void SelectPhysicalDevice()
         {
-            bool IsDeviceSuitable(PhysicalDevice physicalDevice, out string gpuName, out PhysicalDeviceFeatures physicalDeviceFeatures,
-                out QueueFamilyIndices queueFamilyIndices)
-            {
-                QueueFamilyIndices FindQueueFamilies(PhysicalDevice physicalDevice)
-                {
-                    QueueFamilyIndices indices = new QueueFamilyIndices();
-
-                    uint queueFamilyPropertiesCount = 0;
-                    VK.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyPropertiesCount, null);
-
-                    QueueFamilyProperties[] queueFamilyProperties = new QueueFamilyProperties[queueFamilyPropertiesCount];
-
-                    fixed (QueueFamilyProperties* queueFamilyPropertiesFixed = &queueFamilyProperties[0])
-                    {
-                        VK.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyPropertiesCount, queueFamilyPropertiesFixed);
-                    }
-
-                    for (uint index = 0; index < queueFamilyPropertiesCount; index++)
-                    {
-                        QueueFamilyProperties queueFamily = queueFamilyProperties[index];
-
-                        if (queueFamily.QueueFlags.HasFlag(QueueFlags.QueueGraphicsBit))
-                        {
-                            indices.GraphicsFamily = index;
-                        }
-
-                        Bool32 presentationSupport = false;
-                        _KHRSurface.GetPhysicalDeviceSurfaceSupport(_PhysicalDevice, index, _Surface, &presentationSupport);
-
-                        if (presentationSupport == Vk.True)
-                        {
-                            indices.PresentFamily = index;
-                        }
-
-                        if (indices.IsCompleted())
-                        {
-                            break;
-                        }
-                    }
-
-                    return indices;
-                }
-
-                PhysicalDeviceProperties physicalDeviceProperties;
-                VK.GetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
-                gpuName = SilkMarshal.MarshalPtrToString((IntPtr)physicalDeviceProperties.DeviceName);
-
-                Log.Information(string.Format(_VulkanPhysicalDeviceSelectionFormat, $"verifying '{gpuName}'."));
-
-                fixed (PhysicalDeviceFeatures* physicalDeviceFeaturesFixed = &physicalDeviceFeatures)
-                {
-                    VK.GetPhysicalDeviceFeatures(physicalDevice, physicalDeviceFeaturesFixed);
-                }
-
-                queueFamilyIndices = FindQueueFamilies(physicalDevice);
-
-                return queueFamilyIndices.IsCompleted() && physicalDeviceProperties.DeviceType == PhysicalDeviceType.DiscreteGpu && physicalDeviceFeatures.GeometryShader;
-            }
-
             Log.Information(string.Format(_VulkanPhysicalDeviceSelectionFormat, "-begin-"));
 
             Log.Information(string.Format(_VulkanPhysicalDeviceSelectionFormat, "locating all GPUs."));
 
             uint deviceCount = 0;
-            VK.EnumeratePhysicalDevices(_VKInstance, &deviceCount, null);
+            VK.EnumeratePhysicalDevices(VKInstance, &deviceCount, null);
 
             if (deviceCount == 0)
             {
@@ -416,18 +347,16 @@ namespace Automata.Rendering.Vulkan
 
             fixed (PhysicalDevice* devicesFixed = &devices[0])
             {
-                VK.EnumeratePhysicalDevices(_VKInstance, &deviceCount, devicesFixed);
+                VK.EnumeratePhysicalDevices(VKInstance, &deviceCount, devicesFixed);
             }
 
             for (int index = 0; index < deviceCount; index++)
             {
-                if (IsDeviceSuitable(devices[index], out string gpuName, out PhysicalDeviceFeatures physicalDeviceFeatures,
-                    out QueueFamilyIndices queueFamilyIndices))
+                if (IsDeviceSuitable(devices[index], out string gpuName, out QueueFamilyIndices queueFamilyIndices))
                 {
                     Log.Information(string.Format(_VulkanPhysicalDeviceSelectionFormat, $"'{gpuName}' verified."));
 
                     _PhysicalDevice = devices[index];
-                    _PhysicalDeviceFeatures = physicalDeviceFeatures;
                     _QueueFamilyIndices = queueFamilyIndices;
 
                     Log.Information(string.Format(_VulkanPhysicalDeviceSelectionFormat, "-success-"));
@@ -441,6 +370,92 @@ namespace Automata.Rendering.Vulkan
             }
 
             throw new Exception("No suitable GPUs found.");
+        }
+
+        private unsafe bool IsDeviceSuitable(PhysicalDevice physicalDevice, out string gpuName, out QueueFamilyIndices queueFamilyIndices)
+        {
+            gpuName = string.Empty;
+            queueFamilyIndices = default;
+
+            PhysicalDeviceProperties physicalDeviceProperties;
+            VK.GetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
+            gpuName = SilkMarshal.MarshalPtrToString((IntPtr)physicalDeviceProperties.DeviceName);
+
+                if (physicalDeviceProperties.DeviceType != PhysicalDeviceType.DiscreteGpu)
+            {
+                Log.Information(string.Format(_VulkanPhysicalDeviceSelectionFormat, $"failed to verify '{gpuName}' device type."));
+
+                return false;
+            }
+
+            Log.Information(string.Format(_VulkanPhysicalDeviceSelectionFormat, $"verified '{gpuName}' device type."));
+
+
+            queueFamilyIndices = FindQueueFamilies(physicalDevice);
+
+            if (!queueFamilyIndices.IsCompleted())
+            {
+                Log.Information(string.Format(_VulkanPhysicalDeviceSelectionFormat, $"failed to verify '{gpuName}' queue families."));
+
+                return false;
+            }
+
+            Log.Information(string.Format(_VulkanPhysicalDeviceSelectionFormat, $"verified '{gpuName}' queue families."));
+
+
+            PhysicalDeviceFeatures physicalDeviceFeatures;
+            VK.GetPhysicalDeviceFeatures(physicalDevice, &physicalDeviceFeatures);
+
+            if (!physicalDeviceFeatures.GeometryShader)
+            {
+                Log.Information(string.Format(_VulkanPhysicalDeviceSelectionFormat, $"failed to verify '{gpuName}' geometry shader support."));
+
+                return false;
+            }
+
+            Log.Information(string.Format(_VulkanPhysicalDeviceSelectionFormat, $"verified '{gpuName}' geometry shader support."));
+
+            return true;
+        }
+
+        private unsafe QueueFamilyIndices FindQueueFamilies(PhysicalDevice physicalDevice)
+        {
+            QueueFamilyIndices indices = new QueueFamilyIndices();
+
+            uint queueFamilyPropertiesCount = 0;
+            VK.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyPropertiesCount, null);
+
+            QueueFamilyProperties[] queueFamilyProperties = new QueueFamilyProperties[queueFamilyPropertiesCount];
+
+            fixed (QueueFamilyProperties* queueFamilyPropertiesFixed = &queueFamilyProperties[0])
+            {
+                VK.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyPropertiesCount, queueFamilyPropertiesFixed);
+            }
+
+            for (uint index = 0; index < queueFamilyPropertiesCount; index++)
+            {
+                QueueFamilyProperties queueFamily = queueFamilyProperties[index];
+
+                if (queueFamily.QueueFlags.HasFlag(QueueFlags.QueueGraphicsBit))
+                {
+                    indices.GraphicsFamily = index;
+                }
+
+                Bool32 presentationSupport = false;
+                _KHRSurface.GetPhysicalDeviceSurfaceSupport(physicalDevice, index, _Surface, &presentationSupport);
+
+                if (presentationSupport == Vk.True)
+                {
+                    indices.PresentationFamily = index;
+                }
+
+                if (indices.IsCompleted())
+                {
+                    break;
+                }
+            }
+
+            return indices;
         }
 
         #endregion
@@ -457,28 +472,33 @@ namespace Automata.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanLogicalDeviceCreationFormat, "initializing device queue creation info."));
 
-            DeviceQueueCreateInfo deviceQueueCreateInfo = new DeviceQueueCreateInfo
+            uint queueFamiliesCount = _QueueFamilyIndices.GetLength;
+            DeviceQueueCreateInfo* deviceQueueCreateInfos = stackalloc DeviceQueueCreateInfo[2];
+
+            for (int i = 0; i < queueFamiliesCount; i++)
             {
-                SType = StructureType.DeviceQueueCreateInfo,
-                QueueFamilyIndex = _QueueFamilyIndices.GraphicsFamily.Value,
-                QueueCount = 1,
-                PQueuePriorities = &queuePriority,
-            };
+                Debug.Assert(_QueueFamilyIndices[i] != null);
+
+                deviceQueueCreateInfos[i] = new DeviceQueueCreateInfo
+                {
+                    SType = StructureType.DeviceQueueCreateInfo,
+                    QueueFamilyIndex = _QueueFamilyIndices[i].Value,
+                    QueueCount = 1,
+                    PQueuePriorities = &queuePriority,
+                };
+            }
 
             Log.Information(string.Format(_VulkanLogicalDeviceCreationFormat, "initializing device creation info."));
 
+            PhysicalDeviceFeatures physicalDeviceFeatures = new PhysicalDeviceFeatures();
             DeviceCreateInfo deviceCreateInfo = new DeviceCreateInfo
             {
                 SType = StructureType.DeviceCreateInfo,
-                PQueueCreateInfos = &deviceQueueCreateInfo,
-                QueueCreateInfoCount = 1,
-                EnabledExtensionCount = 0
+                EnabledExtensionCount = 0,
+                QueueCreateInfoCount = queueFamiliesCount,
+                PQueueCreateInfos = deviceQueueCreateInfos,
+                PEnabledFeatures = &physicalDeviceFeatures
             };
-
-            fixed (PhysicalDeviceFeatures* physicalDeviceFeaturesFixed = &_PhysicalDeviceFeatures)
-            {
-                deviceCreateInfo.PEnabledFeatures = physicalDeviceFeaturesFixed;
-            }
 
             if (_ENABLE_VULKAN_VALIDATION)
             {
@@ -491,7 +511,7 @@ namespace Automata.Rendering.Vulkan
                 deviceCreateInfo.PpEnabledLayerNames = null;
             }
 
-            Log.Information(string.Format(_VulkanLogicalDeviceCreationFormat, "applying instance."));
+            Log.Information(string.Format(_VulkanLogicalDeviceCreationFormat, "assigning logical device instance."));
 
             fixed (Device* logicalDeviceFixed = &_LogicalDevice)
             {
@@ -501,6 +521,24 @@ namespace Automata.Rendering.Vulkan
                 }
             }
 
+            Log.Information(string.Format(_VulkanLogicalDeviceCreationFormat, "assigning graphics queue."));
+
+            fixed (Queue* graphicsQueueFixed = &_GraphicsQueue)
+            {
+                Debug.Assert(_QueueFamilyIndices.GraphicsFamily != null);
+
+                VK.GetDeviceQueue(_LogicalDevice, _QueueFamilyIndices.GraphicsFamily.Value, 0, graphicsQueueFixed);
+            }
+
+            Log.Information(string.Format(_VulkanLogicalDeviceCreationFormat, "assigning presentation queue."));
+
+            fixed (Queue* presentationQueueFixed = &_PresentationQueue)
+            {
+                Debug.Assert(_QueueFamilyIndices.PresentationFamily != null);
+
+                VK.GetDeviceQueue(_LogicalDevice, _QueueFamilyIndices.PresentationFamily.Value, 0, presentationQueueFixed);
+            }
+
             Log.Information(string.Format(_VulkanLogicalDeviceCreationFormat, "-success-"));
         }
 
@@ -508,13 +546,14 @@ namespace Automata.Rendering.Vulkan
 
         public unsafe void DestroyVulkanInstance()
         {
+            VK.DestroyDevice(_LogicalDevice, null);
+
             if (_ENABLE_VULKAN_VALIDATION)
             {
                 _ExtDebugUtils.DestroyDebugUtilsMessenger(VKInstance, _DebugMessenger, null);
             }
 
-            VK.DestroyDevice(_LogicalDevice, null);
-            // todo destroy surface
+            _KHRSurface.DestroySurface(VKInstance, _Surface, null);
             VK.DestroyInstance(VKInstance, null);
         }
     }

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using Automata.GLFW;
+using Automata.Rendering.GLFW;
 using Serilog;
 
 #endregion

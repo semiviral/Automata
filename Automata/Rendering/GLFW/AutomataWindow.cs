@@ -10,7 +10,7 @@ using Silk.NET.Windowing.Common;
 
 #endregion
 
-namespace Automata.GLFW
+namespace Automata.Rendering.GLFW
 {
     public class AutomataWindow : Singleton<AutomataWindow>
     {

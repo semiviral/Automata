@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
-using Automata.GLFW;
+using Automata.Rendering.GLFW;
 using Silk.NET.Input;
 using Silk.NET.Input.Common;
 using Silk.NET.Windowing.Common;
