@@ -45,7 +45,7 @@ namespace Automata.Rendering.Vulkan
         private static readonly string _VulkanInstanceCreationFormat = $"({nameof(VKAPI)}) Creating instance: {{0}}";
         private static readonly string _VulkanSurfaceCreationFormat = $"({nameof(VKAPI)}) Creating surface: {{0}}";
         private static readonly string _VulkanDebugMessengerCreationFormat = $"({nameof(VKAPI)}) Creating debug messenger: {{0}}";
-        private static readonly string _VulkanPhysicalDeviceSelectionFormat = $"({nameof(VKAPI)}) Selecting GPU: {{0}}";
+        private static readonly string _VulkanPhysicalDeviceSelectionFormat = $"({nameof(VKAPI)}) Selecting physical device: {{0}}";
         private static readonly string _VulkanLogicalDeviceCreationFormat = $"({nameof(VKAPI)}) Creating logical device: {{0}}";
         private static readonly string _VulkanSwapChainCreationFormat = $"({nameof(VKAPI)}) Creating swap chain: {{0}}";
 
@@ -511,14 +511,11 @@ namespace Automata.Rendering.Vulkan
 
             uint queueFamilyPropertiesCount = 0u;
             VK.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyPropertiesCount, null);
-
-            // todo use 'ref' version of method when it doesn't erase physicalDevice.Handle
-            QueueFamilyProperties* queueFamilyProperties = stackalloc QueueFamilyProperties[(int)queueFamilyPropertiesCount];
-            VK.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyPropertiesCount, queueFamilyProperties);
+            VK.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, ref queueFamilyPropertiesCount, out QueueFamilyProperties queueFamilyProperties);
 
             for (uint index = 0; index < queueFamilyPropertiesCount; index++)
             {
-                QueueFamilyProperties queueFamily = queueFamilyProperties[index];
+                QueueFamilyProperties queueFamily = ((QueueFamilyProperties*)&queueFamilyProperties)[index];
 
                 if (queueFamily.QueueFlags.HasFlag(QueueFlags.QueueGraphicsBit))
                 {
