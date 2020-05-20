@@ -333,7 +333,7 @@ namespace Automata.Rendering.Vulkan
             {
                 if (IsDeviceSuitable(devices[index], out string gpuName, out QueueFamilyIndices queueFamilyIndices))
                 {
-                    Log.Information(string.Format(_VulkanPhysicalDeviceSelectionFormat, $"'{gpuName}' verified."));
+                    Log.Information(string.Format(_VulkanPhysicalDeviceSelectionFormat, $"verified '{gpuName}'."));
 
                     _PhysicalDevice = devices[index];
                     _QueueFamilyIndices = queueFamilyIndices;
@@ -368,6 +368,15 @@ namespace Automata.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanPhysicalDeviceSelectionFormat, $"verified '{gpuName}' device type."));
 
+
+            if (!CheckDeviceExtensionSupport(physicalDevice))
+            {
+                Log.Information(string.Format(_VulkanPhysicalDeviceSelectionFormat, $"failed to verify '{gpuName}' swapchain support."));
+
+                return false;
+            }
+
+            Log.Information(string.Format(_VulkanPhysicalDeviceSelectionFormat, $"verified '{gpuName}' swapchain support."));
 
             queueFamilyIndices = FindQueueFamilies(physicalDevice);
 
@@ -419,12 +428,14 @@ namespace Automata.Rendering.Vulkan
 
             uint queueFamilyPropertiesCount = 0u;
             VK.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyPropertiesCount, null);
-            VK.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, ref queueFamilyPropertiesCount,
-                out QueueFamilyProperties queueFamilyProperties);
+
+            // todo use 'ref' version of method when it doesn't erase physicalDevice.Handle
+            QueueFamilyProperties* queueFamilyProperties = stackalloc QueueFamilyProperties[(int)queueFamilyPropertiesCount];
+            VK.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyPropertiesCount, queueFamilyProperties);
 
             for (uint index = 0; index < queueFamilyPropertiesCount; index++)
             {
-                QueueFamilyProperties queueFamily = ((QueueFamilyProperties*)&queueFamilyProperties)[index];
+                QueueFamilyProperties queueFamily = queueFamilyProperties[index];
 
                 if (queueFamily.QueueFlags.HasFlag(QueueFlags.QueueGraphicsBit))
                 {
