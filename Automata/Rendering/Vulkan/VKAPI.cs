@@ -59,6 +59,11 @@ namespace Automata.Rendering.Vulkan
             ExtDebugUtils.ExtensionName
         };
 
+        private readonly string[] _DeviceExtensions =
+        {
+            KhrSwapchain.ExtensionName
+        };
+
         private Instance _VKInstance;
         private KhrSurface _KHRSurface;
         private SurfaceKHR _Surface;
@@ -168,12 +173,9 @@ namespace Automata.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanInstanceCreationFormat, "creating instance."));
 
-            fixed (Instance* instance = &_VKInstance)
+            if (VK.CreateInstance(ref instanceCreateInfo, ref *VulkanNullPtrHelper.AllocationCallbacks, out _VKInstance) != Result.Success)
             {
-                if (VK.CreateInstance(&instanceCreateInfo, null, instance) != Result.Success)
-                {
-                    throw new Exception("Failed to create Vulkan instance.");
-                }
+                throw new Exception("Failed to create Vulkan instance.");
             }
 
             Log.Information(string.Format(_VulkanInstanceCreationFormat, "assigning Vulkan instance."));
@@ -201,21 +203,6 @@ namespace Automata.Rendering.Vulkan
             Log.Information(string.Format(_VulkanInstanceCreationFormat, "-success-"));
         }
 
-        private unsafe IEnumerable<ExtensionProperties> GetExtensionProperties()
-        {
-            uint extensionCount = 0;
-
-            VK.EnumerateInstanceExtensionProperties(string.Empty, &extensionCount, null);
-            ExtensionProperties[] extensionProperties = new ExtensionProperties[extensionCount];
-
-            fixed (ExtensionProperties* extensionPropertiesFixed = &extensionProperties[0])
-            {
-                VK.EnumerateInstanceExtensionProperties(string.Empty, &extensionCount, extensionPropertiesFixed);
-            }
-
-            return extensionProperties;
-        }
-
         private unsafe bool CheckValidationLayerSupport()
         {
             Log.Information(string.Format(_VulkanInstanceCreationFormat, "checking validation layers."));
@@ -224,11 +211,7 @@ namespace Automata.Rendering.Vulkan
             VK.EnumerateInstanceLayerProperties(&layerCount, null);
 
             LayerProperties[] layerProperties = new LayerProperties[layerCount];
-
-            fixed (LayerProperties* layerProperty = &layerProperties[0])
-            {
-                VK.EnumerateInstanceLayerProperties(&layerCount, layerProperty);
-            }
+            VK.EnumerateInstanceLayerProperties(ref layerCount, ref layerProperties[0]);
 
             foreach (string validationLayer in _ValidationLayers)
             {
@@ -252,7 +235,7 @@ namespace Automata.Rendering.Vulkan
         {
             Log.Information(string.Format(_VulkanSurfaceCreationFormat, $"retrieving surface from '{nameof(AutomataWindow)}'"));
 
-            _Surface = AutomataWindow.Instance.Surface.Create<AllocationCallbacks>(VKInstance.ToHandle(), null).ToSurface();
+            _Surface = AutomataWindow.Instance.Surface.Create(VKInstance.ToHandle(), VulkanNullPtrHelper.AllocationCallbacks).ToSurface();
         }
 
         #endregion
@@ -275,12 +258,12 @@ namespace Automata.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanDebugMessengerCreationFormat, "assigning debug messenger instance."));
 
-            fixed (DebugUtilsMessengerEXT* debugMessengerFixed = &_DebugMessenger)
+
+            if (_ExtDebugUtils.CreateDebugUtilsMessenger(VKInstance, ref createInfo, ref *VulkanNullPtrHelper.AllocationCallbacks,
+                    out _DebugMessenger)
+                != Result.Success)
             {
-                if (_ExtDebugUtils.CreateDebugUtilsMessenger(VKInstance, &createInfo, null, debugMessengerFixed) != Result.Success)
-                {
-                    throw new Exception($"Failed to create '{typeof(DebugUtilsMessengerEXT)}'");
-                }
+                throw new Exception($"Failed to create '{typeof(DebugUtilsMessengerEXT)}'");
             }
 
             Log.Information(string.Format(_VulkanDebugMessengerCreationFormat, "-success-"));
@@ -333,10 +316,10 @@ namespace Automata.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanPhysicalDeviceSelectionFormat, "locating all GPUs."));
 
-            uint deviceCount = 0;
-            VK.EnumeratePhysicalDevices(VKInstance, &deviceCount, null);
+            uint deviceCount = 0u;
+            VK.EnumeratePhysicalDevices(VKInstance, ref deviceCount, ref *VulkanNullPtrHelper.PhysicalDevice);
 
-            if (deviceCount == 0)
+            if (deviceCount == 0u)
             {
                 throw new Exception("No GPUs found with Vulkan support.");
             }
@@ -344,11 +327,7 @@ namespace Automata.Rendering.Vulkan
             Log.Information(string.Format(_VulkanPhysicalDeviceSelectionFormat, $"{deviceCount} GPUs found."));
 
             PhysicalDevice[] devices = new PhysicalDevice[deviceCount];
-
-            fixed (PhysicalDevice* devicesFixed = &devices[0])
-            {
-                VK.EnumeratePhysicalDevices(VKInstance, &deviceCount, devicesFixed);
-            }
+            VK.EnumeratePhysicalDevices(VKInstance, ref deviceCount, ref devices[0]);
 
             for (int index = 0; index < deviceCount; index++)
             {
@@ -377,11 +356,10 @@ namespace Automata.Rendering.Vulkan
             gpuName = string.Empty;
             queueFamilyIndices = default;
 
-            PhysicalDeviceProperties physicalDeviceProperties;
-            VK.GetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
+            VK.GetPhysicalDeviceProperties(physicalDevice, out PhysicalDeviceProperties physicalDeviceProperties);
             gpuName = SilkMarshal.MarshalPtrToString((IntPtr)physicalDeviceProperties.DeviceName);
 
-                if (physicalDeviceProperties.DeviceType != PhysicalDeviceType.DiscreteGpu)
+            if (physicalDeviceProperties.DeviceType != PhysicalDeviceType.DiscreteGpu)
             {
                 Log.Information(string.Format(_VulkanPhysicalDeviceSelectionFormat, $"failed to verify '{gpuName}' device type."));
 
@@ -403,8 +381,7 @@ namespace Automata.Rendering.Vulkan
             Log.Information(string.Format(_VulkanPhysicalDeviceSelectionFormat, $"verified '{gpuName}' queue families."));
 
 
-            PhysicalDeviceFeatures physicalDeviceFeatures;
-            VK.GetPhysicalDeviceFeatures(physicalDevice, &physicalDeviceFeatures);
+            VK.GetPhysicalDeviceFeatures(physicalDevice, out PhysicalDeviceFeatures physicalDeviceFeatures);
 
             if (!physicalDeviceFeatures.GeometryShader)
             {
@@ -418,31 +395,43 @@ namespace Automata.Rendering.Vulkan
             return true;
         }
 
+        private unsafe bool CheckDeviceExtensionSupport(PhysicalDevice physicalDevice)
+        {
+            uint extensionCount = 0u;
+            VK.EnumerateDeviceExtensionProperties(physicalDevice, string.Empty, ref extensionCount, ref *VulkanNullPtrHelper.ExtensionProperties);
+
+            ExtensionProperties* extensionProperties = stackalloc ExtensionProperties[(int)extensionCount];
+            VK.EnumerateDeviceExtensionProperties(physicalDevice, string.Empty, ref extensionCount, ref *extensionProperties);
+
+            List<string?> requiredExtensions = new List<string?>(_DeviceExtensions);
+
+            for (uint index = 0u; index < extensionCount; index++)
+            {
+                requiredExtensions.Remove(Marshal.PtrToStringAnsi((IntPtr)extensionProperties[index].ExtensionName));
+            }
+
+            return requiredExtensions.Count == 0;
+        }
+
         private unsafe QueueFamilyIndices FindQueueFamilies(PhysicalDevice physicalDevice)
         {
             QueueFamilyIndices indices = new QueueFamilyIndices();
 
-            uint queueFamilyPropertiesCount = 0;
+            uint queueFamilyPropertiesCount = 0u;
             VK.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyPropertiesCount, null);
-
-            QueueFamilyProperties[] queueFamilyProperties = new QueueFamilyProperties[queueFamilyPropertiesCount];
-
-            fixed (QueueFamilyProperties* queueFamilyPropertiesFixed = &queueFamilyProperties[0])
-            {
-                VK.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyPropertiesCount, queueFamilyPropertiesFixed);
-            }
+            VK.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, ref queueFamilyPropertiesCount,
+                out QueueFamilyProperties queueFamilyProperties);
 
             for (uint index = 0; index < queueFamilyPropertiesCount; index++)
             {
-                QueueFamilyProperties queueFamily = queueFamilyProperties[index];
+                QueueFamilyProperties queueFamily = ((QueueFamilyProperties*)&queueFamilyProperties)[index];
 
                 if (queueFamily.QueueFlags.HasFlag(QueueFlags.QueueGraphicsBit))
                 {
                     indices.GraphicsFamily = index;
                 }
 
-                Bool32 presentationSupport = false;
-                _KHRSurface.GetPhysicalDeviceSurfaceSupport(physicalDevice, index, _Surface, &presentationSupport);
+                _KHRSurface.GetPhysicalDeviceSurfaceSupport(physicalDevice, index, _Surface, out Bool32 presentationSupport);
 
                 if (presentationSupport == Vk.True)
                 {
@@ -513,31 +502,25 @@ namespace Automata.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanLogicalDeviceCreationFormat, "assigning logical device instance."));
 
-            fixed (Device* logicalDeviceFixed = &_LogicalDevice)
+            if (VK.CreateDevice(_PhysicalDevice, ref deviceCreateInfo, ref *VulkanNullPtrHelper.AllocationCallbacks, out _LogicalDevice)
+                != Result.Success)
             {
-                if (VK.CreateDevice(_PhysicalDevice, &deviceCreateInfo, null, logicalDeviceFixed) != Result.Success)
-                {
-                    throw new Exception("Failed to create logical device.");
-                }
+                throw new Exception("Failed to create logical device.");
             }
 
             Log.Information(string.Format(_VulkanLogicalDeviceCreationFormat, "assigning graphics queue."));
 
-            fixed (Queue* graphicsQueueFixed = &_GraphicsQueue)
-            {
-                Debug.Assert(_QueueFamilyIndices.GraphicsFamily != null);
 
-                VK.GetDeviceQueue(_LogicalDevice, _QueueFamilyIndices.GraphicsFamily.Value, 0, graphicsQueueFixed);
-            }
+            Debug.Assert(_QueueFamilyIndices.GraphicsFamily != null);
+
+            VK.GetDeviceQueue(_LogicalDevice, _QueueFamilyIndices.GraphicsFamily.Value, 0, out _GraphicsQueue);
+
 
             Log.Information(string.Format(_VulkanLogicalDeviceCreationFormat, "assigning presentation queue."));
 
-            fixed (Queue* presentationQueueFixed = &_PresentationQueue)
-            {
-                Debug.Assert(_QueueFamilyIndices.PresentationFamily != null);
+            Debug.Assert(_QueueFamilyIndices.PresentationFamily != null);
 
-                VK.GetDeviceQueue(_LogicalDevice, _QueueFamilyIndices.PresentationFamily.Value, 0, presentationQueueFixed);
-            }
+            VK.GetDeviceQueue(_LogicalDevice, _QueueFamilyIndices.PresentationFamily.Value, 0, out _PresentationQueue);
 
             Log.Information(string.Format(_VulkanLogicalDeviceCreationFormat, "-success-"));
         }
