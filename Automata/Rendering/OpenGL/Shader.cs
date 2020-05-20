@@ -39,8 +39,9 @@ namespace Automata.Rendering.OpenGL
                 fragColor = fColor;
             }";
 
-        private readonly uint _Handle;
         private readonly GL _GL;
+
+        private readonly uint _Handle;
 
         public Shader()
         {
@@ -92,6 +93,11 @@ namespace Automata.Rendering.OpenGL
             _GL.DetachShader(_Handle, fragmentShader);
             _GL.DeleteShader(vertexShader);
             _GL.DeleteShader(fragmentShader);
+        }
+
+        public void Dispose()
+        {
+            _GL.DeleteProgram(_Handle);
         }
 
         public void Use()
@@ -157,11 +163,6 @@ namespace Automata.Rendering.OpenGL
             }
 
             return handle;
-        }
-
-        public void Dispose()
-        {
-            _GL.DeleteProgram(_Handle);
         }
     }
 }

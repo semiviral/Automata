@@ -1,5 +1,8 @@
-using Windows.Devices.Geolocation;
+#region
+
 using Silk.NET.Vulkan;
+
+#endregion
 
 namespace Automata.Rendering.Vulkan
 {

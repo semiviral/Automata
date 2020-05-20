@@ -17,12 +17,12 @@ namespace AutomataTest.Blocks
     {
         public static ushort NullID;
         public static ushort AirID;
+        public readonly List<IBlockDefinition> BlockDefinitions;
+
+        public readonly Dictionary<string, ushort> BlockNamesByID;
 
         private List<BlockDefinition.Property> _BlockPropertiesCache;
         private Dictionary<BlockDefinition.Property, HashSet<ushort>> _PropertiesBuckets;
-
-        public readonly Dictionary<string, ushort> BlockNamesByID;
-        public readonly List<IBlockDefinition> BlockDefinitions;
 
         public BlockRegistry()
         {

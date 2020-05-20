@@ -10,8 +10,6 @@ namespace Automata.Worlds
     {
         private Vector3d _Value;
 
-        public bool Changed { get; set; }
-
         public Vector3d Value
         {
             get => _Value;
@@ -23,5 +21,7 @@ namespace Automata.Worlds
         }
 
         public Translation() => Value = Vector3d.Zero;
+
+        public bool Changed { get; set; }
     }
 }

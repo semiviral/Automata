@@ -11,8 +11,8 @@ namespace Automata.Rendering.OpenGL
         where TVertexType : unmanaged
         where TIndexType : unmanaged
     {
-        private readonly uint _Handle;
         private readonly GL _GL;
+        private readonly uint _Handle;
 
         public VertexArrayObject(GL gl, BufferObject<TVertexType> vbo, BufferObject<TIndexType> ebo)
         {
@@ -24,6 +24,11 @@ namespace Automata.Rendering.OpenGL
             ebo.Bind();
         }
 
+        public void Dispose()
+        {
+            _GL.DeleteVertexArray(_Handle);
+        }
+
         public unsafe void VertexAttributePointer(uint index, int count, VertexAttribPointerType type, uint vertexSize, int offset)
         {
             _GL.VertexAttribPointer(index, count, type, false, vertexSize * (uint)sizeof(TVertexType), (void*)(offset * sizeof(TVertexType)));
@@ -33,11 +38,6 @@ namespace Automata.Rendering.OpenGL
         public void Bind()
         {
             _GL.BindVertexArray(_Handle);
-        }
-
-        public void Dispose()
-        {
-            _GL.DeleteVertexArray(_Handle);
         }
     }
 }

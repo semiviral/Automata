@@ -17,10 +17,10 @@ namespace AutomataTest.Chunks.Generation
         private static readonly ConcurrentDictionary<string, ushort> _BlockIDCache = new ConcurrentDictionary<string, ushort>();
 
         protected readonly Stopwatch Stopwatch;
+        protected INodeCollection<ushort>? _Blocks;
 
         protected Vector3i _OriginPoint;
         protected Random? _SeededRandom;
-        protected INodeCollection<ushort>? _Blocks;
 
         protected ChunkTerrainJob() : base(GenerationConstants.CHUNK_SIZE_CUBED, 256) => Stopwatch = new Stopwatch();
 

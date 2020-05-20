@@ -26,9 +26,7 @@ namespace Automata.Rendering
             _GL.Enable(GLEnum.DepthTest);
         }
 
-        public override void Registered()
-        {
-        }
+        public override void Registered() { }
 
         public override unsafe void Update(EntityManager entityManager, TimeSpan delta)
         {

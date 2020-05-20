@@ -10,8 +10,6 @@ namespace Automata.Worlds
     {
         private Quaternion _Value;
 
-        public bool Changed { get; set; }
-
         public Quaternion Value
         {
             get => _Value;
@@ -23,5 +21,7 @@ namespace Automata.Worlds
         }
 
         public Rotation() => Value = Quaternion.Identity;
+
+        public bool Changed { get; set; }
     }
 }

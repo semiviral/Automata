@@ -15,11 +15,6 @@ namespace Automata.Collections
         private readonly int _Extent;
         private readonly OctreeNode<T> _RootNode;
 
-        public T Value => _RootNode.Value;
-        public bool IsUniform => _RootNode.IsUniform;
-
-        public int Length { get; }
-
         public Octree(int size, T initialValue, bool fullyPopulate)
         {
             if ((size <= 0) || ((size & (size - 1)) != 0))
@@ -36,6 +31,45 @@ namespace Automata.Collections
             {
                 // todo
                 _RootNode.PopulateRecursive(_Extent);
+            }
+        }
+
+        public T Value => _RootNode.Value;
+        public bool IsUniform => _RootNode.IsUniform;
+
+        public int Length { get; }
+
+
+        public IEnumerable<T> GetAllData()
+        {
+            int size = _Extent << 1;
+
+            for (int index = 0; index < Length; index++)
+            {
+                yield return GetPoint(Vector3i.Project3D(index, size));
+            }
+        }
+
+        public void CopyTo(T[] destinationArray)
+        {
+            if (destinationArray == null)
+            {
+                throw new NullReferenceException(nameof(destinationArray));
+            }
+            else if (destinationArray.Rank != 1)
+            {
+                throw new RankException("Only single dimension arrays are supported here.");
+            }
+            else if (destinationArray.Length < Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(destinationArray), "Destination array was not long enough.");
+            }
+
+            int size = _Extent << 1;
+
+            for (int index = 0; index < destinationArray.Length; index++)
+            {
+                destinationArray[index] = GetPoint(Vector3i.Project3D(index, size));
             }
         }
 
@@ -82,40 +116,6 @@ namespace Automata.Collections
         public void SetPoint(int x, int y, int z, T value) => _RootNode.SetPoint(_Extent, x, y, z, value);
 
         #endregion
-
-
-        public IEnumerable<T> GetAllData()
-        {
-            int size = _Extent << 1;
-
-            for (int index = 0; index < Length; index++)
-            {
-                yield return GetPoint(Vector3i.Project3D(index, size));
-            }
-        }
-
-        public void CopyTo(T[] destinationArray)
-        {
-            if (destinationArray == null)
-            {
-                throw new NullReferenceException(nameof(destinationArray));
-            }
-            else if (destinationArray.Rank != 1)
-            {
-                throw new RankException("Only single dimension arrays are supported here.");
-            }
-            else if (destinationArray.Length < Length)
-            {
-                throw new ArgumentOutOfRangeException(nameof(destinationArray), "Destination array was not long enough.");
-            }
-
-            int size = _Extent << 1;
-
-            for (int index = 0; index < destinationArray.Length; index++)
-            {
-                destinationArray[index] = GetPoint(Vector3i.Project3D(index, size));
-            }
-        }
     }
 
     public static class Octree

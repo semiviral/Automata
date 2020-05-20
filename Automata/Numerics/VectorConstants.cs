@@ -1,7 +1,3 @@
-#region
-
-#endregion
-
 namespace Automata.Numerics
 {
     public class VectorConstants

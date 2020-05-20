@@ -25,16 +25,16 @@ namespace Automata
     {
         private readonly Dictionary<Type, IComponent> _Components;
 
-        public Dictionary<Type, IComponent>.KeyCollection ComponentTypes => _Components.Keys;
-
-        public Guid ID { get; }
-
         public Entity()
         {
             _Components = new Dictionary<Type, IComponent>();
 
             ID = Guid.NewGuid();
         }
+
+        public Dictionary<Type, IComponent>.KeyCollection ComponentTypes => _Components.Keys;
+
+        public Guid ID { get; }
 
         public bool TryAddComponent(IComponent? component)
         {

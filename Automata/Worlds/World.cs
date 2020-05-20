@@ -20,11 +20,25 @@ namespace Automata.Worlds
 
         private static Dictionary<string, World> Worlds { get; }
 
+        public EntityManager EntityManager { get; }
+        public SystemManager SystemManager { get; }
+        public bool Active { get; set; }
+
         static World()
         {
             _DeltaTimer = new Stopwatch();
 
             Worlds = new Dictionary<string, World>();
+        }
+
+        protected World(bool active)
+        {
+            EntityManager = new EntityManager();
+            SystemManager = new SystemManager();
+
+            Active = active;
+
+            RegisterDefaultSystems();
         }
 
         public static void RegisterWorld(string name, World world)
@@ -60,20 +74,6 @@ namespace Automata.Worlds
             TimeSpan frameWait = _MinimumFrameTime - _DeltaTimer.Elapsed;
 
             Thread.Sleep(frameWait < TimeSpan.Zero ? TimeSpan.Zero : frameWait);
-        }
-
-        public EntityManager EntityManager { get; }
-        public SystemManager SystemManager { get; }
-        public bool Active { get; set; }
-
-        protected World(bool active)
-        {
-            EntityManager = new EntityManager();
-            SystemManager = new SystemManager();
-
-            Active = active;
-
-            RegisterDefaultSystems();
         }
 
         private void RegisterDefaultSystems()

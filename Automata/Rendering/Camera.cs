@@ -10,9 +10,9 @@ namespace Automata.Rendering
     public class Camera : IComponent
     {
         private static readonly Shader _DefaultShader = new Shader();
+        private Matrix4x4 _Projection;
 
         private Matrix4x4 _View;
-        private Matrix4x4 _Projection;
 
         public Shader Shader { get; set; } = _DefaultShader;
 

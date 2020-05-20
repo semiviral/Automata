@@ -16,6 +16,12 @@ namespace Automata.Collections
 {
     public class OctreeNode<T> where T : IEquatable<T>
     {
+        /// <summary>
+        ///     Creates an in-memory compressed 3D representation of any unmanaged data type.
+        /// </summary>
+        /// <param name="value">Initial value of the collection.</param>
+        public OctreeNode(T value) => Value = value;
+
         #region Instance Members
 
         private OctreeNode<T>[]? _Nodes;
@@ -38,12 +44,6 @@ namespace Automata.Collections
         }
 
         #endregion
-
-        /// <summary>
-        ///     Creates an in-memory compressed 3D representation of any unmanaged data type.
-        /// </summary>
-        /// <param name="value">Initial value of the collection.</param>
-        public OctreeNode(T value) => Value = value;
 
 
         #region Data Operations

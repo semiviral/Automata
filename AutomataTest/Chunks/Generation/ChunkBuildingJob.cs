@@ -21,17 +21,17 @@ namespace AutomataTest.Chunks.Generation
 
         private static readonly int[] _EmptyHeightmap = new int[0];
         private static readonly float[] _EmptyCavemap = new float[0];
+        private float[] _Cavemap;
+
+        private float _Frequency;
+
+        private int[] _Heightmap;
+        private TimeSpan _NoiseRetrievalTimeSpan;
 
         private int _NoiseSeedA;
         private int _NoiseSeedB;
-
-        private float _Frequency;
         private float _Persistence;
-        private TimeSpan _NoiseRetrievalTimeSpan;
         private TimeSpan _TerrainGenerationTimeSpan;
-
-        private int[] _Heightmap;
-        private float[] _Cavemap;
 
         public ChunkBuildingJob()
         {

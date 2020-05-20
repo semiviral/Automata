@@ -20,8 +20,6 @@ namespace AutomataTest.Chunks.Generation
         public const int WORLD_HEIGHT_IN_CHUNKS = 8;
         public const int WORLD_HEIGHT = CHUNK_SIZE * WORLD_HEIGHT_IN_CHUNKS;
 
-        public static int Seed { get; set; }
-
         public static readonly int[] IndexStepByNormalIndex =
         {
             1,
@@ -104,5 +102,7 @@ namespace AutomataTest.Chunks.Generation
                 0b00_01_01_000000_000001_000000,
             },
         };
+
+        public static int Seed { get; set; }
     }
 }

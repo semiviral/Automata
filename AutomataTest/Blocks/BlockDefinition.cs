@@ -22,22 +22,14 @@ namespace AutomataTest.Blocks
 
         private static readonly Func<Direction, string> _DefaultUVsRule;
 
+        private readonly Func<Direction, string> _UVsRule;
+
+        public ushort Id { get; }
+
         static BlockDefinition()
         {
             _DefaultUVsRule = direction => string.Empty;
         }
-
-        private readonly Func<Direction, string> _UVsRule;
-
-        public ushort Id { get; }
-        public string BlockName { get; }
-        public Property Properties { get; }
-
-        public bool Transparent => (Properties & Property.Transparent) == Property.Transparent;
-        public bool Collideable => (Properties & Property.Collideable) == Property.Collideable;
-        public bool Destroyable => (Properties & Property.Destroyable) == Property.Destroyable;
-        public bool Collectible => (Properties & Property.Collectible) == Property.Collectible;
-        public bool LightSource => (Properties & Property.LightSource) == Property.LightSource;
 
 
         public BlockDefinition(ushort id, string blockName, Func<Direction, string> uvsRule, params Property[] properties)
@@ -53,12 +45,21 @@ namespace AutomataTest.Blocks
             _UVsRule = uvsRule ?? _DefaultUVsRule;
         }
 
-        public bool HasProperty(Property flag) => (Properties & flag) == flag;
+        public string BlockName { get; }
+        public Property Properties { get; }
+
+        public bool Transparent => (Properties & Property.Transparent) == Property.Transparent;
+        public bool Collideable => (Properties & Property.Collideable) == Property.Collideable;
+        public bool Destroyable => (Properties & Property.Destroyable) == Property.Destroyable;
+        public bool Collectible => (Properties & Property.Collectible) == Property.Collectible;
+        public bool LightSource => (Properties & Property.LightSource) == Property.LightSource;
 
         public virtual bool GetUVs(Direction direction, out string spriteName)
         {
             spriteName = _UVsRule(direction);
             return true;
         }
+
+        public bool HasProperty(Property flag) => (Properties & flag) == flag;
     }
 }

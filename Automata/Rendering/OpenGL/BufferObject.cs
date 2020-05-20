@@ -9,9 +9,9 @@ namespace Automata.Rendering.OpenGL
 {
     public class BufferObject<TDataType> : IDisposable where TDataType : unmanaged
     {
-        private readonly uint _Handle;
         private readonly BufferTargetARB _BufferType;
         private readonly GL _GL;
+        private readonly uint _Handle;
 
         public uint Length { get; private set; }
 
@@ -21,6 +21,11 @@ namespace Automata.Rendering.OpenGL
             _BufferType = bufferType;
             _Handle = _GL.GenBuffer();
             Bind();
+        }
+
+        public void Dispose()
+        {
+            _GL.DeleteBuffer(_Handle);
         }
 
         public unsafe void SetBufferData(Span<TDataType> data)
@@ -35,11 +40,6 @@ namespace Automata.Rendering.OpenGL
         public void Bind()
         {
             _GL.BindBuffer(_BufferType, _Handle);
-        }
-
-        public void Dispose()
-        {
-            _GL.DeleteBuffer(_Handle);
         }
     }
 }

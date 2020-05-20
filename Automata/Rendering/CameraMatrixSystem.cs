@@ -6,7 +6,6 @@ using System.Drawing;
 using System.Numerics;
 using Automata.Rendering.GLFW;
 using Automata.Worlds;
-using Serilog;
 
 #endregion
 

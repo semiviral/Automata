@@ -22,16 +22,17 @@ namespace AutomataTest.Chunks.Generation
         private static readonly ArrayPool<MeshingBlock> _MeshingBlocksPool =
             ArrayPool<MeshingBlock>.Create(GenerationConstants.CHUNK_SIZE_CUBED, 8);
 
-        private readonly Stopwatch _RuntimeStopwatch;
         private readonly INodeCollection<ushort>[] _NeighborBlocksCollections;
-        private readonly List<int> _Vertexes;
+
+        private readonly Stopwatch _RuntimeStopwatch;
         private readonly List<uint> _Triangles;
+        private readonly List<int> _Vertexes;
 
         private INodeCollection<ushort>? _BlocksCollection;
         private MeshingBlock[]? _MeshingBlocks;
+        private TimeSpan _MeshingTimeSpan;
 
         private TimeSpan _PreMeshingTimeSpan;
-        private TimeSpan _MeshingTimeSpan;
 
         public ChunkMeshingJob() : base(GenerationConstants.CHUNK_SIZE, 64)
         {
