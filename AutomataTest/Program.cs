@@ -7,6 +7,7 @@ using Automata;
 using Automata.Input;
 using Automata.Numerics;
 using Automata.Rendering;
+using Automata.Rendering.DirectX;
 using Automata.Rendering.GLFW;
 using Automata.Rendering.OpenGL;
 using Automata.Rendering.Vulkan;
@@ -17,6 +18,7 @@ using AutomataTest.Chunks.Generation;
 using Serilog;
 using Serilog.Events;
 using Silk.NET.Windowing.Common;
+using Vortice.Dxc;
 
 #endregion
 
@@ -34,10 +36,18 @@ namespace AutomataTest
 
             if (!Directory.Exists(_LocalDataPath))
             {
-                Log.Information("Application data folder missing.");
-                Log.Information("Creating application data folder.");
+                Log.Information("Application data folder missing. Creating.");
                 Directory.CreateDirectory(_LocalDataPath);
             }
+
+            Initialize();
+
+            AutomataWindow.Instance.Run();
+        }
+
+        private static void InitializeSingletons()
+        {
+            Singleton.CreateSingleton<GLSLXPLR>();
 
             WindowOptions options = WindowOptions.DefaultVulkan;
             options.Title = "Wyd: A Journey";
@@ -50,13 +60,6 @@ namespace AutomataTest
             AutomataWindow.Instance.Window.Closing += OnClose;
             AutomataWindow.Instance.Window.Initialize();
 
-            Initialize();
-
-            AutomataWindow.Instance.Run();
-        }
-
-        private static void InitializeSingletons()
-        {
             Singleton.CreateSingleton<VKAPI>();
             VKAPI.Instance.DefaultInitialize();
 

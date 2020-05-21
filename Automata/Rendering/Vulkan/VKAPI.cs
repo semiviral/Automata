@@ -15,7 +15,7 @@ using Silk.NET.Vulkan.Extensions.KHR;
 #endregion
 
 // ReSharper disable HeuristicUnreachableCode
-
+// ReSharper disable RedundantCast
 
 namespace Automata.Rendering.Vulkan
 {
@@ -48,6 +48,7 @@ namespace Automata.Rendering.Vulkan
         private static readonly string _VulkanPhysicalDeviceSelectionFormat = $"({nameof(VKAPI)}) Selecting physical device: {{0}}";
         private static readonly string _VulkanLogicalDeviceCreationFormat = $"({nameof(VKAPI)}) Creating logical device: {{0}}";
         private static readonly string _VulkanSwapChainCreationFormat = $"({nameof(VKAPI)}) Creating swap chain: {{0}}";
+        private static readonly string _VulkanImageViewCreationFormat = $"({nameof(VKAPI)}) Creating image views: {{0}}";
 
 
         private readonly string[] _ValidationLayers =
@@ -82,6 +83,11 @@ namespace Automata.Rendering.Vulkan
         private SwapChainSupportDetails _SwapChainSupportDetails;
         private KhrSwapchain _KHRSwapChain;
         private SwapchainKHR _SwapChain;
+        private Format _SwapChainImageFormat;
+        private Extent2D _SwapChainExtents;
+        private Image[] _SwapChainImages;
+
+        private ImageView[] _SwapChainImageViews;
 
         public Vk VK { get; }
 
@@ -105,6 +111,8 @@ namespace Automata.Rendering.Vulkan
             SelectPhysicalDevice();
             CreateLogicalDevice();
             CreateSwapChain();
+            CreateImageViews();
+            CreateGraphicsPipeline();
 
             Log.Information($"({nameof(VKAPI)}) Initializing Vulkan: -success-");
         }
@@ -179,9 +187,12 @@ namespace Automata.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanInstanceCreationFormat, "creating instance."));
 
-            if (VK.CreateInstance(ref instanceCreateInfo, ref *VulkanNullPtrHelper.AllocationCallbacks, out _VKInstance) != Result.Success)
+            fixed (Instance* vkInstance = &_VKInstance)
             {
-                throw new Exception("Failed to create Vulkan instance.");
+                if (VK.CreateInstance(&instanceCreateInfo, null, vkInstance) != Result.Success)
+                {
+                    throw new Exception("Failed to create Vulkan instance.");
+                }
             }
 
             Log.Information(string.Format(_VulkanInstanceCreationFormat, "assigning Vulkan instance."));
@@ -220,7 +231,7 @@ namespace Automata.Rendering.Vulkan
             Log.Information(string.Format(_VulkanInstanceCreationFormat, "checking validation layers."));
 
             uint layerCount;
-            VK.EnumerateInstanceLayerProperties(&layerCount, null);
+            VK.EnumerateInstanceLayerProperties(&layerCount, (LayerProperties*)null!);
 
             LayerProperties[] layerProperties = new LayerProperties[layerCount];
             VK.EnumerateInstanceLayerProperties(ref layerCount, ref layerProperties[0]);
@@ -247,7 +258,7 @@ namespace Automata.Rendering.Vulkan
         {
             Log.Information(string.Format(_VulkanSurfaceCreationFormat, $"retrieving surface from '{nameof(AutomataWindow)}'"));
 
-            _Surface = AutomataWindow.Instance.Surface.Create(VKInstance.ToHandle(), VulkanNullPtrHelper.AllocationCallbacks).ToSurface();
+            _Surface = AutomataWindow.Instance.Surface.Create(VKInstance.ToHandle(), (AllocationCallbacks*)null!).ToSurface();
         }
 
         #endregion
@@ -271,11 +282,13 @@ namespace Automata.Rendering.Vulkan
             Log.Information(string.Format(_VulkanDebugMessengerCreationFormat, "assigning debug messenger instance."));
 
 
-            if (_ExtDebugUtils.CreateDebugUtilsMessenger(VKInstance, ref createInfo, ref *VulkanNullPtrHelper.AllocationCallbacks,
-                    out _DebugMessenger)
-                != Result.Success)
+            fixed (DebugUtilsMessengerEXT* debugMessenger = &_DebugMessenger)
             {
-                throw new Exception($"Failed to create '{typeof(DebugUtilsMessengerEXT)}'");
+                if (_ExtDebugUtils.CreateDebugUtilsMessenger(VKInstance, &createInfo, (AllocationCallbacks*)null!, debugMessenger)
+                    != Result.Success)
+                {
+                    throw new Exception($"Failed to create '{typeof(DebugUtilsMessengerEXT)}'");
+                }
             }
 
             Log.Information(string.Format(_VulkanDebugMessengerCreationFormat, "-success-"));
@@ -329,7 +342,7 @@ namespace Automata.Rendering.Vulkan
             Log.Information(string.Format(_VulkanPhysicalDeviceSelectionFormat, "locating all GPUs."));
 
             uint deviceCount = 0u;
-            VK.EnumeratePhysicalDevices(VKInstance, ref deviceCount, ref *VulkanNullPtrHelper.PhysicalDevice);
+            VK.EnumeratePhysicalDevices(VKInstance, &deviceCount, (PhysicalDevice*)null!);
 
             if (deviceCount == 0u)
             {
@@ -443,10 +456,10 @@ namespace Automata.Rendering.Vulkan
         private unsafe bool CheckDeviceExtensionSupport(PhysicalDevice physicalDevice)
         {
             uint extensionCount = 0u;
-            VK.EnumerateDeviceExtensionProperties(physicalDevice, string.Empty, ref extensionCount, ref *VulkanNullPtrHelper.ExtensionProperties);
+            VK.EnumerateDeviceExtensionProperties(physicalDevice, string.Empty, &extensionCount, (ExtensionProperties*)null!);
 
             ExtensionProperties* extensionProperties = stackalloc ExtensionProperties[(int)extensionCount];
-            VK.EnumerateDeviceExtensionProperties(physicalDevice, string.Empty, ref extensionCount, ref *extensionProperties);
+            VK.EnumerateDeviceExtensionProperties(physicalDevice, string.Empty, &extensionCount, extensionProperties);
 
             List<string?> requiredExtensions = new List<string?>(_DeviceExtensions);
 
@@ -460,17 +473,21 @@ namespace Automata.Rendering.Vulkan
 
         private unsafe SwapChainSupportDetails GetSwapChainSupport(PhysicalDevice physicalDevice)
         {
-            SwapChainSupportDetails swapChainSupportDetails = new SwapChainSupportDetails();
-            _KHRSurface.GetPhysicalDeviceSurfaceCapabilities(physicalDevice, _Surface, out SurfaceCapabilitiesKHR surfaceCapabilities);
-            swapChainSupportDetails.SurfaceCapabilities = surfaceCapabilities;
+            SurfaceCapabilitiesKHR surfaceCapabilities;
+            _KHRSurface.GetPhysicalDeviceSurfaceCapabilities(physicalDevice, _Surface, &surfaceCapabilities);
+
+            SwapChainSupportDetails swapChainSupportDetails = new SwapChainSupportDetails
+            {
+                SurfaceCapabilities = surfaceCapabilities
+            };
 
             uint surfaceFormatsCount = 0u;
-            _KHRSurface.GetPhysicalDeviceSurfaceFormats(physicalDevice, _Surface, &surfaceFormatsCount, null);
+            _KHRSurface.GetPhysicalDeviceSurfaceFormats(physicalDevice, _Surface, &surfaceFormatsCount, (SurfaceFormatKHR*)null!);
 
             if (surfaceFormatsCount != 0u)
             {
                 SurfaceFormatKHR* surfaceFormats = stackalloc SurfaceFormatKHR[(int)surfaceFormatsCount];
-                _KHRSurface.GetPhysicalDeviceSurfaceFormats(physicalDevice, _Surface, ref surfaceFormatsCount, out *surfaceFormats);
+                _KHRSurface.GetPhysicalDeviceSurfaceFormats(physicalDevice, _Surface, &surfaceFormatsCount, surfaceFormats);
 
                 swapChainSupportDetails.Formats = new SurfaceFormatKHR[(int)surfaceFormatsCount];
                 for (int index = 0; index < surfaceFormatsCount; index++)
@@ -484,12 +501,12 @@ namespace Automata.Rendering.Vulkan
             }
 
             uint presentationModeCount;
-            _KHRSurface.GetPhysicalDeviceSurfacePresentModes(physicalDevice, _Surface, &presentationModeCount, null);
+            _KHRSurface.GetPhysicalDeviceSurfacePresentModes(physicalDevice, _Surface, &presentationModeCount, (PresentModeKHR*)null!);
 
             if (presentationModeCount != 0u)
             {
                 PresentModeKHR* presentModes = stackalloc PresentModeKHR[(int)presentationModeCount];
-                _KHRSurface.GetPhysicalDeviceSurfacePresentModes(physicalDevice, _Surface, ref presentationModeCount, out *presentModes);
+                _KHRSurface.GetPhysicalDeviceSurfacePresentModes(physicalDevice, _Surface, &presentationModeCount, presentModes);
 
                 swapChainSupportDetails.PresentModes = new PresentModeKHR[(int)presentationModeCount];
                 for (int index = 0; index < presentationModeCount; index++)
@@ -511,11 +528,13 @@ namespace Automata.Rendering.Vulkan
 
             uint queueFamilyPropertiesCount = 0u;
             VK.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyPropertiesCount, null);
-            VK.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, ref queueFamilyPropertiesCount, out QueueFamilyProperties queueFamilyProperties);
+
+            QueueFamilyProperties* queueFamilyProperties = stackalloc QueueFamilyProperties[(int)queueFamilyPropertiesCount];
+            VK.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyPropertiesCount, queueFamilyProperties);
 
             for (uint index = 0; index < queueFamilyPropertiesCount; index++)
             {
-                QueueFamilyProperties queueFamily = ((QueueFamilyProperties*)&queueFamilyProperties)[index];
+                QueueFamilyProperties queueFamily = queueFamilyProperties[index];
 
                 if (queueFamily.QueueFlags.HasFlag(QueueFlags.QueueGraphicsBit))
                 {
@@ -594,10 +613,13 @@ namespace Automata.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanLogicalDeviceCreationFormat, "assigning logical device instance."));
 
-            if (VK.CreateDevice(_PhysicalDevice, ref deviceCreateInfo, ref *VulkanNullPtrHelper.AllocationCallbacks, out _LogicalDevice)
-                != Result.Success)
+            fixed (Device* logicalDevice = &_LogicalDevice)
             {
-                throw new Exception("Failed to create logical device.");
+                if (VK.CreateDevice(_PhysicalDevice, &deviceCreateInfo, (AllocationCallbacks*)null!, logicalDevice)
+                    != Result.Success)
+                {
+                    throw new Exception("Failed to create logical device.");
+                }
             }
 
             Log.Information(string.Format(_VulkanLogicalDeviceCreationFormat, "assigning graphics queue."));
@@ -605,14 +627,19 @@ namespace Automata.Rendering.Vulkan
 
             Debug.Assert(_QueueFamilyIndices.GraphicsFamily != null);
 
-            VK.GetDeviceQueue(_LogicalDevice, _QueueFamilyIndices.GraphicsFamily.Value, 0, out _GraphicsQueue);
-
+            fixed (Queue* graphicsQueueFixed = &_GraphicsQueue)
+            {
+                VK.GetDeviceQueue(_LogicalDevice, _QueueFamilyIndices.GraphicsFamily.Value, 0, graphicsQueueFixed);
+            }
 
             Log.Information(string.Format(_VulkanLogicalDeviceCreationFormat, "assigning presentation queue."));
 
             Debug.Assert(_QueueFamilyIndices.PresentationFamily != null);
 
-            VK.GetDeviceQueue(_LogicalDevice, _QueueFamilyIndices.PresentationFamily.Value, 0, out _PresentationQueue);
+            fixed (Queue* presentationQueueFixed = &_PresentationQueue)
+            {
+                VK.GetDeviceQueue(_LogicalDevice, _QueueFamilyIndices.PresentationFamily.Value, 0, presentationQueueFixed);
+            }
 
             Log.Information(string.Format(_VulkanLogicalDeviceCreationFormat, "-success-"));
         }
@@ -680,17 +707,35 @@ namespace Automata.Rendering.Vulkan
             {
                 swapChainCreateInfo.ImageSharingMode = SharingMode.Exclusive;
                 swapChainCreateInfo.QueueFamilyIndexCount = 0;
-                swapChainCreateInfo.PQueueFamilyIndices = null;
+                swapChainCreateInfo.PQueueFamilyIndices = (uint*)null!;
             }
 
 
             Log.Information(string.Format(_VulkanSwapChainCreationFormat, "creating swap chain."));
 
-            if (_KHRSwapChain.CreateSwapchain(_LogicalDevice, ref swapChainCreateInfo, ref *VulkanNullPtrHelper.AllocationCallbacks, out _SwapChain)
-                != Result.Success)
+            fixed (SwapchainKHR* swapChainFixed = &_SwapChain)
             {
-                throw new Exception("Failed to create swap chain!");
+                if (_KHRSwapChain.CreateSwapchain(_LogicalDevice, &swapChainCreateInfo, (AllocationCallbacks*)null!, swapChainFixed)
+                    != Result.Success)
+                {
+                    throw new Exception("Failed to create swap chain.");
+                }
             }
+
+            Log.Information(string.Format(_VulkanSwapChainCreationFormat, "getting swap chain images."));
+
+            _KHRSwapChain.GetSwapchainImages(_LogicalDevice, _SwapChain, &minImageCount, (Image*)null!);
+            _SwapChainImages = new Image[minImageCount];
+
+            fixed (Image* swapChainImagesFixed = &_SwapChainImages[0])
+            {
+                _KHRSwapChain.GetSwapchainImages(_LogicalDevice, _SwapChain, &minImageCount, swapChainImagesFixed);
+            }
+
+            Log.Information(string.Format(_VulkanSwapChainCreationFormat, "assigning global state variables."));
+
+            _SwapChainImageFormat = surfaceFormat.Format;
+            _SwapChainExtents = extents;
 
             Log.Information(string.Format(_VulkanSwapChainCreationFormat, "-success-"));
         }
@@ -741,18 +786,70 @@ namespace Automata.Rendering.Vulkan
 
         #endregion
 
+        #region Create Image Views
+
+        private unsafe void CreateImageViews()
+        {
+            Log.Information(string.Format(_VulkanImageViewCreationFormat, "-begin-"));
+
+            _SwapChainImageViews = new ImageView[_SwapChainImages.Length];
+
+            for (int index = 0; index < _SwapChainImageViews.Length; index++)
+            {
+                Log.Information(string.Format(_VulkanImageViewCreationFormat, $"initializing image view creation info ({index})."));
+
+                ImageViewCreateInfo imageViewCreateInfo = new ImageViewCreateInfo
+                {
+                    SType = StructureType.ImageViewCreateInfo,
+                    Image = _SwapChainImages[index],
+                    ViewType = ImageViewType.ImageViewType2D,
+                    Format = _SwapChainImageFormat,
+                    Components = new ComponentMapping(),
+                    SubresourceRange = new ImageSubresourceRange(ImageAspectFlags.ImageAspectColorBit, 0u, 1u, 0u, 1u)
+                };
+
+                Log.Information(string.Format(_VulkanImageViewCreationFormat, $"creating and assigning image view ({index})."));
+
+                fixed (ImageView* swapChainImageViews = &_SwapChainImageViews[index])
+                {
+                    if (VK.CreateImageView(_LogicalDevice, &imageViewCreateInfo, (AllocationCallbacks*)null!, swapChainImageViews)
+                        != Result.Success)
+                    {
+                        throw new Exception($"Failed to create image views for index {index}.");
+                    }
+                }
+            }
+
+
+
+            Log.Information(string.Format(_VulkanImageViewCreationFormat, "-success-"));
+        }
+
+        #endregion
+
+        #region Create Graphics Pipeline
+
+        private unsafe void CreateGraphicsPipeline() {}
+
+        #endregion
+
         public unsafe void DestroyVulkanInstance()
         {
-            _KHRSwapChain.DestroySwapchain(_LogicalDevice, _SwapChain, ref *VulkanNullPtrHelper.AllocationCallbacks);
-            VK.DestroyDevice(_LogicalDevice, null);
+            foreach (ImageView imageView in _SwapChainImageViews)
+            {
+                VK.DestroyImageView(_LogicalDevice, imageView, (AllocationCallbacks*)null!);
+            }
+
+            _KHRSwapChain.DestroySwapchain(_LogicalDevice, _SwapChain, (AllocationCallbacks*)null!);
+            VK.DestroyDevice(_LogicalDevice, (AllocationCallbacks*)null!);
 
             if (_ENABLE_VULKAN_VALIDATION)
             {
-                _ExtDebugUtils.DestroyDebugUtilsMessenger(VKInstance, _DebugMessenger, null);
+                _ExtDebugUtils.DestroyDebugUtilsMessenger(VKInstance, _DebugMessenger, (AllocationCallbacks*)null!);
             }
 
-            _KHRSurface.DestroySurface(VKInstance, _Surface, null);
-            VK.DestroyInstance(VKInstance, null);
+            _KHRSurface.DestroySurface(VKInstance, _Surface, (AllocationCallbacks*)null!);
+            VK.DestroyInstance(VKInstance, (AllocationCallbacks*)null!);
         }
     }
 

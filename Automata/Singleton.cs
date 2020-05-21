@@ -42,6 +42,8 @@ namespace Automata
 
         public static bool TryValidate() => Instance is object;
 
+        protected string _LogFormat { get; } = $"({typeof(T).Name}) {{0}}";
+
         protected void AssignSingletonInstance(T instance)
         {
             if ((_SingletonInstance != default) && (_SingletonInstance != this))
