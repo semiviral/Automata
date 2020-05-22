@@ -4,7 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Windows.Devices.Lights.Effects;
+using Automata.Rendering.DirectX;
 using Automata.Rendering.GLFW;
 using Serilog;
 using Silk.NET.Core.Native;
@@ -14,6 +17,7 @@ using Silk.NET.Vulkan.Extensions.KHR;
 
 #endregion
 
+// ReSharper disable RedundantLogicalConditionalExpressionOperand
 // ReSharper disable HeuristicUnreachableCode
 // ReSharper disable RedundantCast
 
@@ -49,6 +53,8 @@ namespace Automata.Rendering.Vulkan
         private static readonly string _VulkanLogicalDeviceCreationFormat = $"({nameof(VKAPI)}) Creating logical device: {{0}}";
         private static readonly string _VulkanSwapChainCreationFormat = $"({nameof(VKAPI)}) Creating swap chain: {{0}}";
         private static readonly string _VulkanImageViewCreationFormat = $"({nameof(VKAPI)}) Creating image views: {{0}}";
+        private static readonly string _VulkanRenderPassCreationFormat = $"({nameof(VKAPI)}) Creating render pass: {{0}}";
+        private static readonly string _VulkanGraphicsPipelineCreationFormat = $"({nameof(VKAPI)}) Creating graphics pipeline: {{0}}";
 
 
         private readonly string[] _ValidationLayers =
@@ -67,11 +73,11 @@ namespace Automata.Rendering.Vulkan
         };
 
         private Instance _VKInstance;
-        private KhrSurface _KHRSurface;
+        private KhrSurface? _KHRSurface;
         private SurfaceKHR _Surface;
 
         private DebugUtilsMessengerEXT _DebugMessenger;
-        private ExtDebugUtils _ExtDebugUtils;
+        private ExtDebugUtils? _ExtDebugUtils;
 
         private PhysicalDevice _PhysicalDevice;
         private QueueFamilyIndices _QueueFamilyIndices;
@@ -81,13 +87,17 @@ namespace Automata.Rendering.Vulkan
         private Queue _PresentationQueue;
 
         private SwapChainSupportDetails _SwapChainSupportDetails;
-        private KhrSwapchain _KHRSwapChain;
+        private KhrSwapchain? _KHRSwapChain;
         private SwapchainKHR _SwapChain;
         private Format _SwapChainImageFormat;
         private Extent2D _SwapChainExtents;
-        private Image[] _SwapChainImages;
+        private Image[]? _SwapChainImages;
 
-        private ImageView[] _SwapChainImageViews;
+        private ImageView[]? _SwapChainImageViews;
+
+        private RenderPass _RenderPass;
+        private PipelineLayout _PipelineLayout;
+        private Pipeline _GraphicsPipeline;
 
         public Vk VK { get; }
 
@@ -112,6 +122,7 @@ namespace Automata.Rendering.Vulkan
             CreateLogicalDevice();
             CreateSwapChain();
             CreateImageViews();
+            CreateRenderPass();
             CreateGraphicsPipeline();
 
             Log.Information($"({nameof(VKAPI)}) Initializing Vulkan: -success-");
@@ -279,7 +290,7 @@ namespace Automata.Rendering.Vulkan
             DebugUtilsMessengerCreateInfoEXT createInfo = new DebugUtilsMessengerCreateInfoEXT();
             PopulateDebugMessengerCreateInfo(ref createInfo, _MESSAGE_SEVERITY_IMPORTANT);
 
-            Log.Information(string.Format(_VulkanDebugMessengerCreationFormat, "assigning debug messenger instance."));
+            Log.Information(string.Format(_VulkanDebugMessengerCreationFormat, "assigning debug messenger."));
 
 
             fixed (DebugUtilsMessengerEXT* debugMessenger = &_DebugMessenger)
@@ -611,7 +622,7 @@ namespace Automata.Rendering.Vulkan
                 deviceCreateInfo.PpEnabledLayerNames = null;
             }
 
-            Log.Information(string.Format(_VulkanLogicalDeviceCreationFormat, "assigning logical device instance."));
+            Log.Information(string.Format(_VulkanLogicalDeviceCreationFormat, "assigning logical device."));
 
             fixed (Device* logicalDevice = &_LogicalDevice)
             {
@@ -727,7 +738,7 @@ namespace Automata.Rendering.Vulkan
             _KHRSwapChain.GetSwapchainImages(_LogicalDevice, _SwapChain, &minImageCount, (Image*)null!);
             _SwapChainImages = new Image[minImageCount];
 
-            fixed (Image* swapChainImagesFixed = &_SwapChainImages[0])
+            fixed (Image* swapChainImagesFixed = _SwapChainImages)
             {
                 _KHRSwapChain.GetSwapchainImages(_LogicalDevice, _SwapChain, &minImageCount, swapChainImagesFixed);
             }
@@ -821,20 +832,329 @@ namespace Automata.Rendering.Vulkan
             }
 
 
-
             Log.Information(string.Format(_VulkanImageViewCreationFormat, "-success-"));
+        }
+
+        #endregion
+
+        #region Render Pass
+
+        private unsafe void CreateRenderPass()
+        {
+            Log.Information(string.Format(_VulkanRenderPassCreationFormat, "-begin-"));
+
+            Log.Information(string.Format(_VulkanRenderPassCreationFormat, "creating attachment descriptions."));
+
+            AttachmentDescription colorAttachment = new AttachmentDescription
+            {
+                Format = _SwapChainImageFormat,
+                Samples = SampleCountFlags.SampleCount1Bit,
+                LoadOp = AttachmentLoadOp.Clear,
+                StoreOp = AttachmentStoreOp.Store,
+                StencilLoadOp = AttachmentLoadOp.DontCare,
+                StencilStoreOp = AttachmentStoreOp.DontCare,InitialLayout = ImageLayout.Undefined,
+                FinalLayout = ImageLayout.PresentSrcKhr
+            };
+
+            AttachmentReference subpassAttachmentReference = new AttachmentReference
+            {
+                Attachment = 0,
+                Layout = ImageLayout.ColorAttachmentOptimal,
+            };
+
+            SubpassDescription subpassDescription = new SubpassDescription
+            {
+                PipelineBindPoint = PipelineBindPoint.Graphics,
+                ColorAttachmentCount = 1,
+                PColorAttachments = &subpassAttachmentReference
+            };
+
+            Log.Information(string.Format(_VulkanRenderPassCreationFormat, "creating render pass information."));
+
+            RenderPassCreateInfo renderPassCreateInfo = new RenderPassCreateInfo
+            {
+                SType = StructureType.RenderPassCreateInfo,
+                AttachmentCount = 1,
+                PAttachments = &colorAttachment,
+                SubpassCount = 1,
+                PSubpasses = &subpassDescription
+            };
+
+            Log.Information(string.Format(_VulkanRenderPassCreationFormat, "assigning render pass."));
+
+            fixed (RenderPass* renderPassFixed = &_RenderPass)
+            {
+                if (VK.CreateRenderPass(_LogicalDevice, &renderPassCreateInfo, (AllocationCallbacks*)null!, renderPassFixed) != Result.Success)
+                {
+                    throw new Exception("Failed to create render pass.");
+                }
+            }
+
+            Log.Information(string.Format(_VulkanRenderPassCreationFormat, "-success-"));
         }
 
         #endregion
 
         #region Create Graphics Pipeline
 
-        private unsafe void CreateGraphicsPipeline() {}
+        private unsafe void CreateGraphicsPipeline()
+        {
+            Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "-begin-"));
+
+            Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "loading default shaders."));
+
+            ShaderModule vertexShader = CreateShaderModule((byte[])GLSLXPLR.Instance.DefaultVertexShader);
+            ShaderModule fragmentShader = CreateShaderModule((byte[])GLSLXPLR.Instance.DefaultFragmentShader);
+
+            Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "creating shader stage information."));
+
+            PipelineShaderStageCreateInfo vertexShaderStageCreateInfo = new PipelineShaderStageCreateInfo
+            {
+                SType = StructureType.PipelineShaderStageCreateInfo,
+                Stage = ShaderStageFlags.ShaderStageVertexBit,
+                PName = (byte*)SilkMarshal.MarshalStringToPtr("main"),
+                Module = vertexShader,
+                PSpecializationInfo = null
+            };
+
+            PipelineShaderStageCreateInfo fragmentShaderStageCreateInfo = new PipelineShaderStageCreateInfo
+            {
+                SType = StructureType.PipelineShaderStageCreateInfo,
+                Stage = ShaderStageFlags.ShaderStageFragmentBit,
+                PName = (byte*)SilkMarshal.MarshalStringToPtr("main"),
+                Module = fragmentShader,
+                PSpecializationInfo = null
+            };
+
+            PipelineShaderStageCreateInfo* shaderStages = stackalloc[]
+            {
+                vertexShaderStageCreateInfo,
+                fragmentShaderStageCreateInfo
+            };
+
+
+            Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "creating vertex stage information."));
+
+            PipelineVertexInputStateCreateInfo vertexInputStateCreateInfo = new PipelineVertexInputStateCreateInfo
+            {
+                SType = StructureType.PipelineVertexInputStateCreateInfo,
+                VertexAttributeDescriptionCount = 0,
+                PVertexAttributeDescriptions = null,
+                VertexBindingDescriptionCount = 0,
+                PVertexBindingDescriptions = null
+            };
+
+            Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "creating assembly stage information."));
+
+            PipelineInputAssemblyStateCreateInfo assemblyStateCreateInfo = new PipelineInputAssemblyStateCreateInfo
+            {
+                SType = StructureType.PipelineInputAssemblyStateCreateInfo,
+                Topology = PrimitiveTopology.TriangleList,
+                PrimitiveRestartEnable = Vk.False
+            };
+
+            Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "creating viewport information."));
+
+            Viewport viewport = new Viewport
+            {
+                X = 0f,
+                Y = 0f,
+                Width = (float)_SwapChainExtents.Width,
+                Height = (float)_SwapChainExtents.Height,
+                MinDepth = 0f,
+                MaxDepth = 1f
+            };
+
+            Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "creating viewport scissor information."));
+
+            Rect2D scissor = new Rect2D
+            {
+                Offset = new Offset2D(0, 0),
+                Extent = _SwapChainExtents
+            };
+
+            Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "aggregating viewport state information."));
+
+            PipelineViewportStateCreateInfo viewportStateCreateInfo = new PipelineViewportStateCreateInfo
+            {
+                SType = StructureType.PipelineViewportStateCreateInfo,
+                ViewportCount = 1,
+                PViewports = &viewport,
+                ScissorCount = 1,
+                PScissors = &scissor
+            };
+
+
+            Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "creating rasterization information."));
+
+            PipelineRasterizationStateCreateInfo rasterizationStateCreateInfo = new PipelineRasterizationStateCreateInfo
+            {
+                SType = StructureType.PipelineRasterizationStateCreateInfo,
+                DepthClampEnable = Vk.False,
+                PolygonMode = PolygonMode.Fill,
+                LineWidth = 1f,
+                CullMode = CullModeFlags.CullModeBackBit,
+                FrontFace = FrontFace.Clockwise,
+                DepthBiasEnable = Vk.False,
+                DepthBiasConstantFactor = 0f,
+                DepthBiasClamp = 0f,
+                DepthBiasSlopeFactor = 0f,
+            };
+
+
+            Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "creating multisampling information."));
+
+            PipelineMultisampleStateCreateInfo multisampleStateCreateInfo = new PipelineMultisampleStateCreateInfo
+            {
+                SType = StructureType.PipelineMultisampleStateCreateInfo,
+                SampleShadingEnable = Vk.False,
+                RasterizationSamples = SampleCountFlags.SampleCount1Bit,
+                MinSampleShading = 1f,
+                PSampleMask = null,
+                AlphaToCoverageEnable = Vk.False,
+                AlphaToOneEnable = Vk.False
+            };
+
+
+            Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "creating color blender information."));
+
+            PipelineColorBlendAttachmentState colorBlendAttachmentState = new PipelineColorBlendAttachmentState
+            {
+                ColorWriteMask = ColorComponentFlags.ColorComponentRBit
+                                 | ColorComponentFlags.ColorComponentGBit
+                                 | ColorComponentFlags.ColorComponentBBit
+                                 | ColorComponentFlags.ColorComponentABit,
+                BlendEnable                = Vk.False,
+                SrcColorBlendFactor = BlendFactor.One,
+                DstColorBlendFactor = BlendFactor.Zero,
+                ColorBlendOp = BlendOp.Add,
+                SrcAlphaBlendFactor = BlendFactor.One,
+                DstAlphaBlendFactor = BlendFactor.Zero,
+                AlphaBlendOp = BlendOp.Add
+            };
+
+            PipelineColorBlendStateCreateInfo colorBlendStateCreateInfo = new PipelineColorBlendStateCreateInfo
+            {
+                SType = StructureType.PipelineColorBlendStateCreateInfo,
+                LogicOpEnable = Vk.False,
+                LogicOp = LogicOp.Copy,
+                AttachmentCount = 1,
+                PAttachments = &colorBlendAttachmentState,
+            };
+
+            colorBlendStateCreateInfo.BlendConstants[0] =
+                colorBlendStateCreateInfo.BlendConstants[1] =
+                    colorBlendStateCreateInfo.BlendConstants[2] =
+                        colorBlendStateCreateInfo.BlendConstants[3] = 0.0f;
+
+            Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "configuring dynamic state."));
+
+            DynamicState* dynamicStates = stackalloc[]
+            {
+                DynamicState.Viewport
+            };
+
+            PipelineDynamicStateCreateInfo dynamicStateCreateInfo = new PipelineDynamicStateCreateInfo
+            {
+                SType = StructureType.PipelineDynamicStateCreateInfo,
+                DynamicStateCount = 1,
+                PDynamicStates = dynamicStates
+            };
+
+            Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "creating pipeline layout information."));
+
+            PipelineLayoutCreateInfo pipelineLayoutCreateInfo = new PipelineLayoutCreateInfo
+            {
+                SType = StructureType.PipelineLayoutCreateInfo,
+                SetLayoutCount = 0,
+                PSetLayouts = null,
+                PushConstantRangeCount = 0,
+                PPushConstantRanges = null
+            };
+
+            Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "assigning pipeline layout."));
+
+            fixed (PipelineLayout* pipelineLayoutFixed = &_PipelineLayout)
+            {
+                if (VK.CreatePipelineLayout(_LogicalDevice, &pipelineLayoutCreateInfo, (AllocationCallbacks*)null!, pipelineLayoutFixed)
+                    != Result.Success)
+                {
+                    throw new Exception("Failed to create pipeline layout.");
+                }
+            }
+
+            Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "creating final graphics pipeline."));
+
+            GraphicsPipelineCreateInfo graphicsPipelineCreateInfo = new GraphicsPipelineCreateInfo
+            {
+                SType = StructureType.GraphicsPipelineCreateInfo,
+                StageCount = 2,
+                PStages = shaderStages,
+                PVertexInputState = &vertexInputStateCreateInfo,
+                PInputAssemblyState = &assemblyStateCreateInfo,
+                PViewportState = &viewportStateCreateInfo,
+                PRasterizationState = &rasterizationStateCreateInfo,
+                PMultisampleState = &multisampleStateCreateInfo,
+                PDepthStencilState = null,
+                PColorBlendState = &colorBlendStateCreateInfo,
+                PDynamicState = null,
+                Layout = _PipelineLayout,
+                RenderPass = _RenderPass,
+                Subpass = 0,
+                BasePipelineHandle = default,
+                BasePipelineIndex = -1
+            };
+
+            Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "assigning graphics pipeline."));
+
+            fixed (Pipeline* graphicsPipelineFixed = &_GraphicsPipeline)
+            {
+                if (VK.CreateGraphicsPipelines(_LogicalDevice, default, 1, &graphicsPipelineCreateInfo, (AllocationCallbacks*)null!,
+                        graphicsPipelineFixed)
+                    != Result.Success)
+                {
+                    throw new Exception("Failed to create graphics pipeline.");
+                }
+            }
+
+            Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "destroying shader modules."));
+
+            VK.DestroyShaderModule(_LogicalDevice, vertexShader, (AllocationCallbacks*)null!);
+            VK.DestroyShaderModule(_LogicalDevice, fragmentShader, (AllocationCallbacks*)null!);
+
+            Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "-success-"));
+        }
+
+        private unsafe ShaderModule CreateShaderModule(byte[] byteCode)
+        {
+            ShaderModuleCreateInfo shaderModuleCreateInfo = new ShaderModuleCreateInfo
+            {
+                SType = StructureType.ShaderModuleCreateInfo,
+                CodeSize = (UIntPtr)byteCode.Length,
+            };
+
+            fixed (byte* byteCodeFixed = byteCode)
+            {
+                shaderModuleCreateInfo.PCode = (uint*)byteCodeFixed;
+            }
+
+            ShaderModule shaderModule;
+            if (VK.CreateShaderModule(_LogicalDevice, &shaderModuleCreateInfo, (AllocationCallbacks*)null!, &shaderModule) != Result.Success)
+            {
+                throw new Exception("Failed to create shader module.");
+            }
+
+            return shaderModule;
+        }
 
         #endregion
 
         public unsafe void DestroyVulkanInstance()
         {
+            VK.DestroyPipeline(_LogicalDevice, _GraphicsPipeline, (AllocationCallbacks*)null!);
+            VK.DestroyRenderPass(_LogicalDevice, _RenderPass, (AllocationCallbacks*)null!);
+            VK.DestroyPipelineLayout(_LogicalDevice, _PipelineLayout, (AllocationCallbacks*)null!);
+
             foreach (ImageView imageView in _SwapChainImageViews)
             {
                 VK.DestroyImageView(_LogicalDevice, imageView, (AllocationCallbacks*)null!);
@@ -850,6 +1170,11 @@ namespace Automata.Rendering.Vulkan
 
             _KHRSurface.DestroySurface(VKInstance, _Surface, (AllocationCallbacks*)null!);
             VK.DestroyInstance(VKInstance, (AllocationCallbacks*)null!);
+        }
+
+        ~VKAPI()
+        {
+            DestroyVulkanInstance();
         }
     }
 

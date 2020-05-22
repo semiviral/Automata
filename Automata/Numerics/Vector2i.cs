@@ -21,7 +21,7 @@ namespace Automata.Numerics
     [StructLayout(LayoutKind.Sequential)]
     public readonly partial struct Vector2i
     {
-        #region Members
+        #region Fields / Properties
 
         public static Vector2i Zero { get; } = new Vector2i(0);
         public static Vector2i One { get; } = new Vector2i(1);

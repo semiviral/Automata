@@ -18,7 +18,7 @@ namespace Automata.Numerics
     [StructLayout(LayoutKind.Sequential)]
     public readonly partial struct Vector3b
     {
-        #region Members
+        #region Fields / Properties
 
         private readonly int _X;
         private readonly int _Y;

@@ -19,7 +19,7 @@ namespace Automata.Numerics
     [StructLayout(LayoutKind.Sequential)]
     public readonly partial struct Vector3i
     {
-        #region Members
+        #region Fields / Properties
 
         public static Vector3i Zero { get; } = new Vector3i(0);
         public static Vector3i One { get; } = new Vector3i(1);

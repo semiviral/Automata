@@ -16,7 +16,7 @@ namespace Automata.Numerics
     [StructLayout(LayoutKind.Sequential)]
     public readonly partial struct Vector3d
     {
-        #region Members
+        #region Fields / Properties
 
         public static Vector3d Zero { get; } = new Vector3d(0d);
         public static Vector3d One { get; } = new Vector3d(1d);
