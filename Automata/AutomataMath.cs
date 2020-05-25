@@ -19,6 +19,7 @@ namespace Automata
         public static float ToRadians(float degrees) => degrees * ((float)Math.PI / 180f);
         public static Vector3 ToRadians(Vector3 degrees) => new Vector3(ToRadians(degrees.X), ToRadians(degrees.Y), ToRadians(degrees.Z));
 
+        // row major
         public static IEnumerable<float> UnrollMatrix4x4(Matrix4x4 matrix)
         {
             yield return matrix.M11;
@@ -36,6 +37,26 @@ namespace Automata
             yield return matrix.M41;
             yield return matrix.M42;
             yield return matrix.M43;
+            yield return matrix.M44;
+        }
+
+        public static IEnumerable<float> UnrollMatrix4x4ColumnMajor(Matrix4x4 matrix)
+        {
+            yield return matrix.M11;
+            yield return matrix.M21;
+            yield return matrix.M31;
+            yield return matrix.M41;
+            yield return matrix.M12;
+            yield return matrix.M22;
+            yield return matrix.M31;
+            yield return matrix.M42;
+            yield return matrix.M13;
+            yield return matrix.M23;
+            yield return matrix.M33;
+            yield return matrix.M43;
+            yield return matrix.M14;
+            yield return matrix.M24;
+            yield return matrix.M34;
             yield return matrix.M44;
         }
 

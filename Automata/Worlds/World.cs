@@ -14,9 +14,7 @@ namespace Automata.Worlds
 {
     public class World
     {
-        private static readonly Stopwatch _DeltaTimer;
 
-        private static readonly TimeSpan _MinimumFrameTime = TimeSpan.FromSeconds(1d / 72d);
 
         private static Dictionary<string, World> Worlds { get; }
 
@@ -26,8 +24,6 @@ namespace Automata.Worlds
 
         static World()
         {
-            _DeltaTimer = new Stopwatch();
-
             Worlds = new Dictionary<string, World>();
         }
 
@@ -59,21 +55,14 @@ namespace Automata.Worlds
 
         public static void TryGetWorld(string name, out World? world) => Worlds.TryGetValue(name, out world);
 
-        public static void GlobalUpdate()
+        public static void GlobalUpdate(TimeSpan delta)
         {
-            TimeSpan delta = _DeltaTimer.Elapsed;
-            _DeltaTimer.Restart();
-
             foreach ((string _, World world) in Worlds.Where(kvp => kvp.Value.Active))
             {
                 Debug.Assert(world.Active, "World must be active to update.");
 
                 world.Update(delta);
             }
-
-            TimeSpan frameWait = _MinimumFrameTime - _DeltaTimer.Elapsed;
-
-            Thread.Sleep(frameWait < TimeSpan.Zero ? TimeSpan.Zero : frameWait);
         }
 
         private void RegisterDefaultSystems()

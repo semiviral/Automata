@@ -43,8 +43,11 @@ namespace Automata.Rendering
 
         private void DrawFrame() { }
 
+        private double rotationValue;
+
         public override unsafe void Update(EntityManager entityManager, TimeSpan delta)
         {
+            rotationValue += delta.TotalSeconds;
             try
             {
                 _GL.ClearColor(0f, 0f, 0f, 1f);
@@ -71,14 +74,14 @@ namespace Automata.Rendering
 
                         Matrix4x4 model = Matrix4x4.Identity;
 
-                        if (entity.TryGetComponent(out Rotation rotation))
-                        {
-                            model *= Matrix4x4.CreateFromQuaternion(rotation.Value);
-                        }
-
                         if (entity.TryGetComponent(out Scale scale))
                         {
                             model *= Matrix4x4.CreateScale(scale.Value);
+                        }
+
+                        if (entity.TryGetComponent(out Rotation rotation))
+                        {
+                            model *= Matrix4x4.CreateLookAt(Vector3.Zero, new Vector3((float)Math.Cos(rotationValue), 0f, (float)Math.Sin(rotationValue)), Vector3.UnitY);
                         }
 
                         if (entity.TryGetComponent(out Translation translation))

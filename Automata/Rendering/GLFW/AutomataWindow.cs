@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Threading;
 using Automata.Numerics;
 using Automata.Worlds;
 using Serilog;
@@ -15,7 +16,11 @@ namespace Automata.Rendering.GLFW
 {
     public class AutomataWindow : Singleton<AutomataWindow>
     {
+        private readonly Stopwatch _DeltaTimer;
+
         private IWindow? _Window;
+        private TimeSpan _MinimumFrameTime;
+
 
         public IWindow Window
         {
@@ -57,11 +62,17 @@ namespace Automata.Rendering.GLFW
         public AutomataWindow()
         {
             AssignSingletonInstance(this);
+
+            _DeltaTimer = new Stopwatch();
         }
 
         public void CreateWindow(WindowOptions windowOptions)
         {
             _Window = Silk.NET.Windowing.Window.Create(windowOptions);
+
+            _MinimumFrameTime = Window.Monitor?.VideoMode.RefreshRate != null
+                ? TimeSpan.FromSeconds(1d / _Window.Monitor.VideoMode.RefreshRate.Value)
+                : TimeSpan.FromSeconds(1d / 72d);
         }
 
         public void Run()
@@ -75,12 +86,24 @@ namespace Automata.Rendering.GLFW
                         Window.Close();
                     }
 
+                    TimeSpan delta = _DeltaTimer.Elapsed;
+                    _DeltaTimer.Restart();
+
+#if DEBUG
+
+                    Window.Title = $"Automata ({1d / delta.TotalSeconds:00})";
+
+#endif
+
                     Window.DoEvents();
 
                     if (!Window.IsClosing)
                     {
-                        World.GlobalUpdate();
+                        World.GlobalUpdate(delta);
                     }
+
+                    TimeSpan frameWait = _MinimumFrameTime - _DeltaTimer.Elapsed;
+                    Thread.Sleep(frameWait <= TimeSpan.Zero ? TimeSpan.Zero : frameWait);
                 }
             }
             catch (Exception ex)

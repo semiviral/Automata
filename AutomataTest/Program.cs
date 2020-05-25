@@ -145,14 +145,14 @@ namespace AutomataTest
             Entity chunk = new Entity();
             world.EntityManager.RegisterEntity(chunk);
             world.EntityManager.RegisterComponent<Translation>(chunk);
-            // world.EntityManager.RegisterComponent(chunk, new Rotation
-            // {
-            //     Value = Quaternion.CreateFromRotationMatrix(Matrix4x4.CreateLookAt(Vector3.Zero, new Vector3(1f, 0f, 1f), Vector3.UnitY))
-            // });
-            // world.EntityManager.RegisterComponent(chunk, new Scale
-            // {
-            //     Value = 0.5f
-            // });
+            world.EntityManager.RegisterComponent(chunk, new Rotation
+            {
+                Value = Quaternion.CreateFromRotationMatrix(Matrix4x4.CreateLookAt(Vector3.Zero, new Vector3(1f, 0f, 1f), Vector3.UnitY))
+            });
+            world.EntityManager.RegisterComponent(chunk, new Scale
+            {
+                Value = 3f
+            });
             world.EntityManager.RegisterComponent(chunk, new ChunkState
             {
                 Value = GenerationState.Unbuilt

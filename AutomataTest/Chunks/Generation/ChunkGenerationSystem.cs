@@ -165,8 +165,8 @@ namespace AutomataTest.Chunks.Generation
                             }
 
                             packedMesh.VertexArrayObject.VertexAttributePointer(0, 1, VertexAttribPointerType.Int, 1, 0);
-                            packedMesh.VertexesBuffer.SetBufferData(pendingMesh.Vertexes.ToArray());
-                            packedMesh.IndexesBuffer.SetBufferData(pendingMesh.Indexes.ToArray());
+                            packedMesh.VertexesBuffer.SetBufferData(GenerationConstants.VertexesByIteration.SelectMany(vert => vert).ToArray());
+                            packedMesh.IndexesBuffer.SetBufferData(Enumerable.Repeat(GenerationConstants.TriangleIndexes, 6).SelectMany(tri => tri).ToArray());
 
                             chunkMeshingJob.ClearData();
                             _ChunkMeshers.TryAdd(chunkMeshingJob);
