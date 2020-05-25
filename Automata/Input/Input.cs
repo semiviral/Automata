@@ -6,7 +6,9 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using Automata.Rendering.GLFW;
+using Automata.Rendering.OpenGL;
 using Silk.NET.Input;
 using Silk.NET.Input.Common;
 using Silk.NET.Windowing.Common;
@@ -36,8 +38,6 @@ namespace Automata.Input
 
             _Keyboards = new List<IKeyboard>();
             _Mice = new List<IMouse>();
-
-            AutomataWindow.Validate();
 
             Debug.Assert(AutomataWindow.Instance != null);
             Debug.Assert(AutomataWindow.Instance.Window != null);
@@ -102,22 +102,22 @@ namespace Automata.Input
 
             PointF pointerPosition = _Mice[mouseIndex].Position;
 
-            return new Vector2(pointerPosition.X, pointerPosition.Y) - ((Vector2)AutomataWindow.Instance.Size / 2f);
+            return Unsafe.As<PointF, Vector2>(ref pointerPosition) - ((Vector2)AutomataWindow.Instance.Size / 2f);
         }
 
         public void SetMousePositionRelative(int mouseIndex, Vector2 position)
         {
+            Debug.Assert(AutomataWindow.Instance != null);
+            Debug.Assert(AutomataWindow.Instance.Window != null);
+
             if ((mouseIndex < 0) || (mouseIndex >= _Mice.Count))
             {
                 throw new IndexOutOfRangeException(nameof(mouseIndex));
             }
 
-            Debug.Assert(AutomataWindow.Instance != null);
-            Debug.Assert(AutomataWindow.Instance.Window != null);
-
             position += (Vector2)AutomataWindow.Instance.Size / 2f;
 
-            _Mice[mouseIndex].Position = new PointF(position.X, position.Y);
+            _Mice[mouseIndex].Position = Unsafe.As<Vector2, PointF>(ref position);
         }
 
 

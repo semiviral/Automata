@@ -25,11 +25,6 @@ namespace Automata.Rendering
                 typeof(Rotation)
             };
 
-            AutomataWindow.Validate();
-
-            Debug.Assert(AutomataWindow.Instance != null);
-            Debug.Assert(AutomataWindow.Instance.Window != null);
-
             GameWindowResized(AutomataWindow.Instance.Window.Size);
             AutomataWindow.Instance.Window.Resize += GameWindowResized;
         }

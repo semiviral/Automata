@@ -21,9 +21,15 @@ namespace Automata.Rendering
                 typeof(PackedMesh)
             };
 
-            GLAPI.Validate();
             _GL = GLAPI.Instance.GL;
+
+            // enable depth testing
             _GL.Enable(GLEnum.DepthTest);
+
+            // enable and configure face culling
+            _GL.Enable(GLEnum.CullFace);
+            _GL.FrontFace(FrontFaceDirection.CW);
+            _GL.CullFace(CullFaceMode.Back);
         }
 
         public override void Registered() { }

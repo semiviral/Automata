@@ -32,8 +32,7 @@ namespace Automata.Rendering.GLFW
             }
             set =>
                 throw new InvalidOperationException(
-                    $"Property '{nameof(Window)}' cannot be set. "
-                    + $"Use '{nameof(CreateWindow)}' or one of its overloads instead."
+                    $"Property '{nameof(Window)}' cannot be set. Use '{nameof(CreateWindow)}' or one of its overloads instead."
                 );
         }
 

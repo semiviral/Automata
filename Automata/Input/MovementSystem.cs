@@ -20,8 +20,6 @@ namespace Automata.Input
                 typeof(Translation),
                 typeof(Rotation)
             };
-
-            Input.Validate();
         }
 
         public override void Update(EntityManager entityManager, TimeSpan delta)
