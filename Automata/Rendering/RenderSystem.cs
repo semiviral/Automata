@@ -28,6 +28,8 @@ namespace Automata.Rendering
 
         public override void Registered() { }
 
+        private void DrawFrame() { }
+
         public override unsafe void Update(EntityManager entityManager, TimeSpan delta)
         {
             try

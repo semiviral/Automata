@@ -40,7 +40,7 @@ namespace Automata
             }
         }
 
-        public static bool TryValidate() => Instance is object;
+        public static bool TryValidate() => _Instance is object;
 
         protected string _LogFormat { get; } = $"({typeof(T).Name}) {{0}}";
 

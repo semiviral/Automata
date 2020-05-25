@@ -7,7 +7,6 @@ using Automata;
 using Automata.Input;
 using Automata.Numerics;
 using Automata.Rendering;
-using Automata.Rendering.DirectX;
 using Automata.Rendering.GLFW;
 using Automata.Rendering.OpenGL;
 using Automata.Rendering.Vulkan;
@@ -18,7 +17,6 @@ using AutomataTest.Chunks.Generation;
 using Serilog;
 using Serilog.Events;
 using Silk.NET.Windowing.Common;
-using Vortice.Dxc;
 
 #endregion
 
@@ -47,10 +45,8 @@ namespace AutomataTest
 
         private static void InitializeSingletons()
         {
-            Singleton.CreateSingleton<GLSLXPLR>();
-
-            WindowOptions options = WindowOptions.DefaultVulkan;
-            options.Title = "Wyd: A Journey";
+            WindowOptions options = WindowOptions.Default;
+            options.Title = "Automata";
             options.Size = new Size(800, 600);
             options.Position = new Point(500, 400);
             options.VSync = VSyncMode.Off;
@@ -60,8 +56,7 @@ namespace AutomataTest
             AutomataWindow.Instance.Window.Closing += OnClose;
             AutomataWindow.Instance.Window.Initialize();
 
-            Singleton.CreateSingleton<VKAPI>();
-            VKAPI.Instance.DefaultInitialize();
+            Singleton.CreateSingleton<GLAPI>();
 
             Singleton.CreateSingleton<Diagnostics>();
             Diagnostics.Instance.RegisterDiagnosticTimeEntry("NoiseRetrieval");
@@ -159,8 +154,10 @@ namespace AutomataTest
 
         private static void OnClose()
         {
-            VKAPI.Instance.DestroyVulkanInstance();
-            //SystemManager.Destroy();
+            if (VKAPI.TryValidate())
+            {
+                VKAPI.Instance.DestroyVulkanInstance();
+            }
         }
     }
 }

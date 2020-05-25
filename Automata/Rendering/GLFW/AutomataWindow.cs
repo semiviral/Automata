@@ -4,6 +4,7 @@ using System;
 using System.Diagnostics;
 using Automata.Numerics;
 using Automata.Worlds;
+using Serilog;
 using Silk.NET.Core.Contexts;
 using Silk.NET.Input.Common;
 using Silk.NET.Windowing.Common;
@@ -66,16 +67,27 @@ namespace Automata.Rendering.GLFW
 
         public void Run()
         {
-            if (Input.Input.Instance.IsKeyPressed(Key.Escape))
+            try
             {
-                Window.Close();
+                while (!Window.IsClosing)
+                {
+                    if (Input.Input.Instance.IsKeyPressed(Key.Escape))
+                    {
+                        Window.Close();
+                    }
+
+                    Window.DoEvents();
+
+                    if (!Window.IsClosing)
+                    {
+                        World.GlobalUpdate();
+                    }
+                }
             }
-
-            Window.DoEvents();
-
-            if (!Window.IsClosing)
+            catch (Exception ex)
             {
-                World.GlobalUpdate();
+                Log.Error(string.Format(_LogFormat, $"exception occured: {ex}"));
+                throw;
             }
         }
     }

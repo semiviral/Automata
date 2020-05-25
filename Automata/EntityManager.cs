@@ -73,7 +73,7 @@ namespace Automata
                 RegisterComponent(entity, entity.GetComponent(type));
             }
 
-            Log.Verbose($"{nameof(EntityManager)} registered new {nameof(IEntity)} '{entity.ID}' (#{Entities.Count}).");
+            Log.Verbose($"{nameof(EntityManager)} registered new {nameof(IEntity)} '{entity.ID}'.");
         }
 
         /// <summary>

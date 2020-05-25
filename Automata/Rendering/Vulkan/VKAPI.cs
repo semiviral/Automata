@@ -4,9 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Windows.Devices.Lights.Effects;
 using Automata.Rendering.DirectX;
 using Automata.Rendering.GLFW;
 using Serilog;
@@ -30,6 +28,8 @@ namespace Automata.Rendering.Vulkan
 #else
         private const bool _ENABLE_VULKAN_VALIDATION = false;
 #endif
+
+        private const int _MAX_FRAMES_IN_FLIGHT = 2;
 
         private const DebugUtilsMessageSeverityFlagsEXT _MESSAGE_SEVERITY_ALL =
             DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityErrorBitExt
@@ -55,6 +55,10 @@ namespace Automata.Rendering.Vulkan
         private static readonly string _VulkanImageViewCreationFormat = $"({nameof(VKAPI)}) Creating image views: {{0}}";
         private static readonly string _VulkanRenderPassCreationFormat = $"({nameof(VKAPI)}) Creating render pass: {{0}}";
         private static readonly string _VulkanGraphicsPipelineCreationFormat = $"({nameof(VKAPI)}) Creating graphics pipeline: {{0}}";
+        private static readonly string _VulkanFramebuffersCreationFormat = $"({nameof(VKAPI)}) Creating frame buffers: {{0}}";
+        private static readonly string _VulkanCommandPoolCreationFormat = $"({nameof(VKAPI)}) Creating command pool: {{0}}";
+        private static readonly string _VulkanCommandBuffersCreationFormat = $"({nameof(VKAPI)}) Creating command buffers: {{0}}";
+        private static readonly string _VulkanSemaphoreCreationFormat = $"({nameof(VKAPI)}) Creating semaphores: {{0}}";
 
 
         private readonly string[] _ValidationLayers =
@@ -98,6 +102,15 @@ namespace Automata.Rendering.Vulkan
         private RenderPass _RenderPass;
         private PipelineLayout _PipelineLayout;
         private Pipeline _GraphicsPipeline;
+        private Framebuffer[] _SwapChainFramebuffers;
+
+        private CommandPool _CommandPool;
+        private CommandBuffer[] _CommandBuffers;
+
+        private Semaphore[] _ImageAvailableSemaphores;
+        private Semaphore[] _RenderFinishedSemaphores;
+
+        private int _CurrentFrame;
 
         public Vk VK { get; }
 
@@ -124,8 +137,81 @@ namespace Automata.Rendering.Vulkan
             CreateImageViews();
             CreateRenderPass();
             CreateGraphicsPipeline();
+            CreateFramebuffers();
+            CreateCommandPool();
+            CreateCommandBuffers();
+            CreateSemaphores();
 
             Log.Information($"({nameof(VKAPI)}) Initializing Vulkan: -success-");
+        }
+
+        public unsafe void DrawFrame()
+        {
+            Debug.Assert(_KHRSwapChain != null, "Field should already be initialized.");
+
+            uint imageIndex = 0u;
+
+            _KHRSwapChain.AcquireNextImage(_LogicalDevice, _SwapChain, ulong.MaxValue, _ImageAvailableSemaphores[_CurrentFrame], default,
+                &imageIndex);
+
+            Semaphore* waitSemaphores = stackalloc[]
+            {
+                _ImageAvailableSemaphores[_CurrentFrame]
+            };
+
+            Semaphore* signalSemaphores = stackalloc[]
+            {
+                _RenderFinishedSemaphores[_CurrentFrame]
+            };
+
+            PipelineStageFlags* waitStages = stackalloc[]
+            {
+                PipelineStageFlags.PipelineStageColorAttachmentOutputBit
+            };
+
+            SubmitInfo submitInfo = new SubmitInfo
+            {
+                SType = StructureType.SubmitInfo,
+                WaitSemaphoreCount = 1,
+                PWaitSemaphores = waitSemaphores,
+                PWaitDstStageMask = waitStages,
+                SignalSemaphoreCount = 1,
+                PSignalSemaphores = signalSemaphores
+            };
+
+            fixed (CommandBuffer* commandBufferFixed = &_CommandBuffers[imageIndex])
+            {
+                submitInfo.CommandBufferCount = 1;
+                submitInfo.PCommandBuffers = commandBufferFixed;
+            }
+
+            if (VK.QueueSubmit(_GraphicsQueue, 1, &submitInfo, default) != Result.Success)
+            {
+                throw new Exception("Failed to submit draw command to command buffer.");
+            }
+
+            PresentInfoKHR presentInfo = new PresentInfoKHR
+            {
+                SType = StructureType.PresentInfoKhr,
+                WaitSemaphoreCount = 1,
+                PWaitSemaphores = signalSemaphores,
+            };
+
+            fixed (SwapchainKHR* swapChainFixed = &_SwapChain)
+            {
+                presentInfo.SwapchainCount = 1;
+                presentInfo.PSwapchains = swapChainFixed;
+                presentInfo.PImageIndices = &imageIndex;
+            }
+
+            presentInfo.PResults = null;
+
+            _KHRSwapChain.QueuePresent(_PresentationQueue, &presentInfo);
+
+            VK.QueueWaitIdle(_PresentationQueue);
+            VK.DeviceWaitIdle(_LogicalDevice);
+
+            _CurrentFrame = (_CurrentFrame + 1) % _MAX_FRAMES_IN_FLIGHT;
         }
 
         #region Create Instance
@@ -852,7 +938,8 @@ namespace Automata.Rendering.Vulkan
                 LoadOp = AttachmentLoadOp.Clear,
                 StoreOp = AttachmentStoreOp.Store,
                 StencilLoadOp = AttachmentLoadOp.DontCare,
-                StencilStoreOp = AttachmentStoreOp.DontCare,InitialLayout = ImageLayout.Undefined,
+                StencilStoreOp = AttachmentStoreOp.DontCare,
+                InitialLayout = ImageLayout.Undefined,
                 FinalLayout = ImageLayout.PresentSrcKhr
             };
 
@@ -869,6 +956,18 @@ namespace Automata.Rendering.Vulkan
                 PColorAttachments = &subpassAttachmentReference
             };
 
+            Log.Information(string.Format(_VulkanRenderPassCreationFormat, "creating subpass dependency information."));
+
+            SubpassDependency subpassDependency = new SubpassDependency
+            {
+                SrcSubpass = Vk.SubpassExternal,
+                DstSubpass = 0,
+                SrcStageMask = PipelineStageFlags.PipelineStageColorAttachmentOutputBit,
+                SrcAccessMask = 0,
+                DstStageMask = PipelineStageFlags.PipelineStageColorAttachmentOutputBit,
+                DstAccessMask = AccessFlags.AccessColorAttachmentWriteBit
+            };
+
             Log.Information(string.Format(_VulkanRenderPassCreationFormat, "creating render pass information."));
 
             RenderPassCreateInfo renderPassCreateInfo = new RenderPassCreateInfo
@@ -877,7 +976,9 @@ namespace Automata.Rendering.Vulkan
                 AttachmentCount = 1,
                 PAttachments = &colorAttachment,
                 SubpassCount = 1,
-                PSubpasses = &subpassDescription
+                PSubpasses = &subpassDescription,
+                DependencyCount = 1,
+                PDependencies = &subpassDependency
             };
 
             Log.Information(string.Format(_VulkanRenderPassCreationFormat, "assigning render pass."));
@@ -889,6 +990,7 @@ namespace Automata.Rendering.Vulkan
                     throw new Exception("Failed to create render pass.");
                 }
             }
+
 
             Log.Information(string.Format(_VulkanRenderPassCreationFormat, "-success-"));
         }
@@ -969,7 +1071,7 @@ namespace Automata.Rendering.Vulkan
 
             Rect2D scissor = new Rect2D
             {
-                Offset = new Offset2D(0, 0),
+                Offset = new Offset2D(0),
                 Extent = _SwapChainExtents
             };
 
@@ -1024,7 +1126,7 @@ namespace Automata.Rendering.Vulkan
                                  | ColorComponentFlags.ColorComponentGBit
                                  | ColorComponentFlags.ColorComponentBBit
                                  | ColorComponentFlags.ColorComponentABit,
-                BlendEnable                = Vk.False,
+                BlendEnable = Vk.False,
                 SrcColorBlendFactor = BlendFactor.One,
                 DstColorBlendFactor = BlendFactor.Zero,
                 ColorBlendOp = BlendOp.Add,
@@ -1149,8 +1251,221 @@ namespace Automata.Rendering.Vulkan
 
         #endregion
 
+        #region Create Framebuffers
+
+        private unsafe void CreateFramebuffers()
+        {
+            Debug.Assert(_SwapChainImageViews != null, $"{nameof(_SwapChainImageViews)} should have already been initialized.");
+
+            Log.Information(string.Format(_VulkanFramebuffersCreationFormat, "-begin-"));
+
+            Log.Information(string.Format(_VulkanFramebuffersCreationFormat, "resizing framebuffer array."));
+
+            _SwapChainFramebuffers = new Framebuffer[_SwapChainImageViews.Length];
+
+            Log.Information(string.Format(_VulkanFramebuffersCreationFormat, $"creating {_SwapChainFramebuffers.Length} framebuffers."));
+
+            for (int index = 0; index < _SwapChainFramebuffers.Length; index++)
+            {
+                ImageView* attachments = stackalloc[]
+                {
+                    _SwapChainImageViews[index]
+                };
+
+                FramebufferCreateInfo framebufferCreateInfo = new FramebufferCreateInfo
+                {
+                    SType = StructureType.FramebufferCreateInfo,
+                    RenderPass = _RenderPass,
+                    AttachmentCount = 1,
+                    PAttachments = attachments,
+                    Width = _SwapChainExtents.Width,
+                    Height = _SwapChainExtents.Height,
+                    Layers = 1
+                };
+
+                Log.Information(string.Format(_VulkanFramebuffersCreationFormat, $"assigning framebuffer {index}."));
+
+                fixed (Framebuffer* swapChainFramebuffersFixed = _SwapChainFramebuffers)
+                {
+                    if (VK.CreateFramebuffer(_LogicalDevice, &framebufferCreateInfo, (AllocationCallbacks*)null!, &swapChainFramebuffersFixed[index])
+                        != Result.Success)
+                    {
+                        throw new Exception($"Failed to create framebuffer (index {index}).");
+                    }
+                }
+            }
+
+            Log.Information(string.Format(_VulkanFramebuffersCreationFormat, "-success-"));
+        }
+
+        #endregion
+
+        #region Create Command Pool
+
+        private unsafe void CreateCommandPool()
+        {
+            Debug.Assert(_QueueFamilyIndices.GraphicsFamily != null, "Value should already be initialized.");
+
+            Log.Information(string.Format(_VulkanCommandPoolCreationFormat, "-begin-"));
+
+            Log.Information(string.Format(_VulkanCommandPoolCreationFormat, "creating command pool."));
+
+            CommandPoolCreateInfo commandPoolCreateInfo = new CommandPoolCreateInfo
+            {
+                SType = StructureType.CommandPoolCreateInfo,
+                QueueFamilyIndex = _QueueFamilyIndices.GraphicsFamily.Value,
+                Flags = 0,
+            };
+
+            Log.Information(string.Format(_VulkanCommandPoolCreationFormat, "assigning command pool."));
+
+            fixed (CommandPool* commandPoolFixed = &_CommandPool)
+            {
+                if (VK.CreateCommandPool(_LogicalDevice, &commandPoolCreateInfo, (AllocationCallbacks*)null!, commandPoolFixed) != Result.Success)
+                {
+                    throw new Exception("Failed to create command pool.");
+                }
+            }
+
+            Log.Information(string.Format(_VulkanCommandPoolCreationFormat, "-success-"));
+        }
+
+        #endregion
+
+        #region CreateCommandBuffers
+
+        private unsafe void CreateCommandBuffers()
+        {
+            Log.Information(string.Format(_VulkanCommandBuffersCreationFormat, "-begin-"));
+
+            Log.Information(string.Format(_VulkanCommandBuffersCreationFormat, "resizing command buffers array."));
+
+            _CommandBuffers = new CommandBuffer[_SwapChainFramebuffers.Length];
+
+            Log.Information(string.Format(_VulkanCommandBuffersCreationFormat, "creating command buffers."));
+
+            CommandBufferAllocateInfo commandBufferAllocateInfo = new CommandBufferAllocateInfo
+            {
+                SType = StructureType.CommandBufferAllocateInfo,
+                CommandPool = _CommandPool,
+                Level = CommandBufferLevel.Primary,
+                CommandBufferCount = (uint)_CommandBuffers.Length
+            };
+
+            Log.Information(string.Format(_VulkanCommandBuffersCreationFormat, "assigning command buffers."));
+
+            fixed (CommandBuffer* commandBuffersFixed = _CommandBuffers)
+            {
+                if (VK.AllocateCommandBuffers(_LogicalDevice, &commandBufferAllocateInfo, commandBuffersFixed) != Result.Success)
+                {
+                    throw new Exception("Failed to create command buffers.");
+                }
+            }
+
+            Log.Information(string.Format(_VulkanCommandBuffersCreationFormat, "configuring command buffers."));
+
+            for (int index = 0; index < _CommandBuffers.Length; index++)
+            {
+                CommandBufferBeginInfo commandBufferBeginInfo = new CommandBufferBeginInfo
+                {
+                    SType = StructureType.CommandBufferBeginInfo,
+                    Flags = 0,
+                    PInheritanceInfo = null
+                };
+
+                if (VK.BeginCommandBuffer(_CommandBuffers[index], &commandBufferBeginInfo) != Result.Success)
+                {
+                    throw new Exception("Failed to begin recording command buffer.");
+                }
+
+                ClearValue clearValue = new ClearValue(new ClearColorValue(0f, 0f, 0f, 1f));
+
+                RenderPassBeginInfo renderPassBeginInfo = new RenderPassBeginInfo
+                {
+                    SType = StructureType.RenderPassBeginInfo,
+                    RenderPass = _RenderPass,
+                    Framebuffer = _SwapChainFramebuffers[index],
+                    RenderArea = new Rect2D(new Offset2D(0), _SwapChainExtents),
+                    ClearValueCount = 1,
+                    PClearValues = &clearValue
+                };
+
+                VK.CmdBeginRenderPass(_CommandBuffers[index], &renderPassBeginInfo, SubpassContents.Inline);
+                VK.CmdBindPipeline(_CommandBuffers[index], PipelineBindPoint.Graphics, _GraphicsPipeline);
+                VK.CmdDraw(_CommandBuffers[index], 3, 1, 0, 0);
+                VK.CmdEndRenderPass(_CommandBuffers[index]);
+
+                if (VK.EndCommandBuffer(_CommandBuffers[index]) != Result.Success)
+                {
+                    throw new Exception("Failed to record command buffer.");
+                }
+            }
+
+            Log.Information(string.Format(_VulkanCommandBuffersCreationFormat, "-success-"));
+        }
+
+        #endregion
+
+        #region Create Semaphores
+
+        private unsafe void CreateSemaphores()
+        {
+            Log.Information(string.Format(_VulkanSemaphoreCreationFormat, "-begin-"));
+
+            Log.Information(string.Format(_VulkanSemaphoreCreationFormat, "creating semaphores."));
+
+            SemaphoreCreateInfo semaphoreCreateInfo = new SemaphoreCreateInfo
+            {
+                SType = StructureType.SemaphoreCreateInfo
+            };
+
+            _ImageAvailableSemaphores = new Semaphore[_MAX_FRAMES_IN_FLIGHT];
+            _RenderFinishedSemaphores = new Semaphore[_MAX_FRAMES_IN_FLIGHT];
+
+            fixed (Semaphore* imageAvailableSemaphoresFixed = _ImageAvailableSemaphores)
+            {
+                fixed (Semaphore* renderFinishedSemaphoresFixed = _RenderFinishedSemaphores)
+                {
+                    for (int index = 0; index < _MAX_FRAMES_IN_FLIGHT; index++)
+                    {
+                        if (VK.CreateSemaphore(_LogicalDevice, &semaphoreCreateInfo, (AllocationCallbacks*)null!,
+                                &imageAvailableSemaphoresFixed[index])
+                            != Result.Success)
+                        {
+                            throw new Exception("Failed to create image availability semaphore.");
+                        }
+
+
+                        if (VK.CreateSemaphore(_LogicalDevice, &semaphoreCreateInfo, (AllocationCallbacks*)null!,
+                                &renderFinishedSemaphoresFixed[index])
+                            != Result.Success)
+                        {
+                            throw new Exception("Failed to create render finished semaphore.");
+                        }
+                    }
+                }
+            }
+
+            Log.Information(string.Format(_VulkanSemaphoreCreationFormat, "-success-"));
+        }
+
+        #endregion
+
         public unsafe void DestroyVulkanInstance()
         {
+            for (int index = 0; index < _MAX_FRAMES_IN_FLIGHT; index++)
+            {
+                VK.DestroySemaphore(_LogicalDevice, _ImageAvailableSemaphores[index], (AllocationCallbacks*)null!);
+                VK.DestroySemaphore(_LogicalDevice, _RenderFinishedSemaphores[index], (AllocationCallbacks*)null!);
+            }
+
+            VK.DestroyCommandPool(_LogicalDevice, _CommandPool, (AllocationCallbacks*)null!);
+
+            foreach (Framebuffer framebuffer in _SwapChainFramebuffers)
+            {
+                VK.DestroyFramebuffer(_LogicalDevice, framebuffer, (AllocationCallbacks*)null!);
+            }
+
             VK.DestroyPipeline(_LogicalDevice, _GraphicsPipeline, (AllocationCallbacks*)null!);
             VK.DestroyRenderPass(_LogicalDevice, _RenderPass, (AllocationCallbacks*)null!);
             VK.DestroyPipelineLayout(_LogicalDevice, _PipelineLayout, (AllocationCallbacks*)null!);
