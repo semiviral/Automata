@@ -71,14 +71,14 @@ namespace Automata.Rendering
 
                         Matrix4x4 model = Matrix4x4.Identity;
 
-                        if (entity.TryGetComponent(out Scale scale))
-                        {
-                            model *= Matrix4x4.CreateScale(scale.Value);
-                        }
-
                         if (entity.TryGetComponent(out Rotation rotation))
                         {
                             model *= Matrix4x4.CreateFromQuaternion(rotation.Value);
+                        }
+
+                        if (entity.TryGetComponent(out Scale scale))
+                        {
+                            model *= Matrix4x4.CreateScale(scale.Value);
                         }
 
                         if (entity.TryGetComponent(out Translation translation))
@@ -86,7 +86,7 @@ namespace Automata.Rendering
                             model *= Matrix4x4.CreateTranslation(translation.Value);
                         }
 
-                        camera.Shader.SetUniform("MVP_Matrix", camera.Projection * camera.View * model);
+                        camera.Shader.SetUniform("MVP_Matrix", model * camera.View * camera.Projection);
 
                         packedMesh.VertexArrayObject.Bind();
                         _GL.DrawElements(PrimitiveType.Triangles, packedMesh.IndexesBuffer.Length, DrawElementsType.UnsignedInt, null);
