@@ -12,18 +12,17 @@ using Automata.Numerics;
 using Automata.Rendering;
 using AutomataTest.Blocks;
 using ConcurrentAsyncScheduler;
+using Serilog;
 
 #endregion
 
 namespace AutomataTest.Chunks.Generation
 {
-    public class ChunkMeshingJob : AsyncParallelJob
+    public class ChunkMeshingJob : AsyncJob
     {
-        private static readonly ArrayPool<MeshingBlock> _MeshingBlocksPool =
-            ArrayPool<MeshingBlock>.Create(GenerationConstants.CHUNK_SIZE_CUBED, 8);
+        private static readonly ArrayPool<MeshingBlock> _MeshingBlocksPool = ArrayPool<MeshingBlock>.Create(GenerationConstants.CHUNK_SIZE_CUBED, 8);
 
         private readonly INodeCollection<ushort>[] _NeighborBlocksCollections;
-
         private readonly Stopwatch _RuntimeStopwatch;
         private readonly List<uint> _Triangles;
         private readonly List<int> _Vertexes;
@@ -34,7 +33,7 @@ namespace AutomataTest.Chunks.Generation
 
         private TimeSpan _PreMeshingTimeSpan;
 
-        public ChunkMeshingJob() : base(GenerationConstants.CHUNK_SIZE, 64)
+        public ChunkMeshingJob()
         {
             _RuntimeStopwatch = new Stopwatch();
             _NeighborBlocksCollections = new INodeCollection<ushort>[6];
@@ -80,13 +79,13 @@ namespace AutomataTest.Chunks.Generation
 
         #region AsyncJob Overrides
 
-        protected override async Task Process()
+        protected override Task Process()
         {
             Debug.Assert(_BlocksCollection != null);
 
             if (_BlocksCollection.IsUniform && (_BlocksCollection.Value == BlockRegistry.AirID))
             {
-                return;
+                return Task.CompletedTask;
             }
 
             _RuntimeStopwatch.Restart();
@@ -99,14 +98,7 @@ namespace AutomataTest.Chunks.Generation
 
             _RuntimeStopwatch.Restart();
 
-            if (false)
-            {
-                GenerateTraversalMesh();
-            }
-            else
-            {
-                await BatchTasksAndAwaitAll().ConfigureAwait(false);
-            }
+            GenerateTraversalMesh();
 
 
             FinishMeshing();
@@ -114,40 +106,8 @@ namespace AutomataTest.Chunks.Generation
             _RuntimeStopwatch.Stop();
 
             _MeshingTimeSpan = _RuntimeStopwatch.Elapsed;
-        }
 
-        protected override void ProcessIndex(int index)
-        {
-            if (_CancellationToken.IsCancellationRequested)
-            {
-                return;
-            }
-
-            Debug.Assert(_MeshingBlocks != null);
-
-            ushort currentBlockId = _MeshingBlocks[index].ID;
-
-            if (currentBlockId == BlockRegistry.AirID)
-            {
-                return;
-            }
-
-            static int GetLocalPositionFromIndex(int index0)
-            {
-                int xQuotient = Math.DivRem(index0, GenerationConstants.CHUNK_SIZE, out int x);
-                int zQuotient = Math.DivRem(xQuotient, GenerationConstants.CHUNK_SIZE, out int z);
-                int y = zQuotient % GenerationConstants.CHUNK_SIZE;
-
-                return x
-                       | (y << GenerationConstants.CHUNK_SIZE_BIT_SHIFT)
-                       | (z << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2));
-            }
-
-            int localPosition = GetLocalPositionFromIndex(index);
-
-            bool transparentTraversal = BlockRegistry.Instance.CheckBlockHasProperty(currentBlockId, BlockDefinition.Property.Transparent);
-
-            NaiveMeshIndex(index, localPosition, currentBlockId, transparentTraversal);
+            return Task.CompletedTask;
         }
 
         protected override Task ProcessFinished()
@@ -385,148 +345,35 @@ namespace AutomataTest.Chunks.Generation
 
                     int[] compressedVertices = GenerationConstants.VertexesByIteration[normalIndex];
 
-
                     _Vertexes.Add(localPosition
-                                  + ((unaryTraversalShiftedMask & compressedVertices[3])
-                                     | ((((compressedVertices[3] >> traversalNormalShift) * traversals) << traversalNormalShift)
+                                  + ((unaryTraversalShiftedMask & compressedVertices[0])
+                                     | ((((compressedVertices[0] >> traversalNormalShift) * traversals) << traversalNormalShift)
                                         & traversalShiftedMask)));
                     //_MeshData.AddVertex(compressedUv & (int.MaxValue << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2)));
-
-
-                    _Vertexes.Add(localPosition
-                                  + ((unaryTraversalShiftedMask & compressedVertices[2])
-                                     | ((((compressedVertices[2] >> traversalNormalShift) * traversals) << traversalNormalShift)
-                                        & traversalShiftedMask)));
-                    //_MeshData.AddVertex(compressedUv & (int.MaxValue << GenerationConstants.CHUNK_SIZE_BIT_SHIFT));
 
 
                     _Vertexes.Add(localPosition
                                   + ((unaryTraversalShiftedMask & compressedVertices[1])
                                      | ((((compressedVertices[1] >> traversalNormalShift) * traversals) << traversalNormalShift)
                                         & traversalShiftedMask)));
+                    //_MeshData.AddVertex(compressedUv & (int.MaxValue << GenerationConstants.CHUNK_SIZE_BIT_SHIFT));
+
+
+                    _Vertexes.Add(localPosition
+                                  + ((unaryTraversalShiftedMask & compressedVertices[2])
+                                     | ((((compressedVertices[2] >> traversalNormalShift) * traversals) << traversalNormalShift)
+                                        & traversalShiftedMask)));
                     //_MeshData.AddVertex(compressedUv & ~(GenerationConstants.CHUNK_SIZE_BIT_MASK << GenerationConstants.CHUNK_SIZE_BIT_SHIFT));
 
 
                     _Vertexes.Add(localPosition
-                                  + ((unaryTraversalShiftedMask & compressedVertices[0])
-                                     | ((((compressedVertices[0] >> traversalNormalShift) * traversals) << traversalNormalShift)
+                                  + ((unaryTraversalShiftedMask & compressedVertices[3])
+                                     | ((((compressedVertices[3] >> traversalNormalShift) * traversals) << traversalNormalShift)
                                         & traversalShiftedMask)));
                     //_MeshData.AddVertex(compressedUv & int.MaxValue);
 
                     break;
                 }
-            }
-        }
-
-        private void NaiveMeshIndex(int index, int localPosition, ushort currentBlockId, bool isCurrentBlockTransparent)
-        {
-            Debug.Assert(_MeshingBlocks != null);
-
-            // iterate once over all 6 faces of given cubic space
-            for (int normalIndex = 0; normalIndex < 6; normalIndex++)
-            {
-                // face direction always exists on a single bit, so shift 1 by the current normalIndex (0-5)
-                Direction faceDirection = (Direction)(1 << normalIndex);
-
-                if (_MeshingBlocks[index].HasFace(faceDirection))
-                {
-                    continue;
-                }
-
-                // indicates whether the current face checking direction is negative or positive
-                bool isNegativeFace = (normalIndex - 3) >= 0;
-                // normalIndex constrained to represent the 3 axes
-                int iModulo3 = normalIndex % 3;
-                int iModulo3Shift = GenerationConstants.CHUNK_SIZE_BIT_SHIFT * iModulo3;
-                // axis value of the current face check direction
-                // example: for iteration normalIndex == 0—which is positive X—it'd be equal to localPosition.x
-                int faceCheckAxisValue = (localPosition >> iModulo3Shift) & GenerationConstants.CHUNK_SIZE_BIT_MASK;
-                // indicates whether or not the face check is within the current chunk bounds
-                bool isFaceCheckOutOfBounds = (!isNegativeFace && (faceCheckAxisValue == (GenerationConstants.CHUNK_SIZE - 1)))
-                                              || (isNegativeFace && (faceCheckAxisValue == 0));
-
-                if (!isFaceCheckOutOfBounds)
-                {
-                    // amount by integer to add to current traversal index to get 3D->1D position of facing block
-                    int facedBlockIndex = index + GenerationConstants.IndexStepByNormalIndex[normalIndex];
-                    // if so, index into block ids and set facingBlockId
-                    ushort facedBlockId = _MeshingBlocks[facedBlockIndex].ID;
-
-                    // if transparent, traverse so long as facing block is not the same block id
-                    // if opaque, traverse so long as facing block is transparent
-                    if (isCurrentBlockTransparent)
-                    {
-                        if (currentBlockId == facedBlockId)
-                        {
-                            continue;
-                        }
-                    }
-                    else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockId, BlockDefinition.Property.Transparent))
-                    {
-                        Direction inverseFaceDirection = (Direction)(1 << ((normalIndex + 3) % 6));
-                        _MeshingBlocks[facedBlockIndex].SetFace(inverseFaceDirection);
-
-                        continue;
-                    }
-                }
-                else
-                {
-                    // this block of code translates the integer local position to the local position of the neighbor at [normalIndex]
-                    int sign = isNegativeFace ? -1 : 1;
-                    int iModuloComponentMask = GenerationConstants.CHUNK_SIZE_BIT_MASK << iModulo3Shift;
-                    int finalLocalPosition = (~iModuloComponentMask & localPosition)
-                                             | (AutomataMath.Wrap(((localPosition & iModuloComponentMask) >> iModulo3Shift) + sign,
-                                                    GenerationConstants.CHUNK_SIZE, 0, GenerationConstants.CHUNK_SIZE - 1)
-                                                << iModulo3Shift);
-
-                    // index into neighbor blocks collections, call .GetPoint() with adjusted local position
-                    // remark: if there's no neighbor at the index given, then no chunk exists there (for instance,
-                    //     chunks at the edge of render distance). In this case, return NullID so no face is rendered on edges.
-                    ushort facedBlockId = _NeighborBlocksCollections[normalIndex]?.GetPoint(DecompressVertex(finalLocalPosition))
-                                          ?? BlockRegistry.NullID;
-
-                    if (isCurrentBlockTransparent)
-                    {
-                        if (currentBlockId == facedBlockId)
-                        {
-                            continue;
-                        }
-                    }
-                    else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockId, BlockDefinition.Property.Transparent))
-                    {
-                        continue;
-                    }
-                }
-
-                // int compressedUv = (textureId << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2))
-                //                    ^ (1 << GenerationConstants.CHUNK_SIZE_BIT_SHIFT)
-                //                    ^ 1;
-
-
-                _MeshingBlocks[index].SetFace(faceDirection);
-
-                uint verticesCount = (uint)_Vertexes.Count;
-
-                _Triangles.Add(0 + verticesCount);
-                _Triangles.Add(2 + verticesCount);
-                _Triangles.Add(1 + verticesCount);
-                _Triangles.Add(2 + verticesCount);
-                _Triangles.Add(3 + verticesCount);
-                _Triangles.Add(1 + verticesCount);
-
-                int[] compressedVertexes = GenerationConstants.VertexesByIteration[normalIndex];
-
-                _Vertexes.Add(localPosition + compressedVertexes[3]);
-                //_MeshData.AddVertex(compressedUv & (int.MaxValue << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2)));
-
-                _Vertexes.Add(localPosition + compressedVertexes[2]);
-                //_MeshData.AddVertex(compressedUv & (int.MaxValue << GenerationConstants.CHUNK_SIZE_BIT_SHIFT));
-
-                _Vertexes.Add(localPosition + compressedVertexes[1]);
-                //_MeshData.AddVertex(compressedUv & ~(GenerationConstants.CHUNK_SIZE_BIT_MASK << GenerationConstants.CHUNK_SIZE_BIT_SHIFT));
-
-                _Vertexes.Add(localPosition + compressedVertexes[0]);
-                //_MeshData.AddVertex(compressedUv & int.MaxValue);
             }
         }
 
@@ -556,7 +403,7 @@ namespace AutomataTest.Chunks.Generation
             | ((vertex.Z & GenerationConstants.CHUNK_SIZE_BIT_MASK) << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Vector3i DecompressVertex(int vertex) =>
+        public static Vector3i DecompressVertex(int vertex) =>
             new Vector3i(vertex & GenerationConstants.CHUNK_SIZE_BIT_MASK,
                 (vertex >> GenerationConstants.CHUNK_SIZE_BIT_SHIFT) & GenerationConstants.CHUNK_SIZE_BIT_MASK,
                 (vertex >> (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2)) & GenerationConstants.CHUNK_SIZE_BIT_MASK);

@@ -1,6 +1,6 @@
 #region
 
-using Automata.Numerics;
+using System.Numerics;
 
 #endregion
 
@@ -8,9 +8,9 @@ namespace Automata.Worlds
 {
     public class Translation : IComponentChangeable
     {
-        private Vector3d _Value;
+        private Vector3 _Value;
 
-        public Vector3d Value
+        public Vector3 Value
         {
             get => _Value;
             set
@@ -20,7 +20,7 @@ namespace Automata.Worlds
             }
         }
 
-        public Translation() => Value = Vector3d.Zero;
+        public Translation() => Value = Vector3.Zero;
 
         public bool Changed { get; set; }
     }

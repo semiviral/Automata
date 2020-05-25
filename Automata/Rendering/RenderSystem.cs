@@ -1,7 +1,9 @@
 #region
 
 using System;
+using System.Numerics;
 using Automata.Rendering.OpenGL;
+using Automata.Worlds;
 using Serilog;
 using Silk.NET.OpenGL;
 
@@ -11,6 +13,8 @@ namespace Automata.Rendering
 {
     public class RenderSystem : ComponentSystem
     {
+        private const bool _ENABLE_BACK_FACE_CULLING = false;
+
         private readonly GL _GL;
 
         public RenderSystem()
@@ -26,10 +30,13 @@ namespace Automata.Rendering
             // enable depth testing
             _GL.Enable(GLEnum.DepthTest);
 
-            // enable and configure face culling
-            _GL.Enable(GLEnum.CullFace);
-            _GL.FrontFace(FrontFaceDirection.CW);
-            _GL.CullFace(CullFaceMode.Back);
+            if (_ENABLE_BACK_FACE_CULLING)
+            {
+                // enable and configure face culling
+                _GL.Enable(GLEnum.CullFace);
+                _GL.FrontFace(FrontFaceDirection.CW);
+                _GL.CullFace(CullFaceMode.Back);
+            }
         }
 
         public override void Registered() { }
@@ -53,12 +60,33 @@ namespace Automata.Rendering
 
                     camera.Shader.Use();
 
-                    foreach (PackedMesh packedMesh in entityManager.GetComponents<PackedMesh>())
+                    foreach (IEntity entity in entityManager.GetEntitiesWithComponents<PackedMesh>())
                     {
+                        PackedMesh packedMesh = entity.GetComponent<PackedMesh>();
+
                         if (packedMesh.IndexesBuffer.Length == 0)
                         {
                             continue;
                         }
+
+                        Matrix4x4 model = Matrix4x4.Identity;
+
+                        if (entity.TryGetComponent(out Scale scale))
+                        {
+                            model *= Matrix4x4.CreateScale(scale.Value);
+                        }
+
+                        if (entity.TryGetComponent(out Rotation rotation))
+                        {
+                            model *= Matrix4x4.CreateFromQuaternion(rotation.Value);
+                        }
+
+                        if (entity.TryGetComponent(out Translation translation))
+                        {
+                            model *= Matrix4x4.CreateTranslation(translation.Value);
+                        }
+
+                        camera.Shader.SetUniform("MVP_Matrix", camera.Projection * camera.View * model);
 
                         packedMesh.VertexArrayObject.Bind();
                         _GL.DrawElements(PrimitiveType.Triangles, packedMesh.IndexesBuffer.Length, DrawElementsType.UnsignedInt, null);

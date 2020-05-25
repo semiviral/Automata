@@ -3,6 +3,7 @@
 using System;
 using System.Drawing;
 using System.IO;
+using System.Numerics;
 using Automata;
 using Automata.Input;
 using Automata.Numerics;
@@ -119,7 +120,7 @@ namespace AutomataTest
             world.EntityManager.RegisterEntity(playerEntity);
             world.EntityManager.RegisterComponent(playerEntity, new Translation
             {
-                Value = new Vector3d(0d, 0d, 0d)
+                Value = new Vector3(0f, 0f, -3f)
             });
             world.EntityManager.RegisterComponent<Rotation>(playerEntity);
             world.EntityManager.RegisterComponent(playerEntity, new Camera
@@ -144,6 +145,14 @@ namespace AutomataTest
             Entity chunk = new Entity();
             world.EntityManager.RegisterEntity(chunk);
             world.EntityManager.RegisterComponent<Translation>(chunk);
+            // world.EntityManager.RegisterComponent(chunk, new Rotation
+            // {
+            //     Value = Quaternion.CreateFromRotationMatrix(Matrix4x4.CreateLookAt(Vector3.Zero, new Vector3(1f, 0f, 1f), Vector3.UnitY))
+            // });
+            // world.EntityManager.RegisterComponent(chunk, new Scale
+            // {
+            //     Value = 0.5f
+            // });
             world.EntityManager.RegisterComponent(chunk, new ChunkState
             {
                 Value = GenerationState.Unbuilt

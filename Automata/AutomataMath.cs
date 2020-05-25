@@ -19,12 +19,6 @@ namespace Automata
         public static float ToRadians(float degrees) => degrees * ((float)Math.PI / 180f);
         public static Vector3 ToRadians(Vector3 degrees) => new Vector3(ToRadians(degrees.X), ToRadians(degrees.Y), ToRadians(degrees.Z));
 
-        public static Matrix4x4 MatrixFromTranslationAndRotationWithScaleToView(float scale, Translation translation, Rotation rotation) =>
-            Matrix4x4.Identity
-            * Matrix4x4.CreateScale(scale)
-            * Matrix4x4.CreateTranslation(Vector3d.AsVector3(translation.Value))
-            * Matrix4x4.CreateFromQuaternion(rotation.Value);
-
         public static IEnumerable<float> UnrollMatrix4x4(Matrix4x4 matrix)
         {
             yield return matrix.M11;

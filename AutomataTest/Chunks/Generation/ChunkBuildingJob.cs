@@ -153,7 +153,7 @@ namespace AutomataTest.Chunks.Generation
             Debug.Assert(_SeededRandom != null);
             Vector3i localPosition = Vector3i.Project3D(index, GenerationConstants.CHUNK_SIZE);
 
-            if (index < 21)
+            if (index == 0)
             {
                 _Blocks.SetPoint(localPosition, GetCachedBlockID("stone"));
             }

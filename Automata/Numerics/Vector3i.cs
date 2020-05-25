@@ -22,6 +22,8 @@ namespace Automata.Numerics
     {
         #region Fields / Properties
 
+        private static string _ToStringFormat = $"{typeof(Vector3i)}({{0}}, {{1}}, {{2}})";
+
         public static Vector3i Zero { get; } = new Vector3i(0);
         public static Vector3i One { get; } = new Vector3i(1);
 
@@ -69,6 +71,8 @@ namespace Automata.Numerics
         }
 
         public override int GetHashCode() => X.GetHashCode() ^ Y.GetHashCode() ^ Z.GetHashCode();
+
+        public override string ToString() => string.Format(_ToStringFormat, X, Y, Z);
 
         #endregion
 

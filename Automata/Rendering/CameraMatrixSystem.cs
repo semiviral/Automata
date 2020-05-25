@@ -1,7 +1,6 @@
 #region
 
 using System;
-using System.Diagnostics;
 using System.Drawing;
 using System.Numerics;
 using Automata.Rendering.GLFW;
@@ -35,18 +34,20 @@ namespace Automata.Rendering
             {
                 Camera camera = entity.GetComponent<Camera>();
 
-                // adjust projection
-                if (_HasGameWindowResized)
-                {
-                    camera.Projection = Matrix4x4.CreatePerspectiveFieldOfView(AutomataMath.ToRadians(90f), _NewAspectRatio, 0.1f, 1000f);
-                }
-
                 // adjust view
                 if (entity.TryGetComponent(out Translation translation)
                     && entity.TryGetComponent(out Rotation rotation)
                     && (translation.Changed || rotation.Changed))
                 {
-                    camera.View = AutomataMath.MatrixFromTranslationAndRotationWithScaleToView(1f, translation, rotation);
+                    camera.View = Matrix4x4.Identity
+                                  * Matrix4x4.CreateTranslation(translation.Value)
+                                  * Matrix4x4.CreateFromQuaternion(rotation.Value);
+                }
+
+                // adjust projection
+                if (_HasGameWindowResized)
+                {
+                    camera.Projection = Matrix4x4.CreatePerspectiveFieldOfView(AutomataMath.ToRadians(90f), _NewAspectRatio, 0.1f, 1000f);
                 }
             }
 

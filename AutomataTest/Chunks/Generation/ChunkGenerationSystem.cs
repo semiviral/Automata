@@ -70,7 +70,7 @@ namespace AutomataTest.Chunks.Generation
                         void BeginChunkBuilding(ChunkID id0, ChunkState state0, Translation translation)
                         {
                             ChunkBuildingJob chunkBuildingJob = _ChunkBuilders.Retrieve() ?? new ChunkBuildingJob();
-                            chunkBuildingJob.SetData(Vector3i.FromVector3d(translation.Value), GenerationConstants.Seed, 0.01f, 1f);
+                            chunkBuildingJob.SetData(Vector3i.FromVector3(translation.Value), GenerationConstants.Seed, 0.01f, 1f);
 
                             // local method for building finished
                             void OnChunkBuildingFinished(object? sender, AsyncJob asyncJob)
@@ -158,9 +158,15 @@ namespace AutomataTest.Chunks.Generation
                             }
 
                             PendingMesh<int> pendingMesh = chunkMeshingJob.GetData();
+
+                            foreach (int vertex in pendingMesh.Vertexes)
+                            {
+                                Log.Information(ChunkMeshingJob.DecompressVertex(vertex).ToString());
+                            }
+
+                            packedMesh.VertexArrayObject.VertexAttributePointer(0, 1, VertexAttribPointerType.Int, 1, 0);
                             packedMesh.VertexesBuffer.SetBufferData(pendingMesh.Vertexes.ToArray());
                             packedMesh.IndexesBuffer.SetBufferData(pendingMesh.Indexes.ToArray());
-                            packedMesh.VertexArrayObject.VertexAttributePointer(0, 1, VertexAttribPointerType.Int, 1, 0);
 
                             chunkMeshingJob.ClearData();
                             _ChunkMeshers.TryAdd(chunkMeshingJob);

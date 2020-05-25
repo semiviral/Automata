@@ -10,34 +10,17 @@ namespace Automata.Rendering
     public class Camera : IComponent
     {
         private static readonly Shader _DefaultShader = new Shader();
-        private Matrix4x4 _Projection;
 
-        private Matrix4x4 _View;
+        public Matrix4x4 View { get; set; }
+        public Matrix4x4 Projection { get; set; }
 
-        public Shader Shader { get; set; } = _DefaultShader;
-
+        public Shader Shader { get; set; }
         public Vector3 AccumulatedAngles { get; set; }
 
-        public Matrix4x4 View
+        public Camera()
         {
-            get => _View;
-            set
-            {
-                _View = value;
-
-                Shader.SetUniform(nameof(View), _View);
-            }
-        }
-
-        public Matrix4x4 Projection
-        {
-            get => _Projection;
-            set
-            {
-                _Projection = value;
-
-                Shader.SetUniform(nameof(Projection), _Projection);
-            }
+            Shader = _DefaultShader;
+            AccumulatedAngles = Vector3.Zero;
         }
     }
 }
