@@ -11,8 +11,10 @@ namespace Automata.Rendering
     {
         private static readonly Shader _DefaultShader = new Shader();
 
+
         public Matrix4x4 View { get; set; }
         public Matrix4x4 Projection { get; set; }
+        public Vector4 ProjectionParameters { get; set; }
 
         public Shader Shader { get; set; }
         public Vector3 AccumulatedAngles { get; set; }

@@ -21,6 +21,7 @@ namespace Automata.Rendering
         {
             HandledComponentTypes = new[]
             {
+                typeof(Translation),
                 typeof(Camera),
                 typeof(RenderMesh)
             };
@@ -47,7 +48,7 @@ namespace Automata.Rendering
                 _GL.Clear((uint)ClearBufferMask.ColorBufferBit);
                 _GL.Clear((uint)ClearBufferMask.DepthBufferBit);
 
-                foreach (Camera camera in entityManager.GetComponents<Camera>())
+                foreach ((Translation translation, Camera camera) in entityManager.GetComponents<Translation, Camera>())
                 {
                     if (camera.Shader == null)
                     {
@@ -77,12 +78,21 @@ namespace Automata.Rendering
                             model *= Matrix4x4.CreateFromQuaternion(rotation.Value);
                         }
 
-                        if (entity.TryGetComponent(out Translation translation))
+                        if (entity.TryGetComponent(out Translation modelTranslation))
                         {
-                            model *= Matrix4x4.CreateTranslation(translation.Value);
+                            model *= Matrix4x4.CreateTranslation(modelTranslation.Value);
                         }
 
-                        camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MVP_MATRIX, model * camera.View * camera.Projection);
+                        camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_MVP, model * camera.View * camera.Projection);
+                        camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_WORLD, model);
+
+                        if (Matrix4x4.Invert(model, out Matrix4x4 modelInverted))
+                        {
+                            camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_OBJECT, modelInverted);
+                        }
+
+                        camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC3_CAMERA_WORLD_POSITION, translation.Value);
+                        camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_CAMERA_PROJECTION_PARAMS, camera.ProjectionParameters);
 
                         renderMesh.Mesh.BindVertexArrayObject();
                         _GL.DrawElements(PrimitiveType.Triangles, renderMesh.Mesh.IndexesCount, DrawElementsType.UnsignedInt, null);

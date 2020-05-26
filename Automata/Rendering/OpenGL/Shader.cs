@@ -14,7 +14,11 @@ namespace Automata.Rendering.OpenGL
 {
     public class Shader : IDisposable
     {
-        public const string RESERVED_UNIFORM_NAME_MVP_MATRIX = "_mvp";
+        public const string RESERVED_UNIFORM_NAME_MATRIX_MVP = "_mvp";
+        public const string RESERVED_UNIFORM_NAME_MATRIX_WORLD = "_world";
+        public const string RESERVED_UNIFORM_NAME_MATRIX_OBJECT = "_object";
+        public const string RESERVED_UNIFORM_NAME_VEC3_CAMERA_WORLD_POSITION = "_camera";
+        public const string RESERVED_UNIFORM_NAME_VEC4_CAMERA_PROJECTION_PARAMS = "_projectionParams";
 
         private static readonly string _DefaultVertexShader =
             $@"
@@ -23,7 +27,7 @@ namespace Automata.Rendering.OpenGL
                 layout (location = 0) in vec3 vPos;
                 out vec4 fColor;
 
-                uniform mat4 {RESERVED_UNIFORM_NAME_MVP_MATRIX};
+                uniform mat4 {RESERVED_UNIFORM_NAME_MATRIX_MVP};
 
                 void main()
                 {{
@@ -149,6 +153,13 @@ namespace Automata.Rendering.OpenGL
             _GL.ProgramUniform1(_Handle, location, value);
         }
 
+        public void SetUniform(string name, Vector3 value)
+        {
+            int location = GetUniformLocation(name);
+
+            _GL.ProgramUniform3(_Handle, location, value);
+        }
+
         public void SetUniform(string name, Vector4 value)
         {
             int location = GetUniformLocation(name);
@@ -198,6 +209,20 @@ namespace Automata.Rendering.OpenGL
             if (TryGetUniformLocation(name, out int location))
             {
                 _GL.ProgramUniform1(_Handle, location, value);
+
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool TrySetUniform(string name, Vector3 value)
+        {
+            if (TryGetUniformLocation(name, out int location))
+            {
+                _GL.ProgramUniform3(_Handle, location, value);
 
                 return true;
             }

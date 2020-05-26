@@ -47,7 +47,12 @@ namespace Automata.Rendering
                 // adjust projection
                 if (_HasGameWindowResized)
                 {
-                    camera.Projection = Matrix4x4.CreatePerspectiveFieldOfView(AutomataMath.ToRadians(90f), _NewAspectRatio, 0.1f, 100f);
+                    const float near_clipping_plane = 0.1f;
+                    const float far_clipping_plane = 100f;
+
+                    camera.Projection = Matrix4x4.CreatePerspectiveFieldOfView(AutomataMath.ToRadians(90f), _NewAspectRatio, near_clipping_plane,
+                        far_clipping_plane);
+                    camera.ProjectionParameters = new Vector4(1f, near_clipping_plane, far_clipping_plane, 1f / far_clipping_plane);
                 }
             }
 

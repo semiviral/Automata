@@ -3,7 +3,7 @@ using Silk.NET.OpenGL;
 
 namespace Automata.Rendering.OpenGL
 {
-    public class Texture
+    public abstract class Texture
     {
         public enum TextureFormat
         {
@@ -66,6 +66,13 @@ namespace Automata.Rendering.OpenGL
         {
             GL = GLAPI.Instance.GL;
             Handle = GL.GenTexture();
+        }
+
+        public abstract void Bind(TextureUnit textureSlot);
+
+        public void Dispose()
+        {
+            GL.DeleteTexture(Handle);
         }
     }
 }

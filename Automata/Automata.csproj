@@ -19,15 +19,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="..\AutomataTest\bin\Debug\netcoreapp3.1\DefaultFragment.glsl">
-        <Link>DefaultFragment.glsl</Link>
-      </Content>
-      <Content Include="..\AutomataTest\bin\Debug\netcoreapp3.1\PackedVertexes.glsl">
-        <Link>PackedVertexes.glsl</Link>
-      </Content>
-    </ItemGroup>
-
-    <ItemGroup>
       <Reference Include="ConcurrentAsyncScheduler, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
         <HintPath>..\..\ConcurrentAsyncScheduler\ConcurrentAsyncScheduler\bin\Release\netcoreapp3.1\ConcurrentAsyncScheduler.dll</HintPath>
       </Reference>

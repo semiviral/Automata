@@ -46,15 +46,10 @@ namespace Automata.Rendering.OpenGL
             }
         }
 
-        public void Bind(TextureUnit textureSlot)
+        public override void Bind(TextureUnit textureSlot)
         {
             GL.ActiveTexture(textureSlot);
             GL.BindTexture(TextureTarget.Texture2D, Handle);
-        }
-
-        public void Dispose()
-        {
-            GL.DeleteTexture(Handle);
         }
     }
 }
