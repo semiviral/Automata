@@ -89,7 +89,7 @@ namespace Automata.Rendering.GLFW
                     TimeSpan delta = _DeltaTimer.Elapsed;
                     _DeltaTimer.Restart();
 
-#if DEBUG
+#if true
 
                     Window.Title = $"Automata ({1d / delta.TotalSeconds:00})";
 

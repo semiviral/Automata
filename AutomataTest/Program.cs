@@ -12,10 +12,10 @@ using Automata.Rendering.OpenGL;
 using Automata.Rendering.Vulkan;
 using Automata.Worlds;
 using AutomataTest.Blocks;
-using AutomataTest.Chunks;
 using AutomataTest.Chunks.Generation;
 using Serilog;
 using Serilog.Events;
+using Silk.NET.OpenGL;
 using Silk.NET.Windowing.Common;
 
 #endregion
@@ -29,7 +29,13 @@ namespace AutomataTest
 
         private static void Main(string[] args)
         {
-            Log.Logger = new LoggerConfiguration().WriteTo.Console().MinimumLevel.Is(LogEventLevel.Verbose).CreateLogger();
+            Log.Logger = new LoggerConfiguration().WriteTo.Console().MinimumLevel.Is(
+#if DEBUG
+                LogEventLevel.Verbose
+#else
+                LogEventLevel.Information
+#endif
+            ).CreateLogger();
             Log.Information("Static logger initialized.");
 
             if (!Directory.Exists(_LocalDataPath))
@@ -139,15 +145,41 @@ namespace AutomataTest
 
             InitializePlayerEntity(world, out IEntity _);
 
-            Entity chunk = new Entity();
-            world.EntityManager.RegisterEntity(chunk);
-            world.EntityManager.RegisterComponent<Translation>(chunk);
-            world.EntityManager.RegisterComponent(chunk, new ChunkState
+            world.SystemManager.RegisterSystem<RotationTestSystem, DefaultOrderSystem>(SystemRegistrationOrder.After);
+
+            Mesh<float> mesh = new Mesh<float>();
+            mesh.VertexArrayObject.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, 0);
+            mesh.VertexesBuffer.SetBufferData(StaticCube.Vertexes);
+            mesh.IndexesBuffer.SetBufferData(StaticCube.Indexes);
+
+            const int diameter = 32;
+            for (int x = 0; x < diameter; x++)
+            for (int y = 0; y < diameter; y++)
+            for (int z = 0; z < diameter; z++)
             {
-                Value = GenerationState.Unbuilt
-            });
-            world.EntityManager.RegisterComponent<ChunkID>(chunk);
-            world.EntityManager.RegisterComponent<BlocksCollection>(chunk);
+                Entity cube = new Entity();
+                world.EntityManager.RegisterEntity(cube);
+                world.EntityManager.RegisterComponent(cube, new Translation
+                {
+                    Value = new Vector3(x * 2f, y * 2f, z * 2f)
+                });
+                world.EntityManager.RegisterComponent<Rotation>(cube);
+                world.EntityManager.RegisterComponent<RotationTest>(cube);
+                world.EntityManager.RegisterComponent(cube, new RenderMesh
+                {
+                    Mesh = mesh
+                });
+            }
+
+            // Entity chunk = new Entity();
+            // world.EntityManager.RegisterEntity(chunk);
+            // world.EntityManager.RegisterComponent<Translation>(chunk);
+            // world.EntityManager.RegisterComponent(chunk, new ChunkState
+            // {
+            //     Value = GenerationState.Unbuilt
+            // });
+            // world.EntityManager.RegisterComponent<ChunkID>(chunk);
+            // world.EntityManager.RegisterComponent<BlocksCollection>(chunk);
         }
 
         private static void OnClose()

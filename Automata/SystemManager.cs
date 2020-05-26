@@ -26,8 +26,8 @@ namespace Automata
 
     public class SystemManager
     {
-        private readonly Dictionary<Type, LinkedListNode<ComponentSystem>> _ComponentSystemNodes;
         private readonly LinkedList<ComponentSystem> _ComponentSystems;
+        private readonly Dictionary<Type, LinkedListNode<ComponentSystem>> _ComponentSystemNodes;
 
         public SystemManager()
         {

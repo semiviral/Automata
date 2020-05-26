@@ -1,6 +1,7 @@
 #region
 
 using System;
+using System.Diagnostics;
 using System.Numerics;
 using Automata.Rendering.GLFW;
 using Automata.Rendering.OpenGL;
@@ -29,6 +30,8 @@ namespace Automata.Rendering
 
             _GL = GLAPI.Instance.GL;
 
+            _GL.ClearColor(0.2f, 0.2f, 0.2f, 1f);
+
             // enable depth testing
             _GL.Enable(GLEnum.DepthTest);
 
@@ -45,7 +48,6 @@ namespace Automata.Rendering
         {
             try
             {
-                _GL.ClearColor(0.2f, 0.2f, 0.2f, 1f);
                 _GL.Clear((uint)ClearBufferMask.ColorBufferBit);
                 _GL.Clear((uint)ClearBufferMask.DepthBufferBit);
 
@@ -60,13 +62,21 @@ namespace Automata.Rendering
 
                     camera.Shader.Use();
 
+                    RenderMesh? currentRenderMesh = null;
+
                     foreach (IEntity entity in entityManager.GetEntitiesWithComponents<RenderMesh>())
                     {
-                        RenderMesh renderMesh = entity.GetComponent<RenderMesh>();
+                        RenderMesh nextRenderMesh = entity.GetComponent<RenderMesh>();
 
-                        if ((renderMesh.Mesh == null) || (renderMesh.Mesh.IndexesLength == 0))
+                        if ((nextRenderMesh.Mesh == null) || (nextRenderMesh.Mesh.IndexesLength == 0))
                         {
                             continue;
+                        }
+
+                        if (currentRenderMesh == null || currentRenderMesh.MeshID != nextRenderMesh.MeshID)
+                        {
+                            currentRenderMesh = nextRenderMesh;
+                            currentRenderMesh.Mesh.BindVertexArrayObject();
                         }
 
                         Matrix4x4 model = Matrix4x4.Identity;
@@ -102,8 +112,7 @@ namespace Automata.Rendering
                         camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_CAMERA_PROJECTION_PARAMS, camera.ProjectionParameters);
                         camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_VIEWPORT, viewport);
 
-                        renderMesh.Mesh.BindVertexArrayObject();
-                        _GL.DrawElements(PrimitiveType.Triangles, renderMesh.Mesh.IndexesLength, DrawElementsType.UnsignedInt, null);
+                        _GL.DrawElements(PrimitiveType.Triangles, currentRenderMesh.Mesh?.IndexesLength ?? 0u, DrawElementsType.UnsignedInt, null);
 
                         #if DEBUG
 
@@ -111,14 +120,13 @@ namespace Automata.Rendering
                         {
                             throw new Exception();
                         }
-
                         #endif
                     }
                 }
             }
             catch (Exception ex)
             {
-                Log.Error($"({nameof(RenderSystem)}) Error: {ex.Message}");
+                Log.Error($"({nameof(RenderSystem)}) Error: {ex.Message}\r\n{ex.StackTrace}");
             }
         }
 

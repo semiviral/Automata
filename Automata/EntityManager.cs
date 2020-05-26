@@ -12,15 +12,17 @@ namespace Automata
 {
     public class EntityManager
     {
-        private Dictionary<Guid, IEntity> Entities { get; }
-        private Dictionary<Type, List<IEntity>> EntitiesByComponent { get; }
-        private Dictionary<Type, int> ComponentCountByType { get; }
+        private readonly Dictionary<Guid, IEntity> _Entities;
+        private readonly Dictionary<Type, List<IEntity>> _EntitiesByComponent;
+        private readonly Dictionary<ComponentGroup, List<IEntity>> _EntitiesByComponentGroup;
+        private readonly Dictionary<Type, int> _ComponentCountByType;
 
         public EntityManager()
         {
-            Entities = new Dictionary<Guid, IEntity>();
-            EntitiesByComponent = new Dictionary<Type, List<IEntity>>();
-            ComponentCountByType = new Dictionary<Type, int>();
+            _Entities = new Dictionary<Guid, IEntity>();
+            _EntitiesByComponent = new Dictionary<Type, List<IEntity>>();
+            _EntitiesByComponentGroup = new Dictionary<ComponentGroup, List<IEntity>>();
+            _ComponentCountByType = new Dictionary<Type, int>();
         }
 
         #region Remove .. Data
@@ -40,8 +42,8 @@ namespace Automata
                 return;
             }
 
-            EntitiesByComponent[typeof(T)].Remove(entity);
-            ComponentCountByType.Remove(typeof(T));
+            _EntitiesByComponent[typeof(T)].Remove(entity);
+            _ComponentCountByType.Remove(typeof(T));
         }
 
         #endregion
@@ -61,7 +63,7 @@ namespace Automata
                 throw new NullReferenceException(nameof(entity));
             }
 
-            Entities.Add(entity.ID, entity);
+            _Entities.Add(entity.ID, entity);
 
             foreach (Type type in entity.ComponentTypes)
             {
@@ -112,18 +114,18 @@ namespace Automata
                 return;
             }
 
-            if (!EntitiesByComponent.ContainsKey(type))
+            if (!_EntitiesByComponent.ContainsKey(type))
             {
-                EntitiesByComponent.Add(type, new List<IEntity>());
+                _EntitiesByComponent.Add(type, new List<IEntity>());
             }
 
-            if (!ComponentCountByType.ContainsKey(type))
+            if (!_ComponentCountByType.ContainsKey(type))
             {
-                ComponentCountByType.Add(type, 0);
+                _ComponentCountByType.Add(type, 0);
             }
 
-            EntitiesByComponent[type].Add(entity);
-            ComponentCountByType[type] += 1;
+            _EntitiesByComponent[type].Add(entity);
+            _ComponentCountByType[type] += 1;
         }
 
         #endregion
@@ -137,48 +139,35 @@ namespace Automata
         /// <returns><see cref="IEnumerable{T}" /> of entities containing component <see cref="T1" />.</returns>
         /// <remarks>
         ///     Be cautious of registering or removing <see cref="IComponent" />s when iterating entities from this function, as
-        ///     any
-        ///     additions or subtractions from the collection will throw a collection modified exception.
+        ///     any additions or subtractions from the collection will throw a collection modified exception.
         /// </remarks>
         public IEnumerable<IEntity> GetEntitiesWithComponents<T1>() where T1 : IComponent =>
-            !EntitiesByComponent.ContainsKey(typeof(T1)) ? Enumerable.Empty<IEntity>() : EntitiesByComponent[typeof(T1)];
+            _EntitiesByComponent.TryGetValue(typeof(T1), out List<IEntity>? entities) ? entities : Enumerable.Empty<IEntity>();
 
 
         public IEnumerable<IEntity> GetEntitiesWithComponents<T1, T2>()
             where T1 : IComponent
-            where T2 : IComponent
-        {
-            HashSet<IEntity> matchingEntityIDs = new HashSet<IEntity>(GetEntitiesWithComponents<T1>());
-            matchingEntityIDs.IntersectWith(GetEntitiesWithComponents<T2>());
-
-            return matchingEntityIDs;
-        }
+            where T2 : IComponent =>
+            GetEntitiesWithComponents<T1>()
+                .Intersect(GetEntitiesWithComponents<T2>());
 
         public IEnumerable<IEntity> GetEntitiesWithComponents<T1, T2, T3>()
             where T1 : IComponent
             where T2 : IComponent
-            where T3 : IComponent
-        {
-            HashSet<IEntity> matchingEntityIDs = new HashSet<IEntity>(GetEntitiesWithComponents<T1>());
-            matchingEntityIDs.IntersectWith(GetEntitiesWithComponents<T2>());
-            matchingEntityIDs.IntersectWith(GetEntitiesWithComponents<T3>());
-
-            return matchingEntityIDs;
-        }
+            where T3 : IComponent =>
+            GetEntitiesWithComponents<T1>()
+                .Intersect(GetEntitiesWithComponents<T2>())
+                .Intersect(GetEntitiesWithComponents<T3>());
 
         public IEnumerable<IEntity> GetEntitiesWithComponents<T1, T2, T3, T4>()
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
-            where T4 : IComponent
-        {
-            HashSet<IEntity> matchingEntityIDs = new HashSet<IEntity>(GetEntitiesWithComponents<T1>());
-            matchingEntityIDs.IntersectWith(GetEntitiesWithComponents<T2>());
-            matchingEntityIDs.IntersectWith(GetEntitiesWithComponents<T3>());
-            matchingEntityIDs.IntersectWith(GetEntitiesWithComponents<T4>());
-
-            return matchingEntityIDs;
-        }
+            where T4 : IComponent =>
+            GetEntitiesWithComponents<T1>()
+                .Intersect(GetEntitiesWithComponents<T2>())
+                .Intersect(GetEntitiesWithComponents<T3>())
+                .Intersect(GetEntitiesWithComponents<T4>());
 
         /// <summary>
         ///     Returns all instances of components of type <see cref="T1" />
@@ -186,92 +175,32 @@ namespace Automata
         /// <typeparam name="T1">Type of <see cref="IComponent" /> to return.</typeparam>
         /// <returns><see cref="IEnumerable{T}" /> of all instances of <see cref="IComponent" /> type <see cref="T1" />.</returns>
         public IEnumerable<T1> GetComponents<T1>()
-            where T1 : IComponent
-        {
-            if (!EntitiesByComponent.ContainsKey(typeof(T1)))
-            {
-                yield break;
-            }
-
-            foreach (IEntity entity in EntitiesByComponent[typeof(T1)])
-            {
-                yield return entity.GetComponent<T1>();
-            }
-        }
+            where T1 : IComponent =>
+            GetEntitiesWithComponents<T1>().Select(entity =>
+                entity.GetComponent<T1>());
 
         public IEnumerable<(T1, T2)> GetComponents<T1, T2>()
             where T1 : IComponent
-            where T2 : IComponent
-        {
-            if (!EntitiesByComponent.ContainsKey(typeof(T1)))
-            {
-                yield break;
-            }
-            else if (!EntitiesByComponent.ContainsKey(typeof(T2)))
-            {
-                yield break;
-            }
-
-            foreach (IEntity entity in GetEntitiesWithComponents<T1, T2>())
-            {
-                yield return (entity.GetComponent<T1>(), entity.GetComponent<T2>());
-            }
-        }
+            where T2 : IComponent =>
+            GetEntitiesWithComponents<T1, T2>().Select(entity =>
+                (entity.GetComponent<T1>(), entity.GetComponent<T2>()));
 
         public IEnumerable<(T1, T2, T3)> GetComponents<T1, T2, T3>()
             where T1 : IComponent
             where T2 : IComponent
-            where T3 : IComponent
-        {
-            if (!EntitiesByComponent.ContainsKey(typeof(T1)))
-            {
-                yield break;
-            }
-            else if (!EntitiesByComponent.ContainsKey(typeof(T2)))
-            {
-                yield break;
-            }
-            else if (!EntitiesByComponent.ContainsKey(typeof(T3)))
-            {
-                yield break;
-            }
-
-            foreach (IEntity entity in GetEntitiesWithComponents<T1, T2, T3>())
-            {
-                yield return (entity.GetComponent<T1>(), entity.GetComponent<T2>(), entity.GetComponent<T3>());
-            }
-        }
+            where T3 : IComponent =>
+            GetEntitiesWithComponents<T1, T2, T3>().Select(entity =>
+                (entity.GetComponent<T1>(), entity.GetComponent<T2>(), entity.GetComponent<T3>()));
 
         public IEnumerable<(T1, T2, T3, T4)> GetComponents<T1, T2, T3, T4>()
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
-            where T4 : IComponent
-        {
-            if (!EntitiesByComponent.ContainsKey(typeof(T1)))
-            {
-                yield break;
-            }
-            else if (!EntitiesByComponent.ContainsKey(typeof(T2)))
-            {
-                yield break;
-            }
-            else if (!EntitiesByComponent.ContainsKey(typeof(T3)))
-            {
-                yield break;
-            }
-            else if (!EntitiesByComponent.ContainsKey(typeof(T4)))
-            {
-                yield break;
-            }
+            where T4 : IComponent =>
+            GetEntitiesWithComponents<T1, T2, T3, T4>().Select(entity =>
+                (entity.GetComponent<T1>(), entity.GetComponent<T2>(), entity.GetComponent<T3>(), entity.GetComponent<T4>()));
 
-            foreach (IEntity entity in GetEntitiesWithComponents<T1, T2, T3, T4>())
-            {
-                yield return (entity.GetComponent<T1>(), entity.GetComponent<T2>(), entity.GetComponent<T3>(), entity.GetComponent<T4>());
-            }
-        }
-
-        public int GetComponentCount<T>() where T : IComponent => ComponentCountByType[typeof(T)];
+        public int GetComponentCount<T>() where T : IComponent => _ComponentCountByType[typeof(T)];
 
         public int GetComponentCount(Type type)
         {
@@ -280,7 +209,7 @@ namespace Automata
                 throw new TypeLoadException(type.ToString());
             }
 
-            if (ComponentCountByType.TryGetValue(type, out int count))
+            if (_ComponentCountByType.TryGetValue(type, out int count))
             {
                 return count;
             }
