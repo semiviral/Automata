@@ -2,6 +2,7 @@
 
 using System;
 using System.Numerics;
+using Automata.Rendering.GLFW;
 using Automata.Rendering.OpenGL;
 using Automata.Worlds;
 using Serilog;
@@ -48,7 +49,9 @@ namespace Automata.Rendering
                 _GL.Clear((uint)ClearBufferMask.ColorBufferBit);
                 _GL.Clear((uint)ClearBufferMask.DepthBufferBit);
 
-                foreach ((Translation translation, Camera camera) in entityManager.GetComponents<Translation, Camera>())
+                Vector4 viewport = new Vector4(0f, 0f, AutomataWindow.Instance.Size.X, AutomataWindow.Instance.Size.Y);
+
+                foreach ((Translation cameraTranslation, Camera camera) in entityManager.GetComponents<Translation, Camera>())
                 {
                     if (camera.Shader == null)
                     {
@@ -68,14 +71,14 @@ namespace Automata.Rendering
 
                         Matrix4x4 model = Matrix4x4.Identity;
 
-                        if (entity.TryGetComponent(out Scale scale))
+                        if (entity.TryGetComponent(out Scale modelScale))
                         {
-                            model *= Matrix4x4.CreateScale(scale.Value);
+                            model *= Matrix4x4.CreateScale(modelScale.Value);
                         }
 
-                        if (entity.TryGetComponent(out Rotation rotation))
+                        if (entity.TryGetComponent(out Rotation modelRotation))
                         {
-                            model *= Matrix4x4.CreateFromQuaternion(rotation.Value);
+                            model *= Matrix4x4.CreateFromQuaternion(modelRotation.Value);
                         }
 
                         if (entity.TryGetComponent(out Translation modelTranslation))
@@ -83,7 +86,11 @@ namespace Automata.Rendering
                             model *= Matrix4x4.CreateTranslation(modelTranslation.Value);
                         }
 
-                        camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_MVP, model * camera.View * camera.Projection);
+                        Matrix4x4 modelView = model * camera.View;
+                        Matrix4x4 modelViewProject = model * camera.Projection;
+
+                        camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_MV, modelView);
+                        camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_MVP, modelViewProject);
                         camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_WORLD, model);
 
                         if (Matrix4x4.Invert(model, out Matrix4x4 modelInverted))
@@ -91,8 +98,9 @@ namespace Automata.Rendering
                             camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_OBJECT, modelInverted);
                         }
 
-                        camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC3_CAMERA_WORLD_POSITION, translation.Value);
+                        camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC3_CAMERA_WORLD_POSITION, cameraTranslation.Value);
                         camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_CAMERA_PROJECTION_PARAMS, camera.ProjectionParameters);
+                        camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_VIEWPORT, viewport);
 
                         renderMesh.Mesh.BindVertexArrayObject();
                         _GL.DrawElements(PrimitiveType.Triangles, renderMesh.Mesh.IndexesCount, DrawElementsType.UnsignedInt, null);

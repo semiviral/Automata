@@ -1,5 +1,9 @@
+#region
+
 using System;
 using Silk.NET.OpenGL;
+
+#endregion
 
 namespace Automata.Rendering.OpenGL
 {

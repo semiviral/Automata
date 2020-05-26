@@ -14,11 +14,14 @@ namespace Automata.Rendering.OpenGL
 {
     public class Shader : IDisposable
     {
+        public const string RESERVED_UNIFORM_NAME_MATRIX_MV = "_mv";
         public const string RESERVED_UNIFORM_NAME_MATRIX_MVP = "_mvp";
         public const string RESERVED_UNIFORM_NAME_MATRIX_WORLD = "_world";
         public const string RESERVED_UNIFORM_NAME_MATRIX_OBJECT = "_object";
         public const string RESERVED_UNIFORM_NAME_VEC3_CAMERA_WORLD_POSITION = "_camera";
         public const string RESERVED_UNIFORM_NAME_VEC4_CAMERA_PROJECTION_PARAMS = "_projectionParams";
+        public const string RESERVED_UNIFORM_NAME_VEC4_VIEWPORT = "_viewport";
+
 
         private static readonly string _DefaultVertexShader =
             $@"

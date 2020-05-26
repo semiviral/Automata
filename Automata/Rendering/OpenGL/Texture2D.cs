@@ -19,7 +19,6 @@ namespace Automata.Rendering.OpenGL
             : this(width, height, textureFormat, wrapMode, filterMode, true) { }
 
         public Texture2D(uint width, uint height, TextureFormat textureFormat, WrapMode wrapMode, FilterMode filterMode, bool mipmapping)
-            : base()
         {
             Create(width, height, textureFormat, wrapMode, filterMode, mipmapping);
         }
