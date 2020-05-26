@@ -6,7 +6,6 @@ using System.IO;
 using System.Numerics;
 using Automata;
 using Automata.Input;
-using Automata.Numerics;
 using Automata.Rendering;
 using Automata.Rendering.GLFW;
 using Automata.Rendering.OpenGL;

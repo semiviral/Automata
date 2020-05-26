@@ -4,7 +4,6 @@ using System;
 using System.Numerics;
 using Automata.Rendering;
 using Automata.Worlds;
-using Serilog;
 
 #endregion
 

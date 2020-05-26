@@ -60,7 +60,7 @@ namespace Automata.Rendering
                     {
                         RenderMesh renderMesh = entity.GetComponent<RenderMesh>();
 
-                        if (renderMesh.Mesh == null || renderMesh.Mesh.IndexesCount == 0)
+                        if ((renderMesh.Mesh == null) || (renderMesh.Mesh.IndexesCount == 0))
                         {
                             continue;
                         }

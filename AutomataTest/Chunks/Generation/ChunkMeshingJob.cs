@@ -12,7 +12,6 @@ using Automata.Numerics;
 using Automata.Rendering;
 using AutomataTest.Blocks;
 using ConcurrentAsyncScheduler;
-using Serilog;
 
 #endregion
 

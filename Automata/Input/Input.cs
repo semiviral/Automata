@@ -8,7 +8,6 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using Automata.Rendering.GLFW;
-using Automata.Rendering.OpenGL;
 using Silk.NET.Input;
 using Silk.NET.Input.Common;
 using Silk.NET.Windowing.Common;

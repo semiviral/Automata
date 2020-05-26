@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 using Automata.Rendering.GLFW;
 using Serilog;
 
@@ -14,18 +13,13 @@ namespace Automata.Worlds
 {
     public class World
     {
-
-
         private static Dictionary<string, World> Worlds { get; }
 
         public EntityManager EntityManager { get; }
         public SystemManager SystemManager { get; }
         public bool Active { get; set; }
 
-        static World()
-        {
-            Worlds = new Dictionary<string, World>();
-        }
+        static World() => Worlds = new Dictionary<string, World>();
 
         protected World(bool active)
         {

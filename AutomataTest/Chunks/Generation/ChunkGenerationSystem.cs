@@ -4,8 +4,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using Windows.Storage.Search;
 using Automata;
 using Automata.Collections;
 using Automata.Extensions;
