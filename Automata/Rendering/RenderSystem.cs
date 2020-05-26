@@ -13,7 +13,7 @@ namespace Automata.Rendering
 {
     public class RenderSystem : ComponentSystem
     {
-        private const bool _ENABLE_BACK_FACE_CULLING = false;
+        private const bool _ENABLE_BACK_FACE_CULLING = true;
 
         private readonly GL _GL;
 
@@ -22,7 +22,7 @@ namespace Automata.Rendering
             HandledComponentTypes = new[]
             {
                 typeof(Camera),
-                typeof(PackedMesh)
+                typeof(RenderMesh)
             };
 
             _GL = GLAPI.Instance.GL;
@@ -34,20 +34,13 @@ namespace Automata.Rendering
             {
                 // enable and configure face culling
                 _GL.Enable(GLEnum.CullFace);
-                _GL.FrontFace(FrontFaceDirection.CW);
+                _GL.FrontFace(FrontFaceDirection.Ccw);
                 _GL.CullFace(CullFaceMode.Back);
             }
         }
 
-        public override void Registered() { }
-
-        private void DrawFrame() { }
-
-        private double rotationValue;
-
         public override unsafe void Update(EntityManager entityManager, TimeSpan delta)
         {
-            rotationValue += delta.TotalSeconds;
             try
             {
                 _GL.ClearColor(0f, 0f, 0f, 1f);
@@ -63,11 +56,11 @@ namespace Automata.Rendering
 
                     camera.Shader.Use();
 
-                    foreach (IEntity entity in entityManager.GetEntitiesWithComponents<PackedMesh>())
+                    foreach (IEntity entity in entityManager.GetEntitiesWithComponents<RenderMesh>())
                     {
-                        PackedMesh packedMesh = entity.GetComponent<PackedMesh>();
+                        RenderMesh renderMesh = entity.GetComponent<RenderMesh>();
 
-                        if (packedMesh.IndexesBuffer.Length == 0)
+                        if (renderMesh.Mesh == null || renderMesh.Mesh.IndexesCount == 0)
                         {
                             continue;
                         }
@@ -81,7 +74,7 @@ namespace Automata.Rendering
 
                         if (entity.TryGetComponent(out Rotation rotation))
                         {
-                            model *= Matrix4x4.CreateLookAt(Vector3.Zero, new Vector3((float)Math.Cos(rotationValue), 0f, (float)Math.Sin(rotationValue)), Vector3.UnitY);
+                            model *= Matrix4x4.CreateFromQuaternion(rotation.Value);
                         }
 
                         if (entity.TryGetComponent(out Translation translation))
@@ -89,10 +82,10 @@ namespace Automata.Rendering
                             model *= Matrix4x4.CreateTranslation(translation.Value);
                         }
 
-                        camera.Shader.SetUniform("MVP_Matrix", model * camera.View * camera.Projection);
+                        camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MVP_MATRIX, model * camera.View * camera.Projection);
 
-                        packedMesh.VertexArrayObject.Bind();
-                        _GL.DrawElements(PrimitiveType.Triangles, packedMesh.IndexesBuffer.Length, DrawElementsType.UnsignedInt, null);
+                        renderMesh.Mesh.BindVertexArrayObject();
+                        _GL.DrawElements(PrimitiveType.Triangles, renderMesh.Mesh.IndexesCount, DrawElementsType.UnsignedInt, null);
 
                         if (_GL.GetError() != GLEnum.NoError)
                         {

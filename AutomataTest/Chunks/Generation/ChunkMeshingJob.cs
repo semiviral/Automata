@@ -124,7 +124,7 @@ namespace AutomataTest.Chunks.Generation
         #endregion
 
 
-        #region PackedMesh Generation
+        #region Mesh Generation
 
         private void PrepareMeshing()
         {
@@ -333,12 +333,12 @@ namespace AutomataTest.Chunks.Generation
 
                     uint verticesCount = (uint)_Vertexes.Count;
 
-                    _Triangles.Add(0 + verticesCount);
-                    _Triangles.Add(2 + verticesCount);
-                    _Triangles.Add(1 + verticesCount);
-                    _Triangles.Add(2 + verticesCount);
-                    _Triangles.Add(3 + verticesCount);
-                    _Triangles.Add(1 + verticesCount);
+                    _Triangles.Add(0u + verticesCount);
+                    _Triangles.Add(1u + verticesCount);
+                    _Triangles.Add(3u + verticesCount);
+                    _Triangles.Add(1u + verticesCount);
+                    _Triangles.Add(2u + verticesCount);
+                    _Triangles.Add(3u + verticesCount);
 
                     int traversalShiftedMask = GenerationConstants.CHUNK_SIZE_BIT_MASK << traversalNormalShift;
                     int unaryTraversalShiftedMask = ~traversalShiftedMask;

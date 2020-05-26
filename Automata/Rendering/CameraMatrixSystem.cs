@@ -47,7 +47,7 @@ namespace Automata.Rendering
                 // adjust projection
                 if (_HasGameWindowResized)
                 {
-                    camera.Projection = Matrix4x4.CreatePerspectiveFieldOfView(AutomataMath.ToRadians(90f), _NewAspectRatio, 0.1f, 1000f);
+                    camera.Projection = Matrix4x4.CreatePerspectiveFieldOfView(AutomataMath.ToRadians(90f), _NewAspectRatio, 0.1f, 100f);
                 }
             }
 

@@ -5,11 +5,13 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Windows.Storage.Search;
 using Automata;
 using Automata.Collections;
 using Automata.Extensions;
 using Automata.Numerics;
 using Automata.Rendering;
+using Automata.Rendering.OpenGL;
 using Automata.Worlds;
 using ConcurrentAsyncScheduler;
 using Serilog;
@@ -150,23 +152,26 @@ namespace AutomataTest.Chunks.Generation
                     {
                         if (_FinishedMeshingJobs.TryRemove(id.Value, out ChunkMeshingJob? chunkMeshingJob))
                         {
-                            if (!entity.TryGetComponent(out PackedMesh packedMesh))
+                            if (!entity.TryGetComponent(out RenderMesh renderMesh))
                             {
-                                packedMesh = new PackedMesh();
+                                renderMesh = new RenderMesh();
 
-                                entityManager.RegisterComponent(entity, packedMesh);
+                                entityManager.RegisterComponent(entity, renderMesh);
                             }
 
-                            PendingMesh<int> pendingMesh = chunkMeshingJob.GetData();
+                            // PendingMesh<int> pendingMesh = chunkMeshingJob.GetData();
+                            //
+                            // Mesh<int> packedMesh = new Mesh<int>();
+                            // packedMesh.VertexArrayObject.VertexAttributeIPointer(0, 1, VertexAttribPointerType.Int, 1u, 0);
+                            // packedMesh.VertexesBuffer.SetBufferData(pendingMesh.Vertexes.ToArray());
+                            // packedMesh.IndexesBuffer.SetBufferData(pendingMesh.Indexes.ToArray());
 
-                            foreach (int vertex in pendingMesh.Vertexes)
-                            {
-                                Log.Information(ChunkMeshingJob.DecompressVertex(vertex).ToString());
-                            }
+                            Mesh<float> mesh = new Mesh<float>();
+                            mesh.VertexArrayObject.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, 0);
+                            mesh.VertexesBuffer.SetBufferData(StaticCube.Vertexes);
+                            mesh.IndexesBuffer.SetBufferData(StaticCube.Indexes);
 
-                            packedMesh.VertexArrayObject.VertexAttributePointer(0, 1, VertexAttribPointerType.Int, 1, 0);
-                            packedMesh.VertexesBuffer.SetBufferData(GenerationConstants.VertexesByIteration.SelectMany(vert => vert).ToArray());
-                            packedMesh.IndexesBuffer.SetBufferData(Enumerable.Repeat(GenerationConstants.TriangleIndexes, 6).SelectMany(tri => tri).ToArray());
+                            renderMesh.Mesh = mesh;
 
                             chunkMeshingJob.ClearData();
                             _ChunkMeshers.TryAdd(chunkMeshingJob);

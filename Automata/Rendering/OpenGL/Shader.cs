@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
-using Automata.Numerics;
+using Serilog;
 using Silk.NET.OpenGL;
 
 #endregion
@@ -14,42 +14,25 @@ namespace Automata.Rendering.OpenGL
 {
     public class Shader : IDisposable
     {
-        private static readonly Dictionary<UniformType, Type> _GLUniformTypeToRuntimeType = new Dictionary<UniformType, Type>
-        {
-            { UniformType.Bool, typeof(bool) },
-            { UniformType.Double, typeof(double) },
-            { UniformType.Float, typeof(float) },
-            { UniformType.Int, typeof(int) },
-            { UniformType.BoolVec2, typeof(Vector2b) },
-            { UniformType.BoolVec3, typeof(Vector3b) },
-            { UniformType.DoubleVec3, typeof(Vector3d) },
-            { UniformType.FloatMat3x2, typeof(Matrix3x2) },
-            { UniformType.FloatMat4, typeof(Matrix4x4) },
-            { UniformType.IntVec2, typeof(Vector2i) },
-            { UniformType.IntVec3, typeof(Vector3i) },
-            { UniformType.Sampler2D, typeof(Texture2D) },
-            { UniformType.UnsignedInt, typeof(uint) }
-        };
+        public const string RESERVED_UNIFORM_NAME_MVP_MATRIX = "_mvp";
 
-        private const string _DEFAULT_VERTEX_SHADER =
-            @"
+        private static readonly string _DefaultVertexShader =
+            $@"
                 #version 330 core
 
                 layout (location = 0) in vec3 vPos;
-
-                uniform mat4 View; 
-                uniform mat4 Projection; 
-
                 out vec4 fColor;
 
+                uniform mat4 {RESERVED_UNIFORM_NAME_MVP_MATRIX};
+
                 void main()
-                {
-                    gl_Position = Projection * View * vec4(vPos, 1.0);
+                {{
+                    gl_Position = _mvp * vec4(vPos, 1.0);
                     fColor = vec4(1.0, 1.0, 1.0, 1.0);
-                }
+                }}
             ";
 
-        private const string _DEFAULT_FRAGMENT_SHADER =
+        private static readonly string _DefaultFragmentShader =
             @"
                 #version 330 core
 
@@ -70,8 +53,8 @@ namespace Automata.Rendering.OpenGL
         {
             _GL = GLAPI.Instance.GL;
 
-            uint vertexShaderHandle = LoadShader(ShaderType.VertexShader, _DEFAULT_VERTEX_SHADER);
-            uint fragmentShaderHandle = LoadShader(ShaderType.FragmentShader, _DEFAULT_FRAGMENT_SHADER);
+            uint vertexShaderHandle = LoadShader(ShaderType.VertexShader, _DefaultVertexShader);
+            uint fragmentShaderHandle = LoadShader(ShaderType.FragmentShader, _DefaultFragmentShader);
 
             _Handle = _GL.CreateProgram();
             CreateShader(vertexShaderHandle, fragmentShaderHandle);
@@ -90,12 +73,26 @@ namespace Automata.Rendering.OpenGL
             uint fragmentShaderHandle = LoadShader(ShaderType.FragmentShader, File.ReadAllText(fragmentPath));
 
             _Handle = _GL.CreateProgram();
-            CreateShader(vertexShaderHandle, fragmentShaderHandle);
 
-            int uniformCount;
-            _GL.GetProgram(_Handle, GLEnum.ActiveUniforms, &uniformCount);
-            _CachedUniformLocations = new Dictionary<string, int>();
-            CacheKnownUniforms(uniformCount);
+            try
+            {
+                CreateShader(vertexShaderHandle, fragmentShaderHandle);
+            }
+            catch (ShaderLoadException ex)
+            {
+                Log.Error($"Failed to load {ex.Type} shader (will use fallback to default): {ex.InfoLog}");
+
+                vertexShaderHandle = LoadShader(ShaderType.VertexShader, _DefaultVertexShader);
+                fragmentShaderHandle = LoadShader(ShaderType.FragmentShader, _DefaultFragmentShader);
+                CreateShader(vertexShaderHandle, fragmentShaderHandle);
+            }
+            finally
+            {
+                int uniformCount;
+                _GL.GetProgram(_Handle, GLEnum.ActiveUniforms, &uniformCount);
+                _CachedUniformLocations = new Dictionary<string, int>();
+                CacheKnownUniforms(uniformCount);
+            }
         }
 
         private void CreateShader(uint vertexShaderHandle, uint fragmentShaderHandle)

@@ -29,9 +29,15 @@ namespace Automata.Rendering.OpenGL
             _GL.DeleteVertexArray(_Handle);
         }
 
-        public unsafe void VertexAttributePointer(uint index, int count, VertexAttribPointerType type, uint vertexSize, int offset)
+        public unsafe void VertexAttributePointer(uint index, int count, VertexAttribPointerType type, int offset)
         {
-            _GL.VertexAttribPointer(index, count, type, false, vertexSize * (uint)sizeof(TVertexType), (void*)(offset * sizeof(TVertexType)));
+            _GL.VertexAttribPointer(index, count, type, false, (uint)count * (uint)sizeof(TVertexType), (void*)(offset * sizeof(TVertexType)));
+            _GL.EnableVertexAttribArray(index);
+        }
+
+        public unsafe void VertexAttributeIPointer(uint index, int count, VertexAttribPointerType type, int offset)
+        {
+            _GL.VertexAttribIPointer(index, count, type, (uint)count * (uint)sizeof(TVertexType), (void*)(offset * sizeof(TVertexType)));
             _GL.EnableVertexAttribArray(index);
         }
 

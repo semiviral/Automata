@@ -51,6 +51,7 @@ namespace AutomataTest
             options.Size = new Size(800, 600);
             options.Position = new Point(500, 400);
             options.VSync = VSyncMode.Off;
+            options.PreferredDepthBufferBits = 24;
 
             Singleton.CreateSingleton<AutomataWindow>();
             AutomataWindow.Instance.CreateWindow(options);
@@ -120,12 +121,12 @@ namespace AutomataTest
             world.EntityManager.RegisterEntity(playerEntity);
             world.EntityManager.RegisterComponent(playerEntity, new Translation
             {
-                Value = new Vector3(0f, 0f, -3f)
+                Value = new Vector3(-3f, 0f, 0f)
             });
             world.EntityManager.RegisterComponent<Rotation>(playerEntity);
             world.EntityManager.RegisterComponent(playerEntity, new Camera
             {
-                Shader = new Shader("PackedVertexes.glsl", "DefaultFragment.glsl")
+                Shader = new Shader() //"PackedVertexes.glsl", "DefaultFragment.glsl")
             });
             world.EntityManager.RegisterComponent<InputListener>(playerEntity);
         }
@@ -151,7 +152,7 @@ namespace AutomataTest
             });
             world.EntityManager.RegisterComponent(chunk, new Scale
             {
-                Value = 3f
+                Value = 1f
             });
             world.EntityManager.RegisterComponent(chunk, new ChunkState
             {

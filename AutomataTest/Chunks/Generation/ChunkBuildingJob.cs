@@ -152,16 +152,7 @@ namespace AutomataTest.Chunks.Generation
             Debug.Assert(_Blocks != null);
             Debug.Assert(_SeededRandom != null);
             Vector3i localPosition = Vector3i.Project3D(index, GenerationConstants.CHUNK_SIZE);
-
-            if (index == 0)
-            {
-                _Blocks.SetPoint(localPosition, GetCachedBlockID("stone"));
-            }
-
-            return;
-
             int heightmapIndex = Vector2i.Project1D(new Vector2i(localPosition.X, localPosition.Z), GenerationConstants.CHUNK_SIZE);
-
             int noiseHeight = _Heightmap[heightmapIndex];
 
             if (noiseHeight < _OriginPoint.Y)
