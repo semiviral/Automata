@@ -22,6 +22,16 @@ namespace Automata.Rendering.OpenGL
         public const string RESERVED_UNIFORM_NAME_VEC4_CAMERA_PROJECTION_PARAMS = "_projectionParams";
         public const string RESERVED_UNIFORM_NAME_VEC4_VIEWPORT = "_viewport";
 
+        private static string[] _ReservedUniformNames =
+        {
+            RESERVED_UNIFORM_NAME_MATRIX_MV,
+            RESERVED_UNIFORM_NAME_MATRIX_MVP,
+            RESERVED_UNIFORM_NAME_MATRIX_WORLD,
+            RESERVED_UNIFORM_NAME_MATRIX_OBJECT,
+            RESERVED_UNIFORM_NAME_VEC3_CAMERA_WORLD_POSITION,
+            RESERVED_UNIFORM_NAME_VEC4_CAMERA_PROJECTION_PARAMS,
+            RESERVED_UNIFORM_NAME_VEC4_VIEWPORT,
+        };
 
         private static readonly string _DefaultVertexShader =
             $@"
@@ -57,6 +67,8 @@ namespace Automata.Rendering.OpenGL
         private readonly uint _Handle;
         private readonly Dictionary<string, int> _CachedUniformLocations;
 
+        public bool HasAutomataUniforms { get; }
+
         public unsafe Shader()
         {
             _GL = GLAPI.Instance.GL;
@@ -70,7 +82,8 @@ namespace Automata.Rendering.OpenGL
             int uniformCount;
             _GL.GetProgram(_Handle, GLEnum.ActiveUniforms, &uniformCount);
             _CachedUniformLocations = new Dictionary<string, int>();
-            CacheKnownUniforms(uniformCount);
+            CacheUniforms(uniformCount);
+            HasAutomataUniforms = _ReservedUniformNames.Intersect(_CachedUniformLocations.Keys).Any();
         }
 
         public unsafe Shader(string vertexPath, string fragmentPath)
@@ -99,7 +112,8 @@ namespace Automata.Rendering.OpenGL
                 int uniformCount;
                 _GL.GetProgram(_Handle, GLEnum.ActiveUniforms, &uniformCount);
                 _CachedUniformLocations = new Dictionary<string, int>();
-                CacheKnownUniforms(uniformCount);
+                CacheUniforms(uniformCount);
+                HasAutomataUniforms = _ReservedUniformNames.Intersect(_CachedUniformLocations.Keys).Any();
             }
         }
 
@@ -121,7 +135,7 @@ namespace Automata.Rendering.OpenGL
             _GL.DeleteShader(fragmentShaderHandle);
         }
 
-        private void CacheKnownUniforms(int uniformCount)
+        private void CacheUniforms(int uniformCount)
         {
             for (uint uniformIndex = 0; uniformIndex < uniformCount; uniformIndex++)
             {
