@@ -152,7 +152,7 @@ namespace AutomataTest
             mesh.VertexesBuffer.SetBufferData(StaticCube.Vertexes);
             mesh.IndexesBuffer.SetBufferData(StaticCube.Indexes);
 
-            const int diameter = 32;
+            const int diameter = 4;
             for (int x = 0; x < diameter; x++)
             for (int y = 0; y < diameter; y++)
             for (int z = 0; z < diameter; z++)

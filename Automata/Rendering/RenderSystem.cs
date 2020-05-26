@@ -1,7 +1,6 @@
 #region
 
 using System;
-using System.Diagnostics;
 using System.Numerics;
 using Automata.Rendering.GLFW;
 using Automata.Rendering.OpenGL;
@@ -73,13 +72,13 @@ namespace Automata.Rendering
                             continue;
                         }
 
-                        if (currentRenderMesh == null || currentRenderMesh.MeshID != nextRenderMesh.MeshID)
+                        if ((currentRenderMesh == null) || (currentRenderMesh.MeshID != nextRenderMesh.MeshID))
                         {
                             currentRenderMesh = nextRenderMesh;
                             currentRenderMesh.Mesh.BindVertexArrayObject();
                         }
 
-                        if (!camera.Shader.HasAutomataUniforms)
+                        if (camera.Shader.HasAutomataUniforms)
                         {
                             Matrix4x4 model = Matrix4x4.Identity;
 
@@ -117,13 +116,13 @@ namespace Automata.Rendering
 
                         _GL.DrawElements(PrimitiveType.Triangles, currentRenderMesh.Mesh?.IndexesLength ?? 0u, DrawElementsType.UnsignedInt, null);
 
-                        #if DEBUG
+#if DEBUG
 
                         if (_GL.GetError() != GLEnum.NoError)
                         {
                             throw new Exception();
                         }
-                        #endif
+#endif
                     }
                 }
             }

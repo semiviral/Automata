@@ -83,7 +83,7 @@ namespace Automata.Rendering.OpenGL
             _GL.GetProgram(_Handle, GLEnum.ActiveUniforms, &uniformCount);
             _CachedUniformLocations = new Dictionary<string, int>();
             CacheUniforms(uniformCount);
-            HasAutomataUniforms = _ReservedUniformNames.Intersect(_CachedUniformLocations.Keys).Any();
+            HasAutomataUniforms = _CachedUniformLocations.Keys.Intersect(_ReservedUniformNames).Any();
         }
 
         public unsafe Shader(string vertexPath, string fragmentPath)
@@ -113,7 +113,7 @@ namespace Automata.Rendering.OpenGL
                 _GL.GetProgram(_Handle, GLEnum.ActiveUniforms, &uniformCount);
                 _CachedUniformLocations = new Dictionary<string, int>();
                 CacheUniforms(uniformCount);
-                HasAutomataUniforms = _ReservedUniformNames.Intersect(_CachedUniformLocations.Keys).Any();
+                HasAutomataUniforms = _CachedUniformLocations.Keys.Intersect(_ReservedUniformNames).Any();
             }
         }
 
