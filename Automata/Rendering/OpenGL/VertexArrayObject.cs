@@ -35,9 +35,9 @@ namespace Automata.Rendering.OpenGL
             _GL.EnableVertexAttribArray(index);
         }
 
-        public unsafe void VertexAttributeIPointer(uint index, int count, VertexAttribPointerType type, int offset)
+        public unsafe void VertexAttributeIPointer(uint index, int dimensions, VertexAttribPointerType type, int offset)
         {
-            _GL.VertexAttribIPointer(index, count, type, (uint)count * (uint)sizeof(TVertexType), (void*)(offset * sizeof(TVertexType)));
+            _GL.VertexAttribIPointer(index, dimensions, type, (uint)dimensions * (uint)sizeof(TVertexType), (void*)(offset * sizeof(TVertexType)));
             _GL.EnableVertexAttribArray(index);
         }
 

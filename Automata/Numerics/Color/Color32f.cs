@@ -10,14 +10,14 @@ namespace Automata.Numerics.Color
     /// <summary>
     ///     A color with each component representing a 32-bit signed floating point value.
     /// </summary>
-    public readonly partial struct Color32
+    public readonly partial struct Color32f
     {
-        public static Color32 Red => new Color32(1f, 0f, 0f, 1f);
-        public static Color32 Green => new Color32(0f, 1f, 0f, 1f);
-        public static Color32 Blue => new Color32(0f, 0f, 1f, 1f);
-        public static Color32 Black => new Color32(0f, 0f, 0f, 1f);
-        public static Color32 White => new Color32(1f, 1f, 1f, 1f);
-        public static Color32 Transparent => new Color32(0f, 0f, 0f, 0f);
+        public static Color32f Red => new Color32f(1f, 0f, 0f, 1f);
+        public static Color32f Green => new Color32f(0f, 1f, 0f, 1f);
+        public static Color32f Blue => new Color32f(0f, 0f, 1f, 1f);
+        public static Color32f Black => new Color32f(0f, 0f, 0f, 1f);
+        public static Color32f White => new Color32f(1f, 1f, 1f, 1f);
+        public static Color32f Transparent => new Color32f(0f, 0f, 0f, 0f);
 
         private readonly Vector4 _RawValue;
 
@@ -26,10 +26,10 @@ namespace Automata.Numerics.Color
         public float B => _RawValue.Z;
         public float A => _RawValue.W;
 
-        private Color32(Vector4 rawValue) => _RawValue = rawValue;
+        private Color32f(Vector4 rawValue) => _RawValue = rawValue;
 
-        public Color32(float r, float g, float b) : this(new Vector4(r, g, b, 1f)) { }
-        public Color32(float r, float g, float b, float a) : this(new Vector4(r, g, b, a)) { }
+        public Color32f(float r, float g, float b) : this(new Vector4(r, g, b, 1f)) { }
+        public Color32f(float r, float g, float b, float a) : this(new Vector4(r, g, b, a)) { }
 
         public void CopyTo(float[] array) => CopyTo(array, 0);
 
@@ -51,7 +51,7 @@ namespace Automata.Numerics.Color
             _RawValue.CopyTo(array, index);
         }
 
-        public static implicit operator Vector4(Color32 color) => color._RawValue;
-        public static explicit operator Color32(Vector4 a) => new Color32(a);
+        public static implicit operator Vector4(Color32f color) => color._RawValue;
+        public static explicit operator Color32f(Vector4 a) => new Color32f(a);
     }
 }

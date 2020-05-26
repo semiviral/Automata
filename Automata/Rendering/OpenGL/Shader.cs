@@ -27,15 +27,16 @@ namespace Automata.Rendering.OpenGL
             $@"
                 #version 330 core
 
-                layout (location = 0) in vec3 vPos;
-                out vec4 fColor;
+                layout (location = 0) in vec3 vertex;
+
+                out vec4 fragColor;
 
                 uniform mat4 {RESERVED_UNIFORM_NAME_MATRIX_MVP};
 
                 void main()
                 {{
-                    gl_Position = _mvp * vec4(vPos, 1.0);
-                    fColor = vec4(1.0, 1.0, 1.0, 1.0);
+                    gl_Position = {RESERVED_UNIFORM_NAME_MATRIX_MVP} * vec4(vertex, 1.0);
+                    fragColor = vec4(1.0);
                 }}
             ";
 
@@ -43,12 +44,12 @@ namespace Automata.Rendering.OpenGL
             @"
                 #version 330 core
 
-                in vec4 fColor;
-                out vec4 fragColor;
+                in vec4 fragColor;
+                out vec4 outColor;
 
                 void main()
                 {
-                    fragColor = fColor;
+                    outColor = fragColor;
                 }
             ";
 

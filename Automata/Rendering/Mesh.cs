@@ -13,7 +13,7 @@ namespace Automata.Rendering
         public BufferObject<uint> IndexesBuffer { get; }
         public VertexArrayObject<T, uint> VertexArrayObject { get; }
 
-        public uint IndexesCount => IndexesBuffer.Length;
+        public uint IndexesLength => IndexesBuffer.Length;
 
         public Mesh()
         {

@@ -1,7 +1,12 @@
 #region
 
 using System;
+using System.Net;
+using System.Net.Http;
+using Windows.Web.Http;
+using Automata.Numerics.Color;
 using Silk.NET.OpenGL;
+using HttpClient = System.Net.Http.HttpClient;
 
 #endregion
 
@@ -42,6 +47,10 @@ namespace Automata.Rendering.OpenGL
         {
             GL.ActiveTexture(textureSlot);
             GL.BindTexture(TextureTarget.Texture3D, Handle);
+        }
+
+        public void SetPixel(uint x, uint y, uint z, Color32f a)
+        {
         }
     }
 }

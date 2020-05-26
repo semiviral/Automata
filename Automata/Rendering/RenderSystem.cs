@@ -45,7 +45,7 @@ namespace Automata.Rendering
         {
             try
             {
-                _GL.ClearColor(0f, 0f, 0f, 1f);
+                _GL.ClearColor(0.2f, 0.2f, 0.2f, 1f);
                 _GL.Clear((uint)ClearBufferMask.ColorBufferBit);
                 _GL.Clear((uint)ClearBufferMask.DepthBufferBit);
 
@@ -64,7 +64,7 @@ namespace Automata.Rendering
                     {
                         RenderMesh renderMesh = entity.GetComponent<RenderMesh>();
 
-                        if ((renderMesh.Mesh == null) || (renderMesh.Mesh.IndexesCount == 0))
+                        if ((renderMesh.Mesh == null) || (renderMesh.Mesh.IndexesLength == 0))
                         {
                             continue;
                         }
@@ -87,10 +87,10 @@ namespace Automata.Rendering
                         }
 
                         Matrix4x4 modelView = model * camera.View;
-                        Matrix4x4 modelViewProject = model * camera.Projection;
+                        Matrix4x4 modelViewProjection = modelView * camera.Projection;
 
                         camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_MV, modelView);
-                        camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_MVP, modelViewProject);
+                        camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_MVP, modelViewProjection);
                         camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_WORLD, model);
 
                         if (Matrix4x4.Invert(model, out Matrix4x4 modelInverted))
@@ -103,12 +103,16 @@ namespace Automata.Rendering
                         camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_VIEWPORT, viewport);
 
                         renderMesh.Mesh.BindVertexArrayObject();
-                        _GL.DrawElements(PrimitiveType.Triangles, renderMesh.Mesh.IndexesCount, DrawElementsType.UnsignedInt, null);
+                        _GL.DrawElements(PrimitiveType.Triangles, renderMesh.Mesh.IndexesLength, DrawElementsType.UnsignedInt, null);
+
+                        #if DEBUG
 
                         if (_GL.GetError() != GLEnum.NoError)
                         {
                             throw new Exception();
                         }
+
+                        #endif
                     }
                 }
             }

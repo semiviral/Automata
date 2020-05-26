@@ -157,13 +157,6 @@ namespace AutomataTest.Chunks.Generation
                                 entityManager.RegisterComponent(entity, renderMesh);
                             }
 
-                            // PendingMesh<int> pendingMesh = chunkMeshingJob.GetData();
-                            //
-                            // Mesh<int> packedMesh = new Mesh<int>();
-                            // packedMesh.VertexArrayObject.VertexAttributeIPointer(0, 1, VertexAttribPointerType.Int, 1u, 0);
-                            // packedMesh.VertexesBuffer.SetBufferData(pendingMesh.Vertexes.ToArray());
-                            // packedMesh.IndexesBuffer.SetBufferData(pendingMesh.Indexes.ToArray());
-
                             Mesh<float> mesh = new Mesh<float>();
                             mesh.VertexArrayObject.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, 0);
                             mesh.VertexesBuffer.SetBufferData(StaticCube.Vertexes);

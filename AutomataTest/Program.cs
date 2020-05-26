@@ -120,13 +120,10 @@ namespace AutomataTest
             world.EntityManager.RegisterEntity(playerEntity);
             world.EntityManager.RegisterComponent(playerEntity, new Translation
             {
-                Value = new Vector3(-3f, 0f, 0f)
+                Value = new Vector3(0f, 0f, -3f)
             });
             world.EntityManager.RegisterComponent<Rotation>(playerEntity);
-            world.EntityManager.RegisterComponent(playerEntity, new Camera
-            {
-                Shader = new Shader() //"PackedVertexes.glsl", "DefaultFragment.glsl")
-            });
+            world.EntityManager.RegisterComponent<Camera>(playerEntity);
             world.EntityManager.RegisterComponent<InputListener>(playerEntity);
         }
 

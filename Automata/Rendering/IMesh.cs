@@ -2,7 +2,7 @@ namespace Automata.Rendering
 {
     public interface IMesh
     {
-        public uint IndexesCount { get; }
+        public uint IndexesLength { get; }
 
         public void BindVertexArrayObject();
     }
