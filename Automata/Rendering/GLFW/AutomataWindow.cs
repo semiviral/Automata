@@ -2,7 +2,10 @@
 
 using System;
 using System.Diagnostics;
+using System.Drawing;
+using System.Runtime.CompilerServices;
 using System.Threading;
+using Automata.Input;
 using Automata.Numerics;
 using Automata.Worlds;
 using Serilog;
@@ -16,13 +19,15 @@ namespace Automata.Rendering.GLFW
 {
     public class AutomataWindow : Singleton<AutomataWindow>
     {
+        #region Private Member Variables
+
         private readonly Stopwatch _DeltaTimer;
 
         private IWindow? _Window;
         private TimeSpan _MinimumFrameTime;
+        private bool _RegisteredInput;
 
-
-        public IWindow Window
+        private IWindow Window
         {
             get
             {
@@ -41,6 +46,13 @@ namespace Automata.Rendering.GLFW
                 );
         }
 
+        #endregion
+
+
+        #region Public Member Variables
+
+        public IGLContext? GLContext => Window.GLContext;
+
         public IVkSurface Surface
         {
             get
@@ -56,8 +68,20 @@ namespace Automata.Rendering.GLFW
             }
         }
 
+        public Vector2i Size { get; private set; }
+        public bool Focused { get; private set; }
+
         public Vector2i Position => new Vector2i(Window.Position.X, Window.Position.Y);
-        public Vector2i Size => new Vector2i(Window.Size.Width, Window.Size.Height);
+
+        #endregion
+
+        #region Events
+
+        public event WindowResizedEventHandler? Resized;
+        public event WindowFocusChangedEventHandler? FocusChanged;
+        public event WindowClosingEventHandler? Closing;
+
+        #endregion
 
         public AutomataWindow()
         {
@@ -69,10 +93,36 @@ namespace Automata.Rendering.GLFW
         public void CreateWindow(WindowOptions windowOptions)
         {
             _Window = Silk.NET.Windowing.Window.Create(windowOptions);
+            _Window.Resize += OnWindowResized;
+            _Window.FocusChanged += OnWindowFocusedChanged;
+            _Window.Closing += OnWindowClosing;
 
-            _MinimumFrameTime = Window.Monitor?.VideoMode.RefreshRate != null
-                ? TimeSpan.FromSeconds(1d / _Window.Monitor.VideoMode.RefreshRate.Value)
-                : TimeSpan.FromSeconds(1d / 72d);
+            Resized += (sender, newSize) => Size = newSize;
+            FocusChanged += (sender, isFocused) => Focused = isFocused;
+
+            Size = new Vector2i(Window.Size.Width, Window.Size.Height);
+            Focused = true;
+        }
+
+        public void Initialize()
+        {
+            Window.Initialize();
+
+            RegisterInput();
+
+                _MinimumFrameTime = Window.Monitor?.VideoMode.RefreshRate != null
+                ? TimeSpan.FromSeconds(1d / Window.Monitor.VideoMode.RefreshRate.Value)
+                : TimeSpan.FromSeconds(1d / 60d);
+        }
+
+        public void RegisterInput()
+        {
+            if (_RegisteredInput)
+            {
+                return;
+            }
+
+            InputManager.Instance.RegisterView(Window);
         }
 
         public void Run()
@@ -81,29 +131,32 @@ namespace Automata.Rendering.GLFW
             {
                 while (!Window.IsClosing)
                 {
-                    if (Input.Input.Instance.IsKeyPressed(Key.Escape))
-                    {
-                        Window.Close();
-                    }
-
                     TimeSpan delta = _DeltaTimer.Elapsed;
                     _DeltaTimer.Restart();
 
-#if true
-
-                    Window.Title = $"Automata ({1d / delta.TotalSeconds:00})";
-
-#endif
-
                     Window.DoEvents();
+
+                    if (InputManager.Instance.IsKeyPressed(Key.Escape))
+                    {
+                        Window.Close();
+                    }
 
                     if (!Window.IsClosing)
                     {
                         World.GlobalUpdate(delta);
                     }
 
-                    TimeSpan frameWait = _MinimumFrameTime - _DeltaTimer.Elapsed;
-                    Thread.Sleep(frameWait <= TimeSpan.Zero ? TimeSpan.Zero : frameWait);
+                    Window.DoEvents();
+                    Window.SwapBuffers();
+
+#if true
+                    Window.Title = $"Automata ({1d / delta.TotalSeconds:00})";
+#endif
+
+                    if (CheckWaitForNextMonitorRefresh())
+                    {
+                       WaitForNextMonitorRefresh();
+                    }
                 }
             }
             catch (Exception ex)
@@ -112,5 +165,35 @@ namespace Automata.Rendering.GLFW
                 throw;
             }
         }
+
+        private bool CheckWaitForNextMonitorRefresh()
+        {
+            switch (Window.VSync)
+            {
+                case VSyncMode.On:
+                    return true;
+                case VSyncMode.Off:
+                    return false;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        private void WaitForNextMonitorRefresh()
+        {
+            TimeSpan frameWait = _MinimumFrameTime - _DeltaTimer.Elapsed;
+            Thread.Sleep(frameWait <= TimeSpan.Zero ? TimeSpan.Zero : frameWait);
+        }
+
+
+        #region Event Subscriptors
+
+        private void OnWindowResized(Size newSize) => Resized?.Invoke(this, Unsafe.As<Size, Vector2i>(ref newSize));
+
+        private void OnWindowFocusedChanged(bool focused) => FocusChanged?.Invoke(this, Focused);
+
+        private void OnWindowClosing() => Closing?.Invoke(this);
+
+        #endregion
     }
 }

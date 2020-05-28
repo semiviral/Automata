@@ -44,7 +44,7 @@ namespace Automata
 
         public void Update(EntityManager entityManager, TimeSpan deltaTime)
         {
-            foreach (ComponentSystem componentSystem in _ComponentSystems.Where(componentSystem =>
+            foreach (ComponentSystem componentSystem in _ComponentSystems.Where(componentSystem => componentSystem.Enabled &&
                 VerifyHandledTypesExist(entityManager, componentSystem)))
             {
                 componentSystem.Update(entityManager, deltaTime);
@@ -60,7 +60,7 @@ namespace Automata
         }
 
         /// <summary>
-        ///     Registers a new system of type <see cref="T" />.
+        ///     Registers a new system of type <see cref="TSystem" />.
         /// </summary>
         /// <typeparam name="TSystem"><see cref="ComponentSystem" /> type to instantiate.</typeparam>
         /// <typeparam name="TUpdateAround"><see cref="ComponentSystem" /> type to update system after.</typeparam>

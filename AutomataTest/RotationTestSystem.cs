@@ -20,6 +20,8 @@ namespace AutomataTest
                 typeof(Rotation),
                 typeof(RotationTest)
             };
+
+            Enabled = false;
         }
 
         public override void Update(EntityManager entityManager, TimeSpan delta)

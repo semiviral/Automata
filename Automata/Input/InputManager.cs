@@ -24,28 +24,28 @@ namespace Automata.Input
 
     public delegate void MouseScrolledEventHandler(IMouse mouse, Vector2 scrollPosition);
 
-    public sealed class Input : Singleton<Input>
+    public sealed class InputManager : Singleton<InputManager>
     {
         private readonly List<IKeyboard> _Keyboards;
         private readonly List<IMouse> _Mice;
 
         private IInputContext? _InputContext;
 
-        public Input()
+        public InputManager()
         {
             AssignSingletonInstance(this);
 
             _Keyboards = new List<IKeyboard>();
             _Mice = new List<IMouse>();
-
-            Debug.Assert(AutomataWindow.Instance != null);
-            Debug.Assert(AutomataWindow.Instance.Window != null);
-
-            RegisterView(AutomataWindow.Instance.Window);
         }
 
-        private void RegisterView(IView view)
+        public void RegisterView(IView view)
         {
+            if (view == null)
+            {
+                throw new NullReferenceException($"Given parameter '{nameof(view)}' cannot be null.");
+            }
+
             _InputContext = view.CreateInput();
 
             foreach (IKeyboard keyboard in _InputContext.Keyboards)
@@ -97,7 +97,6 @@ namespace Automata.Input
             }
 
             Debug.Assert(AutomataWindow.Instance != null);
-            Debug.Assert(AutomataWindow.Instance.Window != null);
 
             PointF pointerPosition = _Mice[mouseIndex].Position;
 
@@ -107,7 +106,6 @@ namespace Automata.Input
         public void SetMousePositionRelative(int mouseIndex, Vector2 position)
         {
             Debug.Assert(AutomataWindow.Instance != null);
-            Debug.Assert(AutomataWindow.Instance.Window != null);
 
             if ((mouseIndex < 0) || (mouseIndex >= _Mice.Count))
             {

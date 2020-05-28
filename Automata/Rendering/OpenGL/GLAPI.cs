@@ -1,5 +1,6 @@
 #region
 
+using Automata.Rendering.GLFW;
 using Silk.NET.OpenGL;
 
 #endregion
@@ -14,7 +15,7 @@ namespace Automata.Rendering.OpenGL
         {
             AssignSingletonInstance(this);
 
-            GL = GL.GetApi();
+            GL = GL.GetApi(AutomataWindow.Instance.GLContext);
         }
     }
 }

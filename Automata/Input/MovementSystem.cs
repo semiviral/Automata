@@ -3,6 +3,7 @@
 using System;
 using System.Numerics;
 using Automata.Numerics;
+using Automata.Rendering.GLFW;
 using Automata.Worlds;
 using Silk.NET.Input.Common;
 
@@ -24,6 +25,11 @@ namespace Automata.Input
 
         public override void Update(EntityManager entityManager, TimeSpan delta)
         {
+            if (!AutomataWindow.Instance.Focused)
+            {
+                return;
+            }
+
             Vector3d movementVector = GetMovementVector(delta.TotalSeconds);
 
             if (Vector3b.All(movementVector == Vector3d.Zero))
@@ -45,22 +51,22 @@ namespace Automata.Input
         {
             Vector3d movementVector = Vector3d.Zero;
 
-            if (Input.Instance.IsKeyPressed(Key.W))
+            if (InputManager.Instance.IsKeyPressed(Key.W))
             {
                 movementVector += Vector3d.UnitZ * deltaTime;
             }
 
-            if (Input.Instance.IsKeyPressed(Key.S))
+            if (InputManager.Instance.IsKeyPressed(Key.S))
             {
                 movementVector -= Vector3d.UnitZ * deltaTime;
             }
 
-            if (Input.Instance.IsKeyPressed(Key.D))
+            if (InputManager.Instance.IsKeyPressed(Key.D))
             {
                 movementVector -= Vector3d.UnitX * deltaTime;
             }
 
-            if (Input.Instance.IsKeyPressed(Key.A))
+            if (InputManager.Instance.IsKeyPressed(Key.A))
             {
                 movementVector += Vector3d.UnitX * deltaTime;
             }

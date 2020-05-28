@@ -4,7 +4,7 @@ using Silk.NET.GLFW;
 
 #endregion
 
-namespace Automata.Rendering
+namespace Automata.Rendering.GLFW
 {
     public class GLFWAPI : Singleton<GLFWAPI>
     {

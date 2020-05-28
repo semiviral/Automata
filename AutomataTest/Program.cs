@@ -55,13 +55,15 @@ namespace AutomataTest
             options.Title = "Automata";
             options.Size = new Size(800, 600);
             options.Position = new Point(500, 400);
-            options.VSync = VSyncMode.Off;
+            options.VSync = VSyncMode.On;
             options.PreferredDepthBufferBits = 24;
 
+            Singleton.CreateSingleton<GLFWAPI>();
+            Singleton.CreateSingleton<InputManager>();
             Singleton.CreateSingleton<AutomataWindow>();
             AutomataWindow.Instance.CreateWindow(options);
-            AutomataWindow.Instance.Window.Closing += OnClose;
-            AutomataWindow.Instance.Window.Initialize();
+            AutomataWindow.Instance.Initialize();
+            AutomataWindow.Instance.Closing += OnClose;
 
             Singleton.CreateSingleton<GLAPI>();
 
@@ -70,8 +72,6 @@ namespace AutomataTest
             Diagnostics.Instance.RegisterDiagnosticTimeEntry("TerrainGeneration");
             Diagnostics.Instance.RegisterDiagnosticTimeEntry("PreMeshing");
             Diagnostics.Instance.RegisterDiagnosticTimeEntry("Meshing");
-
-            Singleton.CreateSingleton<Input>();
 
             Singleton.CreateSingleton<BlockRegistry>();
         }
@@ -153,6 +153,7 @@ namespace AutomataTest
             mesh.IndexesBuffer.SetBufferData(StaticCube.Indexes);
 
             const int diameter = 4;
+            const float tile_factor = 3f;
             for (int x = 0; x < diameter; x++)
             for (int y = 0; y < diameter; y++)
             for (int z = 0; z < diameter; z++)
@@ -161,7 +162,7 @@ namespace AutomataTest
                 world.EntityManager.RegisterEntity(cube);
                 world.EntityManager.RegisterComponent(cube, new Translation
                 {
-                    Value = new Vector3(x * 2f, y * 2f, z * 2f)
+                    Value = new Vector3(x * tile_factor, y * tile_factor, z * tile_factor)
                 });
                 world.EntityManager.RegisterComponent<Rotation>(cube);
                 world.EntityManager.RegisterComponent<RotationTest>(cube);
@@ -182,7 +183,7 @@ namespace AutomataTest
             // world.EntityManager.RegisterComponent<BlocksCollection>(chunk);
         }
 
-        private static void OnClose()
+        private static void OnClose(object sender)
         {
             if (VKAPI.TryValidate())
             {

@@ -61,8 +61,6 @@ namespace Automata.Worlds
 
         private void RegisterDefaultSystems()
         {
-            SystemManager.RegisterSystem<ViewDoUpdateSystem, FirstOrderSystem>(SystemRegistrationOrder.After);
-            SystemManager.RegisterSystem<ViewDoRenderSystem, LastOrderSystem>(SystemRegistrationOrder.After);
             SystemManager.RegisterSystem<InternalEntityChangedResetSystem, LastOrderSystem>(SystemRegistrationOrder.After);
         }
 

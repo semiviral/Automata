@@ -60,6 +60,9 @@ namespace Automata.Rendering
                     }
 
                     camera.Shader.Use();
+                    camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC3_CAMERA_WORLD_POSITION, cameraTranslation.Value);
+                    camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_CAMERA_PROJECTION_PARAMS, camera.ProjectionParameters);
+                    camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_VIEWPORT, viewport);
 
                     RenderMesh? currentRenderMesh = null;
 
@@ -108,16 +111,11 @@ namespace Automata.Rendering
                             {
                                 camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_OBJECT, modelInverted);
                             }
-
-                            camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC3_CAMERA_WORLD_POSITION, cameraTranslation.Value);
-                            camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_CAMERA_PROJECTION_PARAMS, camera.ProjectionParameters);
-                            camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_VIEWPORT, viewport);
                         }
 
                         _GL.DrawElements(PrimitiveType.Triangles, currentRenderMesh.Mesh?.IndexesLength ?? 0u, DrawElementsType.UnsignedInt, null);
 
 #if DEBUG
-
                         if (_GL.GetError() != GLEnum.NoError)
                         {
                             throw new Exception();

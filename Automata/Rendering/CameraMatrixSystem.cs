@@ -1,8 +1,8 @@
 #region
 
 using System;
-using System.Drawing;
 using System.Numerics;
+using Automata.Numerics;
 using Automata.Rendering.GLFW;
 using Automata.Worlds;
 
@@ -24,8 +24,8 @@ namespace Automata.Rendering
                 typeof(Rotation)
             };
 
-            GameWindowResized(AutomataWindow.Instance.Window.Size);
-            AutomataWindow.Instance.Window.Resize += GameWindowResized;
+            GameWindowResized(null!, AutomataWindow.Instance.Size);
+            AutomataWindow.Instance.Resized += GameWindowResized;
         }
 
         public override void Update(EntityManager entityManager, TimeSpan delta)
@@ -59,10 +59,10 @@ namespace Automata.Rendering
             _HasGameWindowResized = false;
         }
 
-        private void GameWindowResized(Size size)
+        private void GameWindowResized(object sender, Vector2i newSize)
         {
             _HasGameWindowResized = true;
-            _NewAspectRatio = (float)size.Width / size.Height;
+            _NewAspectRatio = (float)newSize.X / (float)newSize.Y;
         }
     }
 }

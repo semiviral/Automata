@@ -2,7 +2,9 @@
 
 using System;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using Automata.Rendering;
+using Automata.Rendering.GLFW;
 using Automata.Worlds;
 
 #endregion
@@ -23,7 +25,12 @@ namespace Automata.Input
 
         public override void Update(EntityManager entityManager, TimeSpan delta)
         {
-            Vector2 offset = Input.Instance.GetMousePositionRelative();
+            if (!AutomataWindow.Instance.Focused)
+            {
+                return;
+            }
+
+            Vector2 offset = InputManager.Instance.GetMousePositionRelative();
 
             // if offset is zero, the mouse has not moved, so return
             if (offset == Vector2.Zero)
@@ -31,7 +38,7 @@ namespace Automata.Input
                 return;
             }
 
-            offset = Input.Instance.GetMousePositionRelative();
+            offset = InputManager.Instance.GetMousePositionRelative();
             // convert to axis angles (a la yaw/pitch/roll)
             Vector3 axisAngles = new Vector3(offset.Y, offset.X, 0f) * (float)delta.TotalSeconds * (_SENSITIVITY / 10f);
 
@@ -49,7 +56,7 @@ namespace Automata.Input
             }
 
             // reset mouse position to center of screen
-            Input.Instance.SetMousePositionRelative(0, Vector2.Zero);
+            InputManager.Instance.SetMousePositionRelative(0, Vector2.Zero);
         }
     }
 }
