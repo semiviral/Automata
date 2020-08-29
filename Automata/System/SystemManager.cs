@@ -3,12 +3,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Automata.Entity;
 
 // ReSharper disable MemberCanBePrivate.Global
 
 #endregion
 
-namespace Automata
+namespace Automata.System
 {
     public enum SystemRegistrationOrder
     {

@@ -4,13 +4,13 @@ using System.Numerics;
 
 #endregion
 
-namespace Automata.Worlds
+namespace Automata.Entity
 {
-    public class Rotation : IComponentChangeable
+    public class Translation : IComponentChangeable
     {
-        private Quaternion _Value;
+        private Vector3 _Value;
 
-        public Quaternion Value
+        public Vector3 Value
         {
             get => _Value;
             set
@@ -20,7 +20,7 @@ namespace Automata.Worlds
             }
         }
 
-        public Rotation() => Value = Quaternion.Identity;
+        public Translation() => Value = Vector3.Zero;
 
         public bool Changed { get; set; }
     }

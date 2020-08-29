@@ -1,10 +1,11 @@
 #region
 
 using System;
+using Automata.Entity;
 
 #endregion
 
-namespace Automata
+namespace Automata.System
 {
     public abstract class ComponentSystem
     {

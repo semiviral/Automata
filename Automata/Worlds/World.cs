@@ -4,7 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Automata.Entity;
 using Automata.Rendering.GLFW;
+using Automata.System;
 using Serilog;
 
 #endregion

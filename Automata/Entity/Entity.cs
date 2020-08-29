@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 #endregion
 
-namespace Automata
+namespace Automata.Entity
 {
     public interface IEntity
     {

@@ -4,11 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Automata.Exceptions;
+using Automata.System;
 using Serilog;
 
 #endregion
 
-namespace Automata
+namespace Automata.Entity
 {
     public class EntityManager
     {

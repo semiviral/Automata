@@ -3,8 +3,10 @@
 using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using Automata.Entity;
 using Automata.Rendering;
 using Automata.Rendering.GLFW;
+using Automata.System;
 using Automata.Worlds;
 
 #endregion

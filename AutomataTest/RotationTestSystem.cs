@@ -3,6 +3,8 @@
 using System;
 using System.Numerics;
 using Automata;
+using Automata.Entity;
+using Automata.System;
 using Automata.Worlds;
 
 #endregion

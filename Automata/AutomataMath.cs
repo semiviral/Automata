@@ -18,7 +18,7 @@ namespace Automata
         public static Vector3 ToRadians(Vector3 degrees) => new Vector3(ToRadians(degrees.X), ToRadians(degrees.Y), ToRadians(degrees.Z));
 
         // row major
-        public static unsafe Span<float> UnrollMatrix4x4(Matrix4x4 matrix)
+        public static unsafe Span<float> UnrollMatrix4x4RowMajor(Matrix4x4 matrix)
         {
             float* matrixUnrolled = stackalloc float[]
             {
@@ -43,24 +43,28 @@ namespace Automata
             return new Span<float>(matrixUnrolled, 16);
         }
 
-        public static IEnumerable<float> UnrollMatrix4x4ColumnMajor(Matrix4x4 matrix)
+        public static unsafe Span<float> UnrollMatrix4x4ColumnMajor(Matrix4x4 matrix)
         {
-            yield return matrix.M11;
-            yield return matrix.M21;
-            yield return matrix.M31;
-            yield return matrix.M41;
-            yield return matrix.M12;
-            yield return matrix.M22;
-            yield return matrix.M31;
-            yield return matrix.M42;
-            yield return matrix.M13;
-            yield return matrix.M23;
-            yield return matrix.M33;
-            yield return matrix.M43;
-            yield return matrix.M14;
-            yield return matrix.M24;
-            yield return matrix.M34;
-            yield return matrix.M44;
+            float* matrixUnrolled = stackalloc float[]
+            {
+                matrix.M11,
+                matrix.M21,
+                matrix.M31,
+                matrix.M41,
+                matrix.M12,
+                matrix.M22,
+                matrix.M31,
+                matrix.M42,
+                matrix.M13,
+                matrix.M23,
+                matrix.M33,
+                matrix.M43,
+                matrix.M14,
+                matrix.M24,
+                matrix.M34,
+                matrix.M44,
+            };
+            return new Span<float>(matrixUnrolled, 16);
         }
 
         public static IEnumerable<float> UnrollVector3(Vector3 vector3)

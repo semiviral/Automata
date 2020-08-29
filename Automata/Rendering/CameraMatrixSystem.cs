@@ -2,9 +2,12 @@
 
 using System;
 using System.Numerics;
+using Automata.Entity;
 using Automata.Numerics;
 using Automata.Rendering.GLFW;
+using Automata.System;
 using Automata.Worlds;
+using Silk.NET.OpenGL;
 
 #endregion
 

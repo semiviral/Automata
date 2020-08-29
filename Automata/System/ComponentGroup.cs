@@ -5,7 +5,7 @@ using System.Linq;
 
 #endregion
 
-namespace Automata
+namespace Automata.System
 {
     public readonly struct ComponentGroup : IEquatable<ComponentGroup>
     {

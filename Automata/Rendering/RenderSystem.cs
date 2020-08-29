@@ -2,8 +2,10 @@
 
 using System;
 using System.Numerics;
+using Automata.Entity;
 using Automata.Rendering.GLFW;
 using Automata.Rendering.OpenGL;
+using Automata.System;
 using Automata.Worlds;
 using Serilog;
 using Silk.NET.OpenGL;

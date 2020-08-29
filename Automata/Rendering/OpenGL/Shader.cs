@@ -189,7 +189,7 @@ namespace Automata.Rendering.OpenGL
         {
             int location = GetUniformLocation(name);
 
-            _GL.ProgramUniformMatrix4(_Handle, location, 1, false, AutomataMath.UnrollMatrix4x4(value).ToArray());
+            _GL.ProgramUniformMatrix4(_Handle, location, 1, false, AutomataMath.UnrollMatrix4x4RowMajor(value).ToArray());
         }
 
         private int GetUniformLocation(string name)
@@ -268,7 +268,7 @@ namespace Automata.Rendering.OpenGL
         {
             if (TryGetUniformLocation(name, out int location))
             {
-                _GL.ProgramUniformMatrix4(_Handle, location, 1, false, AutomataMath.UnrollMatrix4x4(value).ToArray());
+                _GL.ProgramUniformMatrix4(_Handle, location, 1, false, AutomataMath.UnrollMatrix4x4RowMajor(value).ToArray());
 
                 return true;
             }

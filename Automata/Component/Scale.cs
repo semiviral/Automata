@@ -1,4 +1,4 @@
-namespace Automata.Worlds
+namespace Automata.Entity
 {
     public class Scale : IComponent
     {
