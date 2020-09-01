@@ -2,12 +2,10 @@
 
 using System;
 using System.Numerics;
-using System.Runtime.CompilerServices;
 using Automata.Entity;
 using Automata.Rendering;
 using Automata.Rendering.GLFW;
 using Automata.System;
-using Automata.Worlds;
 
 #endregion
 
@@ -17,13 +15,7 @@ namespace Automata.Input
     {
         private const float _SENSITIVITY = 3f;
 
-        public RotationSystem()
-        {
-            HandledComponentTypes = new[]
-            {
-                typeof(Rotation)
-            };
-        }
+        public RotationSystem() => HandledComponentTypes = new ComponentTypes(typeof(Rotation));
 
         public override void Update(EntityManager entityManager, TimeSpan delta)
         {

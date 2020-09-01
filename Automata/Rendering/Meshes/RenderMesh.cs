@@ -4,7 +4,7 @@ using System;
 
 #endregion
 
-namespace Automata.Rendering
+namespace Automata.Rendering.Meshes
 {
     public class RenderMesh : IComponent
     {

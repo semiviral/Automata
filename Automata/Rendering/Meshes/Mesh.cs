@@ -5,10 +5,11 @@ using Silk.NET.OpenGL;
 
 #endregion
 
-namespace Automata.Rendering
+namespace Automata.Rendering.Meshes
 {
     public class Mesh<T> : IMesh where T : unmanaged
     {
+        public bool Visible { get; }
         public BufferObject<T> VertexesBuffer { get; }
         public BufferObject<uint> IndexesBuffer { get; }
         public VertexArrayObject<T, uint> VertexArrayObject { get; }
@@ -17,6 +18,7 @@ namespace Automata.Rendering
 
         public Mesh()
         {
+            Visible = true;
             VertexesBuffer = new BufferObject<T>(GLAPI.Instance.GL, BufferTargetARB.ArrayBuffer);
             IndexesBuffer = new BufferObject<uint>(GLAPI.Instance.GL, BufferTargetARB.ElementArrayBuffer);
             VertexArrayObject = new VertexArrayObject<T, uint>(GLAPI.Instance.GL, VertexesBuffer, IndexesBuffer);

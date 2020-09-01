@@ -110,7 +110,7 @@ namespace Automata.Rendering.GLFW
 
             RegisterInput();
 
-                _MinimumFrameTime = Window.Monitor?.VideoMode.RefreshRate != null
+            _MinimumFrameTime = Window.Monitor?.VideoMode.RefreshRate != null
                 ? TimeSpan.FromSeconds(1d / Window.Monitor.VideoMode.RefreshRate.Value)
                 : TimeSpan.FromSeconds(1d / 60d);
         }
@@ -155,7 +155,7 @@ namespace Automata.Rendering.GLFW
 
                     if (CheckWaitForNextMonitorRefresh())
                     {
-                       WaitForNextMonitorRefresh();
+                        WaitForNextMonitorRefresh();
                     }
                 }
             }

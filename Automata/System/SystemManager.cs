@@ -45,8 +45,8 @@ namespace Automata.System
 
         public void Update(EntityManager entityManager, TimeSpan deltaTime)
         {
-            foreach (ComponentSystem componentSystem in _ComponentSystems.Where(componentSystem => componentSystem.Enabled &&
-                VerifyHandledTypesExist(entityManager, componentSystem)))
+            foreach (ComponentSystem componentSystem in _ComponentSystems.Where(componentSystem =>
+                componentSystem.Enabled && VerifyHandledTypesExist(entityManager, componentSystem)))
             {
                 componentSystem.Update(entityManager, deltaTime);
             }
@@ -86,7 +86,7 @@ namespace Automata.System
 
             TSystem componentSystem = Activator.CreateInstance<TSystem>();
 
-            foreach (Type type in componentSystem.HandledComponentTypes)
+            foreach (Type type in componentSystem.HandledComponentTypes.Types)
             {
                 if (!typeof(IComponent).IsAssignableFrom(type))
                 {
@@ -132,9 +132,8 @@ namespace Automata.System
         #region Helper Methods
 
         private static bool VerifyHandledTypesExist(EntityManager entityManager, ComponentSystem componentSystem) =>
-            (componentSystem.HandledComponentTypes == null)
-            || (componentSystem.HandledComponentTypes.Length == 0)
-            || componentSystem.HandledComponentTypes.Any(type => entityManager.GetComponentCount(type) > 0);
+            (componentSystem.HandledComponentTypes.Types.Count == 0)
+            || componentSystem.HandledComponentTypes.Types.Any(type => entityManager.GetComponentCount(type) > 0);
 
         #endregion
     }

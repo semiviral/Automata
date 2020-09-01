@@ -6,5 +6,5 @@ using Automata;
 
 namespace AutomataTest
 {
-    public class RotationTest : ComponentTag { }
+    public class RotationTest : IComponentTag { }
 }

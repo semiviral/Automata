@@ -6,8 +6,6 @@ using Automata.Entity;
 using Automata.Numerics;
 using Automata.Rendering.GLFW;
 using Automata.System;
-using Automata.Worlds;
-using Silk.NET.OpenGL;
 
 #endregion
 
@@ -20,12 +18,7 @@ namespace Automata.Rendering
 
         public CameraMatrixSystem()
         {
-            HandledComponentTypes = new[]
-            {
-                typeof(Camera),
-                typeof(Translation),
-                typeof(Rotation)
-            };
+            HandledComponentTypes = new ComponentTypes(typeof(Camera), typeof(Translation), typeof(Rotation));
 
             GameWindowResized(null!, AutomataWindow.Instance.Size);
             AutomataWindow.Instance.Resized += GameWindowResized;

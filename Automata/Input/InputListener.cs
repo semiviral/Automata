@@ -1,4 +1,4 @@
 namespace Automata.Input
 {
-    public class InputListener : ComponentTag { }
+    public class InputListener : IComponentTag { }
 }

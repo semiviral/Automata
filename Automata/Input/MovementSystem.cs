@@ -6,7 +6,6 @@ using Automata.Entity;
 using Automata.Numerics;
 using Automata.Rendering.GLFW;
 using Automata.System;
-using Automata.Worlds;
 using Silk.NET.Input.Common;
 
 #endregion
@@ -15,15 +14,7 @@ namespace Automata.Input
 {
     public class MovementSystem : ComponentSystem
     {
-        public MovementSystem()
-        {
-            HandledComponentTypes = new[]
-            {
-                typeof(InputListener),
-                typeof(Translation),
-                typeof(Rotation)
-            };
-        }
+        public MovementSystem() => HandledComponentTypes = new ComponentTypes(typeof(InputListener), typeof(Translation), typeof(Rotation));
 
         public override void Update(EntityManager entityManager, TimeSpan delta)
         {

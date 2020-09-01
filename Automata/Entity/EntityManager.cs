@@ -15,14 +15,13 @@ namespace Automata.Entity
     {
         private readonly Dictionary<Guid, IEntity> _Entities;
         private readonly Dictionary<Type, List<IEntity>> _EntitiesByComponent;
-        private readonly Dictionary<ComponentGroup, List<IEntity>> _EntitiesByComponentGroup;
         private readonly Dictionary<Type, int> _ComponentCountByType;
+        private readonly Dictionary<int, IEnumerable<IComponent>> _CachedEnumerables;
 
         public EntityManager()
         {
             _Entities = new Dictionary<Guid, IEntity>();
             _EntitiesByComponent = new Dictionary<Type, List<IEntity>>();
-            _EntitiesByComponentGroup = new Dictionary<ComponentGroup, List<IEntity>>();
             _ComponentCountByType = new Dictionary<Type, int>();
         }
 

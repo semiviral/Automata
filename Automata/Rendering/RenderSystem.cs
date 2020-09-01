@@ -4,9 +4,9 @@ using System;
 using System.Numerics;
 using Automata.Entity;
 using Automata.Rendering.GLFW;
+using Automata.Rendering.Meshes;
 using Automata.Rendering.OpenGL;
 using Automata.System;
-using Automata.Worlds;
 using Serilog;
 using Silk.NET.OpenGL;
 
@@ -22,12 +22,7 @@ namespace Automata.Rendering
 
         public RenderSystem()
         {
-            HandledComponentTypes = new[]
-            {
-                typeof(Translation),
-                typeof(Camera),
-                typeof(RenderMesh)
-            };
+            HandledComponentTypes = new ComponentTypes(typeof(Translation), typeof(Camera), typeof(RenderMesh));
 
             _GL = GLAPI.Instance.GL;
 
@@ -72,7 +67,7 @@ namespace Automata.Rendering
                     {
                         RenderMesh nextRenderMesh = entity.GetComponent<RenderMesh>();
 
-                        if ((nextRenderMesh.Mesh == null) || (nextRenderMesh.Mesh.IndexesLength == 0))
+                        if ((nextRenderMesh.Mesh == null) || !nextRenderMesh.Mesh.Visible || (nextRenderMesh.Mesh.IndexesLength == 0))
                         {
                             continue;
                         }

@@ -2,10 +2,8 @@
 
 using System;
 using System.Numerics;
-using Automata;
 using Automata.Entity;
 using Automata.System;
-using Automata.Worlds;
 
 #endregion
 
@@ -17,11 +15,7 @@ namespace AutomataTest
 
         public RotationTestSystem()
         {
-            HandledComponentTypes = new[]
-            {
-                typeof(Rotation),
-                typeof(RotationTest)
-            };
+            HandledComponentTypes = new ComponentTypes(typeof(Rotation), typeof(RotationTest));
 
             Enabled = false;
         }

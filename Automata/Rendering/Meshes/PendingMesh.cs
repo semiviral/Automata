@@ -5,7 +5,7 @@ using System.Linq;
 
 #endregion
 
-namespace Automata.Rendering
+namespace Automata.Rendering.Meshes
 {
     /// <summary>
     ///     Used to hold pending mesh data that needs to be uploaded to the GPU.

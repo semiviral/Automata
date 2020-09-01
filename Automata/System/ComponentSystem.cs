@@ -14,13 +14,13 @@ namespace Automata.System
         ///     If the types aren't present in the <see cref="EntityManager" />, the system's <see cref="Update" /> will be
         ///     skipped.
         /// </summary>
-        public Type[] HandledComponentTypes { get; protected set; }
+        public ComponentTypes HandledComponentTypes { get; protected set; }
 
         public bool Enabled { get; protected set; }
 
         public ComponentSystem()
         {
-            HandledComponentTypes = new Type[0];
+            HandledComponentTypes = new ComponentTypes();
             Enabled = true;
         }
 

@@ -9,6 +9,7 @@ using Automata.Entity;
 using Automata.Input;
 using Automata.Rendering;
 using Automata.Rendering.GLFW;
+using Automata.Rendering.Meshes;
 using Automata.Rendering.OpenGL;
 using Automata.Rendering.Vulkan;
 using Automata.System;
@@ -57,7 +58,7 @@ namespace AutomataTest
             options.Title = "Automata";
             options.Size = new Size(800, 600);
             options.Position = new Point(500, 400);
-            options.VSync = VSyncMode.On;
+            options.VSync = VSyncMode.Off;
             options.PreferredDepthBufferBits = 24;
 
             Singleton.CreateSingleton<GLFWAPI>();

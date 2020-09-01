@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Automata.Entity;
-using Automata.Rendering.GLFW;
 using Automata.System;
 using Serilog;
 
@@ -35,18 +34,14 @@ namespace Automata.Worlds
 
         public static void RegisterWorld(string name, World world)
         {
-            if (world == null)
-            {
-                throw new NullReferenceException(nameof(world));
-            }
-            else if (Worlds.ContainsKey(name))
+            if (Worlds.ContainsKey(name))
             {
                 throw new ArgumentException(name);
             }
 
             Worlds.Add(name, world);
 
-            Log.Verbose($"Registered new {nameof(World)}: \"{name}\" of type '{world.GetType()}'");
+            Log.Information($"Registered new {nameof(World)}: \"{name}\" of type '{world.GetType()}'");
         }
 
         public static void TryGetWorld(string name, out World? world) => Worlds.TryGetValue(name, out world);

@@ -10,14 +10,7 @@ namespace Automata.Worlds
 {
     public class InternalEntityChangedResetSystem : ComponentSystem
     {
-        public InternalEntityChangedResetSystem()
-        {
-            HandledComponentTypes = new[]
-            {
-                typeof(Translation),
-                typeof(Rotation)
-            };
-        }
+        public InternalEntityChangedResetSystem() => HandledComponentTypes = new ComponentTypes(typeof(Translation), typeof(Rotation));
 
         public override void Update(EntityManager entityManager, TimeSpan delta)
         {

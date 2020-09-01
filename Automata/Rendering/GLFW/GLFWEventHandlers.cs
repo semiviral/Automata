@@ -1,5 +1,8 @@
+#region
+
 using Automata.Numerics;
-using Silk.NET.Vulkan;
+
+#endregion
 
 namespace Automata.Rendering.GLFW
 {

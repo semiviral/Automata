@@ -10,6 +10,7 @@ using Automata;
 using Automata.Collections;
 using Automata.Numerics;
 using Automata.Rendering;
+using Automata.Rendering.Meshes;
 using AutomataTest.Blocks;
 using ConcurrentAsyncScheduler;
 

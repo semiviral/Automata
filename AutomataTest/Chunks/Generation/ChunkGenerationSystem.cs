@@ -4,15 +4,13 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Automata;
 using Automata.Collections;
 using Automata.Entity;
 using Automata.Extensions;
 using Automata.Numerics;
-using Automata.Rendering;
+using Automata.Rendering.Meshes;
 using Automata.Rendering.OpenGL;
 using Automata.System;
-using Automata.Worlds;
 using ConcurrentAsyncScheduler;
 using Serilog;
 using Silk.NET.OpenGL;
@@ -36,12 +34,7 @@ namespace AutomataTest.Chunks.Generation
             _FinishedMeshingJobs = new ConcurrentDictionary<Guid, ChunkMeshingJob>();
             _ProcessedDeactivatedChunks = new HashSet<Guid>();
 
-            HandledComponentTypes = new[]
-            {
-                typeof(Translation),
-                typeof(ChunkState),
-                typeof(BlocksCollection),
-            };
+            HandledComponentTypes = new ComponentTypes(typeof(Translation), typeof(ChunkState), typeof(BlocksCollection));
         }
 
         public override void Update(EntityManager entityManager, TimeSpan delta)
