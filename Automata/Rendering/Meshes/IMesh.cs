@@ -1,5 +1,3 @@
-using Silk.NET.OpenAL;
-
 namespace Automata.Rendering.Meshes
 {
     public interface IMesh

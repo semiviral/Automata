@@ -8,5 +8,4 @@ namespace Automata
     {
         public bool Changed { get; set; }
     }
-
 }
