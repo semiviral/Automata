@@ -81,5 +81,7 @@ namespace Automata
             v += (1 - (v / mod)) * mod;
             return (v % mod) + minVal;
         }
+
+        public static unsafe byte BoolToByte(bool a) => (byte)(*(byte*)&a * byte.MaxValue);
     }
 }

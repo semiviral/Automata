@@ -20,10 +20,9 @@ namespace Automata.Numerics
     {
         #region Fields / Properties
 
-        private readonly int _X;
-        private readonly int _Y;
-        private readonly int _Z;
-        private readonly int _W;
+        private readonly byte _X;
+        private readonly byte _Y;
+        private readonly byte _Z;
 
         public bool X => _X == VectorConstants.INTEGER_BOOLEAN_TRUE_VALUE;
         public bool Y => _Y == VectorConstants.INTEGER_BOOLEAN_TRUE_VALUE;
@@ -42,18 +41,15 @@ namespace Automata.Numerics
 
         #region Constructors
 
-        public unsafe Vector3b(bool value)
+        public Vector3b(bool value)
         {
-            int intValue = -(*(int*)&value);
+            byte numericValue = AutomataMath.BoolToByte(value);
 
-            (_X, _Y, _Z, _W) = (intValue, intValue, intValue, VectorConstants.INTEGER_BOOLEAN_FALSE_VALUE);
+            (_X, _Y, _Z) = (numericValue, numericValue, numericValue);
         }
 
-        public unsafe Vector3b(bool x, bool y) =>
-            (_X, _Y, _Z, _W) = (-(*(int*)&x), -(*(int*)&y), VectorConstants.INTEGER_BOOLEAN_FALSE_VALUE, VectorConstants.INTEGER_BOOLEAN_FALSE_VALUE);
-
-        public unsafe Vector3b(bool x, bool y, bool z) =>
-            (_X, _Y, _Z, _W) = (-(*(int*)&x), -(*(int*)&y), -(*(int*)&z), VectorConstants.INTEGER_BOOLEAN_FALSE_VALUE);
+        public Vector3b(bool x, bool y, bool z) =>
+            (_X, _Y, _Z) = (AutomataMath.BoolToByte(x), AutomataMath.BoolToByte(y), AutomataMath.BoolToByte(z));
 
         #endregion
 
