@@ -46,13 +46,13 @@ namespace Automata.Worlds
 
         public static void TryGetWorld(string name, out World? world) => Worlds.TryGetValue(name, out world);
 
-        public static void GlobalUpdate(TimeSpan delta)
+        public static void GlobalUpdate(Stopwatch frameTimer)
         {
             foreach ((string _, World world) in Worlds.Where(kvp => kvp.Value.Active))
             {
                 Debug.Assert(world.Active, "World must be active to update.");
 
-                world.Update(delta);
+                world.Update(frameTimer);
             }
         }
 
@@ -61,10 +61,10 @@ namespace Automata.Worlds
             SystemManager.RegisterSystem<InternalEntityChangedResetSystem, LastOrderSystem>(SystemRegistrationOrder.After);
         }
 
-        protected virtual void Update(TimeSpan delta)
+        protected virtual void Update(Stopwatch frameTimer)
         {
             // update system manager for frame
-            SystemManager.Update(EntityManager, delta);
+            SystemManager.Update(EntityManager, frameTimer);
 
             foreach (IComponentChangeable changeable in EntityManager.GetComponents<IComponentChangeable>())
             {

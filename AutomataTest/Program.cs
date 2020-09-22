@@ -65,7 +65,6 @@ namespace AutomataTest
             Singleton.CreateSingleton<InputManager>();
             Singleton.CreateSingleton<AutomataWindow>();
             AutomataWindow.Instance.CreateWindow(options);
-            AutomataWindow.Instance.Initialize();
             AutomataWindow.Instance.Closing += OnClose;
 
             Singleton.CreateSingleton<GLAPI>();

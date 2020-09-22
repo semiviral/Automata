@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Automata.Entity;
 
@@ -43,12 +44,12 @@ namespace Automata.System
             };
         }
 
-        public void Update(EntityManager entityManager, TimeSpan deltaTime)
+        public void Update(EntityManager entityManager, Stopwatch frameTimer)
         {
             foreach (ComponentSystem componentSystem in _ComponentSystems.Where(componentSystem =>
                 componentSystem.Enabled && VerifyHandledTypesExist(entityManager, componentSystem)))
             {
-                componentSystem.Update(entityManager, deltaTime);
+                componentSystem.Update(entityManager, frameTimer.Elapsed);
             }
         }
 

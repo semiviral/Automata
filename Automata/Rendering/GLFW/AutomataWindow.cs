@@ -3,7 +3,6 @@
 using System;
 using System.Diagnostics;
 using System.Drawing;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using Automata.Input;
 using Automata.Numerics;
@@ -25,7 +24,6 @@ namespace Automata.Rendering.GLFW
 
         private IWindow? _Window;
         private TimeSpan _MinimumFrameTime;
-        private bool _RegisteredInput;
 
         private IWindow Window
         {
@@ -71,7 +69,7 @@ namespace Automata.Rendering.GLFW
         public Vector2i Size { get; private set; }
         public bool Focused { get; private set; }
 
-        public Vector2i Position => new Vector2i(Window.Position.X, Window.Position.Y);
+        public Vector2i Position => (Vector2i)Window.Position;
 
         #endregion
 
@@ -102,27 +100,30 @@ namespace Automata.Rendering.GLFW
 
             Size = new Vector2i(Window.Size.Width, Window.Size.Height);
             Focused = true;
-        }
 
-        public void Initialize()
-        {
             Window.Initialize();
+            InputManager.Instance.RegisterView(Window);
 
-            RegisterInput();
-
-            _MinimumFrameTime = Window.Monitor?.VideoMode.RefreshRate != null
-                ? TimeSpan.FromSeconds(1d / Window.Monitor.VideoMode.RefreshRate.Value)
-                : TimeSpan.FromSeconds(1d / 60d);
+            DetermineVSyncRefreshRate();
         }
 
-        public void RegisterInput()
+        private void DetermineVSyncRefreshRate()
         {
-            if (_RegisteredInput)
+            const double default_refresh_rate = 60d;
+
+            double refreshRate;
+            if (Window.Monitor.VideoMode.RefreshRate.HasValue)
             {
-                return;
+                refreshRate = Window.Monitor.VideoMode.RefreshRate.Value;
+            }
+            else
+            {
+                refreshRate = default_refresh_rate;
+                Log.Error("No monitor detected VSync framerate will be set to default value.");
             }
 
-            InputManager.Instance.RegisterView(Window);
+            _MinimumFrameTime = TimeSpan.FromSeconds(1d / refreshRate);
+            Log.Debug($"VSync framerate set to {refreshRate} FPS.");
         }
 
         public void Run()
@@ -131,7 +132,6 @@ namespace Automata.Rendering.GLFW
             {
                 while (!Window.IsClosing)
                 {
-                    TimeSpan delta = _DeltaTimer.Elapsed;
                     _DeltaTimer.Restart();
 
                     Window.DoEvents();
@@ -143,15 +143,11 @@ namespace Automata.Rendering.GLFW
 
                     if (!Window.IsClosing)
                     {
-                        World.GlobalUpdate(delta);
+                        World.GlobalUpdate(_DeltaTimer);
                     }
 
                     Window.DoEvents();
                     Window.SwapBuffers();
-
-#if true
-                    Window.Title = $"Automata ({1d / delta.TotalSeconds:00})";
-#endif
 
                     if (CheckWaitForNextMonitorRefresh())
                     {
@@ -166,18 +162,14 @@ namespace Automata.Rendering.GLFW
             }
         }
 
-        private bool CheckWaitForNextMonitorRefresh()
-        {
-            switch (Window.VSync)
+        private bool CheckWaitForNextMonitorRefresh() =>
+            Window.VSync switch
             {
-                case VSyncMode.On:
-                    return true;
-                case VSyncMode.Off:
-                    return false;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
+                VSyncMode.On => true,
+                VSyncMode.Off => false,
+                VSyncMode.Adaptive => throw new NotSupportedException("Adaptive VSync is deprecated."),
+                _ => throw new ArgumentOutOfRangeException()
+            };
 
         private void WaitForNextMonitorRefresh()
         {
@@ -188,7 +180,7 @@ namespace Automata.Rendering.GLFW
 
         #region Event Subscriptors
 
-        private void OnWindowResized(Size newSize) => Resized?.Invoke(this, Unsafe.As<Size, Vector2i>(ref newSize));
+        private void OnWindowResized(Size newSize) => Resized?.Invoke(this, (Vector2i)newSize);
 
         private void OnWindowFocusedChanged(bool focused) => FocusChanged?.Invoke(this, Focused);
 
