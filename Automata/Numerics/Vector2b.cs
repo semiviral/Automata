@@ -22,8 +22,6 @@ namespace Automata.Numerics
 
         private readonly int _X;
         private readonly int _Y;
-        private readonly int _Z;
-        private readonly int _W;
 
         public bool X => _X == VectorConstants.INTEGER_BOOLEAN_TRUE_VALUE;
         public bool Y => _Y == VectorConstants.INTEGER_BOOLEAN_TRUE_VALUE;
@@ -44,11 +42,10 @@ namespace Automata.Numerics
         {
             int intValue = -(*(int*)&value);
 
-            (_X, _Y, _Z, _W) = (intValue, intValue, intValue, VectorConstants.INTEGER_BOOLEAN_FALSE_VALUE);
+            (_X, _Y) = (intValue, intValue);
         }
 
-        public unsafe Vector2b(bool x, bool y) =>
-            (_X, _Y, _Z, _W) = (-(*(int*)&x), -(*(int*)&y), VectorConstants.INTEGER_BOOLEAN_FALSE_VALUE, VectorConstants.INTEGER_BOOLEAN_FALSE_VALUE);
+        public unsafe Vector2b(bool x, bool y) => (_X, _Y) = (-(*(int*)&x), -(*(int*)&y));
 
         #endregion
 
