@@ -29,8 +29,6 @@ namespace Automata.Numerics
 
         private readonly int _X;
         private readonly int _Y;
-        private readonly int _Z;
-        private readonly int _W;
 
         public int X => _X;
         public int Y => _Y;
@@ -47,8 +45,8 @@ namespace Automata.Numerics
 
         #region Constructors
 
-        public Vector2i(int xyz) => (_X, _Y, _Z, _W) = (xyz, xyz, xyz, 0);
-        public Vector2i(int x, int y) => (_X, _Y, _Z, _W) = (x, y, 0, 0);
+        public Vector2i(int xy) => (_X, _Y) = (xy, xy);
+        public Vector2i(int x, int y) => (_X, _Y) = (x, y);
 
         #endregion
 
@@ -116,11 +114,12 @@ namespace Automata.Numerics
         #region Conversion Operators
 
         public static explicit operator Vector2i(Vector128<int> a) => Unsafe.As<Vector128<int>, Vector2i>(ref a);
-        public static unsafe explicit operator Vector128<int>(Vector2i a) => Sse2.LoadVector128((int*)&a);
-        public static explicit operator Vector2(Vector2i a) => new Vector2(a.X, a.Y);
-
         public static explicit operator Vector2i(Point a) => Unsafe.As<Point, Vector2i>(ref a);
         public static explicit operator Vector2i(Size a) => Unsafe.As<Size, Vector2i>(ref a);
+
+        public static unsafe explicit operator Vector128<int>(Vector2i a) => Sse2.LoadVector128((int*)&a);
+
+        public static explicit operator Vector2(Vector2i a) => new Vector2(a.X, a.Y);
 
         #endregion
     }
