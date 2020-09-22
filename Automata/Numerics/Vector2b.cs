@@ -20,11 +20,11 @@ namespace Automata.Numerics
     {
         #region Fields / Properties
 
-        private readonly int _X;
-        private readonly int _Y;
+        private readonly byte _X;
+        private readonly byte _Y;
 
-        public bool X => _X == VectorConstants.INTEGER_BOOLEAN_TRUE_VALUE;
-        public bool Y => _Y == VectorConstants.INTEGER_BOOLEAN_TRUE_VALUE;
+        public bool X => AutomataMath.ByteToBool(_X);
+        public bool Y => AutomataMath.ByteToBool(_Y);
 
         public bool this[int index] => index switch
         {
@@ -38,14 +38,14 @@ namespace Automata.Numerics
 
         #region Constructors
 
-        public unsafe Vector2b(bool value)
+        public Vector2b(bool value)
         {
-            int intValue = -(*(int*)&value);
+            byte numericValue = AutomataMath.BoolToByte(value);
 
-            (_X, _Y) = (intValue, intValue);
+            (_X, _Y) = (numericValue, numericValue);
         }
 
-        public unsafe Vector2b(bool x, bool y) => (_X, _Y) = (-(*(int*)&x), -(*(int*)&y));
+        public Vector2b(bool x, bool y) => (_X, _Y) = (AutomataMath.BoolToByte(x), AutomataMath.BoolToByte(y));
 
         #endregion
 
