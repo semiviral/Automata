@@ -14,7 +14,7 @@ namespace Automata.Input
 {
     public class MovementSystem : ComponentSystem
     {
-        public MovementSystem() => HandledComponentTypes = new ComponentTypes(typeof(InputListener), typeof(Translation), typeof(Rotation));
+        public MovementSystem() => HandledComponents = new ComponentTypes(typeof(InputListener), typeof(Translation), typeof(Rotation));
 
         public override void Update(EntityManager entityManager, TimeSpan delta)
         {

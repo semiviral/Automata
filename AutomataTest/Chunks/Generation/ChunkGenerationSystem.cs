@@ -34,7 +34,7 @@ namespace AutomataTest.Chunks.Generation
             _FinishedMeshingJobs = new ConcurrentDictionary<Guid, ChunkMeshingJob>();
             _ProcessedDeactivatedChunks = new HashSet<Guid>();
 
-            HandledComponentTypes = new ComponentTypes(typeof(Translation), typeof(ChunkState), typeof(BlocksCollection));
+            HandledComponents = new ComponentTypes(typeof(Translation), typeof(ChunkState), typeof(BlocksCollection));
         }
 
         public override void Update(EntityManager entityManager, TimeSpan delta)

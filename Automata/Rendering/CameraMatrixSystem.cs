@@ -18,7 +18,7 @@ namespace Automata.Rendering
 
         public CameraMatrixSystem()
         {
-            HandledComponentTypes = new ComponentTypes(typeof(Camera), typeof(Translation), typeof(Rotation));
+            HandledComponents = new ComponentTypes(typeof(Camera), typeof(Translation), typeof(Rotation));
 
             GameWindowResized(null!, AutomataWindow.Instance.Size);
             AutomataWindow.Instance.Resized += GameWindowResized;

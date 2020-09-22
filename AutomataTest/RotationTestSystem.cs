@@ -15,7 +15,7 @@ namespace AutomataTest
 
         public RotationTestSystem()
         {
-            HandledComponentTypes = new ComponentTypes(typeof(Rotation), typeof(RotationTest));
+            HandledComponents = new ComponentTypes(typeof(Rotation), typeof(RotationTest));
 
             Enabled = false;
         }

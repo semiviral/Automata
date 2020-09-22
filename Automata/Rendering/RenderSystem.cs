@@ -22,7 +22,7 @@ namespace Automata.Rendering
 
         public RenderSystem()
         {
-            HandledComponentTypes = new ComponentTypes(typeof(Translation), typeof(Camera), typeof(RenderMesh));
+            HandledComponents = new ComponentTypes(typeof(Translation), typeof(Camera), typeof(RenderMesh));
 
             _GL = GLAPI.Instance.GL;
 
@@ -125,14 +125,6 @@ namespace Automata.Rendering
             {
                 Log.Error($"({nameof(RenderSystem)}) Error: {ex.Message}\r\n{ex.StackTrace}");
             }
-        }
-
-        public override void Destroy(EntityManager entityManager)
-        {
-            // foreach (IMesh renderedMeshComponent in entityManager.GetComponents<IMesh>())
-            // {
-            //     renderedMeshComponent.Dispose();
-            // }
         }
     }
 }

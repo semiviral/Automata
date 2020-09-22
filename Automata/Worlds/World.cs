@@ -12,7 +12,7 @@ using Serilog;
 
 namespace Automata.Worlds
 {
-    public class World
+    public class World : IDisposable
     {
         private static Dictionary<string, World> Worlds { get; }
 
@@ -71,5 +71,28 @@ namespace Automata.Worlds
                 changeable.Changed = false;
             }
         }
+
+        #region IDisposable
+
+        private bool _Disposed;
+
+        protected virtual void DisposeInternal()
+        {
+            SystemManager.Dispose();
+        }
+
+        public void Dispose()
+        {
+            if (_Disposed)
+            {
+                return;
+            }
+
+            DisposeInternal();
+            GC.SuppressFinalize(this);
+            _Disposed = true;
+        }
+
+        #endregion
     }
 }

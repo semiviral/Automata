@@ -15,7 +15,7 @@ namespace Automata.Input
     {
         private const float _SENSITIVITY = 3f;
 
-        public RotationSystem() => HandledComponentTypes = new ComponentTypes(typeof(Rotation));
+        public RotationSystem() => HandledComponents = new ComponentTypes(typeof(Rotation));
 
         public override void Update(EntityManager entityManager, TimeSpan delta)
         {

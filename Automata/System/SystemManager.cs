@@ -25,7 +25,7 @@ namespace Automata.System
 
     public class LastOrderSystem : ComponentSystem { }
 
-    public class SystemManager
+    public class SystemManager : IDisposable
     {
         private readonly LinkedList<ComponentSystem> _ComponentSystems;
         private readonly Dictionary<Type, LinkedListNode<ComponentSystem>> _ComponentSystemNodes;
@@ -49,14 +49,6 @@ namespace Automata.System
                 componentSystem.Enabled && VerifyHandledTypesExist(entityManager, componentSystem)))
             {
                 componentSystem.Update(entityManager, deltaTime);
-            }
-        }
-
-        public void Destroy(EntityManager entityManager)
-        {
-            foreach (ComponentSystem componentSystem in _ComponentSystems)
-            {
-                componentSystem.Destroy(entityManager);
             }
         }
 
@@ -86,7 +78,7 @@ namespace Automata.System
 
             TSystem componentSystem = Activator.CreateInstance<TSystem>();
 
-            foreach (Type type in componentSystem.HandledComponentTypes.Types)
+            foreach (Type type in componentSystem.HandledComponents?.Types ?? Enumerable.Empty<Type>())
             {
                 if (!typeof(IComponent).IsAssignableFrom(type))
                 {
@@ -132,8 +124,35 @@ namespace Automata.System
         #region Helper Methods
 
         private static bool VerifyHandledTypesExist(EntityManager entityManager, ComponentSystem componentSystem) =>
-            (componentSystem.HandledComponentTypes.Types.Count == 0)
-            || componentSystem.HandledComponentTypes.Types.Any(type => entityManager.GetComponentCount(type) > 0);
+            componentSystem.HandledComponents is null
+            || (componentSystem.HandledComponents.Types.Count == 0)
+            || componentSystem.HandledComponents.Types.Any(type => entityManager.GetComponentCount(type) > 0);
+
+        #endregion
+
+        #region IDisposable
+
+        private bool _Disposed;
+
+        protected virtual void DisposeInternal()
+        {
+            foreach (ComponentSystem componentSystem in _ComponentSystems)
+            {
+                componentSystem.Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            if (_Disposed)
+            {
+                return;
+            }
+
+            DisposeInternal();
+            GC.SuppressFinalize(this);
+            _Disposed = true;
+        }
 
         #endregion
     }

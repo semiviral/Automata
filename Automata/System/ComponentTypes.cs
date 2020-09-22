@@ -29,6 +29,7 @@ namespace Automata.System
                 {
                     const int prime = 239;
 
+                    // calculate compound hash
                     foreach (Type type in types)
                     {
                         hashCode *= prime + type.GetHashCode();
@@ -36,7 +37,6 @@ namespace Automata.System
                 }
             }
 
-            // calculate compound hash
             _Types = types;
             _CompositeHashCode = hashCode;
         }
