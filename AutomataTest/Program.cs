@@ -4,9 +4,13 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Numerics;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
+using Windows.UI.Composition;
 using Automata;
 using Automata.Entity;
 using Automata.Input;
+using Automata.Numerics;
 using Automata.Rendering;
 using Automata.Rendering.GLFW;
 using Automata.Rendering.Meshes;
@@ -15,6 +19,7 @@ using Automata.Rendering.Vulkan;
 using Automata.System;
 using Automata.Worlds;
 using AutomataTest.Blocks;
+using AutomataTest.Chunks;
 using AutomataTest.Chunks.Generation;
 using Serilog;
 using Serilog.Events;
@@ -174,15 +179,15 @@ namespace AutomataTest
                 });
             }
 
-            // Entity chunk = new Entity();
-            // world.EntityManager.RegisterEntity(chunk);
-            // world.EntityManager.RegisterComponent<Translation>(chunk);
-            // world.EntityManager.RegisterComponent(chunk, new ChunkState
-            // {
-            //     Value = GenerationState.Unbuilt
-            // });
-            // world.EntityManager.RegisterComponent<ChunkID>(chunk);
-            // world.EntityManager.RegisterComponent<BlocksCollection>(chunk);
+            Entity chunk = new Entity();
+            world.EntityManager.RegisterEntity(chunk);
+            world.EntityManager.RegisterComponent<Translation>(chunk);
+            world.EntityManager.RegisterComponent(chunk, new ChunkState
+            {
+                Value = GenerationState.Unbuilt
+            });
+            world.EntityManager.RegisterComponent<ChunkID>(chunk);
+            world.EntityManager.RegisterComponent<BlocksCollection>(chunk);
         }
 
         private static void OnClose(object sender)

@@ -20,13 +20,15 @@ namespace Automata.Numerics
     {
         #region Fields / Properties
 
+        private static readonly string _ToStringFormat = $"{typeof(Vector3b)}({{0}}, {{1}}, {{2}})";
+
         private readonly byte _X;
         private readonly byte _Y;
         private readonly byte _Z;
 
-        public bool X => _X == VectorConstants.INTEGER_BOOLEAN_TRUE_VALUE;
-        public bool Y => _Y == VectorConstants.INTEGER_BOOLEAN_TRUE_VALUE;
-        public bool Z => _Z == VectorConstants.INTEGER_BOOLEAN_TRUE_VALUE;
+        public bool X => AutomataMath.ByteToBool(_X);
+        public bool Y => AutomataMath.ByteToBool(_Y);
+        public bool Z => AutomataMath.ByteToBool(_Z);
 
         public bool this[int index] => index switch
         {
@@ -40,6 +42,8 @@ namespace Automata.Numerics
 
 
         #region Constructors
+
+        private Vector3b(byte x, byte y, byte z) => (_X, _Y, _Z) = (x, y, z);
 
         public Vector3b(bool value)
         {
@@ -70,6 +74,8 @@ namespace Automata.Numerics
 
         public override int GetHashCode() => _X.GetHashCode() ^ _Y.GetHashCode() ^ _Z.GetHashCode();
 
+        public override string ToString() => string.Format(_ToStringFormat, X, Y, Z);
+
         #endregion
 
 
@@ -77,16 +83,26 @@ namespace Automata.Numerics
 
         public static Vector3b operator ==(Vector3b a, Vector3b b) => EqualsImpl(a, b);
         public static Vector3b operator !=(Vector3b a, Vector3b b) => NotEqualsImpl(a, b);
-        public static Vector3b operator !(Vector3b a) => new Vector3b(!a.X, !a.Y, !a.Z);
+        public static Vector3b operator !(Vector3b a) => new Vector3b((byte)~a._X, (byte)~a._Y, (byte)~a._Z);
 
         #endregion
 
 
         #region Conversions
 
-        public static unsafe explicit operator Vector128<int>(Vector3b a) => Sse2.LoadVector128((int*)&a);
-        public static unsafe explicit operator Vector3b(Vector128<int> a) => *(Vector3b*)&a;
-        public static explicit operator Vector3b(Vector256<double> a) => (Vector3b)Avx.ConvertToVector128Int32(a);
+        public static unsafe explicit operator Vector128<byte>(Vector3b a) => Sse2.LoadVector128(&a._X);
+
+        public static unsafe explicit operator Vector3b(Vector128<byte> a) => *(Vector3b*)&a;
+
+        public static explicit operator Vector3b(Vector128<int> a) => new Vector3b(
+           (byte)a.GetElement(0),
+           (byte)a.GetElement(1),
+           (byte)a.GetElement(2));
+
+        public static explicit operator Vector3b(Vector256<double> a) => new Vector3b(
+            AutomataMath.DoubleToByteNaNIsMax(a.GetElement(0)),
+            AutomataMath.DoubleToByteNaNIsMax(a.GetElement(1)),
+            AutomataMath.DoubleToByteNaNIsMax(a.GetElement(2)));
 
         #endregion
     }

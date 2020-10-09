@@ -20,6 +20,8 @@ namespace Automata.Numerics
     {
         #region Fields / Properties
 
+        private static readonly string _ToStringFormat = $"{typeof(Vector2b)}({{0}}, {{1}})";
+
         private readonly byte _X;
         private readonly byte _Y;
 
@@ -37,6 +39,8 @@ namespace Automata.Numerics
 
 
         #region Constructors
+
+        private Vector2b(byte x, byte y) => (_X, _Y) = (x, y);
 
         public Vector2b(bool value)
         {
@@ -66,6 +70,8 @@ namespace Automata.Numerics
 
         public override int GetHashCode() => _X.GetHashCode() ^ _Y.GetHashCode();
 
+        public override string ToString() => string.Format(_ToStringFormat, X, Y);
+
         #endregion
 
 
@@ -73,15 +79,19 @@ namespace Automata.Numerics
 
         public static Vector2b operator ==(Vector2b a, Vector2b b) => EqualsImpl(a, b);
         public static Vector2b operator !=(Vector2b a, Vector2b b) => NotEqualsImpl(a, b);
-        public static Vector2b operator !(Vector2b a) => new Vector2b(!a.X, !a.Y);
+        public static Vector2b operator !(Vector2b a) => new Vector2b((byte)~a._X, (byte)~a._Y);
 
         #endregion
 
 
         #region Conversions
 
-        public static unsafe explicit operator Vector128<int>(Vector2b a) => Sse2.LoadVector128((int*)&a);
-        public static unsafe explicit operator Vector2b(Vector128<int> a) => *(Vector2b*)&a;
+        public static unsafe explicit operator Vector128<byte>(Vector2b a) => Sse2.LoadVector128(&a._X);
+        public static unsafe explicit operator Vector2b(Vector128<byte> a) => *(Vector2b*)&a;
+
+        public static explicit operator Vector2b(Vector128<int> a) => new Vector2b(
+            (byte)a.GetElement(0),
+            (byte)a.GetElement(1));
 
         #endregion
     }

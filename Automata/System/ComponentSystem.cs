@@ -25,6 +25,8 @@ namespace Automata.System
         /// </summary>
         public virtual void Registered() { }
 
+        public ComponentSystem() => Enabled = true;
+
         /// <summary>
         ///     Method called once per frame.
         /// </summary>

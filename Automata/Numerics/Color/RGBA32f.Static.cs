@@ -1,9 +1,9 @@
 namespace Automata.Numerics.Color
 {
-    public readonly partial struct Color32f
+    public readonly partial struct RGBA32f
     {
-        public static Color8ui ToColor8(Color32f a) =>
-            new Color8ui(
+        public static RGBA8 ToRGBA8(RGBA32f a) =>
+            new RGBA8(
                 (byte)(byte.MaxValue * a.R),
                 (byte)(byte.MaxValue * a.G),
                 (byte)(byte.MaxValue * a.B),

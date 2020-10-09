@@ -15,7 +15,6 @@ namespace Automata.Entity
         private readonly Dictionary<Guid, IEntity> _Entities;
         private readonly Dictionary<Type, List<IEntity>> _EntitiesByComponent;
         private readonly Dictionary<Type, int> _ComponentCountByType;
-        private readonly Dictionary<int, IEnumerable<IComponent>> _CachedEnumerables;
 
         public EntityManager()
         {
@@ -74,7 +73,7 @@ namespace Automata.Entity
                 RegisterComponent(entity, entity.GetComponent(type));
             }
 
-            Log.Verbose($"{nameof(EntityManager)} registered new {nameof(IEntity)} '{entity.ID}'.");
+            Log.Verbose($"Registered {nameof(IEntity)}: {entity.ID}");
         }
 
         /// <summary>

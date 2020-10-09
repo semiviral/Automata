@@ -21,7 +21,7 @@ namespace Automata.Numerics
         {
             if (Sse2.IsSupported)
             {
-                return (Vector3b)Sse2.CompareEqual((Vector128<int>)a, (Vector128<int>)b);
+                return (Vector3b)Sse2.CompareEqual((Vector128<byte>)a, (Vector128<byte>)b);
             }
             else
             {

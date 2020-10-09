@@ -45,6 +45,6 @@ namespace Automata.Rendering.OpenGL
             GL.BindTexture(TextureTarget.Texture3D, Handle);
         }
 
-        public void SetPixel(uint x, uint y, uint z, Color32f a) { }
+        public void SetPixel(uint x, uint y, uint z, RGBA32f a) { }
     }
 }

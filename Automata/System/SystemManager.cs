@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Automata.Entity;
+using Serilog;
 
 // ReSharper disable MemberCanBePrivate.Global
 
@@ -65,7 +66,7 @@ namespace Automata.System
         ///     Thrown when system of type <see cref="TUpdateAround" /> doesn't exist.
         /// </exception>
         public void RegisterSystem<TSystem, TUpdateAround>(SystemRegistrationOrder registrationOrder)
-            where TSystem : ComponentSystem
+            where TSystem : ComponentSystem, new()
             where TUpdateAround : ComponentSystem
         {
             if (_ComponentSystemNodes.ContainsKey(typeof(TSystem)))
@@ -77,7 +78,7 @@ namespace Automata.System
                 throw new KeyNotFoundException("System type does not exist.");
             }
 
-            TSystem componentSystem = Activator.CreateInstance<TSystem>();
+            TSystem componentSystem = new TSystem();
 
             foreach (Type type in componentSystem.HandledComponents?.Types ?? Enumerable.Empty<Type>())
             {
@@ -102,6 +103,8 @@ namespace Automata.System
             }
 
             componentSystem.Registered();
+
+            Log.Debug($"Registered {nameof(ComponentSystem)}: {typeof(TSystem)}");
         }
 
         /// <summary>

@@ -22,7 +22,7 @@ namespace Automata.Numerics
     {
         #region Fields / Properties
 
-        private static string _ToStringFormat = $"{typeof(Vector3i)}({{0}}, {{1}}, {{2}})";
+        private static readonly string _ToStringFormat = $"{typeof(Vector3i)}({{0}}, {{1}}, {{2}})";
 
         public static Vector3i Zero { get; } = new Vector3i(0);
         public static Vector3i One { get; } = new Vector3i(1);
@@ -30,7 +30,6 @@ namespace Automata.Numerics
         private readonly int _X;
         private readonly int _Y;
         private readonly int _Z;
-        private readonly int _W;
 
         public int X => _X;
         public int Y => _Y;
@@ -49,9 +48,8 @@ namespace Automata.Numerics
 
         #region Constructors
 
-        public Vector3i(int xyz) => (_X, _Y, _Z, _W) = (xyz, xyz, xyz, 0);
-        public Vector3i(int x, int y) => (_X, _Y, _Z, _W) = (x, y, 0, 0);
-        public Vector3i(int x, int y, int z) => (_X, _Y, _Z, _W) = (x, y, z, 0);
+        public Vector3i(int xyz) => (_X, _Y, _Z) = (xyz, xyz, xyz);
+        public Vector3i(int x, int y, int z) => (_X, _Y, _Z) = (x, y, z);
 
         #endregion
 

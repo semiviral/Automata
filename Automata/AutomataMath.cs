@@ -84,5 +84,6 @@ namespace Automata
 
         public static unsafe byte BoolToByte(bool a) => (byte)(*(byte*)&a * byte.MaxValue);
         public static unsafe bool ByteToBool(byte a) => *(bool*)&a;
+        public static unsafe byte DoubleToByteNaNIsMax(double a) => *(byte*)&a;
     }
 }
