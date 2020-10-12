@@ -240,8 +240,12 @@ namespace Automata.Rendering.OpenGL
         {
             uint vertexShaderHandle = CreateGPUShader(ShaderType.VertexShader, File.ReadAllText(vertexShaderPath));
             uint fragmentShaderHandle = CreateGPUShader(ShaderType.FragmentShader, File.ReadAllText(fragmentShaderPath));
+            Shader shader = new Shader(vertexShaderHandle, fragmentShaderHandle);
 
-            return new Shader(vertexShaderHandle, fragmentShaderHandle);
+            Log.Debug($"({nameof(Shader)}) Loaded vertex shader from: {vertexShaderPath}");
+            Log.Debug($"({nameof(Shader)}) Loaded fragment shader from: {fragmentShaderPath}");
+
+            return shader;
         }
 
         private static uint CreateGPUShader(ShaderType shaderType, string shader)

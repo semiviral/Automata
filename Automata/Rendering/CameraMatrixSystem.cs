@@ -2,10 +2,11 @@
 
 using System;
 using System.Numerics;
-using Automata.Entity;
+using Automata.Components;
+using Automata.Entities;
 using Automata.Numerics;
 using Automata.Rendering.GLFW;
-using Automata.System;
+using Automata.Systems;
 
 #endregion
 

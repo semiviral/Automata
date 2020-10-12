@@ -1,4 +1,4 @@
-namespace Automata
+namespace Automata.Components
 {
     public interface IComponent { }
 

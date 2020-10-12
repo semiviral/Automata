@@ -2,8 +2,9 @@
 
 using System;
 using System.Numerics;
-using Automata.Entity;
-using Automata.System;
+using Automata.Components;
+using Automata.Entities;
+using Automata.Systems;
 
 #endregion
 

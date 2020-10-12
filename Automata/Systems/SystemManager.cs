@@ -4,14 +4,15 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Automata.Entity;
+using Automata.Components;
+using Automata.Entities;
 using Serilog;
 
 // ReSharper disable MemberCanBePrivate.Global
 
 #endregion
 
-namespace Automata.System
+namespace Automata.Systems
 {
     public enum SystemRegistrationOrder
     {

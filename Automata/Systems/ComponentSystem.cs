@@ -1,11 +1,11 @@
 #region
 
 using System;
-using Automata.Entity;
+using Automata.Entities;
 
 #endregion
 
-namespace Automata.System
+namespace Automata.Systems
 {
     public abstract class ComponentSystem : IDisposable
     {

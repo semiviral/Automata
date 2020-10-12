@@ -3,13 +3,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Windows.Devices.WiFiDirect;
+using Automata.Components;
 using Automata.Exceptions;
 using Serilog;
 
 #endregion
 
-namespace Automata.Entity
+namespace Automata.Entities
 {
     public class EntityManager
     {

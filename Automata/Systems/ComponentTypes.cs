@@ -3,10 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Automata.Components;
 
 #endregion
 
-namespace Automata.System
+namespace Automata.Systems
 {
     public class ComponentTypes : IEquatable<ComponentTypes>
     {

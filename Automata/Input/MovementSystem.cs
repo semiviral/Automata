@@ -2,10 +2,11 @@
 
 using System;
 using System.Numerics;
-using Automata.Entity;
+using Automata.Components;
+using Automata.Entities;
 using Automata.Numerics;
 using Automata.Rendering.GLFW;
-using Automata.System;
+using Automata.Systems;
 using Silk.NET.Input.Common;
 
 #endregion
@@ -36,7 +37,7 @@ namespace Automata.Input
                     ? Vector3d.Transform(movementVector, Quaternion.Conjugate(rotation.Value))
                     : movementVector;
 
-                entity.GetComponent<Translation>().Value += Vector3d.AsVector3(10f * transformedMovementVector);
+                entity.GetComponent<Translation>().Value += Vector3d.AsVector3(40f * transformedMovementVector);
             }
         }
 

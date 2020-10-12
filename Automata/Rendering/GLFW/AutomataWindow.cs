@@ -123,7 +123,7 @@ namespace Automata.Rendering.GLFW
             }
 
             _MinimumFrameTime = TimeSpan.FromSeconds(1d / refreshRate);
-            Log.Debug($"VSync framerate set to {refreshRate} FPS.");
+            Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(AutomataWindow), $"VSync framerate configured to {refreshRate} FPS."));
         }
 
         public void Run()

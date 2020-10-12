@@ -1,3 +1,5 @@
+using Automata.Components;
+
 namespace Automata.Rendering.OpenGL
 {
     public class RenderShader : IComponent

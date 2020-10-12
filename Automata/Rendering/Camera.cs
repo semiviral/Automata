@@ -1,6 +1,7 @@
 #region
 
 using System.Numerics;
+using Automata.Components;
 using Automata.Rendering.OpenGL;
 
 #endregion

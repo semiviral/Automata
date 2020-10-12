@@ -4,8 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Automata.Entity;
-using Automata.System;
+using Automata.Components;
+using Automata.Entities;
+using Automata.Systems;
 using Serilog;
 
 #endregion
@@ -28,8 +29,6 @@ namespace Automata.Worlds
             SystemManager = new SystemManager();
 
             Active = active;
-
-            RegisterDefaultSystems();
         }
 
         public static void RegisterWorld(string name, World world)
@@ -41,7 +40,7 @@ namespace Automata.Worlds
 
             Worlds.Add(name, world);
 
-            Log.Debug($"({nameof(World)}) Registered {nameof(World)}: '{name}' typeof({world.GetType().Name})");
+            Log.Debug($"({nameof(World)}) Registered {nameof(World)}: '{name}' {world.GetType()}");
         }
 
         public static void TryGetWorld(string name, out World? world) => Worlds.TryGetValue(name, out world);
@@ -54,11 +53,6 @@ namespace Automata.Worlds
 
                 world.Update(frameTimer);
             }
-        }
-
-        private void RegisterDefaultSystems()
-        {
-            SystemManager.RegisterSystem<InternalEntityChangedResetSystem, LastOrderSystem>(SystemRegistrationOrder.After);
         }
 
         protected virtual void Update(Stopwatch frameTimer)

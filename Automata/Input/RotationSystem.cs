@@ -2,10 +2,11 @@
 
 using System;
 using System.Numerics;
-using Automata.Entity;
+using Automata.Components;
+using Automata.Entities;
 using Automata.Rendering;
 using Automata.Rendering.GLFW;
-using Automata.System;
+using Automata.Systems;
 
 #endregion
 
@@ -13,7 +14,7 @@ namespace Automata.Input
 {
     public class RotationSystem : ComponentSystem
     {
-        private const float _SENSITIVITY = 6f;
+        private const float _SENSITIVITY = 10f;
 
         public RotationSystem() => HandledComponents = new ComponentTypes(typeof(Rotation));
 

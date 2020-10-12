@@ -4,7 +4,7 @@ using System.Numerics;
 
 #endregion
 
-namespace Automata.Entity
+namespace Automata.Components
 {
     public class Rotation : IComponentChangeable
     {

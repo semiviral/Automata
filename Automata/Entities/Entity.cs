@@ -3,10 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Automata.Components;
 
 #endregion
 
-namespace Automata.Entity
+namespace Automata.Entities
 {
     public class Entity : IEntity
     {

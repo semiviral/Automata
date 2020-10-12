@@ -2,11 +2,12 @@
 
 using System;
 using System.Numerics;
-using Automata.Entity;
+using Automata.Components;
+using Automata.Entities;
 using Automata.Rendering.GLFW;
 using Automata.Rendering.Meshes;
 using Automata.Rendering.OpenGL;
-using Automata.System;
+using Automata.Systems;
 using Serilog;
 using Silk.NET.OpenGL;
 
