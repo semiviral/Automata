@@ -31,14 +31,14 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="..\Resources\DefaultFragment.glsl">
+      <AdditionalFiles Include="..\Resources\DefaultFragment.glsl">
         <Link>Resources\Shaders\DefaultFragment.glsl</Link>
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
-      <Content Include="..\Resources\PackedVertexes.glsl">
+      </AdditionalFiles>
+      <AdditionalFiles Include="..\Resources\PackedVertexes.glsl">
         <Link>Resources\Shaders\PackedVertexes.glsl</Link>
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
+      </AdditionalFiles>
       <Content Include="..\Resources\RaymarchFragment.glsl">
         <Link>Resources\Shaders\RaymarchFragment.glsl</Link>
       </Content>
