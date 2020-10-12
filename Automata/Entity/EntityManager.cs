@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Windows.Devices.WiFiDirect;
 using Automata.Exceptions;
 using Serilog;
 
@@ -35,10 +36,7 @@ namespace Automata.Entity
         /// </remarks>
         public void RemoveComponent<T>(IEntity entity) where T : IComponent
         {
-            if (!entity.TryRemoveComponent<T>())
-            {
-                return;
-            }
+            entity.RemoveComponent<T>();
 
             _EntitiesByComponent[typeof(T)].Remove(entity);
             _ComponentCountByType.Remove(typeof(T));
@@ -102,14 +100,13 @@ namespace Automata.Entity
         {
             IComponent? instance = component ?? (IComponent?)Activator.CreateInstance(type);
 
-            if (instance == null)
+            if (instance is null)
             {
                 throw new TypeLoadException($"Failed to initialize {nameof(IComponent)} of type '{type.FullName}'.");
             }
-
-            if (!entity.TryAddComponent(instance))
+            else
             {
-                return;
+                entity.AddComponent(instance);
             }
 
             if (!_EntitiesByComponent.ContainsKey(type))
@@ -139,8 +136,11 @@ namespace Automata.Entity
         ///     Be cautious of registering or removing <see cref="IComponent" />s when iterating entities from this function, as
         ///     any additions or subtractions from the collection will throw a collection modified exception.
         /// </remarks>
-        public IEnumerable<IEntity> GetEntitiesWithComponents<T1>() where T1 : IComponent =>
-            _EntitiesByComponent.TryGetValue(typeof(T1), out List<IEntity>? entities) ? entities : Enumerable.Empty<IEntity>();
+        public IEnumerable<IEntity> GetEntitiesWithComponents<T1>()
+            where T1 : IComponent =>
+            _EntitiesByComponent.TryGetValue(typeof(T1), out List<IEntity>? entities)
+                ? entities
+                : Enumerable.Empty<IEntity>();
 
 
         public IEnumerable<IEntity> GetEntitiesWithComponents<T1, T2>()

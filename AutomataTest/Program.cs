@@ -135,7 +135,7 @@ namespace AutomataTest
             world.EntityManager.RegisterComponent<Camera>(playerEntity);
             world.EntityManager.RegisterComponent(playerEntity, new RenderShader
             {
-                Shader = Shader.LoadShader("PackedVertexes.glsl", "DefaultFragment.glsl")
+                Value = Shader.LoadShader("Resources/Shaders/PackedVertexes.glsl", "Resources/Shaders/DefaultFragment.glsl")
             });
             world.EntityManager.RegisterComponent<InputListener>(playerEntity);
         }

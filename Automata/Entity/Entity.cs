@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 #endregion
 
@@ -22,43 +23,13 @@ namespace Automata.Entity
 
         public Guid ID { get; }
 
-        public bool TryAddComponent(IComponent? component)
-        {
-            if (component == null)
-            {
-                return false;
-            }
+        public void AddComponent(IComponent component) => _Components.Add(component.GetType(), component);
 
-            Type type = component.GetType();
+        public void RemoveComponent<T>() where T : IComponent => _Components.Remove(typeof(T));
 
-            if (_Components.ContainsKey(type))
-            {
-                return false;
-            }
+        public T GetComponent<T>() where T : IComponent => (T)_Components[typeof(T)];
 
-            _Components.Add(type, component);
-            return true;
-        }
-
-        public bool TryRemoveComponent<T>() where T : IComponent => _Components.Remove(typeof(T));
-
-        public T GetComponent<T>() where T : IComponent
-        {
-            if (!_Components.TryGetValue(typeof(T), out IComponent? component))
-            {
-                throw new KeyNotFoundException(typeof(T).ToString());
-            }
-            else if (component == null)
-            {
-                throw new NullReferenceException(nameof(component));
-            }
-            else
-            {
-                return (T)component;
-            }
-        }
-
-        public bool TryGetComponent<T>(out T component) where T : IComponent
+        public bool TryGetComponent<T>([NotNullWhen(true)] out T component) where T : IComponent
         {
             if (_Components.TryGetValue(typeof(T), out IComponent? componentBase))
             {
@@ -78,18 +49,8 @@ namespace Automata.Entity
             {
                 throw new ArgumentException($"Type must be assignable from {nameof(IComponent)}.", nameof(componentType));
             }
-            else if (!_Components.TryGetValue(componentType, out IComponent? component))
-            {
-                throw new KeyNotFoundException(nameof(componentType));
-            }
-            else if (component == null)
-            {
-                throw new NullReferenceException("Returned component is null.");
-            }
-            else
-            {
-                return component;
-            }
+
+            return _Components[componentType];
         }
     }
 }

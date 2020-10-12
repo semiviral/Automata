@@ -4,6 +4,6 @@ namespace Automata.Rendering.OpenGL
     {
         private static readonly Shader _DefaultShader = new Shader();
 
-        public Shader Shader { get; set; } = _DefaultShader;
+        public Shader Value { get; set; } = _DefaultShader;
     }
 }
