@@ -134,7 +134,7 @@ namespace AutomataTest
             world.EntityManager.RegisterComponent<Rotation>(playerEntity);
             world.EntityManager.RegisterComponent(playerEntity, new Camera
             {
-                Shader =  new Shader("PackedVertexes.glsl", "DefaultFragment.glsl")
+                Shader = Shader.LoadShader("PackedVertexes.glsl", "DefaultFragment.glsl")
             });
             world.EntityManager.RegisterComponent<InputListener>(playerEntity);
         }
