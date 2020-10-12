@@ -1,6 +1,5 @@
 #region
 
-using Automata;
 using Automata.Collections;
 using Automata.Components;
 using AutomataTest.Chunks.Generation;

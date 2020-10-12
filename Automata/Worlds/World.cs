@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Automata.Components;
 using Automata.Entities;
 using Automata.Systems;
@@ -47,9 +46,12 @@ namespace Automata.Worlds
 
         public static void GlobalUpdate(Stopwatch frameTimer)
         {
-            foreach ((string _, World world) in Worlds.Where(kvp => kvp.Value.Active))
+            foreach ((string _, World world) in Worlds)
             {
-                Debug.Assert(world.Active, "World must be active to update.");
+                if (!world.Active)
+                {
+                    continue;
+                }
 
                 world.Update(frameTimer);
             }

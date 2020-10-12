@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Automata.Collections;
@@ -11,7 +10,6 @@ using Automata.Entities;
 using Automata.Extensions;
 using Automata.Numerics;
 using Automata.Rendering.Meshes;
-using Automata.Rendering.OpenGL;
 using Automata.Systems;
 using ConcurrentAsyncScheduler;
 using Serilog;
@@ -28,13 +26,11 @@ namespace AutomataTest.Chunks.Generation
 
         private readonly ConcurrentDictionary<Guid, ChunkBuildingJob> _FinishedBuildingJobs;
         private readonly ConcurrentDictionary<Guid, ChunkMeshingJob> _FinishedMeshingJobs;
-        private readonly HashSet<Guid> _ProcessedDeactivatedChunks;
 
         public ChunkGenerationSystem()
         {
             _FinishedBuildingJobs = new ConcurrentDictionary<Guid, ChunkBuildingJob>();
             _FinishedMeshingJobs = new ConcurrentDictionary<Guid, ChunkMeshingJob>();
-            _ProcessedDeactivatedChunks = new HashSet<Guid>();
 
             HandledComponents = new ComponentTypes(typeof(Translation), typeof(ChunkState), typeof(BlocksCollection));
         }
@@ -45,20 +41,6 @@ namespace AutomataTest.Chunks.Generation
             {
                 ChunkID id = entity.GetComponent<ChunkID>();
                 ChunkState state = entity.GetComponent<ChunkState>();
-
-                if (state.Value == GenerationState.Deactivated)
-                {
-                    if (_ProcessedDeactivatedChunks.Contains(id.Value))
-                    {
-                        _ProcessedDeactivatedChunks.Add(id.Value);
-                    }
-
-                    return;
-                }
-                else if ((state.Value != GenerationState.Deactivated) && _ProcessedDeactivatedChunks.Contains(id.Value))
-                {
-                    _ProcessedDeactivatedChunks.Remove(id.Value);
-                }
 
                 switch (state.Value)
                 {

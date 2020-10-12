@@ -1,6 +1,5 @@
 #region
 
-using Automata;
 using Automata.Components;
 
 #endregion

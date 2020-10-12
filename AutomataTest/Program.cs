@@ -4,17 +4,12 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Numerics;
-using System.Runtime.Intrinsics;
-using System.Runtime.Intrinsics.X86;
-using Windows.UI.Composition;
 using Automata;
 using Automata.Components;
 using Automata.Entities;
 using Automata.Input;
-using Automata.Numerics;
 using Automata.Rendering;
 using Automata.Rendering.GLFW;
-using Automata.Rendering.Meshes;
 using Automata.Rendering.OpenGL;
 using Automata.Rendering.Vulkan;
 using Automata.Systems;
@@ -24,7 +19,6 @@ using AutomataTest.Chunks;
 using AutomataTest.Chunks.Generation;
 using Serilog;
 using Serilog.Events;
-using Silk.NET.OpenGL;
 using Silk.NET.Windowing.Common;
 
 #endregion

@@ -53,7 +53,6 @@ namespace Automata.Rendering
                 foreach ((Translation cameraTranslation, Camera camera, RenderShader renderShader) in
                     entityManager.GetComponents<Translation, Camera, RenderShader>())
                 {
-
                     renderShader.Value.Use();
                     renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC3_CAMERA_WORLD_POSITION, cameraTranslation.Value);
                     renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_CAMERA_PROJECTION_PARAMS, camera.ProjectionParameters);

@@ -95,9 +95,9 @@ namespace Automata.Numerics
         public static unsafe explicit operator Vector3b(Vector128<byte> a) => *(Vector3b*)&a;
 
         public static explicit operator Vector3b(Vector128<int> a) => new Vector3b(
-           (byte)a.GetElement(0),
-           (byte)a.GetElement(1),
-           (byte)a.GetElement(2));
+            (byte)a.GetElement(0),
+            (byte)a.GetElement(1),
+            (byte)a.GetElement(2));
 
         public static explicit operator Vector3b(Vector256<double> a) => new Vector3b(
             a.GetElement(0).FirstByte(),
