@@ -132,7 +132,10 @@ namespace AutomataTest
                 Value = new Vector3(0f, 0f, -3f)
             });
             world.EntityManager.RegisterComponent<Rotation>(playerEntity);
-            world.EntityManager.RegisterComponent<Camera>(playerEntity);
+            world.EntityManager.RegisterComponent(playerEntity, new Camera
+            {
+                Shader =  new Shader("PackedVertexes.glsl", "DefaultFragment.glsl")
+            });
             world.EntityManager.RegisterComponent<InputListener>(playerEntity);
         }
 
@@ -149,31 +152,6 @@ namespace AutomataTest
             InitializePlayerEntity(world, out IEntity _);
 
             world.SystemManager.RegisterSystem<RotationTestSystem, DefaultOrderSystem>(SystemRegistrationOrder.After);
-
-            Mesh<float> mesh = new Mesh<float>();
-            mesh.VertexArrayObject.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, 0);
-            mesh.VertexesBuffer.SetBufferData(StaticCube.Vertexes);
-            mesh.IndexesBuffer.SetBufferData(StaticCube.Indexes);
-
-            const int diameter = 4;
-            const float tile_factor = 3f;
-            for (int x = 0; x < diameter; x++)
-            for (int y = 0; y < diameter; y++)
-            for (int z = 0; z < diameter; z++)
-            {
-                Entity cube = new Entity();
-                world.EntityManager.RegisterEntity(cube);
-                world.EntityManager.RegisterComponent(cube, new Translation
-                {
-                    Value = new Vector3(x * tile_factor, y * tile_factor, z * tile_factor)
-                });
-                world.EntityManager.RegisterComponent<Rotation>(cube);
-                world.EntityManager.RegisterComponent<RotationTest>(cube);
-                world.EntityManager.RegisterComponent(cube, new RenderMesh
-                {
-                    Mesh = mesh
-                });
-            }
 
             Entity chunk = new Entity();
             world.EntityManager.RegisterEntity(chunk);

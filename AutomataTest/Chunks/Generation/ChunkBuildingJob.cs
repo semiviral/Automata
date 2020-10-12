@@ -19,11 +19,10 @@ namespace AutomataTest.Chunks.Generation
         private float _Frequency;
         private int[] _Heightmap;
         private float[] _Cavemap;
-        private TimeSpan _NoiseRetrievalTimeSpan;
-
         private int _NoiseSeedA;
         private int _NoiseSeedB;
         private float _Persistence;
+        private TimeSpan _NoiseRetrievalTimeSpan;
         private TimeSpan _TerrainGenerationTimeSpan;
 
         public ChunkBuildingJob()
@@ -38,10 +37,7 @@ namespace AutomataTest.Chunks.Generation
 
             GenerateNoise();
 
-            Stopwatch.Stop();
-
             _NoiseRetrievalTimeSpan = Stopwatch.Elapsed;
-
             Stopwatch.Restart();
 
             _Blocks = new Octree<ushort>(GenerationConstants.CHUNK_SIZE, BlockRegistry.AirID, false);
@@ -118,7 +114,7 @@ namespace AutomataTest.Chunks.Generation
         {
             Debug.Assert(_Blocks != null);
             Debug.Assert(_SeededRandom != null);
-            
+
             Vector3i localPosition = Vector3i.Project3D(index, GenerationConstants.CHUNK_SIZE);
             int heightmapIndex = Vector2i.Project1D(new Vector2i(localPosition.X, localPosition.Z), GenerationConstants.CHUNK_SIZE);
             int noiseHeight = _Heightmap[heightmapIndex];

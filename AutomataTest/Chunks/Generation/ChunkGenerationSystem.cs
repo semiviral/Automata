@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Automata.Collections;
 using Automata.Entity;
 using Automata.Extensions;
@@ -151,12 +152,17 @@ namespace AutomataTest.Chunks.Generation
                                 entityManager.RegisterComponent(entity, renderMesh);
                             }
 
-                            Mesh<float> mesh = new Mesh<float>();
-                            mesh.VertexArrayObject.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, 0);
-                            mesh.VertexesBuffer.SetBufferData(StaticCube.Vertexes);
-                            mesh.IndexesBuffer.SetBufferData(StaticCube.Indexes);
+                            PendingMesh<int> pendingMesh = chunkMeshingJob.GetData();
+                            Mesh<int> packedMesh = new Mesh<int>();
+                            int[] vertexes = pendingMesh.Vertexes.ToArray();
+                            uint[] indexes = pendingMesh.Indexes.ToArray();
 
-                            renderMesh.Mesh = mesh;
+                            Log.Verbose($"({nameof(ChunkGenerationSystem)} Chunk meshed: {vertexes.Length} vertexes, {indexes.Length} indexes");
+
+                            packedMesh.VertexArrayObject.VertexAttributeIPointer(0, 1, VertexAttribPointerType.Int, 0);
+                            packedMesh.VertexesBuffer.SetBufferData(vertexes);
+                            packedMesh.IndexesBuffer.SetBufferData(indexes);
+                            renderMesh.Mesh = packedMesh;
 
                             chunkMeshingJob.ClearData();
                             _ChunkMeshers.Return(chunkMeshingJob);

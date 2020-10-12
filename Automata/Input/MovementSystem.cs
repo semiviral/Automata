@@ -36,7 +36,7 @@ namespace Automata.Input
                     ? Vector3d.Transform(movementVector, Quaternion.Conjugate(rotation.Value))
                     : movementVector;
 
-                entity.GetComponent<Translation>().Value += Vector3d.AsVector3(transformedMovementVector);
+                entity.GetComponent<Translation>().Value += Vector3d.AsVector3(10f * transformedMovementVector);
             }
         }
 
