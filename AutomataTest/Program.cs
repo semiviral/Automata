@@ -132,7 +132,8 @@ namespace AutomataTest
                 Value = new Vector3(0f, 0f, -3f)
             });
             world.EntityManager.RegisterComponent<Rotation>(playerEntity);
-            world.EntityManager.RegisterComponent(playerEntity, new Camera
+            world.EntityManager.RegisterComponent<Camera>(playerEntity);
+            world.EntityManager.RegisterComponent(playerEntity, new RenderShader
             {
                 Shader = Shader.LoadShader("PackedVertexes.glsl", "DefaultFragment.glsl")
             });

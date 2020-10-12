@@ -49,17 +49,14 @@ namespace Automata.Rendering
 
                 Vector4 viewport = new Vector4(0f, 0f, AutomataWindow.Instance.Size.X, AutomataWindow.Instance.Size.Y);
 
-                foreach ((Translation cameraTranslation, Camera camera) in entityManager.GetComponents<Translation, Camera>())
+                foreach ((Translation cameraTranslation, Camera camera, RenderShader renderShader) in
+                    entityManager.GetComponents<Translation, Camera, RenderShader>())
                 {
-                    if (camera.Shader == null)
-                    {
-                        continue;
-                    }
 
-                    camera.Shader.Use();
-                    camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC3_CAMERA_WORLD_POSITION, cameraTranslation.Value);
-                    camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_CAMERA_PROJECTION_PARAMS, camera.ProjectionParameters);
-                    camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_VIEWPORT, viewport);
+                    renderShader.Shader.Use();
+                    renderShader.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC3_CAMERA_WORLD_POSITION, cameraTranslation.Value);
+                    renderShader.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_CAMERA_PROJECTION_PARAMS, camera.ProjectionParameters);
+                    renderShader.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_VIEWPORT, viewport);
 
                     RenderMesh? currentRenderMesh = null;
 
@@ -78,7 +75,7 @@ namespace Automata.Rendering
                             currentRenderMesh.Mesh.BindVertexArrayObject();
                         }
 
-                        if (camera.Shader.HasAutomataUniforms)
+                        if (renderShader.Shader.HasAutomataUniforms)
                         {
                             Matrix4x4 model = Matrix4x4.Identity;
 
@@ -100,13 +97,13 @@ namespace Automata.Rendering
                             Matrix4x4 modelView = model * camera.View;
                             Matrix4x4 modelViewProjection = modelView * camera.Projection;
 
-                            camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_MV, modelView);
-                            camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_MVP, modelViewProjection);
-                            camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_WORLD, model);
+                            renderShader.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_MV, modelView);
+                            renderShader.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_MVP, modelViewProjection);
+                            renderShader.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_WORLD, model);
 
                             if (Matrix4x4.Invert(model, out Matrix4x4 modelInverted))
                             {
-                                camera.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_OBJECT, modelInverted);
+                                renderShader.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_OBJECT, modelInverted);
                             }
                         }
 
