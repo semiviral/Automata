@@ -13,7 +13,7 @@ namespace Automata.Input
 {
     public class RotationSystem : ComponentSystem
     {
-        private const float _SENSITIVITY = 3f;
+        private const float _SENSITIVITY = 6f;
 
         public RotationSystem() => HandledComponents = new ComponentTypes(typeof(Rotation));
 

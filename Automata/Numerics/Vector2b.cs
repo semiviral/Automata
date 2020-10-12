@@ -25,8 +25,8 @@ namespace Automata.Numerics
         private readonly byte _X;
         private readonly byte _Y;
 
-        public bool X => AutomataMath.ByteToBool(_X);
-        public bool Y => AutomataMath.ByteToBool(_Y);
+        public bool X => _X.AsBool();
+        public bool Y => _Y.AsBool();
 
         public bool this[int index] => index switch
         {
@@ -44,12 +44,12 @@ namespace Automata.Numerics
 
         public Vector2b(bool value)
         {
-            byte numericValue = AutomataMath.BoolToByte(value);
+            byte numericValue = value.AsByte();
 
             (_X, _Y) = (numericValue, numericValue);
         }
 
-        public Vector2b(bool x, bool y) => (_X, _Y) = (AutomataMath.BoolToByte(x), AutomataMath.BoolToByte(y));
+        public Vector2b(bool x, bool y) => (_X, _Y) = (x.AsByte(), y.AsByte());
 
         #endregion
 

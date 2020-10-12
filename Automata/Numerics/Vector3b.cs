@@ -26,9 +26,9 @@ namespace Automata.Numerics
         private readonly byte _Y;
         private readonly byte _Z;
 
-        public bool X => AutomataMath.ByteToBool(_X);
-        public bool Y => AutomataMath.ByteToBool(_Y);
-        public bool Z => AutomataMath.ByteToBool(_Z);
+        public bool X => _X.AsBool();
+        public bool Y => _Y.AsBool();
+        public bool Z => _Z.AsBool();
 
         public bool this[int index] => index switch
         {
@@ -47,13 +47,13 @@ namespace Automata.Numerics
 
         public Vector3b(bool value)
         {
-            byte numericValue = AutomataMath.BoolToByte(value);
+            byte numericValue = value.AsByte();
 
             (_X, _Y, _Z) = (numericValue, numericValue, numericValue);
         }
 
         public Vector3b(bool x, bool y, bool z) =>
-            (_X, _Y, _Z) = (AutomataMath.BoolToByte(x), AutomataMath.BoolToByte(y), AutomataMath.BoolToByte(z));
+            (_X, _Y, _Z) = (x.AsByte(), y.AsByte(), z.AsByte());
 
         #endregion
 
@@ -100,9 +100,9 @@ namespace Automata.Numerics
            (byte)a.GetElement(2));
 
         public static explicit operator Vector3b(Vector256<double> a) => new Vector3b(
-            AutomataMath.DoubleToByteNaNIsMax(a.GetElement(0)),
-            AutomataMath.DoubleToByteNaNIsMax(a.GetElement(1)),
-            AutomataMath.DoubleToByteNaNIsMax(a.GetElement(2)));
+            a.GetElement(0).FirstByte(),
+            a.GetElement(1).FirstByte(),
+            a.GetElement(2).FirstByte());
 
         #endregion
     }

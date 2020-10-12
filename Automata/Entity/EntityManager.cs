@@ -73,7 +73,7 @@ namespace Automata.Entity
                 RegisterComponent(entity, entity.GetComponent(type));
             }
 
-            Log.Verbose($"Registered {nameof(IEntity)}: {entity.ID}");
+            Log.Verbose($"({nameof(EntityManager)}) Registered {nameof(IEntity)}: {entity.ID}");
         }
 
         /// <summary>

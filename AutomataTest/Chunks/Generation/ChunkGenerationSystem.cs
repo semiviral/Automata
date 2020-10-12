@@ -21,8 +21,8 @@ namespace AutomataTest.Chunks.Generation
 {
     public class ChunkGenerationSystem : ComponentSystem
     {
-        private static readonly ObjectPool<ChunkBuildingJob> _ChunkBuilders = new ObjectPool<ChunkBuildingJob>();
-        private static readonly ObjectPool<ChunkMeshingJob> _ChunkMeshers = new ObjectPool<ChunkMeshingJob>();
+        private static readonly ObjectPool<ChunkBuildingJob> _ChunkBuilders = new ObjectPool<ChunkBuildingJob>(() => new ChunkBuildingJob());
+        private static readonly ObjectPool<ChunkMeshingJob> _ChunkMeshers = new ObjectPool<ChunkMeshingJob>(() => new ChunkMeshingJob());
 
         private readonly ConcurrentDictionary<Guid, ChunkBuildingJob> _FinishedBuildingJobs;
         private readonly ConcurrentDictionary<Guid, ChunkMeshingJob> _FinishedMeshingJobs;
@@ -64,15 +64,15 @@ namespace AutomataTest.Chunks.Generation
                     {
                         void BeginChunkBuilding(ChunkID id0, ChunkState state0, Translation translation)
                         {
-                            ChunkBuildingJob chunkBuildingJob = _ChunkBuilders.Retrieve() ?? new ChunkBuildingJob();
+                            ChunkBuildingJob chunkBuildingJob = _ChunkBuilders.Rent();
                             chunkBuildingJob.SetData(Vector3i.FromVector3(translation.Value), GenerationConstants.Seed, 0.01f, 1f);
 
                             // local method for building finished
                             void OnChunkBuildingFinished(object? sender, AsyncJob asyncJob)
                             {
-                                Log.Verbose($"Chunk building finished for chunk '{id0.Value}' ({asyncJob.ExecutionTime.Milliseconds}ms).");
+                                Log.Verbose($"({nameof(ChunkGenerationSystem)}) Built: '{id0.Value}' ({asyncJob.ExecutionTime.Milliseconds}ms).");
 
-                                asyncJob.WorkFinished -= OnChunkBuildingFinished;
+                                asyncJob.Finished -= OnChunkBuildingFinished;
 
                                 if (state0.Value == GenerationState.Deactivated)
                                 {
@@ -83,8 +83,7 @@ namespace AutomataTest.Chunks.Generation
                                 _FinishedBuildingJobs.AddOrUpdate(id0.Value, finishedChunkBuildingJob, (guid, job) => finishedChunkBuildingJob);
                             }
 
-
-                            chunkBuildingJob.WorkFinished += OnChunkBuildingFinished;
+                            chunkBuildingJob.Finished += OnChunkBuildingFinished;
 
                             AsyncJobScheduler.QueueAsyncJob(chunkBuildingJob);
                         }
@@ -100,7 +99,7 @@ namespace AutomataTest.Chunks.Generation
                         {
                             entity.GetComponent<BlocksCollection>().Value = chunkBuildingJob.GetGeneratedBlockData();
                             chunkBuildingJob.ClearData();
-                            _ChunkBuilders.TryAdd(chunkBuildingJob);
+                            _ChunkBuilders.Return(chunkBuildingJob);
 
                             state.Value = state.Value.Next();
                         }
@@ -112,14 +111,14 @@ namespace AutomataTest.Chunks.Generation
                         {
                             Debug.Assert(state0.Value == GenerationState.Unmeshed);
 
-                            ChunkMeshingJob chunkMeshingJob = _ChunkMeshers.Retrieve() ?? new ChunkMeshingJob();
+                            ChunkMeshingJob chunkMeshingJob = _ChunkMeshers.Rent();
                             chunkMeshingJob.SetData(blocksCollection.Value, new INodeCollection<ushort>[0]);
 
                             void OnChunkMeshingFinished(object? sender, AsyncJob asyncJob)
                             {
-                                Log.Verbose($"Chunk meshing finished for chunk '{id0.Value}' ({asyncJob.ExecutionTime.Milliseconds}ms).");
+                                Log.Verbose($"({nameof(ChunkGenerationSystem)}) Meshed: '{id0.Value}' ({asyncJob.ExecutionTime.Milliseconds}ms).");
 
-                                asyncJob.WorkFinished -= OnChunkMeshingFinished;
+                                asyncJob.Finished -= OnChunkMeshingFinished;
 
                                 if (state0.Value == GenerationState.Deactivated)
                                 {
@@ -130,7 +129,7 @@ namespace AutomataTest.Chunks.Generation
                                 _FinishedMeshingJobs.AddOrUpdate(id0.Value, finishedChunkMeshingJob, (guid, job) => finishedChunkMeshingJob);
                             }
 
-                            chunkMeshingJob.WorkFinished += OnChunkMeshingFinished;
+                            chunkMeshingJob.Finished += OnChunkMeshingFinished;
 
                             AsyncJobScheduler.QueueAsyncJob(chunkMeshingJob);
                         }
@@ -160,7 +159,7 @@ namespace AutomataTest.Chunks.Generation
                             renderMesh.Mesh = mesh;
 
                             chunkMeshingJob.ClearData();
-                            _ChunkMeshers.TryAdd(chunkMeshingJob);
+                            _ChunkMeshers.Return(chunkMeshingJob);
 
                             state.Value = state.Value.Next();
                         }

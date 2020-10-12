@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 #endregion
 
@@ -10,7 +12,7 @@ using System.Numerics;
 
 namespace Automata
 {
-    public class AutomataMath
+    public static class AutomataMath
     {
         public static float UnLerp(float a, float b, float interpolant) => (interpolant - a) / (b - a);
 
@@ -18,60 +20,10 @@ namespace Automata
         public static Vector3 ToRadians(Vector3 degrees) => new Vector3(ToRadians(degrees.X), ToRadians(degrees.Y), ToRadians(degrees.Z));
 
         // row major
-        public static unsafe Span<float> UnrollMatrix4x4RowMajor(Matrix4x4 matrix)
+        public static bool TryUnroll(this Matrix4x4 matrix, ref Span<float> unrolled)
         {
-            float* matrixUnrolled = stackalloc float[]
-            {
-                matrix.M11,
-                matrix.M12,
-                matrix.M13,
-                matrix.M14,
-                matrix.M21,
-                matrix.M22,
-                matrix.M23,
-                matrix.M24,
-                matrix.M31,
-                matrix.M32,
-                matrix.M33,
-                matrix.M34,
-                matrix.M41,
-                matrix.M42,
-                matrix.M43,
-                matrix.M44,
-            };
-
-            return new Span<float>(matrixUnrolled, 16);
-        }
-
-        public static unsafe Span<float> UnrollMatrix4x4ColumnMajor(Matrix4x4 matrix)
-        {
-            float* matrixUnrolled = stackalloc float[]
-            {
-                matrix.M11,
-                matrix.M21,
-                matrix.M31,
-                matrix.M41,
-                matrix.M12,
-                matrix.M22,
-                matrix.M31,
-                matrix.M42,
-                matrix.M13,
-                matrix.M23,
-                matrix.M33,
-                matrix.M43,
-                matrix.M14,
-                matrix.M24,
-                matrix.M34,
-                matrix.M44,
-            };
-            return new Span<float>(matrixUnrolled, 16);
-        }
-
-        public static IEnumerable<float> UnrollVector3(Vector3 vector3)
-        {
-            yield return vector3.X;
-            yield return vector3.Y;
-            yield return vector3.Z;
+            Span<byte> span = MemoryMarshal.Cast<float, byte>(unrolled);
+            return MemoryMarshal.TryWrite(span, ref matrix);
         }
 
         public static int Wrap(int v, int delta, int minVal, int maxVal)
@@ -82,8 +34,8 @@ namespace Automata
             return (v % mod) + minVal;
         }
 
-        public static unsafe byte BoolToByte(bool a) => (byte)(*(byte*)&a * byte.MaxValue);
-        public static unsafe bool ByteToBool(byte a) => *(bool*)&a;
-        public static unsafe byte DoubleToByteNaNIsMax(double a) => *(byte*)&a;
+        public static byte AsByte(this bool a) => (byte)(Unsafe.As<bool, byte>(ref a) * byte.MaxValue);
+        public static bool AsBool(this byte a) => Unsafe.As<byte, bool>(ref a);
+        public static byte FirstByte(this double a) => Unsafe.As<double, byte>(ref a);
     }
 }

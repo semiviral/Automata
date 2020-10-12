@@ -1,6 +1,7 @@
 #region
 
 using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Automata;
@@ -8,7 +9,6 @@ using Automata.Collections;
 using Automata.Noise;
 using Automata.Numerics;
 using AutomataTest.Blocks;
-using ComputeSharp;
 
 #endregion
 
@@ -16,16 +16,9 @@ namespace AutomataTest.Chunks.Generation
 {
     public class ChunkBuildingJob : ChunkTerrainJob
     {
-        private static readonly ObjectPool<int[]> _HeightmapPool = new ObjectPool<int[]>();
-        private static readonly ObjectPool<float[]> _CaveNoisePool = new ObjectPool<float[]>();
-
-        private static readonly int[] _EmptyHeightmap = new int[0];
-        private static readonly float[] _EmptyCavemap = new float[0];
-        private float[] _Cavemap;
-
         private float _Frequency;
-
         private int[] _Heightmap;
+        private float[] _Cavemap;
         private TimeSpan _NoiseRetrievalTimeSpan;
 
         private int _NoiseSeedA;
@@ -35,8 +28,8 @@ namespace AutomataTest.Chunks.Generation
 
         public ChunkBuildingJob()
         {
-            _Heightmap = _EmptyHeightmap;
-            _Cavemap = _EmptyCavemap;
+            _Heightmap = Array.Empty<int>();
+            _Cavemap = Array.Empty<float>();
         }
 
         protected override async Task Process()
@@ -55,14 +48,11 @@ namespace AutomataTest.Chunks.Generation
 
             await BatchTasksAndAwaitAll().ConfigureAwait(false);
 
-            Array.Clear(_Heightmap, 0, _Heightmap.Length);
-            Array.Clear(_Cavemap, 0, _Cavemap.Length);
+            ArrayPool<int>.Shared.Return(_Heightmap);
+            ArrayPool<float>.Shared.Return(_Cavemap);
 
-            _HeightmapPool.TryAdd(_Heightmap);
-            _CaveNoisePool.TryAdd(_Cavemap);
-
-            _Heightmap = _EmptyHeightmap;
-            _Cavemap = _EmptyCavemap;
+            _Heightmap = Array.Empty<int>();
+            _Cavemap = Array.Empty<float>();
 
             Stopwatch.Stop();
 
@@ -103,54 +93,32 @@ namespace AutomataTest.Chunks.Generation
 
         private void GenerateNoise()
         {
-            _Heightmap = _HeightmapPool.Retrieve() ?? new int[GenerationConstants.CHUNK_SIZE_SQUARED];
-            _Cavemap = _CaveNoisePool.Retrieve() ?? new float[GenerationConstants.CHUNK_SIZE_CUBED];
+            _Heightmap = ArrayPool<int>.Shared.Rent(GenerationConstants.CHUNK_SIZE_SQUARED);
+            _Cavemap = ArrayPool<float>.Shared.Rent(GenerationConstants.CHUNK_SIZE_CUBED);
 
-            using ReadWriteBuffer<int> heightmapBuffer = Gpu.Default.AllocateReadWriteBuffer<int>(GenerationConstants.CHUNK_SIZE_SQUARED);
-            using ReadWriteBuffer<float> cavemapBuffer = Gpu.Default.AllocateReadWriteBuffer<float>(GenerationConstants.CHUNK_SIZE_CUBED);
-
-            void NoiseKernel(ThreadIds threadIds)
+            for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++)
+            for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
             {
-                if (threadIds.Y == 0)
+                Vector2i xzCoords = new Vector2i(x, z);
+                int heightmapIndex = Vector2i.Project1D(xzCoords, GenerationConstants.CHUNK_SIZE);
+                _Heightmap[heightmapIndex] = GetHeightByGlobalPosition(new Vector2i(_OriginPoint.X, _OriginPoint.Z) + xzCoords);
+
+                for (int y = 0; y < GenerationConstants.CHUNK_SIZE; y++)
                 {
-                    heightmapBuffer[threadIds.X + (GenerationConstants.CHUNK_SIZE * threadIds.Z)] = 128;
-                }
-                else
-                {
-                    cavemapBuffer[threadIds.X + (GenerationConstants.CHUNK_SIZE * (threadIds.Z + (GenerationConstants.CHUNK_SIZE * threadIds.Y)))] =
-                        0;
+                    Vector3i localPosition = new Vector3i(x, y, z);
+                    Vector3i globalPosition = _OriginPoint + localPosition;
+                    int caveNoiseIndex = Vector3i.Project1D(localPosition, GenerationConstants.CHUNK_SIZE);
+
+                    _Cavemap[caveNoiseIndex] = GetCaveNoiseByGlobalPosition(globalPosition);
                 }
             }
-
-            Gpu.Default.For(GenerationConstants.CHUNK_SIZE, GenerationConstants.CHUNK_SIZE, GenerationConstants.CHUNK_SIZE, NoiseKernel);
-
-            heightmapBuffer.GetData(_Heightmap);
-            cavemapBuffer.GetData(_Cavemap);
         }
-
-
-        // for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++)
-        // for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
-        // {
-        //     Vector2i xzCoords = new Vector2i(x, z);
-        //     int heightmapIndex = Vector2i.Project1D(xzCoords, GenerationConstants.CHUNK_SIZE);
-        //     _Heightmap[heightmapIndex] = GetHeightByGlobalPosition(new Vector2i(_OriginPoint.X, _OriginPoint.Z) + xzCoords);
-        //
-        //     for (int y = 0; y < GenerationConstants.CHUNK_SIZE; y++)
-        //     {
-        //         Vector3i localPosition = new Vector3i(x, y, z);
-        //         Vector3i globalPosition = _OriginPoint + localPosition;
-        //         int caveNoiseIndex = Vector3i.Project1D(localPosition, GenerationConstants.CHUNK_SIZE);
-        //
-        //         _Cavemap[caveNoiseIndex] = GetCaveNoiseByGlobalPosition(globalPosition);
-        //     }
-        // }
-
 
         private void GenerateIndex(int index)
         {
             Debug.Assert(_Blocks != null);
             Debug.Assert(_SeededRandom != null);
+            
             Vector3i localPosition = Vector3i.Project3D(index, GenerationConstants.CHUNK_SIZE);
             int heightmapIndex = Vector2i.Project1D(new Vector2i(localPosition.X, localPosition.Z), GenerationConstants.CHUNK_SIZE);
             int noiseHeight = _Heightmap[heightmapIndex];
@@ -210,7 +178,7 @@ namespace AutomataTest.Chunks.Generation
             float noisePersistedWorldHeight =
                 noiseAsWorldHeight + (((GenerationConstants.WORLD_HEIGHT / 2f) - (noiseAsWorldHeight * 1.25f)) * _Persistence);
 
-            return (int)Hlsl.Floor(noisePersistedWorldHeight);
+            return (int)Math.Floor(noisePersistedWorldHeight);
         }
     }
 }

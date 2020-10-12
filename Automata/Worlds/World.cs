@@ -41,7 +41,7 @@ namespace Automata.Worlds
 
             Worlds.Add(name, world);
 
-            Log.Debug($"Registered {nameof(World)}: '{name}' typeof({world.GetType().Name})");
+            Log.Debug($"({nameof(World)}) Registered {nameof(World)}: '{name}' typeof({world.GetType().Name})");
         }
 
         public static void TryGetWorld(string name, out World? world) => Worlds.TryGetValue(name, out world);

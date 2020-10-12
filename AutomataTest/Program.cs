@@ -37,14 +37,10 @@ namespace AutomataTest
 
         private static void Main(string[] args)
         {
-            Log.Logger = new LoggerConfiguration().WriteTo.Console().MinimumLevel.Is(
-#if DEBUG
-                LogEventLevel.Verbose
-#else
-                LogEventLevel.Information
-#endif
-            ).CreateLogger();
-            Log.Information("Static logger initialized.");
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.Console().MinimumLevel.Is(LogEventLevel.Verbose)
+                .CreateLogger();
+            Log.Information("Logger initialized.");
 
             if (!Directory.Exists(_LocalDataPath))
             {

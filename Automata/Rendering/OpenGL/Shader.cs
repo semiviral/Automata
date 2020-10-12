@@ -155,56 +155,6 @@ namespace Automata.Rendering.OpenGL
             _GL.UseProgram(_Handle);
         }
 
-        #region Set .. Get .. With Throw
-
-        public void SetUniform(string name, int value)
-        {
-            int location = GetUniformLocation(name);
-
-            _GL.ProgramUniform1(_Handle, location, value);
-        }
-
-        public void SetUniform(string name, float value)
-        {
-            int location = GetUniformLocation(name);
-
-            _GL.ProgramUniform1(_Handle, location, value);
-        }
-
-        public void SetUniform(string name, Vector3 value)
-        {
-            int location = GetUniformLocation(name);
-
-            _GL.ProgramUniform3(_Handle, location, value);
-        }
-
-        public void SetUniform(string name, Vector4 value)
-        {
-            int location = GetUniformLocation(name);
-
-            _GL.ProgramUniform4(_Handle, location, value);
-        }
-
-        public void SetUniform(string name, Matrix4x4 value)
-        {
-            int location = GetUniformLocation(name);
-
-            _GL.ProgramUniformMatrix4(_Handle, location, 1, false, AutomataMath.UnrollMatrix4x4RowMajor(value).ToArray());
-        }
-
-        private int GetUniformLocation(string name)
-        {
-            if (_CachedUniformLocations.TryGetValue(name, out int location))
-            {
-                return location;
-            }
-            else
-            {
-                throw new UniformNotFoundException(name);
-            }
-        }
-
-        #endregion
 
         #region Set .. Get .. As Try
 
@@ -264,13 +214,20 @@ namespace Automata.Rendering.OpenGL
             }
         }
 
-        public bool TrySetUniform(string name, Matrix4x4 value)
+        public unsafe bool TrySetUniform(string name, Matrix4x4 value)
         {
             if (TryGetUniformLocation(name, out int location))
             {
-                _GL.ProgramUniformMatrix4(_Handle, location, 1, false, AutomataMath.UnrollMatrix4x4RowMajor(value).ToArray());
-
-                return true;
+                Span<float> span = stackalloc float[16];
+                if (value.TryUnroll(ref span))
+                {
+                    _GL.ProgramUniformMatrix4(_Handle, location, 1, false, span);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
             else
             {
