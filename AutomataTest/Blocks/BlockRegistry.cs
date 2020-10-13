@@ -19,7 +19,7 @@ namespace AutomataTest.Blocks
         public static ushort AirID;
         public readonly List<IBlockDefinition> BlockDefinitions;
 
-        public readonly Dictionary<string, ushort> BlockNamesByID;
+        public readonly Dictionary<string, ushort> BlockIDByName;
 
         private List<BlockDefinition.Property> _BlockPropertiesCache;
         private Dictionary<BlockDefinition.Property, HashSet<ushort>> _PropertiesBuckets;
@@ -31,7 +31,7 @@ namespace AutomataTest.Blocks
             _BlockPropertiesCache = new List<BlockDefinition.Property>(EnumExtensions.GetEnumsList<BlockDefinition.Property>());
             _PropertiesBuckets = new Dictionary<BlockDefinition.Property, HashSet<ushort>>();
 
-            BlockNamesByID = new Dictionary<string, ushort>();
+            BlockIDByName = new Dictionary<string, ushort>();
             BlockDefinitions = new List<IBlockDefinition>();
 
             InitializeBlockPropertiesBuckets();
@@ -95,7 +95,7 @@ namespace AutomataTest.Blocks
             BlockDefinition blockDefinition = new BlockDefinition(blockId, blockName, uvsRule, properties);
 
             BlockDefinitions.Add(blockDefinition);
-            BlockNamesByID.Add(blockName, blockId);
+            BlockIDByName.Add(blockName, blockId);
             SortBlockDefinitionPropertiesToBuckets(blockDefinition);
 
             Log.Information($"({nameof(BlockRegistry)}) Registered ID {blockId}: '{blockName}'");
@@ -124,11 +124,13 @@ namespace AutomataTest.Blocks
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool BlockIdExists(ushort blockId) => blockId < BlockDefinitions.Count;
 
+        public ushort GetBlockID(string blockName) => BlockIDByName[blockName];
+
         public bool TryGetBlockId(string blockName, out ushort blockId)
         {
             blockId = 0;
 
-            if (!BlockNamesByID.TryGetValue(blockName, out blockId))
+            if (!BlockIDByName.TryGetValue(blockName, out blockId))
             {
                 Log.Warning($"({nameof(BlockRegistry)}) Failed to return block id for '{blockName}': block does not exist.");
 

@@ -19,6 +19,91 @@ namespace AutomataTest.Chunks.Generation
 {
     public class ChunkMeshingJob : AsyncJob
     {
+        #region Static Generation Data
+
+private static readonly int[][] _VertexesByIteration =
+        {
+            // 3   0
+            //
+            // 2   1
+
+            // z y x
+            new[]
+            {
+                // East      z      y      x
+                0b01_01_10_000001_000001_000001,
+                0b01_01_10_000001_000000_000001,
+                0b01_01_10_000000_000000_000001,
+                0b01_01_10_000000_000001_000001,
+            },
+            new[]
+            {
+                // Up        z      y      x
+                0b01_10_01_000001_000001_000000,
+                0b01_10_01_000001_000001_000001,
+                0b01_10_01_000000_000001_000001,
+                0b01_10_01_000000_000001_000000,
+            },
+            new[]
+            {
+                // North     z      y      x
+                0b10_01_01_000001_000001_000000,
+                0b10_01_01_000001_000000_000000,
+                0b10_01_01_000001_000000_000001,
+                0b10_01_01_000001_000001_000001,
+            },
+            new[]
+            {
+                // West      z      y      x
+                0b01_01_00_000000_000001_000000,
+                0b01_01_00_000000_000000_000000,
+                0b01_01_00_000001_000000_000000,
+                0b01_01_00_000001_000001_000000,
+            },
+            new[]
+            {
+                // Down      z      y      x
+                0b01_00_01_000001_000000_000001,
+                0b01_00_01_000001_000000_000000,
+                0b01_00_01_000000_000000_000000,
+                0b01_00_01_000000_000000_000001,
+            },
+            new[]
+            {
+                // South     z      y      x
+                0b00_01_01_000000_000001_000001,
+                0b00_01_01_000000_000000_000001,
+                0b00_01_01_000000_000000_000000,
+                0b00_01_01_000000_000001_000000,
+            },
+        };
+
+private static readonly int[] _IndexStepByNormalIndex =
+        {
+            1,
+            GenerationConstants.CHUNK_SIZE_SQUARED,
+            GenerationConstants.CHUNK_SIZE,
+            -1,
+            -GenerationConstants.CHUNK_SIZE_SQUARED,
+            -GenerationConstants.CHUNK_SIZE,
+        };
+
+        #endregion
+
+        private struct MeshingBlock
+        {
+            private Direction _Faces;
+
+            public ushort ID { get; set; }
+
+            public bool HasAnyFaces() => _Faces > 0;
+            public bool HasAllFaces() => (_Faces & Direction.Mask) == Direction.Mask;
+            public bool HasFace(Direction direction) => (_Faces & direction) == direction;
+            public void SetFace(Direction direction) => _Faces |= direction;
+            public void UnsetFace(Direction direction) => _Faces &= ~direction;
+            public void ClearFaces() => _Faces = 0;
+        }
+
         private static readonly ArrayPool<MeshingBlock> _MeshingBlocksPool = ArrayPool<MeshingBlock>.Create(GenerationConstants.CHUNK_SIZE_CUBED, 8);
 
         private readonly INodeCollection<ushort>[] _NeighborBlocksCollections;
@@ -29,7 +114,6 @@ namespace AutomataTest.Chunks.Generation
         private INodeCollection<ushort>? _BlocksCollection;
         private MeshingBlock[]? _MeshingBlocks;
         private TimeSpan _MeshingTimeSpan;
-
         private TimeSpan _PreMeshingTimeSpan;
 
         public ChunkMeshingJob()
@@ -40,7 +124,6 @@ namespace AutomataTest.Chunks.Generation
             _Triangles = new List<uint>();
             _MeshingBlocks = null;
         }
-
 
         #region Data
 
@@ -74,7 +157,6 @@ namespace AutomataTest.Chunks.Generation
         };
 
         #endregion
-
 
         #region AsyncJob Overrides
 
@@ -121,7 +203,6 @@ namespace AutomataTest.Chunks.Generation
         }
 
         #endregion
-
 
         #region Mesh Generation
 
@@ -238,7 +319,7 @@ namespace AutomataTest.Chunks.Generation
                     // current value of the local position by traversal direction
                     int traversalNormalAxisValue = (localPosition >> traversalNormalShift) & GenerationConstants.CHUNK_SIZE_BIT_MASK;
                     // amount by integer to add to current index to get 3D->1D position of traversal position
-                    int traversalIndexStep = GenerationConstants.IndexStepByNormalIndex[traversalNormalIndex];
+                    int traversalIndexStep = _IndexStepByNormalIndex[traversalNormalIndex];
                     // current traversal index, which is increased by traversalIndexStep every iteration the for loop below
                     int traversalIndex = index + (traversals * traversalIndexStep);
                     // local start axis position + traversals
@@ -256,7 +337,7 @@ namespace AutomataTest.Chunks.Generation
                         if (!isFaceCheckOutOfBounds)
                         {
                             // amount by integer to add to current traversal index to get 3D->1D position of facing block
-                            int facedBlockIndex = traversalIndex + GenerationConstants.IndexStepByNormalIndex[normalIndex];
+                            int facedBlockIndex = traversalIndex + _IndexStepByNormalIndex[normalIndex];
                             // if so, index into block ids and set facingBlockId
                             ushort facedBlockId = _MeshingBlocks[facedBlockIndex].ID;
 
@@ -342,7 +423,7 @@ namespace AutomataTest.Chunks.Generation
                     int traversalShiftedMask = GenerationConstants.CHUNK_SIZE_BIT_MASK << traversalNormalShift;
                     int unaryTraversalShiftedMask = ~traversalShiftedMask;
 
-                    int[] compressedVertices = GenerationConstants.VertexesByIteration[normalIndex];
+                    int[] compressedVertices = _VertexesByIteration[normalIndex];
 
                     _Vertexes.Add(localPosition
                                   + ((unaryTraversalShiftedMask & compressedVertices[0])
@@ -391,7 +472,6 @@ namespace AutomataTest.Chunks.Generation
         }
 
         #endregion
-
 
         #region Vertex Compression
 

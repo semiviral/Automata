@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace Automata.Collections
 {
-    public class OrderedList<T> : IEnumerable<T> where T : notnull
+    public class OrderedList<T> : IReadOnlyCollection<T> where T : notnull
     {
         private readonly LinkedList<T> _LinkedList;
         private readonly Dictionary<Type, LinkedListNode<T>> _Nodes;

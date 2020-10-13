@@ -9,8 +9,8 @@ namespace AutomataTest.Chunks
     public enum GenerationState
     {
         Deactivated,
-        Unbuilt,
-        AwaitingBuilding,
+        Ungenerated,
+        AwaitingGeneration,
         Unmeshed,
         AwaitingMeshing,
         Meshed
