@@ -29,7 +29,7 @@ namespace Automata.Systems
 
     public class LastOrderSystem : ComponentSystem { }
 
-    public class SystemManager : IDisposable
+    public sealed class SystemManager : IDisposable
     {
         private readonly OrderedList<ComponentSystem> _ComponentSystems;
 
@@ -39,7 +39,7 @@ namespace Automata.Systems
             _ComponentSystems.AddLast(new FirstOrderSystem());
             _ComponentSystems.AddLast(new DefaultOrderSystem());
             _ComponentSystems.AddLast(new RenderOrderSystem());
-            _ComponentSystems.AddLast(new FirstOrderSystem());
+            _ComponentSystems.AddLast(new LastOrderSystem());
         }
 
         public void Update(EntityManager entityManager, Stopwatch frameTimer)
@@ -116,7 +116,7 @@ namespace Automata.Systems
 
         private bool _Disposed;
 
-        protected virtual void DisposeInternal()
+        private void DisposeInternal()
         {
             foreach (ComponentSystem componentSystem in _ComponentSystems)
             {

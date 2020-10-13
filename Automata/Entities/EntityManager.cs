@@ -11,7 +11,7 @@ using Serilog;
 
 namespace Automata.Entities
 {
-    public class EntityManager
+    public sealed class EntityManager
     {
         private readonly Dictionary<Guid, IEntity> _Entities;
         private readonly Dictionary<Type, List<IEntity>> _EntitiesByComponent;
