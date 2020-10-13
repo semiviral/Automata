@@ -1,7 +1,5 @@
 #region
 
-using Automata.Numerics;
-
 #endregion
 
 namespace AutomataTest.Chunks.Generation
@@ -19,8 +17,6 @@ namespace AutomataTest.Chunks.Generation
         public const int CHUNK_SIZE_CUBED = CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE;
         public const int WORLD_HEIGHT_IN_CHUNKS = 8;
         public const int WORLD_HEIGHT = CHUNK_SIZE * WORLD_HEIGHT_IN_CHUNKS;
-
-
 
         public static int Seed { get; set; }
     }

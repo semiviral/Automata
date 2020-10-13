@@ -154,7 +154,7 @@ namespace AutomataTest
             world.EntityManager.RegisterComponent<Translation>(chunk);
             world.EntityManager.RegisterComponent(chunk, new ChunkState
             {
-                Value = GenerationState.Ungenerated
+                Value = GenerationState.Unbuilt
             });
             world.EntityManager.RegisterComponent<ChunkID>(chunk);
             world.EntityManager.RegisterComponent<BlocksCollection>(chunk);

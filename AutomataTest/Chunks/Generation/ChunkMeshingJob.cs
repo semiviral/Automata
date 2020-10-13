@@ -21,7 +21,7 @@ namespace AutomataTest.Chunks.Generation
     {
         #region Static Generation Data
 
-private static readonly int[][] _VertexesByIteration =
+        private static readonly int[][] _VertexesByIteration =
         {
             // 3   0
             //
@@ -78,7 +78,7 @@ private static readonly int[][] _VertexesByIteration =
             },
         };
 
-private static readonly int[] _IndexStepByNormalIndex =
+        private static readonly int[] _IndexStepByNormalIndex =
         {
             1,
             GenerationConstants.CHUNK_SIZE_SQUARED,

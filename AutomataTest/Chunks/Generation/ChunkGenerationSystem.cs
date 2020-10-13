@@ -45,6 +45,15 @@ namespace AutomataTest.Chunks.Generation
                     generationStep.Generate(Parameters, ref blocks);
                 }
 
+                Blocks = GenerateNodeCollection(ref blocks);
+                Parameters = default;
+                GenerationSteps = default;
+
+                return Task.CompletedTask;
+            }
+
+            private static INodeCollection<ushort> GenerateNodeCollection(ref Span<ushort> blocks)
+            {
                 Octree<ushort> blocksCompressed = new Octree<ushort>(GenerationConstants.CHUNK_SIZE, BlockRegistry.AirID, false);
 
                 int index = 0;
@@ -55,11 +64,7 @@ namespace AutomataTest.Chunks.Generation
                     blocksCompressed.SetPoint(x, y, z, blocks[index]);
                 }
 
-                Blocks = blocksCompressed;
-                Parameters = default;
-                GenerationSteps = default;
-
-                return Task.CompletedTask;
+                return blocksCompressed;
             }
         }
 
@@ -68,7 +73,6 @@ namespace AutomataTest.Chunks.Generation
 
         private readonly ConcurrentDictionary<Guid, INodeCollection<ushort>> _GeneratedBlockCollections;
         private readonly ConcurrentDictionary<Guid, ChunkMeshingJob> _FinishedMeshingJobs;
-
         private readonly OrderedList<BuildStep> _BuildSteps;
 
         public ChunkGenerationSystem()
@@ -91,10 +95,10 @@ namespace AutomataTest.Chunks.Generation
 
                 switch (state.Value)
                 {
-                    case GenerationState.Ungenerated:
+                    case GenerationState.Unbuilt:
                         ChunkBuildingJob chunkBuildingJob = _ChunkBuildingJobs.Rent();
                         chunkBuildingJob.Parameters = new BuildStep.Parameters(GenerationConstants.Seed, GenerationConstants.FREQUENCY,
-                            GenerationConstants.PERSISTENCE, Vector3i.FromVector3(entity.GetComponent<Translation>().Value));
+                            GenerationConstants.PERSISTENCE, new Vector3i(0,  GenerationConstants.WORLD_HEIGHT / 3, 0)); // Vector3i.FromVector3(entity.GetComponent<Translation>().Value));
                         chunkBuildingJob.GenerationSteps = _BuildSteps;
 
                         void OnChunkGenerationFinished(object? sender, AsyncJob asyncJob)
@@ -122,9 +126,9 @@ namespace AutomataTest.Chunks.Generation
 
                         AsyncJobScheduler.QueueAsyncJob(chunkBuildingJob);
 
-                        //state.Value = state.Value.Next();
+                        state.Value = state.Value.Next();
                         break;
-                    case GenerationState.AwaitingGeneration:
+                    case GenerationState.AwaitingBuilding:
                     {
                         if (_GeneratedBlockCollections.TryRemove(id.Value, out INodeCollection<ushort>? blocks))
                         {
