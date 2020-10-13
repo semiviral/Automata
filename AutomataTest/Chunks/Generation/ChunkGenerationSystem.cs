@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Automata.Collections;
@@ -19,6 +20,35 @@ using Silk.NET.OpenGL;
 
 namespace AutomataTest.Chunks.Generation
 {
+    public abstract class GenerationStep : IComparer<GenerationStep>
+    {
+        public int Order { get; }
+
+        public GenerationStep(int order) => Order = order;
+
+        public abstract Span<ushort> Generate(Span<ushort> blocks);
+
+        public int Compare(GenerationStep? x, GenerationStep? y)
+        {
+            if (ReferenceEquals(x, y))
+            {
+                return 0;
+            }
+
+            if (ReferenceEquals(null, y))
+            {
+                return 1;
+            }
+
+            if (ReferenceEquals(null, x))
+            {
+                return -1;
+            }
+
+            return x.Order.CompareTo(y.Order);
+        }
+    }
+
     public class ChunkGenerationSystem : ComponentSystem
     {
         private static readonly ObjectPool<ChunkBuildingJob> _ChunkBuilders = new ObjectPool<ChunkBuildingJob>(() => new ChunkBuildingJob());
@@ -27,10 +57,14 @@ namespace AutomataTest.Chunks.Generation
         private readonly ConcurrentDictionary<Guid, ChunkBuildingJob> _FinishedBuildingJobs;
         private readonly ConcurrentDictionary<Guid, ChunkMeshingJob> _FinishedMeshingJobs;
 
+        private readonly SortedSet<GenerationStep> _GenerationSteps;
+
         public ChunkGenerationSystem()
         {
             _FinishedBuildingJobs = new ConcurrentDictionary<Guid, ChunkBuildingJob>();
             _FinishedMeshingJobs = new ConcurrentDictionary<Guid, ChunkMeshingJob>();
+            _GenerationSteps = new SortedSet<GenerationStep>();
+
 
             HandledComponents = new ComponentTypes(typeof(Translation), typeof(ChunkState), typeof(BlocksCollection));
         }

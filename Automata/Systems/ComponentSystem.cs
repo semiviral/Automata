@@ -9,8 +9,6 @@ namespace Automata.Systems
 {
     public abstract class ComponentSystem : IDisposable
     {
-        protected EntityManager? _EntityManager;
-
         /// <summary>
         ///     This is a hint to the <see cref="SystemManager" /> as to what types the system uses for updates.
         ///     If the types aren't present in the <see cref="EntityManager" />, the system's <see cref="Update" /> will be
@@ -35,6 +33,7 @@ namespace Automata.Systems
         ///     method is skipped.
         /// </remarks>
         public virtual void Update(EntityManager entityManager, TimeSpan delta) { }
+
 
         #region IDisposable
 

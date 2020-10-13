@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Automata.Collections;
 using Automata.Components;
 using Automata.Entities;
 using Serilog;
@@ -14,7 +15,7 @@ using Serilog;
 
 namespace Automata.Systems
 {
-    public enum SystemRegistrationOrder
+    public enum SystemRegistrationOrder : byte
     {
         Before,
         After
@@ -30,20 +31,15 @@ namespace Automata.Systems
 
     public class SystemManager : IDisposable
     {
-        private readonly LinkedList<ComponentSystem> _ComponentSystems;
-        private readonly Dictionary<Type, LinkedListNode<ComponentSystem>> _ComponentSystemNodes;
+        private readonly OrderedList<ComponentSystem> _ComponentSystems;
 
         public SystemManager()
         {
-            _ComponentSystems = new LinkedList<ComponentSystem>();
-            _ComponentSystemNodes = new Dictionary<Type, LinkedListNode<ComponentSystem>>
-            {
-                // initialize first system
-                { typeof(FirstOrderSystem), _ComponentSystems.AddLast(Activator.CreateInstance<FirstOrderSystem>()) },
-                { typeof(DefaultOrderSystem), _ComponentSystems.AddLast(Activator.CreateInstance<DefaultOrderSystem>()) },
-                { typeof(RenderOrderSystem), _ComponentSystems.AddLast(Activator.CreateInstance<RenderOrderSystem>()) },
-                { typeof(LastOrderSystem), _ComponentSystems.AddLast(Activator.CreateInstance<LastOrderSystem>()) }
-            };
+            _ComponentSystems = new OrderedList<ComponentSystem>();
+            _ComponentSystems.AddLast(new FirstOrderSystem());
+            _ComponentSystems.AddLast(new DefaultOrderSystem());
+            _ComponentSystems.AddLast(new RenderOrderSystem());
+            _ComponentSystems.AddLast(new FirstOrderSystem());
         }
 
         public void Update(EntityManager entityManager, Stopwatch frameTimer)
@@ -66,19 +62,10 @@ namespace Automata.Systems
         /// <exception cref="TypeLoadException">
         ///     Thrown when system of type <see cref="TUpdateAround" /> doesn't exist.
         /// </exception>
-        public void RegisterSystem<TSystem, TUpdateAround>(SystemRegistrationOrder registrationOrder)
+        public void RegisterSystem<TSystem, TUpdateAround>(SystemRegistrationOrder order)
             where TSystem : ComponentSystem, new()
             where TUpdateAround : ComponentSystem
         {
-            if (_ComponentSystemNodes.ContainsKey(typeof(TSystem)))
-            {
-                throw new Exception("System type already instantiated.");
-            }
-            else if (!_ComponentSystemNodes.ContainsKey(typeof(TUpdateAround)))
-            {
-                throw new KeyNotFoundException("System type does not exist.");
-            }
-
             TSystem componentSystem = new TSystem();
 
             foreach (Type type in componentSystem.HandledComponents?.Types ?? Enumerable.Empty<Type>())
@@ -89,18 +76,16 @@ namespace Automata.Systems
                 }
             }
 
-            switch (registrationOrder)
+            switch (order)
             {
                 case SystemRegistrationOrder.Before:
-                    _ComponentSystemNodes.Add(typeof(TSystem),
-                        _ComponentSystems.AddBefore(_ComponentSystemNodes[typeof(TUpdateAround)], componentSystem));
+                    _ComponentSystems.AddBefore<TUpdateAround>(componentSystem);
                     break;
                 case SystemRegistrationOrder.After:
-                    _ComponentSystemNodes.Add(typeof(TSystem),
-                        _ComponentSystems.AddAfter(_ComponentSystemNodes[typeof(TUpdateAround)], componentSystem));
+                    _ComponentSystems.AddAfter<TUpdateAround>(componentSystem);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(registrationOrder), registrationOrder, null);
+                    throw new ArgumentOutOfRangeException(nameof(order), order, null);
             }
 
             componentSystem.Registered();
@@ -116,15 +101,7 @@ namespace Automata.Systems
         /// <exception cref="KeyNotFoundException">
         ///     <see cref="ComponentSystem" /> of given type <see cref="T" /> has not been instantiated.
         /// </exception>
-        public T GetSystem<T>() where T : ComponentSystem
-        {
-            if (!_ComponentSystemNodes.ContainsKey(typeof(T)))
-            {
-                throw new KeyNotFoundException("System type has not been instantiated.");
-            }
-
-            return (T)_ComponentSystemNodes[typeof(T)].Value;
-        }
+        public T GetSystem<T>() where T : ComponentSystem => (T)_ComponentSystems[typeof(T)];
 
         #region Helper Methods
 
