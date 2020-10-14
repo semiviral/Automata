@@ -25,12 +25,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Reference Include="ConcurrentAsyncScheduler, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-        <HintPath>..\..\ConcurrentAsyncScheduler\ConcurrentAsyncScheduler\bin\Release\netcoreapp3.1\ConcurrentAsyncScheduler.dll</HintPath>
-      </Reference>
-    </ItemGroup>
-
-    <ItemGroup>
       <AdditionalFiles Include="..\Resources\DefaultFragment.glsl">
         <Link>Resources\Shaders\DefaultFragment.glsl</Link>
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -51,6 +45,12 @@
       <Content Include="bin\Debug\netcoreapp3.1\PackedVertexes.glsl">
         <Link>Shaders\PackedVertexes.glsl</Link>
       </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="ConcurrentPools, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+        <HintPath>..\References\ConcurrentPools.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>

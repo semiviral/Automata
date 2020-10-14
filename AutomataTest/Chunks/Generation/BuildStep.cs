@@ -23,6 +23,6 @@ namespace AutomataTest.Chunks.Generation
             }
         }
 
-        public abstract void Generate(Parameters parameters, ref Span<ushort> blocks);
+        public abstract void Generate(Parameters parameters, Span<ushort> blocks);
     }
 }

@@ -9,11 +9,10 @@ namespace AutomataTest.Chunks
     public enum GenerationState
     {
         Deactivated,
-        Unbuilt,
+        Ungenerated,
         AwaitingBuilding,
-        Unmeshed,
         AwaitingMeshing,
-        Meshed
+        Finished
     }
 
     public class ChunkState : IComponent

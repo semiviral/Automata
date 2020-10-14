@@ -12,7 +12,7 @@ namespace AutomataTest.Chunks.Generation
 {
     public class TerrainBuildStep : BuildStep
     {
-        public override void Generate(Parameters parameters, ref Span<ushort> blocks)
+        public override void Generate(Parameters parameters, Span<ushort> blocks)
         {
             Span<int> heightmap = stackalloc int[GenerationConstants.CHUNK_SIZE_SQUARED];
             Span<float> cavemap = stackalloc float[GenerationConstants.CHUNK_SIZE_CUBED];
@@ -43,25 +43,22 @@ namespace AutomataTest.Chunks.Generation
                 int heightmapIndex = Vector2i.Project1D(new Vector2i(localPosition.X, localPosition.Z), GenerationConstants.CHUNK_SIZE);
                 int noiseHeight = heightmap[heightmapIndex];
 
-                if (noiseHeight < parameters.Origin.Y)
-                {
-                    return;
-                }
-
                 BlockRegistry blockRegistry = BlockRegistry.Instance;
                 int globalPositionY = parameters.Origin.Y + localPosition.Y;
 
-                if ((globalPositionY < 4) && (globalPositionY <= parameters.SeededRandom.Next(0, 4)))
+                if (noiseHeight < parameters.Origin.Y)
+                {
+                    blocks[index] = BlockRegistry.AirID;
+                }
+                else if ((globalPositionY < 4) && (globalPositionY <= parameters.SeededRandom.Next(0, 4)))
                 {
                     blocks[index] = blockRegistry.GetBlockID("bedrock");
-                    return;
                 }
                 else if (cavemap[index] < 0.000225f)
                 {
-                    return;
+                    blocks[index] = BlockRegistry.AirID;
                 }
-
-                if (globalPositionY == noiseHeight)
+                else if (globalPositionY == noiseHeight)
                 {
                     blocks[index] = blockRegistry.GetBlockID("grass");
                 }
@@ -76,6 +73,10 @@ namespace AutomataTest.Chunks.Generation
                     blocks[index] = parameters.SeededRandom.Next(0, 100) == 0
                         ? blockRegistry.GetBlockID("coal_ore")
                         : blockRegistry.GetBlockID("stone");
+                }
+                else
+                {
+                    blocks[index] = BlockRegistry.AirID;
                 }
             }
         }

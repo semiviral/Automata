@@ -2,10 +2,7 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 using Automata;
 using Automata.Collections;
 using Automata.Components;
@@ -15,7 +12,7 @@ using Automata.Numerics;
 using Automata.Rendering.Meshes;
 using Automata.Systems;
 using AutomataTest.Blocks;
-using ConcurrentAsyncScheduler;
+using ConcurrentPools;
 using Serilog;
 using Silk.NET.OpenGL;
 
@@ -25,21 +22,21 @@ namespace AutomataTest.Chunks.Generation
 {
     public class ChunkGenerationSystem : ComponentSystem
     {
-        private static readonly ObjectPool<ChunkMeshingJob> _ChunkMeshingJob = new ObjectPool<ChunkMeshingJob>(() => new ChunkMeshingJob());
-
-
         private readonly OrderedList<BuildStep> _BuildSteps;
-        private readonly ConcurrentDictionary<Guid, INodeCollection<ushort>> _GeneratedBlockCollections;
-        private readonly ConcurrentDictionary<Guid, ChunkMeshingJob> _FinishedMeshingJobs;
+        private readonly ConcurrentDictionary<Guid, INodeCollection<ushort>> _PendingBlockCollections;
+        private readonly ConcurrentDictionary<Guid, PendingMesh<int>> _PendingMeshes;
 
         public ChunkGenerationSystem()
         {
             _BuildSteps = new OrderedList<BuildStep>();
             _BuildSteps.AddLast(new TerrainBuildStep());
-            _FinishedMeshingJobs = new ConcurrentDictionary<Guid, ChunkMeshingJob>();
-            _FinishedMeshingJobs = new ConcurrentDictionary<Guid, ChunkMeshingJob>();
+            _PendingBlockCollections = new ConcurrentDictionary<Guid, INodeCollection<ushort>>();
+            _PendingMeshes = new ConcurrentDictionary<Guid, PendingMesh<int>>();
 
             Diagnostics.Instance.RegisterDiagnosticTimeEntry("ChunkBuilding");
+            Diagnostics.Instance.RegisterDiagnosticTimeEntry("ChunkMeshing");
+
+            BoundedThreadPool.DefaultThreadPoolSize();
 
             HandledComponents = new ComponentTypes(typeof(Translation), typeof(ChunkState), typeof(BlocksCollection));
         }
@@ -48,65 +45,29 @@ namespace AutomataTest.Chunks.Generation
         {
             foreach (IEntity entity in entityManager.GetEntitiesWithComponents<ChunkID, Translation, ChunkState, BlocksCollection>())
             {
-                ChunkID id = entity.GetComponent<ChunkID>();
-                ChunkState state = entity.GetComponent<ChunkState>();
+                ChunkID chunkID = entity.GetComponent<ChunkID>();
+                ChunkState chunkState = entity.GetComponent<ChunkState>();
+                BlocksCollection blocksCollection = entity.GetComponent<BlocksCollection>();
 
-                switch (state.Value)
+                switch (chunkState.Value)
                 {
-                    case GenerationState.Unbuilt:
+                    case GenerationState.Ungenerated:
                         BuildStep.Parameters parameters = new BuildStep.Parameters(GenerationConstants.Seed, GenerationConstants.FREQUENCY,
                             GenerationConstants.PERSISTENCE, new Vector3i(0, GenerationConstants.WORLD_HEIGHT / 3, 0));
-                        AsyncJobScheduler.QueueAsyncInvocation(() => BuildChunk(id.Value, parameters, _BuildSteps));
+                        BoundedThreadPool.QueueWork(() => GenerateChunk(chunkID.Value, parameters));
 
-                        //state.Value = state.Value.Next();
+                        chunkState.Value = chunkState.Value.Next();
                         break;
                     case GenerationState.AwaitingBuilding:
-                    {
-                        if (_GeneratedBlockCollections.TryRemove(id.Value, out INodeCollection<ushort>? blocks))
+                        if (_PendingBlockCollections.TryRemove(chunkID.Value, out INodeCollection<ushort>? nodeCollection))
                         {
-                            entity.GetComponent<BlocksCollection>().Value = blocks;
-                            state.Value = state.Value.Next();
-                        }
-                    }
-                        break;
-                    case GenerationState.Unmeshed:
-                    {
-                        void BeginChunkMeshing(ChunkID id0, ChunkState state0, BlocksCollection blocksCollection)
-                        {
-                            Debug.Assert(state0.Value == GenerationState.Unmeshed);
-
-                            ChunkMeshingJob chunkMeshingJob = _ChunkMeshingJob.Rent();
-                            chunkMeshingJob.SetData(blocksCollection.Value, new INodeCollection<ushort>[0]);
-
-                            void OnChunkMeshingFinished(object? sender, AsyncJob asyncJob)
-                            {
-                                Log.Verbose($"({nameof(ChunkGenerationSystem)}) Meshed: '{id0.Value}' ({asyncJob.ExecutionTime.Milliseconds}ms).");
-
-                                asyncJob.Finished -= OnChunkMeshingFinished;
-
-                                if (state0.Value == GenerationState.Deactivated)
-                                {
-                                    return;
-                                }
-
-                                ChunkMeshingJob finishedChunkMeshingJob = (ChunkMeshingJob)asyncJob;
-                                _FinishedMeshingJobs.AddOrUpdate(id0.Value, finishedChunkMeshingJob, (guid, job) => finishedChunkMeshingJob);
-                            }
-
-                            chunkMeshingJob.Finished += OnChunkMeshingFinished;
-
-                            AsyncJobScheduler.QueueAsyncJob(chunkMeshingJob);
+                            blocksCollection.Value = nodeCollection;
+                            chunkState.Value = chunkState.Value.Next();
                         }
 
-
-                        BeginChunkMeshing(id, state, entity.GetComponent<BlocksCollection>());
-
-                        state.Value = state.Value.Next();
-                    }
                         break;
                     case GenerationState.AwaitingMeshing:
-                    {
-                        if (_FinishedMeshingJobs.TryRemove(id.Value, out ChunkMeshingJob? chunkMeshingJob))
+                        if (_PendingMeshes.TryRemove(chunkID.Value, out PendingMesh<int>? pendingMesh))
                         {
                             if (!entity.TryGetComponent(out RenderMesh renderMesh))
                             {
@@ -115,26 +76,17 @@ namespace AutomataTest.Chunks.Generation
                                 entityManager.RegisterComponent(entity, renderMesh);
                             }
 
-                            PendingMesh<int> pendingMesh = chunkMeshingJob.GetData();
-                            Mesh<int> packedMesh = new Mesh<int>();
-                            int[] vertexes = pendingMesh.Vertexes.ToArray();
-                            uint[] indexes = pendingMesh.Indexes.ToArray();
+                            Mesh<int> mesh = new Mesh<int>();
+                            mesh.VertexArrayObject.VertexAttributeIPointer(0, 1, VertexAttribPointerType.Int, 0);
+                            mesh.VertexesBuffer.SetBufferData(pendingMesh.Vertexes);
+                            mesh.IndexesBuffer.SetBufferData(pendingMesh.Indexes);
+                            renderMesh.Mesh = mesh;
 
-                            Log.Verbose($"({nameof(ChunkGenerationSystem)} Chunk meshed: {vertexes.Length} vertexes, {indexes.Length} indexes");
-
-                            packedMesh.VertexArrayObject.VertexAttributeIPointer(0, 1, VertexAttribPointerType.Int, 0);
-                            packedMesh.VertexesBuffer.SetBufferData(vertexes);
-                            packedMesh.IndexesBuffer.SetBufferData(indexes);
-                            renderMesh.Mesh = packedMesh;
-
-                            chunkMeshingJob.ClearData();
-                            _ChunkMeshingJob.Return(chunkMeshingJob);
-
-                            state.Value = state.Value.Next();
+                            chunkState.Value = chunkState.Value.Next();
                         }
-                    }
+
                         break;
-                    case GenerationState.Meshed:
+                    case GenerationState.Finished:
                     case GenerationState.Deactivated:
                         break;
                     default:
@@ -143,7 +95,7 @@ namespace AutomataTest.Chunks.Generation
             }
         }
 
-        private Task BuildChunk(Guid chunkId, BuildStep.Parameters parameters, IEnumerable<BuildStep> buildSteps)
+        private void GenerateChunk(Guid chunkID, BuildStep.Parameters parameters)
         {
             static INodeCollection<ushort> GenerateNodeCollectionImpl(ref Span<ushort> blocks)
             {
@@ -160,28 +112,40 @@ namespace AutomataTest.Chunks.Generation
                 return blocksCompressed;
             }
 
-            if (parameters is null || buildSteps is null)
+            if (parameters is null || _BuildSteps is null)
             {
                 throw new InvalidOperationException("Job data has not been provided.");
             }
 
-            Stopwatch stopwatch = Stopwatch.StartNew();
 
             Span<ushort> blocks = stackalloc ushort[GenerationConstants.CHUNK_SIZE_CUBED];
 
-            foreach (BuildStep generationStep in buildSteps)
+            Stopwatch stopwatch = Stopwatch.StartNew();
+
+            foreach (BuildStep generationStep in _BuildSteps)
             {
-                generationStep.Generate(parameters, ref blocks);
+                generationStep.Generate(parameters, blocks);
             }
 
             INodeCollection<ushort> nodeCollection = GenerateNodeCollectionImpl(ref blocks);
-            _GeneratedBlockCollections.AddOrUpdate(chunkId, nodeCollection, (guid, collection) => nodeCollection);
+            _PendingBlockCollections.AddOrUpdate(chunkID, nodeCollection, (guid, collection) => nodeCollection);
+
+            stopwatch.Stop();
 
             Diagnostics.Instance["ChunkBuilding"].Enqueue(stopwatch.Elapsed);
-            double time = Diagnostics.Instance.GetAverageTime("ChunkBuilding").TotalMilliseconds;
-            Log.Information($"Built in {time:0.00}ms");
+            Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
+                $"Built: '{chunkID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms)"));
 
-            return Task.CompletedTask;
+            stopwatch.Restart();
+
+            PendingMesh<int> pendingMesh = ChunkMesher.GenerateMesh(blocks, new INodeCollection<ushort>[6]);
+            _PendingMeshes.AddOrUpdate(chunkID, pendingMesh, (guid, mesh) => pendingMesh);
+
+            stopwatch.Stop();
+
+            Diagnostics.Instance["ChunkMeshing"].Enqueue(stopwatch.Elapsed);
+            Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
+                $"Meshed: '{chunkID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms, vertexes {pendingMesh.Vertexes.Length}, indexes {pendingMesh.Indexes.Length})"));
         }
     }
 }
