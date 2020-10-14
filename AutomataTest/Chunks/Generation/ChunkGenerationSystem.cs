@@ -33,8 +33,7 @@ namespace AutomataTest.Chunks.Generation
             _PendingBlockCollections = new ConcurrentDictionary<Guid, INodeCollection<ushort>>();
             _PendingMeshes = new ConcurrentDictionary<Guid, PendingMesh<int>>();
 
-            Diagnostics.Instance.RegisterDiagnosticTimeEntry("ChunkBuilding");
-            Diagnostics.Instance.RegisterDiagnosticTimeEntry("ChunkMeshing");
+            DiagnosticsProvider.EnableGroup<ChunkGenerationDiagnosticGroup>();
 
             BoundedThreadPool.DefaultThreadPoolSize();
 
@@ -132,7 +131,7 @@ namespace AutomataTest.Chunks.Generation
 
             stopwatch.Stop();
 
-            Diagnostics.Instance["ChunkBuilding"].Enqueue(stopwatch.Elapsed);
+            DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup>(new BuildingTime(stopwatch.Elapsed));
             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
                 $"Built: '{chunkID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms)"));
 
@@ -143,7 +142,7 @@ namespace AutomataTest.Chunks.Generation
 
             stopwatch.Stop();
 
-            Diagnostics.Instance["ChunkMeshing"].Enqueue(stopwatch.Elapsed);
+            DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup>(new MeshingTime(stopwatch.Elapsed));
             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
                 $"Meshed: '{chunkID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms, vertexes {pendingMesh.Vertexes.Length}, indexes {pendingMesh.Indexes.Length})"));
         }

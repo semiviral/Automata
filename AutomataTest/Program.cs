@@ -64,13 +64,6 @@ namespace AutomataTest
             AutomataWindow.Instance.Closing += OnClose;
 
             Singleton.CreateSingleton<GLAPI>();
-
-            Singleton.CreateSingleton<Diagnostics>();
-            Diagnostics.Instance.RegisterDiagnosticTimeEntry("NoiseRetrieval");
-            Diagnostics.Instance.RegisterDiagnosticTimeEntry("TerrainGeneration");
-            Diagnostics.Instance.RegisterDiagnosticTimeEntry("PreMeshing");
-            Diagnostics.Instance.RegisterDiagnosticTimeEntry("Meshing");
-
             Singleton.CreateSingleton<BlockRegistry>();
         }
 
