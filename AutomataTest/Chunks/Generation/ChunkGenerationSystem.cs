@@ -68,6 +68,9 @@ namespace AutomataTest.Chunks.Generation
                     case GenerationState.AwaitingMeshing:
                         if (_PendingMeshes.TryRemove(chunkID.Value, out PendingMesh<int>? pendingMesh))
                         {
+                            Stopwatch stopwatch = DiagnosticsProvider.Stopwatches.Rent();
+                            stopwatch.Restart();
+
                             if (!entity.TryGetComponent(out RenderMesh renderMesh))
                             {
                                 renderMesh = new RenderMesh();
@@ -80,6 +83,14 @@ namespace AutomataTest.Chunks.Generation
                             mesh.VertexesBuffer.SetBufferData(pendingMesh.Vertexes);
                             mesh.IndexesBuffer.SetBufferData(pendingMesh.Indexes);
                             renderMesh.Mesh = mesh;
+
+                            stopwatch.Stop();
+
+                            DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup>(new ApplyMeshTime(stopwatch.Elapsed));
+                            Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
+                                $"Applied mesh: '{chunkID.Value}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms)"));
+
+                            DiagnosticsProvider.Stopwatches.Return(stopwatch);
 
                             chunkState.Value = chunkState.Value.Next();
                         }
@@ -119,7 +130,8 @@ namespace AutomataTest.Chunks.Generation
 
             Span<ushort> blocks = stackalloc ushort[GenerationConstants.CHUNK_SIZE_CUBED];
 
-            Stopwatch stopwatch = Stopwatch.StartNew();
+            Stopwatch stopwatch = DiagnosticsProvider.Stopwatches.Rent();
+            stopwatch.Restart();
 
             foreach (BuildStep generationStep in _BuildSteps)
             {
@@ -145,6 +157,8 @@ namespace AutomataTest.Chunks.Generation
             DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup>(new MeshingTime(stopwatch.Elapsed));
             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
                 $"Meshed: '{chunkID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms, vertexes {pendingMesh.Vertexes.Length}, indexes {pendingMesh.Indexes.Length})"));
+
+            DiagnosticsProvider.Stopwatches.Return(stopwatch);
         }
     }
 }

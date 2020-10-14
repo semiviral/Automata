@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Automata.Collections;
 using Serilog;
 
@@ -18,6 +19,17 @@ namespace Automata
     public interface IDiagnosticGroup
     {
         public void CommitData(IDiagnosticData data);
+    }
+
+    public class TimeSpanDiagnosticData : IDiagnosticData
+    {
+        private object _Data;
+
+        public object Data => _Data;
+
+        public TimeSpanDiagnosticData(TimeSpan data) => _Data = data;
+
+        public static explicit operator TimeSpan(TimeSpanDiagnosticData a) => Unsafe.As<object, TimeSpan>(ref a._Data);
     }
 
     public static class DiagnosticsProvider
