@@ -35,8 +35,6 @@ namespace AutomataTest.Chunks.Generation
 
             DiagnosticsProvider.EnableGroup<ChunkGenerationDiagnosticGroup>();
 
-            BoundedThreadPool.DefaultThreadPoolSize();
-
             HandledComponents = new ComponentTypes(typeof(Translation), typeof(ChunkState), typeof(BlocksCollection));
         }
 

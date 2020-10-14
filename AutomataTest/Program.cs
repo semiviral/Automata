@@ -17,6 +17,7 @@ using Automata.Worlds;
 using AutomataTest.Blocks;
 using AutomataTest.Chunks;
 using AutomataTest.Chunks.Generation;
+using ConcurrentPools;
 using Serilog;
 using Serilog.Events;
 using Silk.NET.Windowing.Common;
@@ -62,6 +63,7 @@ namespace AutomataTest
             Singleton.CreateSingleton<AutomataWindow>();
             AutomataWindow.Instance.CreateWindow(options);
             AutomataWindow.Instance.Closing += OnClose;
+            AutomataWindow.Instance.Closing += sender => BoundedThreadPool.Stop();
 
             Singleton.CreateSingleton<GLAPI>();
             Singleton.CreateSingleton<BlockRegistry>();
@@ -130,6 +132,8 @@ namespace AutomataTest
 
         private static void Initialize()
         {
+            BoundedThreadPool.DefaultThreadPoolSize();
+
             InitializeSingletons();
 
             InitializeBlocks();
