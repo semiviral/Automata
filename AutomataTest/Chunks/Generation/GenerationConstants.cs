@@ -1,7 +1,3 @@
-#region
-
-#endregion
-
 namespace AutomataTest.Chunks.Generation
 {
     public static class GenerationConstants

@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Automata.Components;
-using Automata.Exceptions;
 using Serilog;
 
 #endregion
@@ -50,7 +49,6 @@ namespace Automata.Entities
         ///     Registers given entity with <see cref="EntityManager" />.
         /// </summary>
         /// <param name="entity">Entity to register.</param>
-        /// <exception cref="AsynchronousAccessException">Thrown when method is called from outside main thread.</exception>
         /// <exception cref="NullReferenceException">Thrown when given <see cref="IEntity" /> is null.</exception>
         public void RegisterEntity(IEntity entity)
         {

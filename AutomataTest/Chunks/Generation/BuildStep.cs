@@ -1,5 +1,9 @@
+#region
+
 using System;
 using Automata.Numerics;
+
+#endregion
 
 namespace AutomataTest.Chunks.Generation
 {

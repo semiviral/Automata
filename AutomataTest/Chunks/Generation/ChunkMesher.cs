@@ -1,20 +1,20 @@
+#region
+
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Numerics;
 using System.Runtime.CompilerServices;
-using Windows.UI.Xaml.Documents;
 using Automata;
 using Automata.Collections;
 using Automata.Numerics;
 using Automata.Rendering.Meshes;
 using AutomataTest.Blocks;
 
+#endregion
+
 namespace AutomataTest.Chunks.Generation
 {
     public static class ChunkMesher
     {
-
         private static readonly int[][] _VertexesByIteration =
         {
             // 3   0
@@ -256,9 +256,9 @@ namespace AutomataTest.Chunks.Generation
                     int[] compressedVertices = _VertexesByIteration[normalIndex];
 
                     vertexes.Add(localPosition
-                                  + ((unaryTraversalShiftedMask & compressedVertices[0])
-                                     | ((((compressedVertices[0] >> traversalNormalShift) * traversals) << traversalNormalShift)
-                                        & traversalShiftedMask)));
+                                 + ((unaryTraversalShiftedMask & compressedVertices[0])
+                                    | ((((compressedVertices[0] >> traversalNormalShift) * traversals) << traversalNormalShift)
+                                       & traversalShiftedMask)));
                     //_MeshData.AddVertex(compressedUv & (int.MaxValue << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2)));
 
 

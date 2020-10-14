@@ -14,7 +14,6 @@ namespace Automata.Rendering
 {
     public class CameraMatrixSystem : ComponentSystem
     {
-        private bool _HasGameWindowResized;
         private float _NewAspectRatio;
 
         public CameraMatrixSystem()
@@ -42,7 +41,7 @@ namespace Automata.Rendering
                 }
 
                 // adjust projection
-                if (_HasGameWindowResized)
+                if (_NewAspectRatio > -0f)
                 {
                     const float near_clipping_plane = 0.1f;
                     const float far_clipping_plane = 100f;
@@ -53,12 +52,11 @@ namespace Automata.Rendering
                 }
             }
 
-            _HasGameWindowResized = false;
+            _NewAspectRatio = -0f;
         }
 
         private void GameWindowResized(object sender, Vector2i newSize)
         {
-            _HasGameWindowResized = true;
             _NewAspectRatio = (float)newSize.X / (float)newSize.Y;
         }
     }
