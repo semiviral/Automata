@@ -22,6 +22,8 @@ namespace Automata.Numerics
 
         public static int Project1D(Vector2i a, int size) => a.X + (size * a.Y);
 
+        public static int Project1D(int a, int b, int size) => a + (size * b);
+
         public static int Sum(Vector2i a) => a.X + a.Y;
 
 

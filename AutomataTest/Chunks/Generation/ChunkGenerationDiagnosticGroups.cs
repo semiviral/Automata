@@ -1,8 +1,10 @@
 #region
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using Automata;
+using System.Linq;
+using Automata.Diagnostics;
 
 #endregion
 
@@ -11,6 +13,11 @@ namespace AutomataTest.Chunks.Generation
     public class BuildingTime : TimeSpanDiagnosticData
     {
         public BuildingTime(TimeSpan data) : base(data) { }
+    }
+
+    public class InsertionTime : TimeSpanDiagnosticData
+    {
+        public InsertionTime(TimeSpan data) : base(data) { }
     }
 
     public class MeshingTime : TimeSpanDiagnosticData
@@ -25,19 +32,22 @@ namespace AutomataTest.Chunks.Generation
 
     public class ChunkGenerationDiagnosticGroup : IDiagnosticGroup
     {
-        private readonly List<BuildingTime> _BuildingTimes;
-        private readonly List<MeshingTime> _MeshingTimes;
-        private readonly List<ApplyMeshTime> _ApplyMeshTimes;
+        private readonly ConcurrentBag<BuildingTime> _BuildingTimes;
+        private readonly ConcurrentBag<InsertionTime> _InsertionTimes;
+        private readonly ConcurrentBag<MeshingTime> _MeshingTimes;
+        private readonly ConcurrentBag<ApplyMeshTime> _ApplyMeshTimes;
 
-        public IReadOnlyList<BuildingTime> BuildingTimes => _BuildingTimes;
-        public IReadOnlyList<MeshingTime> MeshingTimes => _MeshingTimes;
-        public IReadOnlyList<ApplyMeshTime> ApplyMeshTimes => _ApplyMeshTimes;
+        public IEnumerable<BuildingTime> BuildingTimes => _BuildingTimes;
+        public IEnumerable<InsertionTime> InsertionTimes => _InsertionTimes;
+        public IEnumerable<MeshingTime> MeshingTimes => _MeshingTimes;
+        public IEnumerable<ApplyMeshTime> ApplyMeshTimes => _ApplyMeshTimes;
 
         public ChunkGenerationDiagnosticGroup()
         {
-            _BuildingTimes = new List<BuildingTime>();
-            _MeshingTimes = new List<MeshingTime>();
-            _ApplyMeshTimes = new List<ApplyMeshTime>();
+            _BuildingTimes = new ConcurrentBag<BuildingTime>();
+            _InsertionTimes = new ConcurrentBag<InsertionTime>();
+            _MeshingTimes = new ConcurrentBag<MeshingTime>();
+            _ApplyMeshTimes = new ConcurrentBag<ApplyMeshTime>();
         }
 
         public void CommitData(IDiagnosticData data)
@@ -46,6 +56,9 @@ namespace AutomataTest.Chunks.Generation
             {
                 case BuildingTime buildingTime:
                     _BuildingTimes.Add(buildingTime);
+                    break;
+                case InsertionTime insertionTime:
+                    _InsertionTimes.Add(insertionTime);
                     break;
                 case MeshingTime meshingTime:
                     _MeshingTimes.Add(meshingTime);
@@ -56,6 +69,17 @@ namespace AutomataTest.Chunks.Generation
                 default:
                     throw new ArgumentException("Data is not of a valid type for this diagnostic group.", nameof(data));
             }
+        }
+
+        public override string ToString()
+        {
+            double buildingTime = BuildingTimes.DefaultIfEmpty().Average(time => ((TimeSpan)time).TotalMilliseconds);
+            double insertionTimes = InsertionTimes.DefaultIfEmpty().Average(time => ((TimeSpan)time).TotalMilliseconds);
+            double meshingTime = MeshingTimes.DefaultIfEmpty().Average(time => ((TimeSpan)time).TotalMilliseconds);
+            double applyMeshTime = ApplyMeshTimes.DefaultIfEmpty().Average(time => ((TimeSpan)time).TotalMilliseconds);
+
+            return
+                $"({nameof(BuildingTime)} {buildingTime:0.00}ms, {nameof(InsertionTime)} {insertionTimes:0.00}ms, {nameof(MeshingTime)} {meshingTime:0.00}ms, {nameof(ApplyMeshTime)} {applyMeshTime:0.00}ms)";
         }
     }
 }

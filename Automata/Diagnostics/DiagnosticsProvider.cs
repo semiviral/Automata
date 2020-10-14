@@ -3,17 +3,16 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using Automata.Collections;
 using Serilog;
 
 #endregion
 
-namespace Automata
+namespace Automata.Diagnostics
 {
     public interface IDiagnosticData
     {
-        public object Data { get; }
+        public object? Data { get; }
     }
 
     public interface IDiagnosticGroup
@@ -23,13 +22,11 @@ namespace Automata
 
     public class TimeSpanDiagnosticData : IDiagnosticData
     {
-        private object _Data;
+        public object? Data { get; }
 
-        public object Data => _Data;
+        public TimeSpanDiagnosticData(TimeSpan data) => Data = data;
 
-        public TimeSpanDiagnosticData(TimeSpan data) => _Data = data;
-
-        public static explicit operator TimeSpan(TimeSpanDiagnosticData a) => Unsafe.As<object, TimeSpan>(ref a._Data);
+        public static explicit operator TimeSpan(TimeSpanDiagnosticData? a) => (TimeSpan?)a?.Data ?? TimeSpan.Zero;
     }
 
     public static class DiagnosticsProvider
@@ -62,6 +59,9 @@ namespace Automata
                 _EnabledGroups.Add(typeof(TDiagnosticGroup), diagnosticGroup);
             }
         }
+
+        public static TDiagnosticGroup GetGroup<TDiagnosticGroup>() where TDiagnosticGroup : class, IDiagnosticGroup, new() =>
+            (TDiagnosticGroup)_EnabledGroups[typeof(TDiagnosticGroup)];
 
         /// <summary>
         ///     Commits <see cref="IDiagnosticData" /> to the given <see cref="IDiagnosticGroup" /> of type

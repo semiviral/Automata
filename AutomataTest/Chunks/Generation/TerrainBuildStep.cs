@@ -17,27 +17,23 @@ namespace AutomataTest.Chunks.Generation
             Span<int> heightmap = stackalloc int[GenerationConstants.CHUNK_SIZE_SQUARED];
             Span<float> cavemap = stackalloc float[GenerationConstants.CHUNK_SIZE_CUBED];
 
-            // generate maps
+            int index = 0;
+
             for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++)
             for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
             {
-                Vector2i xzCoords = new Vector2i(x, z);
-                int heightmapIndex = Vector2i.Project1D(xzCoords, GenerationConstants.CHUNK_SIZE);
-                heightmap[heightmapIndex] = CalculateHeight(new Vector2i(parameters.Origin.X, parameters.Origin.Z) + xzCoords,
-                    parameters.Frequency, parameters.Persistence);
+                int heightmapIndex = Vector2i.Project1D(x, z, GenerationConstants.CHUNK_SIZE);
+                heightmap[heightmapIndex] = CalculateHeight(new Vector2i(parameters.Origin.X + x, parameters.Origin.Z + z), parameters.Frequency,
+                    parameters.Persistence);
 
-                for (int y = 0; y < GenerationConstants.CHUNK_SIZE; y++)
+                for (int y = 0; y < GenerationConstants.CHUNK_SIZE; y++, index++)
                 {
-                    Vector3i localPosition = new Vector3i(x, y, z);
-                    Vector3i globalPosition = parameters.Origin + localPosition;
-                    int caveNoiseIndex = Vector3i.Project1D(localPosition, GenerationConstants.CHUNK_SIZE);
-
-                    cavemap[caveNoiseIndex] =
-                        CalculateCaveNoise(globalPosition, parameters.Seed ^ 2, parameters.Seed ^ 3, parameters.Persistence);
+                    Vector3i globalPosition = parameters.Origin + new Vector3i(x, y, z);
+                    cavemap[index] = CalculateCaveNoise(globalPosition, parameters.Seed ^ 2, parameters.Seed ^ 3, parameters.Persistence);
                 }
             }
 
-            for (int index = 0; index < GenerationConstants.CHUNK_SIZE_CUBED; index++)
+            for (index = 0; index < GenerationConstants.CHUNK_SIZE_CUBED; index++)
             {
                 Vector3i localPosition = Vector3i.Project3D(index, GenerationConstants.CHUNK_SIZE);
                 int heightmapIndex = Vector2i.Project1D(new Vector2i(localPosition.X, localPosition.Z), GenerationConstants.CHUNK_SIZE);

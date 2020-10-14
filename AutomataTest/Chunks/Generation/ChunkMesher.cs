@@ -84,6 +84,8 @@ namespace AutomataTest.Chunks.Generation
         public static PendingMesh<int> GenerateMesh(Span<ushort> blocks, INodeCollection<ushort>[] neighbors, bool traversalMeshing)
         {
             Span<Direction> faces = stackalloc Direction[blocks.Length];
+            faces.Clear();
+
             List<int> vertexes = new List<int>();
             List<uint> indexes = new List<uint>();
 

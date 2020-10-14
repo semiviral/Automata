@@ -3,17 +3,21 @@
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Linq;
 using Automata;
 using Automata.Collections;
 using Automata.Components;
+using Automata.Diagnostics;
 using Automata.Entities;
 using Automata.Extensions;
+using Automata.Input;
 using Automata.Numerics;
 using Automata.Rendering.Meshes;
 using Automata.Systems;
 using AutomataTest.Blocks;
 using ConcurrentPools;
 using Serilog;
+using Silk.NET.Input.Common;
 using Silk.NET.OpenGL;
 
 #endregion
@@ -101,6 +105,8 @@ namespace AutomataTest.Chunks.Generation
                         throw new ArgumentOutOfRangeException();
                 }
             }
+
+            DiagnosticsInputCheck();
         }
 
         private void GenerateChunk(Guid chunkID, BuildStep.Parameters parameters)
@@ -136,14 +142,22 @@ namespace AutomataTest.Chunks.Generation
                 generationStep.Generate(parameters, blocks);
             }
 
-            INodeCollection<ushort> nodeCollection = GenerateNodeCollectionImpl(ref blocks);
-            _PendingBlockCollections.AddOrUpdate(chunkID, nodeCollection, (guid, collection) => nodeCollection);
-
             stopwatch.Stop();
 
             DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup>(new BuildingTime(stopwatch.Elapsed));
             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
                 $"Built: '{chunkID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms)"));
+
+            stopwatch.Restart();
+
+            INodeCollection<ushort> nodeCollection = GenerateNodeCollectionImpl(ref blocks);
+            _PendingBlockCollections.AddOrUpdate(chunkID, nodeCollection, (guid, collection) => nodeCollection);
+
+            stopwatch.Stop();
+
+            DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup>(new InsertionTime(stopwatch.Elapsed));
+            Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
+                $"Insertion: '{chunkID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms)"));
 
             stopwatch.Restart();
 
@@ -156,7 +170,30 @@ namespace AutomataTest.Chunks.Generation
             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
                 $"Meshed: '{chunkID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms, vertexes {pendingMesh.Vertexes.Length}, indexes {pendingMesh.Indexes.Length})"));
 
+
             DiagnosticsProvider.Stopwatches.Return(stopwatch);
+        }
+
+        private bool _KeysPressed;
+
+        private void DiagnosticsInputCheck()
+        {
+            if (!InputManager.Instance.IsKeyPressed(Key.ShiftLeft) || !InputManager.Instance.IsKeyPressed(Key.B))
+            {
+                _KeysPressed = false;
+                return;
+            }
+            else if (_KeysPressed)
+            {
+                return;
+            }
+
+            _KeysPressed = true;
+
+
+
+            Log.Information(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(DiagnosticsSystem),
+                $"Average generation times: {DiagnosticsProvider.GetGroup<ChunkGenerationDiagnosticGroup>()}"));
         }
     }
 }
