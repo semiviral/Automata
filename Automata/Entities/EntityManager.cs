@@ -127,6 +127,8 @@ namespace Automata.Entities
 
         #region Get .. Data
 
+        public IEntity GetEntity(Guid guid) => _Entities[guid];
+
         /// <summary>
         ///     Returns <see cref="IEnumerable{T}" /> of entities containing component <see cref="T1" />.
         /// </summary>

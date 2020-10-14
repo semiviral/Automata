@@ -25,62 +25,20 @@ namespace AutomataTest.Chunks.Generation
 {
     public class ChunkGenerationSystem : ComponentSystem
     {
-        private class ChunkBuildingJob : AsyncJob
-        {
-            public BuildStep.Parameters? Parameters { get; set; }
-            public OrderedList<BuildStep>? GenerationSteps { get; set; }
-            public INodeCollection<ushort>? Blocks { get; set; }
-
-            protected override Task Process()
-            {
-                if (Parameters is null || GenerationSteps is null)
-                {
-                    throw new InvalidOperationException("Job data has not been provided.");
-                }
-
-                Span<ushort> blocks = stackalloc ushort[GenerationConstants.CHUNK_SIZE_CUBED];
-
-                foreach (BuildStep generationStep in GenerationSteps)
-                {
-                    generationStep.Generate(Parameters, ref blocks);
-                }
-
-                Blocks = GenerateNodeCollection(ref blocks);
-                Parameters = default;
-                GenerationSteps = default;
-
-                return Task.CompletedTask;
-            }
-
-            private static INodeCollection<ushort> GenerateNodeCollection(ref Span<ushort> blocks)
-            {
-                Octree<ushort> blocksCompressed = new Octree<ushort>(GenerationConstants.CHUNK_SIZE, BlockRegistry.AirID, false);
-
-                int index = 0;
-                for (int y = 0; y < GenerationConstants.CHUNK_SIZE; y++)
-                for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
-                for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++,  index++)
-                {
-                    blocksCompressed.SetPoint(x, y, z, blocks[index]);
-                }
-
-                return blocksCompressed;
-            }
-        }
-
-        private static readonly ObjectPool<ChunkBuildingJob> _ChunkBuildingJobs = new ObjectPool<ChunkBuildingJob>(() => new ChunkBuildingJob());
         private static readonly ObjectPool<ChunkMeshingJob> _ChunkMeshingJob = new ObjectPool<ChunkMeshingJob>(() => new ChunkMeshingJob());
 
+
+        private readonly OrderedList<BuildStep> _BuildSteps;
         private readonly ConcurrentDictionary<Guid, INodeCollection<ushort>> _GeneratedBlockCollections;
         private readonly ConcurrentDictionary<Guid, ChunkMeshingJob> _FinishedMeshingJobs;
-        private readonly OrderedList<BuildStep> _BuildSteps;
 
         public ChunkGenerationSystem()
         {
-            _GeneratedBlockCollections = new ConcurrentDictionary<Guid, INodeCollection<ushort>>();
-            _FinishedMeshingJobs = new ConcurrentDictionary<Guid, ChunkMeshingJob>();
             _BuildSteps = new OrderedList<BuildStep>();
             _BuildSteps.AddLast(new TerrainBuildStep());
+            _FinishedMeshingJobs = new ConcurrentDictionary<Guid, ChunkMeshingJob>();
+            _FinishedMeshingJobs = new ConcurrentDictionary<Guid, ChunkMeshingJob>();
+
             Diagnostics.Instance.RegisterDiagnosticTimeEntry("ChunkBuilding");
 
             HandledComponents = new ComponentTypes(typeof(Translation), typeof(ChunkState), typeof(BlocksCollection));
@@ -96,37 +54,11 @@ namespace AutomataTest.Chunks.Generation
                 switch (state.Value)
                 {
                     case GenerationState.Unbuilt:
-                        ChunkBuildingJob chunkBuildingJob = _ChunkBuildingJobs.Rent();
-                        chunkBuildingJob.Parameters = new BuildStep.Parameters(GenerationConstants.Seed, GenerationConstants.FREQUENCY,
-                            GenerationConstants.PERSISTENCE, new Vector3i(0,  GenerationConstants.WORLD_HEIGHT / 3, 0)); // Vector3i.FromVector3(entity.GetComponent<Translation>().Value));
-                        chunkBuildingJob.GenerationSteps = _BuildSteps;
+                        BuildStep.Parameters parameters = new BuildStep.Parameters(GenerationConstants.Seed, GenerationConstants.FREQUENCY,
+                            GenerationConstants.PERSISTENCE, new Vector3i(0, GenerationConstants.WORLD_HEIGHT / 3, 0));
+                        AsyncJobScheduler.QueueAsyncInvocation(() => BuildChunk(id.Value, parameters, _BuildSteps));
 
-                        void OnChunkGenerationFinished(object? sender, AsyncJob asyncJob)
-                        {
-                            asyncJob.Finished -= OnChunkGenerationFinished;
-
-                            if ((state.Value == GenerationState.Deactivated)
-                                || !(asyncJob is ChunkBuildingJob buildingJob)
-                                || buildingJob.Blocks is null)
-                            {
-                                return;
-                            }
-
-                            _GeneratedBlockCollections.AddOrUpdate(id.Value, buildingJob.Blocks as INodeCollection<ushort>,
-                                (guid, collection) => buildingJob.Blocks);
-                            buildingJob.Blocks = default;
-
-                            Diagnostics.Instance["ChunkBuilding"].Enqueue(buildingJob.ProcessTime);
-                            Log.Information($"{Diagnostics.Instance.GetAverageTime("ChunkBuilding").TotalMilliseconds:0.00}ms");
-
-                            _ChunkBuildingJobs.Return(buildingJob);
-                        }
-
-                        chunkBuildingJob.Finished += OnChunkGenerationFinished;
-
-                        AsyncJobScheduler.QueueAsyncJob(chunkBuildingJob);
-
-                        state.Value = state.Value.Next();
+                        //state.Value = state.Value.Next();
                         break;
                     case GenerationState.AwaitingBuilding:
                     {
@@ -209,6 +141,47 @@ namespace AutomataTest.Chunks.Generation
                         throw new ArgumentOutOfRangeException();
                 }
             }
+        }
+
+        private Task BuildChunk(Guid chunkId, BuildStep.Parameters parameters, IEnumerable<BuildStep> buildSteps)
+        {
+            static INodeCollection<ushort> GenerateNodeCollectionImpl(ref Span<ushort> blocks)
+            {
+                Octree<ushort> blocksCompressed = new Octree<ushort>(GenerationConstants.CHUNK_SIZE, BlockRegistry.AirID, false);
+
+                int index = 0;
+                for (int y = 0; y < GenerationConstants.CHUNK_SIZE; y++)
+                for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
+                for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++, index++)
+                {
+                    blocksCompressed.SetPoint(x, y, z, blocks[index]);
+                }
+
+                return blocksCompressed;
+            }
+
+            if (parameters is null || buildSteps is null)
+            {
+                throw new InvalidOperationException("Job data has not been provided.");
+            }
+
+            Stopwatch stopwatch = Stopwatch.StartNew();
+
+            Span<ushort> blocks = stackalloc ushort[GenerationConstants.CHUNK_SIZE_CUBED];
+
+            foreach (BuildStep generationStep in buildSteps)
+            {
+                generationStep.Generate(parameters, ref blocks);
+            }
+
+            INodeCollection<ushort> nodeCollection = GenerateNodeCollectionImpl(ref blocks);
+            _GeneratedBlockCollections.AddOrUpdate(chunkId, nodeCollection, (guid, collection) => nodeCollection);
+
+            Diagnostics.Instance["ChunkBuilding"].Enqueue(stopwatch.Elapsed);
+            double time = Diagnostics.Instance.GetAverageTime("ChunkBuilding").TotalMilliseconds;
+            Log.Information($"Built in {time:0.00}ms");
+
+            return Task.CompletedTask;
         }
     }
 }
