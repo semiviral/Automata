@@ -40,6 +40,17 @@ namespace AutomataTest.Chunks.Generation
             for (int index = 0; index < GenerationConstants.CHUNK_SIZE_CUBED; index++)
             {
                 Vector3i localPosition = Vector3i.Project3D(index, GenerationConstants.CHUNK_SIZE);
+
+                // if (localPosition.Y == 1 && localPosition.X % 4 != 0)
+                // {
+                //     blocks[index] = 2;
+                // }
+                // else
+                // {
+                //     blocks[index] = BlockRegistry.AirID;
+                // }
+                //
+                // continue;
                 int heightmapIndex = Vector2i.Project1D(new Vector2i(localPosition.X, localPosition.Z), GenerationConstants.CHUNK_SIZE);
                 int noiseHeight = heightmap[heightmapIndex];
 

@@ -39,7 +39,7 @@ namespace Automata.Worlds
 
             Worlds.Add(name, world);
 
-            Log.Debug($"({nameof(World)}) Registered {nameof(World)}: '{name}' {world.GetType()}");
+            Log.Information($"({nameof(World)}) Registered {nameof(World)}: '{name}' {world.GetType()}");
         }
 
         public static void TryGetWorld(string name, out World? world) => Worlds.TryGetValue(name, out world);

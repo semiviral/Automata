@@ -31,7 +31,7 @@ namespace AutomataTest
         private static readonly string _LocalDataPath =
             $@"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.Create)}/Automata/";
 
-        private static void Main(string[] args)
+        private static void Main()
         {
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console().MinimumLevel.Is(LogEventLevel.Verbose)
@@ -62,8 +62,7 @@ namespace AutomataTest
             Singleton.CreateSingleton<InputManager>();
             Singleton.CreateSingleton<AutomataWindow>();
             AutomataWindow.Instance.CreateWindow(options);
-            AutomataWindow.Instance.Closing += OnClose;
-            AutomataWindow.Instance.Closing += sender => BoundedThreadPool.Stop();
+            AutomataWindow.Instance.Closing += ApplicationCloseCallback;
 
             Singleton.CreateSingleton<GLAPI>();
             Singleton.CreateSingleton<BlockRegistry>();
@@ -144,25 +143,35 @@ namespace AutomataTest
 
             InitializePlayerEntity(world, out IEntity _);
 
-            world.SystemManager.RegisterSystem<RotationTestSystem, DefaultOrderSystem>(SystemRegistrationOrder.After);
+            const int radius = 3;
 
-            Entity chunk = new Entity();
-            world.EntityManager.RegisterEntity(chunk);
-            world.EntityManager.RegisterComponent<Translation>(chunk);
-            world.EntityManager.RegisterComponent(chunk, new ChunkState
+            for (int x = -radius; x < (radius + 1); x++)
+            for (int z = -radius; z < (radius + 1); z++)
+            for (int y = 0; y < (GenerationConstants.WORLD_HEIGHT / GenerationConstants.CHUNK_SIZE); y++)
             {
-                Value = GenerationState.Ungenerated
-            });
-            world.EntityManager.RegisterComponent<ChunkID>(chunk);
-            world.EntityManager.RegisterComponent<BlocksCollection>(chunk);
+                Entity chunk = new Entity();
+                world.EntityManager.RegisterEntity(chunk);
+                world.EntityManager.RegisterComponent(chunk, new Translation
+                {
+                    Value = new Vector3(x, y, z) * GenerationConstants.CHUNK_SIZE
+                });
+                world.EntityManager.RegisterComponent(chunk, new ChunkState
+                {
+                    Value = GenerationState.Ungenerated
+                });
+                world.EntityManager.RegisterComponent<ChunkID>(chunk);
+                world.EntityManager.RegisterComponent<BlocksCollection>(chunk);
+            }
         }
 
-        private static void OnClose(object sender)
+        private static void ApplicationCloseCallback(object sender)
         {
             if (VKAPI.TryValidate())
             {
                 VKAPI.Instance.DestroyVulkanInstance();
             }
+
+            BoundedThreadPool.Stop();
         }
     }
 }

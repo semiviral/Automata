@@ -44,13 +44,13 @@ namespace AutomataTest.Chunks.Generation
             {
                 ChunkID chunkID = entity.GetComponent<ChunkID>();
                 ChunkState chunkState = entity.GetComponent<ChunkState>();
-                BlocksCollection blocksCollection = entity.GetComponent<BlocksCollection>();
 
                 switch (chunkState.Value)
                 {
                     case GenerationState.Ungenerated:
+                        Translation translation = entity.GetComponent<Translation>();
                         BuildStep.Parameters parameters = new BuildStep.Parameters(GenerationConstants.Seed, GenerationConstants.FREQUENCY,
-                            GenerationConstants.PERSISTENCE, new Vector3i(0, GenerationConstants.WORLD_HEIGHT / 3, 0));
+                            GenerationConstants.PERSISTENCE, Vector3i.FromVector3(translation.Value));
                         BoundedThreadPool.QueueWork(() => GenerateChunk(chunkID.Value, parameters));
 
                         chunkState.Value = chunkState.Value.Next();
@@ -58,7 +58,7 @@ namespace AutomataTest.Chunks.Generation
                     case GenerationState.AwaitingBuilding:
                         if (_PendingBlockCollections.TryRemove(chunkID.Value, out INodeCollection<ushort>? nodeCollection))
                         {
-                            blocksCollection.Value = nodeCollection;
+                            entity.GetComponent<BlocksCollection>().Value = nodeCollection;
                             chunkState.Value = chunkState.Value.Next();
                         }
 
@@ -77,7 +77,7 @@ namespace AutomataTest.Chunks.Generation
                             }
 
                             Mesh<int> mesh = new Mesh<int>();
-                            mesh.VertexArrayObject.VertexAttributeIPointer(0, 1, VertexAttribPointerType.Int, 0);
+                            mesh.VertexArrayObject.VertexAttributeIPointer(0u, 1, VertexAttribPointerType.Int, 0);
                             mesh.VertexesBuffer.SetBufferData(pendingMesh.Vertexes);
                             mesh.IndexesBuffer.SetBufferData(pendingMesh.Indexes);
                             renderMesh.Mesh = mesh;
@@ -147,7 +147,7 @@ namespace AutomataTest.Chunks.Generation
 
             stopwatch.Restart();
 
-            PendingMesh<int> pendingMesh = ChunkMesher.GenerateMesh(blocks, new INodeCollection<ushort>[6]);
+            PendingMesh<int> pendingMesh = ChunkMesher.GenerateMesh(blocks, new INodeCollection<ushort>[6], false);
             _PendingMeshes.AddOrUpdate(chunkID, pendingMesh, (guid, mesh) => pendingMesh);
 
             stopwatch.Stop();
