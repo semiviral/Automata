@@ -3,8 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Automata.Components;
 using Serilog;
+using Ultz.SuperInvoke.Loader;
 
 #endregion
 
@@ -21,6 +23,30 @@ namespace Automata.Entities
             _Entities = new Dictionary<Guid, IEntity>();
             _EntitiesByComponent = new Dictionary<Type, List<IEntity>>();
             _ComponentCountByType = new Dictionary<Type, int>();
+        }
+
+        public IEntity ComposeEntity<T>(bool autoRegister) where T : IEntityComposition, new()
+        {
+            IEntity entity = new Entity();
+
+            foreach (Type type in new T().ComposedTypes)
+            {
+                IComponent? component = (IComponent?)Activator.CreateInstance(type);
+
+                if (component is null)
+                {
+                    throw new InvalidOperationException("Types used for composition must implement a parameterless constructor.");
+                }
+
+                entity.AddComponent(component);
+            }
+
+            if (autoRegister)
+            {
+                RegisterEntity(entity);
+            }
+
+            return entity;
         }
 
         private void AddEntityInternal(IEntity entity)
@@ -55,7 +81,7 @@ namespace Automata.Entities
         /// <remarks>
         ///     Use this method to ensure <see cref="EntityManager" /> caches remain accurate.
         /// </remarks>
-        public void RemoveComponent<T>(IEntity entity) where T : class, IComponent => RemoveComponentInternal(entity, typeof(T));
+        public void RemoveComponent<T>(IEntity entity) where T : IComponent => RemoveComponentInternal(entity, typeof(T));
 
         public void RemoveComponent(IEntity entity, Type type) => RemoveComponentInternal(entity, type);
 
@@ -145,7 +171,7 @@ namespace Automata.Entities
 
         #region Get .. Data
 
-        public IEnumerable<T> GetComponentsAssignableFrom<T>() where T : class, IComponent
+        public IEnumerable<T> GetComponentsAssignableFrom<T>() where T : IComponent
         {
             foreach (IEntity entity in _Entities.Values)
             {
@@ -171,31 +197,31 @@ namespace Automata.Entities
         ///     any additions or subtractions from the collection will throw a collection modified exception.
         /// </remarks>
         public IEnumerable<IEntity> GetEntitiesWithComponents<T1>()
-            where T1 : class, IComponent =>
+            where T1 : IComponent =>
             _EntitiesByComponent.TryGetValue(typeof(T1), out List<IEntity>? entities)
                 ? entities
                 : Enumerable.Empty<IEntity>();
 
 
         public IEnumerable<IEntity> GetEntitiesWithComponents<T1, T2>()
-            where T1 : class, IComponent
-            where T2 : class, IComponent =>
+            where T1 : IComponent
+            where T2 : IComponent =>
             GetEntitiesWithComponents<T1>()
                 .Intersect(GetEntitiesWithComponents<T2>());
 
         public IEnumerable<IEntity> GetEntitiesWithComponents<T1, T2, T3>()
-            where T1 : class, IComponent
-            where T2 : class, IComponent
-            where T3 : class, IComponent =>
+            where T1 : IComponent
+            where T2 : IComponent
+            where T3 : IComponent =>
             GetEntitiesWithComponents<T1>()
                 .Intersect(GetEntitiesWithComponents<T2>())
                 .Intersect(GetEntitiesWithComponents<T3>());
 
         public IEnumerable<IEntity> GetEntitiesWithComponents<T1, T2, T3, T4>()
-            where T1 : class, IComponent
-            where T2 : class, IComponent
-            where T3 : class, IComponent
-            where T4 : class, IComponent =>
+            where T1 : IComponent
+            where T2 : IComponent
+            where T3 : IComponent
+            where T4 : IComponent =>
             GetEntitiesWithComponents<T1>()
                 .Intersect(GetEntitiesWithComponents<T2>())
                 .Intersect(GetEntitiesWithComponents<T3>())

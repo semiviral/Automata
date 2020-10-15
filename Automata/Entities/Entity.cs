@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Automata.Components;
 
 #endregion
@@ -27,13 +26,13 @@ namespace Automata.Entities
 
         public void AddComponent(IComponent component) => _Components.Add(component.GetType(), component);
 
-        public void RemoveComponent<T>() where T : class, IComponent => _Components.Remove(typeof(T));
+        public void RemoveComponent<T>() where T : IComponent => _Components.Remove(typeof(T));
 
         public void RemoveComponent(Type type) => _Components.Remove(type);
 
-        public T GetComponent<T>() where T : class, IComponent => (T)_Components[typeof(T)];
+        public T GetComponent<T>() where T : IComponent => (T)_Components[typeof(T)];
 
-        public bool TryGetComponent<T>([NotNullWhen(true)] out T? component) where T : class, IComponent
+        public bool TryGetComponent<T>([MaybeNullWhen(false)] out T component) where T : IComponent
         {
             if (_Components.TryGetValue(typeof(T), out IComponent? componentBase))
             {
@@ -42,12 +41,12 @@ namespace Automata.Entities
             }
             else
             {
-                component = null;
+                component = default;
                 return false;
             }
         }
 
-        public bool TryGetComponent(Type type, out IComponent? component) => _Components.TryGetValue(type, out component);
+        public bool TryGetComponent(Type type, [NotNullWhen(true)] out IComponent? component) => _Components.TryGetValue(type, out component);
 
         public IComponent GetComponent(Type componentType)
         {

@@ -1,7 +1,9 @@
+using Automata.Systems;
+
 namespace Automata.Entities
 {
     public interface IEntityComposition
     {
-        public IEntity ComposeEntity();
+        public ComponentTypes ComposedTypes { get; }
     }
 }

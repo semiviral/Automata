@@ -1,6 +1,7 @@
 #region
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Automata.Components;
@@ -9,7 +10,7 @@ using Automata.Components;
 
 namespace Automata.Systems
 {
-    public class ComponentTypes : IEquatable<ComponentTypes>
+    public class ComponentTypes : IEnumerable<Type>, IEquatable<ComponentTypes>
     {
         private readonly Type[] _Types;
         private readonly int _CompositeHashCode;
@@ -44,6 +45,15 @@ namespace Automata.Systems
 
         public override int GetHashCode() => _CompositeHashCode;
 
+        #region IEnumerable
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        public IEnumerator<Type> GetEnumerator() => (IEnumerator<Type>)_Types.GetEnumerator();
+
+        #endregion
+
+        #region IEquatable
+
         public bool Equals(ComponentTypes? other) => _CompositeHashCode == other?._CompositeHashCode;
 
         public override bool Equals(object? obj) => obj is ComponentTypes other && Equals(other);
@@ -51,5 +61,7 @@ namespace Automata.Systems
         public static bool operator ==(ComponentTypes left, ComponentTypes right) => left.Equals(right);
 
         public static bool operator !=(ComponentTypes left, ComponentTypes right) => !left.Equals(right);
+
+        #endregion
     }
 }

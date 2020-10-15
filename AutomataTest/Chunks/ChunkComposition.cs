@@ -2,6 +2,7 @@
 
 using Automata.Components;
 using Automata.Entities;
+using Automata.Systems;
 
 #endregion
 
@@ -9,18 +10,9 @@ namespace AutomataTest.Chunks
 {
     public class ChunkComposition : IEntityComposition
     {
-        public IEntity ComposeEntity()
-        {
-            Entity chunk = new Entity();
-            chunk.AddComponent(new Translation());
-            chunk.AddComponent(new ChunkID());
-            chunk.AddComponent(new ChunkState
-            {
-                Value = GenerationState.Ungenerated
-            });
-            chunk.AddComponent(new BlocksCollection());
+        public ComponentTypes ComposedTypes { get; }
 
-            return chunk;
-        }
+        public ChunkComposition() => ComposedTypes = new ComponentTypes(typeof(Translation), typeof(ChunkID), typeof(ChunkState),
+            typeof(BlocksCollection));
     }
 }
