@@ -9,17 +9,16 @@ namespace AutomataTest.Chunks
 {
     public class ChunkComposition : IEntityComposition
     {
-        public IEntity ComposeEntity(EntityManager entityManager)
+        public IEntity ComposeEntity()
         {
             Entity chunk = new Entity();
-            entityManager.RegisterEntity(chunk);
-            entityManager.RegisterComponent<Translation>(chunk);
-            entityManager.RegisterComponent(chunk, new ChunkState
+            chunk.AddComponent(new Translation());
+            chunk.AddComponent(new ChunkID());
+            chunk.AddComponent(new ChunkState
             {
                 Value = GenerationState.Ungenerated
             });
-            entityManager.RegisterComponent<ChunkID>(chunk);
-            entityManager.RegisterComponent<BlocksCollection>(chunk);
+            chunk.AddComponent(new BlocksCollection());
 
             return chunk;
         }

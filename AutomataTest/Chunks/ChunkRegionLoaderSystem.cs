@@ -105,9 +105,11 @@ namespace AutomataTest.Chunks
 
             while (_ActivationPendingChunks.TryPop(out Vector3 origin))
             {
-                IEntity entity = new ChunkComposition().ComposeEntity(entityManager);
-                entity.GetComponent<Translation>().Value = origin;
-                _ChunkEntities.Add(origin, entity);
+                IEntity chunk = new ChunkComposition().ComposeEntity();
+                chunk.GetComponent<Translation>().Value = origin;
+                entityManager.RegisterEntity(chunk);
+
+                _ChunkEntities.Add(origin, chunk);
             }
 
             while (_DeactivationPendingChunks.TryPop(out Vector3 origin))
