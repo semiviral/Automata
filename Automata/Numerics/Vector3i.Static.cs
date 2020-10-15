@@ -27,9 +27,11 @@ namespace Automata.Numerics
             return new Vector3i(x, y, z);
         }
 
-        public static int Project1D(Vector3i a, int size) => a.X + (size * (a.Z + (size * a.Y)));
+        public static int Project1D(Vector3i a, int size) => a._X + (size * (a._Z + (size * a._Y)));
 
-        public static int Sum(Vector3i a) => a.X + a.Y + a.Z;
+        public static int Sum(Vector3i a) => a._X + a._Y + a._Z;
+
+        public static Vector3i Abs(Vector3i a) => AbsImpl(a);
 
 
         #region Intrinsics
@@ -314,6 +316,20 @@ namespace Automata.Numerics
             return SoftwareFallback(a, b);
         }
 
+        private static Vector3i AbsImpl(Vector3i a)
+        {
+            static Vector3i SoftwareFallback(Vector3i a0) => new Vector3i(Math.Abs(a0._X), Math.Abs(a0._Y), Math.Abs(a0._Z));
+
+            if (Ssse3.IsSupported)
+            {
+                return (Vector3i)Ssse3.Abs((Vector128<int>)a);
+            }
+            else
+            {
+                return SoftwareFallback(a);
+            }
+        }
+
 
         private static Vector3b GreaterThanImpl(Vector3i a, Vector3i b)
         {
@@ -398,6 +414,20 @@ namespace Automata.Numerics
 
                 return SoftwareFallback(a, b);
             }
+        }
+
+        private static Vector3b GreaterThanOrEqualImpl(Vector3i a, int b)
+        {
+            Vector3b equal = EqualsImpl(a, b);
+            Vector3b greaterThan = GreaterThanImpl(a, b);
+            return equal | greaterThan;
+        }
+
+        private static Vector3b LessThanOrEqualImpl(Vector3i a, int b)
+        {
+            Vector3b equal = EqualsImpl(a, b);
+            Vector3b lessThan = LessThanImpl(a, b);
+            return equal | lessThan;
         }
 
         #endregion

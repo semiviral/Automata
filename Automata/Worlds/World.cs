@@ -61,11 +61,6 @@ namespace Automata.Worlds
         {
             // update system manager for frame
             SystemManager.Update(EntityManager, frameTimer);
-
-            foreach (IComponentChangeable changeable in EntityManager.GetComponents<IComponentChangeable>())
-            {
-                changeable.Changed = false;
-            }
         }
 
         #region IDisposable

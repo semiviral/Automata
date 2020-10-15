@@ -84,6 +84,7 @@ namespace Automata.Numerics
         public static Vector3b operator ==(Vector3b a, Vector3b b) => EqualsImpl(a, b);
         public static Vector3b operator !=(Vector3b a, Vector3b b) => NotEqualsImpl(a, b);
         public static Vector3b operator !(Vector3b a) => new Vector3b((byte)~a._X, (byte)~a._Y, (byte)~a._Z);
+        public static Vector3b operator |(Vector3b a, Vector3b b) => OrImpl(a, b);
 
         #endregion
 

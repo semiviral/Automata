@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
+using Automata.Rendering.OpenGL;
 
 #endregion
 
@@ -117,12 +118,16 @@ namespace Automata.Numerics
         public static Vector3b operator <(Vector3i a, int b) => LessThanImpl(a, b);
         public static Vector3b operator <(int a, Vector3i b) => LessThanImpl(a, b);
 
+        public static Vector3b operator >=(Vector3i a, int b) => GreaterThanOrEqualImpl(a, b);
+        public static Vector3b operator <=(Vector3i a, int b) => LessThanOrEqualImpl(a, b);
+
         #endregion
 
 
         #region Conversions
 
         public static explicit operator Vector3i(Vector128<int> a) => Unsafe.As<Vector128<int>, Vector3i>(ref a);
+        public static explicit operator Vector3i(Vector128<uint> a) => Unsafe.As<Vector128<uint>, Vector3i>(ref a);
         public static explicit operator Vector128<int>(Vector3i a) => Unsafe.As<Vector3i, Vector128<int>>(ref a);
         public static implicit operator Vector3(Vector3i a) => new Vector3(a.X, a.Y, a.Z);
 

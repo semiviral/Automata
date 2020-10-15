@@ -49,6 +49,11 @@ namespace Automata.Systems
             {
                 componentSystem.Update(entityManager, frameTimer.Elapsed);
             }
+
+            foreach (IComponentChangeable changeable in entityManager.GetComponents<IComponentChangeable>())
+            {
+                changeable.Changed = false;
+            }
         }
 
         /// <summary>

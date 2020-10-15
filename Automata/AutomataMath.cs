@@ -36,5 +36,8 @@ namespace Automata
         public static byte AsByte(this bool a) => (byte)(Unsafe.As<bool, byte>(ref a) * byte.MaxValue);
         public static bool AsBool(this byte a) => Unsafe.As<byte, bool>(ref a);
         public static byte FirstByte(this double a) => Unsafe.As<double, byte>(ref a);
+
+        public static Vector3 RoundBy(this Vector3 a, Vector3 b) =>
+            new Vector3((float)Math.Floor(a.X / b.X), (float)Math.Floor(a.Y / b.Y), (float)Math.Floor(a.Z / b.Z)) * b;
     }
 }
