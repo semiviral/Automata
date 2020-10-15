@@ -1,9 +1,12 @@
 #region
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Linq;
 using System.Threading;
+using Automata.Collections;
 using Automata.Input;
 using Automata.Numerics;
 using Automata.Worlds;
@@ -130,6 +133,8 @@ namespace Automata.Rendering.GLFW
         {
             try
             {
+                FixedConcurrentQueue<double> averageFPS = new FixedConcurrentQueue<double>(1000);
+
                 while (!Window.IsClosing)
                 {
                     _DeltaTimer.Restart();
@@ -153,6 +158,9 @@ namespace Automata.Rendering.GLFW
                     {
                         WaitForNextMonitorRefresh();
                     }
+
+                    averageFPS.Enqueue(1d / _DeltaTimer.Elapsed.TotalSeconds);
+                    Window.Title = $"Automata {averageFPS.Average():0.00} FPS";
                 }
             }
             catch (Exception ex)

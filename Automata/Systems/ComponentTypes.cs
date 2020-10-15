@@ -3,7 +3,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using Automata.Components;
 
 #endregion
@@ -12,34 +11,35 @@ namespace Automata.Systems
 {
     public class ComponentTypes : IEnumerable<Type>, IEquatable<ComponentTypes>
     {
-        private readonly Type[] _Types;
+        private readonly HashSet<Type> _Types;
         private readonly int _CompositeHashCode;
 
-        public IReadOnlyList<Type> Types => _Types;
+        public IReadOnlyCollection<Type> Types => _Types;
 
         public ComponentTypes(params Type[] types)
         {
+            _Types = new HashSet<Type>();
+
             int hashCode = 17;
 
-            if (types.Length > 0)
+            foreach (Type type in types)
             {
-                if (types.Any(type => !typeof(IComponent).IsAssignableFrom(type)))
+                if (!typeof(IComponent).IsAssignableFrom(type))
                 {
-                    throw new Exception($"All given types for group must implement {typeof(IComponent)}.");
+                    throw new TypeLoadException($"All given types must implement {typeof(IComponent)}.");
+                }
+                else if (!_Types.Add(type))
+                {
+                    throw new ArgumentException($"Cannot specify the same {nameof(IComponent)} type more than once.");
                 }
                 else
                 {
                     const int prime = 239;
 
-                    // calculate compound hash
-                    foreach (Type type in types)
-                    {
-                        hashCode *= prime + type.GetHashCode();
-                    }
+                    hashCode *= prime + type.GetHashCode();
                 }
             }
 
-            _Types = types;
             _CompositeHashCode = hashCode;
         }
 
@@ -47,8 +47,8 @@ namespace Automata.Systems
 
         #region IEnumerable
 
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-        public IEnumerator<Type> GetEnumerator() => (IEnumerator<Type>)_Types.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => _Types.GetEnumerator();
+        public IEnumerator<Type> GetEnumerator() => ((IEnumerable<Type>)_Types).GetEnumerator();
 
         #endregion
 

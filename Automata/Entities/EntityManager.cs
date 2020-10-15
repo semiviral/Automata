@@ -3,10 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Automata.Components;
 using Serilog;
-using Ultz.SuperInvoke.Loader;
 
 #endregion
 
@@ -148,7 +146,7 @@ namespace Automata.Entities
             {
                 throw new TypeLoadException($"Failed to initialize {nameof(IComponent)} of type '{type.FullName}'.");
             }
-            else
+            else if (!entity.TryGetComponent(type, out _))
             {
                 entity.AddComponent(instance);
             }
