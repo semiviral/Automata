@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
 using Automata;
 using Automata.Collections;
 using Automata.Components;
@@ -15,6 +17,7 @@ using Automata.Rendering.Meshes;
 using Automata.Systems;
 using AutomataTest.Blocks;
 using ConcurrentPools;
+using DiagnosticsProviderNS;
 using Serilog;
 using Silk.NET.Input.Common;
 using Silk.NET.OpenGL;
@@ -69,7 +72,7 @@ namespace AutomataTest.Chunks.Generation
                     case GenerationState.AwaitingMeshing:
                         if (_PendingMeshes.TryRemove(chunkID.Value, out PendingMesh<int>? pendingMesh))
                         {
-                            Stopwatch stopwatch = DiagnosticsProvider.Stopwatches.Rent();
+                            Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
                             stopwatch.Restart();
 
                             if (!entity.TryGetComponent(out RenderMesh renderMesh))
@@ -91,7 +94,7 @@ namespace AutomataTest.Chunks.Generation
                             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
                                 $"Applied mesh: '{chunkID.Value}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms)"));
 
-                            DiagnosticsProvider.Stopwatches.Return(stopwatch);
+                            DiagnosticsSystem.Stopwatches.Return(stopwatch);
 
                             chunkState.Value = chunkState.Value.Next();
                         }
@@ -133,7 +136,7 @@ namespace AutomataTest.Chunks.Generation
 
             Span<ushort> blocks = stackalloc ushort[GenerationConstants.CHUNK_SIZE_CUBED];
 
-            Stopwatch stopwatch = DiagnosticsProvider.Stopwatches.Rent();
+            Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
             stopwatch.Restart();
 
             foreach (BuildStep generationStep in _BuildSteps)
@@ -170,7 +173,7 @@ namespace AutomataTest.Chunks.Generation
                 $"Meshed: '{chunkID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms, vertexes {pendingMesh.Vertexes.Length}, indexes {pendingMesh.Indexes.Length})"));
 
 
-            DiagnosticsProvider.Stopwatches.Return(stopwatch);
+            DiagnosticsSystem.Stopwatches.Return(stopwatch);
         }
 
         private bool _KeysPressed;

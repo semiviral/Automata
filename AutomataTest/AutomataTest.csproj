@@ -51,6 +51,9 @@
       <Reference Include="ConcurrentPools, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
         <HintPath>..\References\ConcurrentPools.dll</HintPath>
       </Reference>
+      <Reference Include="DiagnosticsProviderNS, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+        <HintPath>..\References\DiagnosticsProviderNS.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>
