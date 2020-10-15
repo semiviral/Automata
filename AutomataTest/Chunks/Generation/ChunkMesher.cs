@@ -240,6 +240,7 @@ namespace AutomataTest.Chunks.Generation
                         continue;
                     }
 
+                    // face is occluded
                     if (traversals == 0 /*|| !BlockRegistry.Instance.GetUVs(currentBlockId, faceDirection, out ushort textureId)*/)
                     {
                         break;

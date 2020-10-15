@@ -87,7 +87,7 @@ namespace AutomataTest.Chunks.Generation
 
                             stopwatch.Stop();
 
-                            DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup>(new ApplyMeshTime(stopwatch.Elapsed));
+                            DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new ApplyMeshTime(stopwatch.Elapsed));
                             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
                                 $"Applied mesh: '{chunkID.Value}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms)"));
 
@@ -143,7 +143,7 @@ namespace AutomataTest.Chunks.Generation
 
             stopwatch.Stop();
 
-            DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup>(new BuildingTime(stopwatch.Elapsed));
+            DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new BuildingTime(stopwatch.Elapsed));
             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
                 $"Built: '{chunkID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms)"));
 
@@ -154,7 +154,7 @@ namespace AutomataTest.Chunks.Generation
 
             stopwatch.Stop();
 
-            DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup>(new InsertionTime(stopwatch.Elapsed));
+            DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new InsertionTime(stopwatch.Elapsed));
             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
                 $"Insertion: '{chunkID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms)"));
 
@@ -165,7 +165,7 @@ namespace AutomataTest.Chunks.Generation
 
             stopwatch.Stop();
 
-            DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup>(new MeshingTime(stopwatch.Elapsed));
+            DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new MeshingTime(stopwatch.Elapsed));
             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
                 $"Meshed: '{chunkID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms, vertexes {pendingMesh.Vertexes.Length}, indexes {pendingMesh.Indexes.Length})"));
 

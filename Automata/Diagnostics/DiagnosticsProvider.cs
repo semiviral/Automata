@@ -10,23 +10,23 @@ using Serilog;
 
 namespace Automata.Diagnostics
 {
-    public interface IDiagnosticData
+    public interface IDiagnosticData<out TDataType>
     {
-        public object? Data { get; }
+        public TDataType Data { get; }
     }
 
     public interface IDiagnosticGroup
     {
-        public void CommitData(IDiagnosticData data);
+        public void CommitData<TDataType>(IDiagnosticData<TDataType> data);
     }
 
-    public class TimeSpanDiagnosticData : IDiagnosticData
+    public abstract class TimeSpanDiagnosticData : IDiagnosticData<TimeSpan>
     {
-        public object? Data { get; }
+        public TimeSpan Data { get; }
 
-        public TimeSpanDiagnosticData(TimeSpan data) => Data = data;
+        protected TimeSpanDiagnosticData(TimeSpan data) => Data = data;
 
-        public static explicit operator TimeSpan(TimeSpanDiagnosticData? a) => (TimeSpan?)a?.Data ?? TimeSpan.Zero;
+        public static explicit operator TimeSpan(TimeSpanDiagnosticData? a) => a?.Data ?? TimeSpan.Zero;
     }
 
     public static class DiagnosticsProvider
@@ -64,12 +64,10 @@ namespace Automata.Diagnostics
             (TDiagnosticGroup)_EnabledGroups[typeof(TDiagnosticGroup)];
 
         /// <summary>
-        ///     Commits <see cref="IDiagnosticData" /> to the given <see cref="IDiagnosticGroup" /> of type
+        ///     Commits <see cref="IDiagnosticData{T}" /> to the given <see cref="IDiagnosticGroup" /> of type
         ///     <see cref="TDiagnosticGroup" />.
         /// </summary>
-        /// <param name="diagnosticData"><see cref="IDiagnosticData" /> to commit.</param>
-        /// <typeparam name="TDiagnosticGroup"><see cref="IDiagnosticGroup" /> to commit <see cref="IDiagnosticData" /> to.</typeparam>
-        public static void CommitData<TDiagnosticGroup>(IDiagnosticData diagnosticData)
+        public static void CommitData<TDiagnosticGroup, TDataType>(IDiagnosticData<TDataType> diagnosticData)
             where TDiagnosticGroup : IDiagnosticGroup
         {
             if (_EnabledGroups.TryGetValue(typeof(TDiagnosticGroup), out IDiagnosticGroup? diagnosticGroup))

@@ -14,6 +14,10 @@ namespace AutomataTest.Chunks.Generation
         public const int WORLD_HEIGHT_IN_CHUNKS = 8;
         public const int WORLD_HEIGHT = CHUNK_SIZE * WORLD_HEIGHT_IN_CHUNKS;
 
+        public const int OVERLAP_SIZE = CHUNK_SIZE + 1;
+        public const int OVERLAP_SIZE_SQUARED = OVERLAP_SIZE * OVERLAP_SIZE;
+        public const int OVERLAP_SIZE_CUBED = OVERLAP_SIZE * OVERLAP_SIZE * OVERLAP_SIZE;
+
         public static int Seed { get; set; }
     }
 }

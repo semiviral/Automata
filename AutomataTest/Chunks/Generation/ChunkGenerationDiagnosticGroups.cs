@@ -50,7 +50,7 @@ namespace AutomataTest.Chunks.Generation
             _ApplyMeshTimes = new ConcurrentBag<ApplyMeshTime>();
         }
 
-        public void CommitData(IDiagnosticData data)
+        public void CommitData<TDataType>(IDiagnosticData<TDataType> data)
         {
             switch (data)
             {
