@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Automata", "Automata\Automata.csproj", "{A3968439-BA40-44CF-A7A6-608EA452B96D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Automata.Engine", "Automata.Engine\Automata.Engine.csproj", "{A3968439-BA40-44CF-A7A6-608EA452B96D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutomataTest", "AutomataTest\AutomataTest.csproj", "{EC9BB4FA-8EEE-4890-A510-87D4D77E3AF7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Automata.Game", "Automata.Game\Automata.Game.csproj", "{EC9BB4FA-8EEE-4890-A510-87D4D77E3AF7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
