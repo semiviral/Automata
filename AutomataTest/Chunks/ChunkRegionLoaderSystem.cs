@@ -95,7 +95,7 @@ namespace AutomataTest.Chunks
 
         private void HandlePendingChunks(EntityManager entityManager)
         {
-            if (_ActivationPendingChunks.Count == 0 && _DeactivationPendingChunks.Count == 0)
+            if ((_ActivationPendingChunks.Count == 0) && (_DeactivationPendingChunks.Count == 0))
             {
                 return;
             }
