@@ -3,7 +3,6 @@
 using System;
 using System.Drawing;
 using System.IO;
-using System.Numerics;
 using Automata;
 using Automata.Components;
 using Automata.Entities;
@@ -34,7 +33,7 @@ namespace AutomataTest
         private static void Main()
         {
             Log.Logger = new LoggerConfiguration()
-                .WriteTo.Console().MinimumLevel.Is(LogEventLevel.Verbose)
+                .WriteTo.Console().MinimumLevel.Is(LogEventLevel.Debug)
                 .CreateLogger();
             Log.Information("Logger initialized.");
 
@@ -101,32 +100,27 @@ namespace AutomataTest
         private static void InitializeDefaultWorld(out World world)
         {
             world = new GameWorld(true);
-
-            world.SystemManager.RegisterSystem<ChunkGenerationSystem, DefaultOrderSystem>(SystemRegistrationOrder.After);
+            world.SystemManager.RegisterSystem<ChunkRegionLoaderSystem, DefaultOrderSystem>(SystemRegistrationOrder.After);
+            world.SystemManager.RegisterSystem<ChunkGenerationSystem, ChunkRegionLoaderSystem>(SystemRegistrationOrder.After);
             World.RegisterWorld("core", world);
         }
 
-        private static void InitializeWorldEntity(World world, out IEntity gameEntity)
+        private static void InitializePlayerEntity(World world)
         {
-            gameEntity = new Entity();
-            world.EntityManager.RegisterEntity(gameEntity);
-        }
-
-        private static void InitializePlayerEntity(World world, out IEntity playerEntity)
-        {
-            playerEntity = new Entity();
-            world.EntityManager.RegisterEntity(playerEntity);
-            world.EntityManager.RegisterComponent(playerEntity, new Translation
-            {
-                Value = new Vector3(0f, 0f, -3f)
-            });
-            world.EntityManager.RegisterComponent<Rotation>(playerEntity);
-            world.EntityManager.RegisterComponent<Camera>(playerEntity);
-            world.EntityManager.RegisterComponent(playerEntity, new RenderShader
+            IEntity player = new Entity();
+            world.EntityManager.RegisterEntity(player);
+            world.EntityManager.RegisterComponent<Translation>(player);
+            world.EntityManager.RegisterComponent<Rotation>(player);
+            world.EntityManager.RegisterComponent<Camera>(player);
+            world.EntityManager.RegisterComponent<InputListener>(player);
+            world.EntityManager.RegisterComponent(player, new RenderShader
             {
                 Value = Shader.LoadShader("Resources/Shaders/PackedVertexes.glsl", "Resources/Shaders/DefaultFragment.glsl")
             });
-            world.EntityManager.RegisterComponent<InputListener>(playerEntity);
+            world.EntityManager.RegisterComponent(player, new ChunkLoader
+            {
+                Radius = 4
+            });
         }
 
         private static void Initialize()
@@ -139,29 +133,27 @@ namespace AutomataTest
 
             InitializeDefaultWorld(out World world);
 
-            InitializeWorldEntity(world, out IEntity _);
+            InitializePlayerEntity(world);
 
-            InitializePlayerEntity(world, out IEntity _);
-
-            const int radius = 3;
-
-            for (int x = -radius; x < (radius + 1); x++)
-            for (int z = -radius; z < (radius + 1); z++)
-            for (int y = 0; y < (GenerationConstants.WORLD_HEIGHT / GenerationConstants.CHUNK_SIZE); y++)
-            {
-                Entity chunk = new Entity();
-                world.EntityManager.RegisterEntity(chunk);
-                world.EntityManager.RegisterComponent(chunk, new Translation
-                {
-                    Value = new Vector3(x, y, z) * GenerationConstants.CHUNK_SIZE
-                });
-                world.EntityManager.RegisterComponent(chunk, new ChunkState
-                {
-                    Value = GenerationState.Ungenerated
-                });
-                world.EntityManager.RegisterComponent<ChunkID>(chunk);
-                world.EntityManager.RegisterComponent<BlocksCollection>(chunk);
-            }
+            // const int radius = 3;
+            //
+            // for (int x = -radius; x < (radius + 1); x++)
+            // for (int z = -radius; z < (radius + 1); z++)
+            // for (int y = 0; y < (GenerationConstants.WORLD_HEIGHT / GenerationConstants.CHUNK_SIZE); y++)
+            // {
+            //     Entity chunk = new Entity();
+            //     world.EntityManager.RegisterEntity(chunk);
+            //     world.EntityManager.RegisterComponent(chunk, new Translation
+            //     {
+            //         Value = new Vector3(x, y, z) * GenerationConstants.CHUNK_SIZE
+            //     });
+            //     world.EntityManager.RegisterComponent(chunk, new ChunkState
+            //     {
+            //         Value = GenerationState.Ungenerated
+            //     });
+            //     world.EntityManager.RegisterComponent<ChunkID>(chunk);
+            //     world.EntityManager.RegisterComponent<BlocksCollection>(chunk);
+            // }
         }
 
         private static void ApplicationCloseCallback(object sender)

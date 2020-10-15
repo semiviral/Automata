@@ -1,3 +1,5 @@
+#region
+
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -9,20 +11,29 @@ using Automata.Systems;
 using AutomataTest.Chunks.Generation;
 using Serilog;
 
+#endregion
+
 namespace AutomataTest.Chunks
 {
     public class ChunkRegionLoaderSystem : ComponentSystem
     {
-        private Dictionary<Vector3, IEntity> _ChunkEntities;
+        private readonly Dictionary<Vector3, IEntity> _ChunkEntities;
 
-        private HashSet<Vector3> _DeactivatingChunks;
-        private HashSet<Vector3> _ActivatingChunks;
+        private readonly HashSet<Vector3> _ActivatingChunks;
+        private readonly HashSet<Vector3> _DeactivatingChunks;
+
+        private readonly Stack<Vector3> _ActivationPendingChunks;
+        private readonly Stack<Vector3> _DeactivationPendingChunks;
 
         public ChunkRegionLoaderSystem()
         {
-            HandledComponents = new ComponentTypes(typeof(Translation), typeof(ChunkLoader));
-
             _ChunkEntities = new Dictionary<Vector3, IEntity>();
+            _ActivatingChunks = new HashSet<Vector3>();
+            _DeactivatingChunks = new HashSet<Vector3>();
+            _ActivationPendingChunks = new Stack<Vector3>();
+            _DeactivationPendingChunks = new Stack<Vector3>();
+
+            HandledComponents = new ComponentTypes(typeof(Translation), typeof(ChunkLoader));
         }
 
         private static bool IsWithinLoaderRange(Vector3i difference, ChunkLoader chunkLoader) =>
@@ -32,96 +43,84 @@ namespace AutomataTest.Chunks
         {
             foreach ((Translation translation, ChunkLoader chunkLoader) in entityManager.GetComponents<Translation, ChunkLoader>())
             {
-                if (translation.Changed)
+                if (!translation.Changed)
                 {
-
-
-                    Vector3 roundedTranslation = translation.Value.RoundBy(new Vector3(GenerationConstants.CHUNK_SIZE));
-
-                    // allocate list of chunks requiring deactivation
-                    foreach ((Vector3 origin, IEntity _) in _ChunkEntities)
-                    {
-                        Vector3 differenceF = Vector3.Abs(origin - roundedTranslation);
-                        Vector3i difference = new Vector3i((int)differenceF.X, 0, (int)differenceF.Z);
-
-                        if (IsWithinLoaderRange(difference, chunkLoader))
-                        {
-                            _DeactivatingChunks.Remove(origin);
-                        }
-                        else
-                        {
-                            _DeactivatingChunks.Add(origin);
-                        }
-                    }
-
-                    for (int y = -chunkLoader.Radius; y < GenerationConstants.WORLD_HEIGHT_IN_CHUNKS; y++)
-                    for (int z = -chunkLoader.Radius; z < chunkLoader.Radius + 1; z++)
-                    for (int x = -chunkLoader.Radius; x < chunkLoader.Radius + 1; x++)
-                    {
-                        Vector3 localOrigin = new Vector3(x, y, z) * GenerationConstants.CHUNK_SIZE;
-                        Vector3 globalOrigin = localOrigin + new Vector3(roundedTranslation.X, 0f, roundedTranslation.Z);
-                    }
+                    continue;
                 }
-            }
 
-                        _Stopwatch.Restart();
+                Vector3 roundedTranslation = translation.Value.RoundBy(new Vector3(GenerationConstants.CHUNK_SIZE));
 
-            WorldState |= WorldState.VerifyingState;
-
-            // get total list of out of bounds chunks
-            foreach (IEntity loader in _EntityLoaders)
-            {
                 // allocate list of chunks requiring deactivation
-                foreach ((float3 origin, ChunkController _) in _Chunks)
+                foreach ((Vector3 origin, IEntity _) in _ChunkEntities)
                 {
-                    float3 difference = math.abs(origin - loader.ChunkPosition);
-                    difference.y = 0; // always load all chunks on y axis
+                    Vector3i difference = Vector3i.Abs(Vector3i.FromVector3(origin - roundedTranslation));
 
-                    if (!IsWithinLoaderRange(difference))
+                    if (IsWithinLoaderRange(difference, chunkLoader))
                     {
-                        _ChunksRequiringDeactivation.Add(origin);
+                        _DeactivatingChunks.Remove(origin);
                     }
                     else
                     {
-                        _ChunksRequiringDeactivation.Remove(origin);
+                        _DeactivatingChunks.Add(origin);
                     }
                 }
 
-                // todo this should be some setting inside loader
-                int renderRadius = Options.Instance.RenderDistance;
-
-                for (int x = -renderRadius; x < (renderRadius + 1); x++)
-                for (int z = -renderRadius; z < (renderRadius + 1); z++)
-                for (int y = 0; y < WORLD_HEIGHT_IN_CHUNKS; y++)
+                for (int y = 0; y < GenerationConstants.WORLD_HEIGHT_IN_CHUNKS; y++)
+                for (int z = -chunkLoader.Radius; z < (chunkLoader.Radius + 1); z++)
+                for (int x = -chunkLoader.Radius; x < (chunkLoader.Radius + 1); x++)
                 {
-                    float3 localOrigin = new float3(x, y, z) * GenerationConstants.CHUNK_SIZE;
-                    float3 globalOrigin = localOrigin + new float3(loader.ChunkPosition.x, 0, loader.ChunkPosition.z);
+                    Vector3 localOrigin = new Vector3(x, y, z) * GenerationConstants.CHUNK_SIZE;
+                    Vector3 globalOrigin = localOrigin + new Vector3(roundedTranslation.X, 0f, roundedTranslation.Z);
 
-                    _ChunksRequiringActivation.Add(globalOrigin);
+                    _ActivatingChunks.Add(globalOrigin);
                 }
+
+                _ActivatingChunks.RemoveWhere(origin => _ChunkEntities.ContainsKey(origin));
+                foreach (Vector3 origin in _ActivatingChunks)
+                {
+                    _ActivationPendingChunks.Push(origin);
+                }
+
+                foreach (Vector3 origin in _DeactivatingChunks)
+                {
+                    _DeactivationPendingChunks.Push(origin);
+                }
+
+                _ActivatingChunks.Clear();
+                _DeactivatingChunks.Clear();
             }
 
-            Log.Debug(
-                $"({nameof(WorldController)}) State verification: {_ChunksRequiringActivation.Count} activations, {_ChunksRequiringDeactivation.Count} deactivations.");
+            HandlePendingChunks(entityManager);
+        }
 
-            foreach (float3 origin in _ChunksRequiringActivation.Where(origin => !CheckChunkExists(origin)))
+        private void HandlePendingChunks(EntityManager entityManager)
+        {
+            if (_ActivationPendingChunks.Count == 0 && _DeactivationPendingChunks.Count == 0)
             {
-                _ChunksPendingActivation.Push(origin);
+                return;
             }
 
-            foreach (float3 origin in _ChunksRequiringDeactivation)
+            Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkRegionLoaderSystem),
+                $"Region loading: {_ActivationPendingChunks.Count} activations, {_DeactivationPendingChunks.Count} deactivations"));
+
+            while (_ActivationPendingChunks.TryPop(out Vector3 origin))
             {
-                _ChunksPendingDeactivation.Push(origin);
+                IEntity entity = new ChunkComposition().ComposeEntity(entityManager);
+                entity.GetComponent<Translation>().Value = origin;
+                _ChunkEntities.Add(origin, entity);
             }
 
-            _ChunksRequiringActivation.Clear();
-            _ChunksRequiringDeactivation.Clear();
+            while (_DeactivationPendingChunks.TryPop(out Vector3 origin))
+            {
+                _ChunkEntities.Remove(origin, out IEntity? entity);
 
-            WorldState &= ~WorldState.VerifyingState;
+                if (entity is null)
+                {
+                    continue;
+                }
 
-            Singletons.Diagnostics.Instance["WorldStateVerification"].Enqueue(_Stopwatch.Elapsed);
-
-            _Stopwatch.Reset();
+                entityManager.RemoveEntity(entity);
+            }
         }
     }
 }

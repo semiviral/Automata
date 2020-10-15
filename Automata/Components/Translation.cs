@@ -22,6 +22,6 @@ namespace Automata.Components
 
         public Translation() => Value = Vector3.Zero;
 
-        public bool Changed { get; set; }
+        public bool Changed { get; set; } = true;
     }
 }

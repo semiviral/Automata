@@ -50,7 +50,7 @@ namespace Automata.Systems
                 componentSystem.Update(entityManager, frameTimer.Elapsed);
             }
 
-            foreach (IComponentChangeable changeable in entityManager.GetComponents<IComponentChangeable>())
+            foreach (IComponentChangeable changeable in entityManager.GetComponentsAssignableFrom<IComponentChangeable>())
             {
                 changeable.Changed = false;
             }

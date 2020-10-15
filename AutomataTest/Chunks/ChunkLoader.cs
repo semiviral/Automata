@@ -6,6 +6,6 @@ namespace AutomataTest.Chunks
     {
         private const int _RADIUS = 4;
 
-        public int Radius { get; } = _RADIUS;
+        public int Radius { get; set; } = _RADIUS;
     }
 }
