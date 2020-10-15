@@ -1,7 +1,3 @@
-#region
-
-#endregion
-
 namespace Automata.Rendering.Meshes
 {
     /// <summary>

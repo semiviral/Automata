@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Linq;
 using Automata;
 using Automata.Collections;
 using Automata.Components;
@@ -189,7 +188,6 @@ namespace AutomataTest.Chunks.Generation
             }
 
             _KeysPressed = true;
-
 
 
             Log.Information(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(DiagnosticsSystem),

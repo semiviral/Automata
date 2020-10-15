@@ -46,7 +46,7 @@ namespace AutomataTest.Chunks.Generation
                 {
                     blocks[index] = blockRegistry.GetBlockID("bedrock");
                 }
-                else if (noiseHeight < parameters.Origin.Y || cavemap[index] < 0.000225f)
+                else if ((noiseHeight < parameters.Origin.Y) || (cavemap[index] < 0.000225f))
                 {
                     blocks[index] = BlockRegistry.AirID;
                 }
