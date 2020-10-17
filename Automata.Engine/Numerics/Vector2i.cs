@@ -17,7 +17,7 @@ using System.Runtime.Intrinsics.X86;
 namespace Automata.Engine.Numerics
 {
     [StructLayout(LayoutKind.Sequential)]
-    public readonly partial struct Vector2i
+    public readonly partial struct Vector2i : IEquatable<Vector2i>
     {
         public static Vector2i Zero { get; } = new Vector2i(0);
         public static Vector2i One { get; } = new Vector2i(1);
@@ -37,25 +37,12 @@ namespace Automata.Engine.Numerics
         public Vector2i(int xy) => (X, Y) = (xy, xy);
         public Vector2i(int x, int y) => (X, Y) = (x, y);
 
-        #region Overrides
-
-        public override bool Equals(object? obj)
-        {
-            if (obj is Vector2i a)
-            {
-                return Vector2b.All(a == this);
-            }
-            else
-            {
-                return false;
-            }
-        }
+        public override bool Equals(object? obj) => obj is Vector2i other && Equals(other);
+        public bool Equals(Vector2i other) => Vector2b.All(this == other);
 
         public override int GetHashCode() => X.GetHashCode() ^ Y.GetHashCode();
 
         public override string ToString() => string.Format(FormatHelper.VECTOR_2_COMPONENT, nameof(Vector2i), X, Y);
-
-        #endregion
 
         #region Operators
 

@@ -14,7 +14,7 @@ using System.Runtime.Intrinsics.X86;
 namespace Automata.Engine.Numerics
 {
     [StructLayout(LayoutKind.Sequential)]
-    public readonly partial struct Vector3d
+    public readonly partial struct Vector3d : IEquatable<Vector3d>
     {
         public static Vector3d Zero { get; } = new Vector3d(0d);
         public static Vector3d One { get; } = new Vector3d(1d);
@@ -25,7 +25,6 @@ namespace Automata.Engine.Numerics
         public readonly double X;
         public readonly double Y;
         public readonly double Z;
-        public readonly double W;
 
         public double this[int index] => index switch
         {
@@ -35,29 +34,16 @@ namespace Automata.Engine.Numerics
             _ => throw new IndexOutOfRangeException(nameof(index))
         };
 
-        public Vector3d(double value) => (X, Y, Z, W) = (value, value, value, value);
-        public Vector3d(double x, double y) => (X, Y, Z, W) = (x, y, 0d, 0d);
-        public Vector3d(double x, double y, double z) => (X, Y, Z, W) = (x, y, z, 0d);
+        public Vector3d(double value) => (X, Y, Z) = (value, value, value);
+        public Vector3d(double x, double y) => (X, Y, Z) = (x, y, 0d);
+        public Vector3d(double x, double y, double z) => (X, Y, Z) = (x, y, z);
 
-        #region Overrides
-
-        public override bool Equals(object? obj)
-        {
-            if (obj is Vector3d a)
-            {
-                return Vector3b.All(a == this);
-            }
-            else
-            {
-                return false;
-            }
-        }
+        public override bool Equals(object? obj) => obj is Vector3d other && Equals(other);
+        public bool Equals(Vector3d other) => Vector3b.All(this == other);
 
         public override int GetHashCode() => X.GetHashCode() ^ Y.GetHashCode() ^ Z.GetHashCode();
 
         public override string ToString() => string.Format(FormatHelper.VECTOR_3_COMPONENT, nameof(Vector3d), X, Y, Z);
-
-        #endregion
 
         #region Operators
 

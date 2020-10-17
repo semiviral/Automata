@@ -14,7 +14,7 @@ using System.Runtime.Intrinsics;
 namespace Automata.Engine.Numerics
 {
     [StructLayout(LayoutKind.Sequential)]
-    public readonly partial struct Vector2b
+    public readonly partial struct Vector2b : IEquatable<Vector2b>
     {
         public static Vector2b True { get; } = new Vector2b(true);
         public static Vector2b False { get; } = new Vector2b(false);
@@ -45,17 +45,8 @@ namespace Automata.Engine.Numerics
 
         #region Overrides
 
-        public override bool Equals(object? obj)
-        {
-            if (obj is Vector2b a)
-            {
-                return All(a == this);
-            }
-            else
-            {
-                return false;
-            }
-        }
+        public override bool Equals(object? obj) => obj is Vector2b other && Equals(other);
+        public bool Equals(Vector2b other) => All(this == other);
 
         public override int GetHashCode() => _X.GetHashCode() ^ _Y.GetHashCode();
 

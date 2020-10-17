@@ -14,7 +14,7 @@ using System.Runtime.Intrinsics;
 namespace Automata.Engine.Numerics
 {
     [StructLayout(LayoutKind.Sequential)]
-    public readonly partial struct Vector3b
+    public readonly partial struct Vector3b : IEquatable<Vector3b>
     {
         public static Vector3b True { get; } = new Vector3b(true);
         public static Vector3b False { get; } = new Vector3b(false);
@@ -47,25 +47,12 @@ namespace Automata.Engine.Numerics
         public Vector3b(bool x, bool y, bool z) =>
             (_X, _Y, _Z) = (x.AsByte(), y.AsByte(), z.AsByte());
 
-        #region Overrides
-
-        public override bool Equals(object? obj)
-        {
-            if (obj is Vector3b a)
-            {
-                return All(a == this);
-            }
-            else
-            {
-                return false;
-            }
-        }
+        public override bool Equals(object? obj) => obj is Vector3b other && Equals(other);
+        public bool Equals(Vector3b other) => All(this == other);
 
         public override int GetHashCode() => _X.GetHashCode() ^ _Y.GetHashCode() ^ _Z.GetHashCode();
 
         public override string ToString() => string.Format(FormatHelper.VECTOR_3_COMPONENT, nameof(Vector3b), X, Y, Z);
-
-        #endregion
 
         #region Operators
 
