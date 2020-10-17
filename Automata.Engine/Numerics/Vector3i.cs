@@ -5,7 +5,6 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
-using Vortice.Direct3D12;
 
 #endregion
 
@@ -47,7 +46,7 @@ namespace Automata.Engine.Numerics
         #region Constructors
 
         public Vector3i(int xyz) => (X, Y, Z) = (xyz, xyz, xyz);
-        public Vector3i(int x, int y, int z) => (X,Y, Z) = (x, y, z);
+        public Vector3i(int x, int y, int z) => (X, Y, Z) = (x, y, z);
 
         #endregion
 
