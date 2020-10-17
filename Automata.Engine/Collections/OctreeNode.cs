@@ -45,7 +45,6 @@ namespace Automata.Engine.Collections
 
         #endregion
 
-
         #region Data Operations
 
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
@@ -101,7 +100,6 @@ namespace Automata.Engine.Collections
         }
 
         #endregion
-
 
         #region Helper Methods
 

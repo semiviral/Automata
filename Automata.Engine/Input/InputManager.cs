@@ -41,11 +41,6 @@ namespace Automata.Engine.Input
 
         public void RegisterView(IView view)
         {
-            if (view == null)
-            {
-                throw new NullReferenceException($"Given parameter '{nameof(view)}' cannot be null.");
-            }
-
             _InputContext = view.CreateInput();
 
             foreach (IKeyboard keyboard in _InputContext.Keyboards)
@@ -79,8 +74,7 @@ namespace Automata.Engine.Input
             }
 
             PointF position = _Mice[mouseIndex].Position;
-
-            return new Vector2(position.X, position.Y);
+            return Unsafe.As<PointF, Vector2>(ref position);
         }
 
         /// <summary>
@@ -96,8 +90,6 @@ namespace Automata.Engine.Input
                 throw new IndexOutOfRangeException(nameof(mouseIndex));
             }
 
-            Debug.Assert(AutomataWindow.Instance != null);
-
             PointF pointerPosition = _Mice[mouseIndex].Position;
 
             return Unsafe.As<PointF, Vector2>(ref pointerPosition) - ((Vector2)AutomataWindow.Instance.Size / 2f);
@@ -105,8 +97,6 @@ namespace Automata.Engine.Input
 
         public void SetMousePositionRelative(int mouseIndex, Vector2 position)
         {
-            Debug.Assert(AutomataWindow.Instance != null);
-
             if ((mouseIndex < 0) || (mouseIndex >= _Mice.Count))
             {
                 throw new IndexOutOfRangeException(nameof(mouseIndex));

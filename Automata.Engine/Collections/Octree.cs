@@ -52,11 +52,7 @@ namespace Automata.Engine.Collections
 
         public void CopyTo(T[] destinationArray)
         {
-            if (destinationArray == null)
-            {
-                throw new NullReferenceException(nameof(destinationArray));
-            }
-            else if (destinationArray.Rank != 1)
+            if (destinationArray.Rank != 1)
             {
                 throw new RankException("Only single dimension arrays are supported here.");
             }
@@ -73,7 +69,6 @@ namespace Automata.Engine.Collections
             }
         }
 
-
         #region GetPoint
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -82,16 +77,9 @@ namespace Automata.Engine.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T GetPoint(int x, int y, int z) => GetPointIterative(x, y, z);
 
-        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        // private T GetPointRecursive(Vector3 point) => _RootNode.GetPoint(_Extent, point.x, point.y, point.z);
-
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         private T GetPointIterative(int x, int y, int z)
         {
-            Debug.Assert((x >= 0) && (x < (_Extent * 2)), "Given coordinates are not within local bounds.");
-            Debug.Assert((y >= 0) && (y < (_Extent * 2)), "Given coordinates are not within local bounds.");
-            Debug.Assert((z >= 0) && (z < (_Extent * 2)), "Given coordinates are not within local bounds.");
-
             OctreeNode<T> currentNode = _RootNode;
 
             for (int extent = _Extent; !currentNode.IsUniform; extent /= 2)
@@ -105,7 +93,6 @@ namespace Automata.Engine.Collections
         }
 
         #endregion
-
 
         #region SetPoint
 
