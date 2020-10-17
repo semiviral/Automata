@@ -57,50 +57,39 @@ namespace Automata.Game.Chunks.Generation
 
                         chunk.State = chunk.State.Next();
                         break;
-                    case GenerationState.AwaitingBuilding:
-                        if (_PendingBlockCollections.TryRemove(chunk.ID, out INodeCollection<ushort>? nodeCollection))
+                    case GenerationState.AwaitingBuilding
+                        when _PendingBlockCollections.TryRemove(chunk.ID, out INodeCollection<ushort>? nodeCollection):
+                        chunk.Blocks = nodeCollection;
+                        chunk.State = chunk.State.Next();
+
+                        break;
+                    case GenerationState.AwaitingMeshing when _PendingMeshes.TryRemove(chunk.ID, out PendingMesh<int>? pendingMesh):
+                        Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
+                        stopwatch.Restart();
+
+                        if (!entity.TryGetComponent(out RenderMesh? renderMesh))
                         {
-                            chunk.Blocks = nodeCollection;
-                            chunk.State = chunk.State.Next();
+                            renderMesh = new RenderMesh();
+
+                            entityManager.RegisterComponent(entity, renderMesh);
                         }
 
+                        Mesh<int> mesh = new Mesh<int>();
+                        mesh.VertexArrayObject.VertexAttributeIPointer(0u, 1, VertexAttribPointerType.Int, 0);
+                        mesh.VertexesBuffer.SetBufferData(pendingMesh.Vertexes);
+                        mesh.IndexesBuffer.SetBufferData(pendingMesh.Indexes);
+                        renderMesh.Mesh = mesh;
+
+                        stopwatch.Stop();
+
+                        DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new ApplyMeshTime(stopwatch.Elapsed));
+                        Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
+                            $"Applied mesh: '{chunk.ID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms)"));
+
+                        DiagnosticsSystem.Stopwatches.Return(stopwatch);
+
+                        chunk.State = chunk.State.Next();
                         break;
-                    case GenerationState.AwaitingMeshing:
-                        if (_PendingMeshes.TryRemove(chunk.ID, out PendingMesh<int>? pendingMesh))
-                        {
-                            Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
-                            stopwatch.Restart();
-
-                            if (!entity.TryGetComponent(out RenderMesh? renderMesh))
-                            {
-                                renderMesh = new RenderMesh();
-
-                                entityManager.RegisterComponent(entity, renderMesh);
-                            }
-
-                            Mesh<int> mesh = new Mesh<int>();
-                            mesh.VertexArrayObject.VertexAttributeIPointer(0u, 1, VertexAttribPointerType.Int, 0);
-                            mesh.VertexesBuffer.SetBufferData(pendingMesh.Vertexes);
-                            mesh.IndexesBuffer.SetBufferData(pendingMesh.Indexes);
-                            renderMesh.Mesh = mesh;
-
-                            stopwatch.Stop();
-
-                            DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new ApplyMeshTime(stopwatch.Elapsed));
-                            Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
-                                $"Applied mesh: '{chunk.ID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms)"));
-
-                            DiagnosticsSystem.Stopwatches.Return(stopwatch);
-
-                            chunk.State = chunk.State.Next();
-                        }
-
-                        break;
-                    case GenerationState.Finished:
-                    case GenerationState.Deactivated:
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
                 }
             }
 
@@ -159,7 +148,7 @@ namespace Automata.Game.Chunks.Generation
 
             stopwatch.Restart();
 
-            PendingMesh<int> pendingMesh = ChunkMesher.GenerateMesh(blocks, new INodeCollection<ushort>[6], false);
+            PendingMesh<int> pendingMesh = ChunkMesher.GenerateMesh(blocks, new INodeCollection<ushort>[6], true);
             _PendingMeshes.AddOrUpdate(chunkID, pendingMesh, (guid, mesh) => pendingMesh);
 
             stopwatch.Stop();

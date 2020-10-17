@@ -19,11 +19,8 @@ namespace Automata.Engine
         public static Vector3 ToRadians(Vector3 degrees) => new Vector3(ToRadians(degrees.X), ToRadians(degrees.Y), ToRadians(degrees.Z));
 
         // row major
-        public static bool TryUnroll(this Matrix4x4 matrix, ref Span<float> unrolled)
-        {
-            Span<byte> span = MemoryMarshal.Cast<float, byte>(unrolled);
-            return MemoryMarshal.TryWrite(span, ref matrix);
-        }
+        public static void UnrollInto(this Matrix4x4 matrix, ref Span<float> unrolled) =>
+            MemoryMarshal.Write(MemoryMarshal.Cast<float, byte>(unrolled), ref matrix);
 
         public static int Wrap(int v, int delta, int minVal, int maxVal)
         {

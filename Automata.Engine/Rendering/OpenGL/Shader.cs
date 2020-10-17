@@ -215,16 +215,11 @@ namespace Automata.Engine.Rendering.OpenGL
         {
             if (TryGetUniformLocation(name, out int location))
             {
-                Span<float> span = stackalloc float[16];
-                if (value.TryUnroll(ref span))
-                {
-                    _GL.ProgramUniformMatrix4(_Handle, location, 1, false, span);
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+                Span<float> span = stackalloc float[sizeof(Matrix4x4) / sizeof(float)];
+                value.UnrollInto(ref span);
+
+                _GL.ProgramUniformMatrix4(_Handle, location, 1, false, span);
+                return true;
             }
             else
             {

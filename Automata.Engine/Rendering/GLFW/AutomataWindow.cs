@@ -173,7 +173,11 @@ namespace Automata.Engine.Rendering.GLFW
 
         private void OnWindowResized(Size size) => Resized?.Invoke(this, Size);
 
-        private void OnWindowFocusedChanged(bool focused) => FocusChanged?.Invoke(this, Focused = focused);
+        private void OnWindowFocusedChanged(bool focused)
+        {
+            Focused = focused;
+            FocusChanged?.Invoke(this, focused);
+        }
 
         private void OnWindowClosing() => Closing?.Invoke(this);
 

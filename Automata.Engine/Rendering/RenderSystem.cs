@@ -39,7 +39,7 @@ namespace Automata.Engine.Rendering
             }
         }
 
-        [HandlesComponents(DistinctionStrategy.All, typeof(Camera), typeof(Translation), typeof(RenderMesh))]
+        [HandlesComponents(DistinctionStrategy.All, typeof(Translation), typeof(Camera), typeof(RenderMesh))]
         public override unsafe void Update(EntityManager entityManager, TimeSpan delta)
         {
             try
@@ -53,9 +53,6 @@ namespace Automata.Engine.Rendering
                     entityManager.GetComponents<Translation, Camera, RenderShader>())
                 {
                     renderShader.Value.Use();
-                    renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC3_CAMERA_WORLD_POSITION, cameraTranslation.Value);
-                    renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_CAMERA_PROJECTION_PARAMS, camera.ProjectionParameters);
-                    renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_VIEWPORT, viewport);
 
                     RenderMesh? currentRenderMesh = null;
 
@@ -63,16 +60,16 @@ namespace Automata.Engine.Rendering
                     {
                         RenderMesh nextRenderMesh = entity.GetComponent<RenderMesh>();
 
-                        if ((nextRenderMesh.Mesh == null) || !nextRenderMesh.Mesh.Visible || (nextRenderMesh.Mesh.IndexesLength == 0))
+                        if (nextRenderMesh.Mesh is null
+                            || !nextRenderMesh.Mesh.Visible
+                            || (nextRenderMesh.Mesh.IndexesLength == 0)
+                            || (currentRenderMesh?.MeshID == nextRenderMesh.MeshID))
                         {
                             continue;
                         }
 
-                        if ((currentRenderMesh == null) || (currentRenderMesh.MeshID != nextRenderMesh.MeshID))
-                        {
-                            currentRenderMesh = nextRenderMesh;
-                            currentRenderMesh.Mesh.BindVertexArrayObject();
-                        }
+                        currentRenderMesh = nextRenderMesh;
+                        currentRenderMesh.Mesh.BindVertexArrayObject();
 
                         if (renderShader.Value.HasAutomataUniforms)
                         {
@@ -104,6 +101,10 @@ namespace Automata.Engine.Rendering
                             {
                                 renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_OBJECT, modelInverted);
                             }
+
+                            renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC3_CAMERA_WORLD_POSITION, cameraTranslation.Value);
+                            renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_CAMERA_PROJECTION_PARAMS, camera.ProjectionParameters);
+                            renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_VIEWPORT, viewport);
                         }
 
                         _GL.DrawElements(PrimitiveType.Triangles, currentRenderMesh.Mesh?.IndexesLength ?? 0u, DrawElementsType.UnsignedInt, null);
