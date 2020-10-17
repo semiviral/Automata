@@ -13,10 +13,9 @@ using Silk.NET.Input.Common;
 
 namespace Automata.Engine.Input
 {
-    public class MovementSystem : ComponentSystem
+    public class KeyboardMovementSystem : ComponentSystem
     {
-        public MovementSystem() => HandledComponents = new ComponentTypes(typeof(InputListener), typeof(Translation), typeof(Rotation));
-
+        [HandlesComponents(DistinctionStrategy.All, typeof(Translation), typeof(KeyboardListener))]
         public override void Update(EntityManager entityManager, TimeSpan delta)
         {
             if (!AutomataWindow.Instance.Focused)
@@ -31,13 +30,14 @@ namespace Automata.Engine.Input
                 return;
             }
 
-            foreach (IEntity entity in entityManager.GetEntitiesWithComponents<InputListener, Translation>())
+            foreach (IEntity entity in entityManager.GetEntitiesWithComponents<Translation, KeyboardListener>())
             {
                 Vector3d transformedMovementVector = entity.TryGetComponent(out Rotation? rotation)
                     ? Vector3d.Transform(movementVector, Quaternion.Conjugate(rotation.Value))
                     : movementVector;
 
-                entity.GetComponent<Translation>().Value += Vector3d.AsVector3(400f * transformedMovementVector);
+                float sensitivity = entity.GetComponent<KeyboardListener>().Sensitivity;
+                entity.GetComponent<Translation>().Value += Vector3d.AsVector3(sensitivity * transformedMovementVector);
             }
         }
 

@@ -11,7 +11,5 @@ namespace Automata.Engine.Diagnostics
     public class DiagnosticsSystem : ComponentSystem
     {
         public static readonly ObjectPool<Stopwatch> Stopwatches = new ObjectPool<Stopwatch>(() => new Stopwatch());
-
-        public DiagnosticsSystem() => HandledComponents = new ComponentTypes();
     }
 }

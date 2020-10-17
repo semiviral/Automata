@@ -12,7 +12,5 @@ namespace Automata.Engine.Rendering
         public Matrix4x4 View { get; set; } = Matrix4x4.Identity;
         public Matrix4x4 Projection { get; set; } = Matrix4x4.Identity;
         public Vector4 ProjectionParameters { get; set; } = Vector4.Zero;
-
-        public Vector3 AccumulatedAngles { get; set; } = Vector3.Zero;
     }
 }

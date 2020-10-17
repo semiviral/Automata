@@ -38,10 +38,9 @@ namespace Automata.Game.Chunks.Generation
             _PendingMeshes = new ConcurrentDictionary<Guid, PendingMesh<int>>();
 
             DiagnosticsProvider.EnableGroup<ChunkGenerationDiagnosticGroup>();
-
-            HandledComponents = new ComponentTypes(typeof(Translation), typeof(Chunk));
         }
 
+        [HandlesComponents(DistinctionStrategy.All, typeof(Translation), typeof(Chunk))]
         public override void Update(EntityManager entityManager, TimeSpan delta)
         {
             foreach (IEntity entity in entityManager.GetEntitiesWithComponents<Chunk, Translation>())

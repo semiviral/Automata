@@ -9,15 +9,28 @@ using Automata.Engine.Components;
 
 namespace Automata.Engine.Systems
 {
-    public class ComponentTypes : IEnumerable<Type>, IEquatable<ComponentTypes>
+    public enum DistinctionStrategy
     {
+        None = 1,
+        Any = 2,
+        All = 3
+    }
+
+    public class ComponentTypes : IReadOnlyCollection<Type>, IEquatable<ComponentTypes>
+    {
+        public static readonly ComponentTypes Empty = new ComponentTypes(DistinctionStrategy.Any);
+
         private readonly HashSet<Type> _Types;
         private readonly int _CompositeHashCode;
 
-        public IReadOnlyCollection<Type> Types => _Types;
+        public int Count => _Types.Count;
 
-        public ComponentTypes(params Type[] types)
+        public DistinctionStrategy Strategy { get; }
+
+        public ComponentTypes(DistinctionStrategy strategy, params Type[] types)
         {
+            Strategy = strategy;
+
             _Types = new HashSet<Type>();
 
             int hashCode = 17;

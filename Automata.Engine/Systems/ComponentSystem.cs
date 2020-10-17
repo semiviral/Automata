@@ -9,13 +9,6 @@ namespace Automata.Engine.Systems
 {
     public abstract class ComponentSystem : IDisposable
     {
-        /// <summary>
-        ///     This is a hint to the <see cref="SystemManager" /> as to what types the system uses for updates.
-        ///     If the types aren't present in the <see cref="EntityManager" />, the system's <see cref="Update" /> will be
-        ///     skipped.
-        /// </summary>
-        public ComponentTypes? HandledComponents { get; protected set; }
-
         public bool Enabled { get; protected set; }
 
         /// <summary>

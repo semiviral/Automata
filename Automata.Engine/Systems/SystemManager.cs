@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using Automata.Engine.Collections;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
@@ -31,22 +32,26 @@ namespace Automata.Engine.Systems
 
     public sealed class SystemManager : IDisposable
     {
-        private readonly OrderedList<ComponentSystem> _ComponentSystems;
+        private readonly OrderedList<(ComponentTypes HandledTypes, ComponentSystem ComponentSystem)> _ComponentSystems;
 
         public SystemManager()
         {
-            _ComponentSystems = new OrderedList<ComponentSystem>();
-            _ComponentSystems.AddLast(new FirstOrderSystem());
-            _ComponentSystems.AddLast(new DefaultOrderSystem());
-            _ComponentSystems.AddLast(new RenderOrderSystem());
-            _ComponentSystems.AddLast(new LastOrderSystem());
+            _ComponentSystems = new OrderedList<(ComponentTypes, ComponentSystem)>();
+            _ComponentSystems.AddLast((ComponentTypes.Empty, new FirstOrderSystem()));
+            _ComponentSystems.AddLast((ComponentTypes.Empty, new DefaultOrderSystem()));
+            _ComponentSystems.AddLast((ComponentTypes.Empty, new RenderOrderSystem()));
+            _ComponentSystems.AddLast((ComponentTypes.Empty, new LastOrderSystem()));
         }
 
         public void Update(EntityManager entityManager, Stopwatch frameTimer)
         {
-            foreach (ComponentSystem componentSystem in _ComponentSystems.Where(componentSystem =>
-                componentSystem.Enabled && VerifyHandledTypesExist(entityManager, componentSystem)))
+            foreach ((ComponentTypes handledTypes, ComponentSystem componentSystem) in _ComponentSystems)
             {
+                if (!componentSystem.Enabled || !VerifyHandledTypesExist(entityManager, handledTypes))
+                {
+                    continue;
+                }
+
                 componentSystem.Update(entityManager, frameTimer.Elapsed);
             }
 
@@ -72,22 +77,15 @@ namespace Automata.Engine.Systems
             where TUpdateAround : ComponentSystem
         {
             TSystem componentSystem = new TSystem();
-
-            foreach (Type type in componentSystem.HandledComponents?.Types ?? Enumerable.Empty<Type>())
-            {
-                if (!typeof(IComponent).IsAssignableFrom(type))
-                {
-                    throw new TypeLoadException($"Type '{type}' does not inherit '{nameof(IComponent)}'.");
-                }
-            }
+            ComponentTypes handledTypes = GetHandledTypesFromComponentSystem(componentSystem);
 
             switch (order)
             {
                 case SystemRegistrationOrder.Before:
-                    _ComponentSystems.AddBefore<TUpdateAround>(componentSystem);
+                    _ComponentSystems.AddBefore<TUpdateAround>((handledTypes, componentSystem));
                     break;
                 case SystemRegistrationOrder.After:
-                    _ComponentSystems.AddAfter<TUpdateAround>(componentSystem);
+                    _ComponentSystems.AddAfter<TUpdateAround>((handledTypes, componentSystem));
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(order), order, null);
@@ -98,6 +96,25 @@ namespace Automata.Engine.Systems
             Log.Information($"({nameof(SystemManager)}) Registered {nameof(ComponentSystem)}: {typeof(TSystem)}");
         }
 
+        private ComponentTypes GetHandledTypesFromComponentSystem(ComponentSystem componentSystem)
+        {
+            MethodBase? updateMethodBase = componentSystem.GetType().GetMethod(nameof(componentSystem.Update));
+
+            if (updateMethodBase is null)
+            {
+                return ComponentTypes.Empty;
+            }
+
+            HandlesComponents? handlesComponents = updateMethodBase.GetCustomAttribute<HandlesComponents>();
+
+            if (handlesComponents is null)
+            {
+                return ComponentTypes.Empty;
+            }
+
+            return handlesComponents.Types;
+        }
+
         /// <summary>
         ///     Returns instantiated system of type <see cref="T" />, if any.
         /// </summary>
@@ -106,14 +123,18 @@ namespace Automata.Engine.Systems
         /// <exception cref="KeyNotFoundException">
         ///     <see cref="ComponentSystem" /> of given type <see cref="T" /> has not been instantiated.
         /// </exception>
-        public T GetSystem<T>() where T : ComponentSystem => (T)_ComponentSystems[typeof(T)];
+        public T GetSystem<T>() where T : ComponentSystem => (T)_ComponentSystems[typeof(T)].ComponentSystem;
 
         #region Helper Methods
 
-        private static bool VerifyHandledTypesExist(EntityManager entityManager, ComponentSystem componentSystem) =>
-            componentSystem.HandledComponents is null
-            || (componentSystem.HandledComponents.Types.Count == 0)
-            || componentSystem.HandledComponents.Types.Any(type => entityManager.GetComponentCount(type) > 0);
+        private static bool VerifyHandledTypesExist(EntityManager entityManager, ComponentTypes types) =>
+            types.Strategy switch
+            {
+                DistinctionStrategy.None => types.All(type => entityManager.GetComponentCount(type) == 0),
+                DistinctionStrategy.All => types.All(type => entityManager.GetComponentCount(type) > 0),
+                DistinctionStrategy.Any => types.Any(type => entityManager.GetComponentCount(type) > 0),
+                _ => throw new ArgumentOutOfRangeException()
+            };
 
         #endregion
 
@@ -123,7 +144,7 @@ namespace Automata.Engine.Systems
 
         private void DisposeInternal()
         {
-            foreach (ComponentSystem componentSystem in _ComponentSystems)
+            foreach ((ComponentTypes _, ComponentSystem componentSystem) in _ComponentSystems)
             {
                 componentSystem.Dispose();
             }

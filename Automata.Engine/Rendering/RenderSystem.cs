@@ -23,8 +23,6 @@ namespace Automata.Engine.Rendering
 
         public RenderSystem()
         {
-            HandledComponents = new ComponentTypes(typeof(Translation), typeof(Camera), typeof(RenderMesh));
-
             _GL = GLAPI.Instance.GL;
 
             _GL.ClearColor(0.2f, 0.2f, 0.2f, 1f);
@@ -41,6 +39,7 @@ namespace Automata.Engine.Rendering
             }
         }
 
+        [HandlesComponents(DistinctionStrategy.All, typeof(Camera), typeof(Translation), typeof(RenderMesh))]
         public override unsafe void Update(EntityManager entityManager, TimeSpan delta)
         {
             try

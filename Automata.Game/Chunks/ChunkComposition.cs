@@ -12,6 +12,6 @@ namespace Automata.Game.Chunks
     {
         public ComponentTypes ComposedTypes { get; }
 
-        public ChunkComposition() => ComposedTypes = new ComponentTypes(typeof(Translation), typeof(Chunk));
+        public ChunkComposition() => ComposedTypes = new ComponentTypes((DistinctionStrategy)0, typeof(Translation), typeof(Chunk));
     }
 }

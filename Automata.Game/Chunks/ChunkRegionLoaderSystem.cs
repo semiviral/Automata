@@ -31,13 +31,12 @@ namespace Automata.Game.Chunks
             _DeactivatingChunks = new HashSet<Vector3i>();
             _ActivationPendingChunks = new Stack<Vector3i>();
             _DeactivationPendingChunks = new Stack<Vector3i>();
-
-            HandledComponents = new ComponentTypes(typeof(Translation), typeof(ChunkLoader));
         }
 
         private static bool IsWithinLoaderRange(Vector3i difference, ChunkLoader chunkLoader) =>
             Vector3b.All(difference <= (GenerationConstants.CHUNK_SIZE * chunkLoader.Radius));
 
+        [HandlesComponents(DistinctionStrategy.All, typeof(Translation), typeof(ChunkLoader))]
         public override void Update(EntityManager entityManager, TimeSpan delta)
         {
             foreach ((Translation translation, ChunkLoader chunkLoader) in entityManager.GetComponents<Translation, ChunkLoader>())

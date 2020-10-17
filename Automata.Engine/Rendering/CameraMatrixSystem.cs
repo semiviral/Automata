@@ -18,12 +18,11 @@ namespace Automata.Engine.Rendering
 
         public CameraMatrixSystem()
         {
-            HandledComponents = new ComponentTypes(typeof(Camera), typeof(Translation), typeof(Rotation));
-
             GameWindowResized(null!, AutomataWindow.Instance.Size);
             AutomataWindow.Instance.Resized += GameWindowResized;
         }
 
+        [HandlesComponents(DistinctionStrategy.All, typeof(Camera))]
         public override void Update(EntityManager entityManager, TimeSpan delta)
         {
             foreach (IEntity entity in entityManager.GetEntitiesWithComponents<Camera>())

@@ -112,7 +112,14 @@ namespace Automata.Game
             world.EntityManager.RegisterComponent<Translation>(player);
             world.EntityManager.RegisterComponent<Rotation>(player);
             world.EntityManager.RegisterComponent<Camera>(player);
-            world.EntityManager.RegisterComponent<InputListener>(player);
+            world.EntityManager.RegisterComponent(player, new KeyboardListener
+            {
+                Sensitivity = 400f
+            });
+            world.EntityManager.RegisterComponent(player, new MouseListener
+            {
+                Sensitivity = 40f
+            });
             world.EntityManager.RegisterComponent(player, new RenderShader
             {
                 Value = Shader.LoadShader("Resources/Shaders/PackedVertexes.glsl", "Resources/Shaders/DefaultFragment.glsl")

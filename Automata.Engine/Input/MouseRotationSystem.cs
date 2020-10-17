@@ -12,12 +12,9 @@ using Automata.Engine.Systems;
 
 namespace Automata.Engine.Input
 {
-    public class RotationSystem : ComponentSystem
+    public class MouseRotationSystem : ComponentSystem
     {
-        private const float _SENSITIVITY = 50f;
-
-        public RotationSystem() => HandledComponents = new ComponentTypes(typeof(Rotation));
-
+        [HandlesComponents(DistinctionStrategy.All, typeof(Rotation), typeof(MouseListener))]
         public override void Update(EntityManager entityManager, TimeSpan delta)
         {
             if (!AutomataWindow.Instance.Focused)
@@ -35,19 +32,12 @@ namespace Automata.Engine.Input
 
             offset = InputManager.Instance.GetMousePositionRelative();
             // convert to axis angles (a la yaw/pitch/roll)
-            Vector3 axisAngles = new Vector3(offset.Y, offset.X, 0f) * (float)delta.TotalSeconds * (_SENSITIVITY / 10f);
+            Vector3 axisAngles = new Vector3(offset.Y, offset.X, 0f) * (float)delta.TotalSeconds;
 
-            foreach ((Camera camera, Rotation rotation) in entityManager.GetComponents<Camera, Rotation>())
+            foreach ((Rotation rotation, MouseListener mouseListener) in entityManager.GetComponents<Rotation, MouseListener>())
             {
                 // accumulate angles
-                camera.AccumulatedAngles += axisAngles;
-
-                // create quaternions based on local angles
-                Quaternion pitch = Quaternion.CreateFromAxisAngle(Vector3.UnitX, camera.AccumulatedAngles.X);
-                Quaternion yaw = Quaternion.CreateFromAxisAngle(Vector3.UnitY, camera.AccumulatedAngles.Y);
-
-                // rotate around (pitch as global) and (yaw as local)
-                rotation.Value = pitch * yaw;
+                rotation.AccumulateAngles(axisAngles * mouseListener.Sensitivity);
             }
 
             // reset mouse position to center of screen
