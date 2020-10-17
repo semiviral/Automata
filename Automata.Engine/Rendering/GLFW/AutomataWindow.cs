@@ -97,12 +97,6 @@ namespace Automata.Engine.Rendering.GLFW
             _Window.FocusChanged += OnWindowFocusedChanged;
             _Window.Closing += OnWindowClosing;
 
-            Resized += (sender, newSize) => Size = newSize;
-            FocusChanged += (sender, isFocused) => Focused = isFocused;
-
-            Size = new Vector2i(Window.Size.Width, Window.Size.Height);
-            Focused = true;
-
             Window.Initialize();
             InputManager.Instance.RegisterView(Window);
 
@@ -174,7 +168,6 @@ namespace Automata.Engine.Rendering.GLFW
             {
                 VSyncMode.On => true,
                 VSyncMode.Off => false,
-                VSyncMode.Adaptive => throw new NotSupportedException("Adaptive VSync is deprecated."),
                 _ => throw new ArgumentOutOfRangeException()
             };
 
@@ -184,12 +177,11 @@ namespace Automata.Engine.Rendering.GLFW
             Thread.Sleep(frameWait <= TimeSpan.Zero ? TimeSpan.Zero : frameWait);
         }
 
-
         #region Event Subscriptors
 
-        private void OnWindowResized(Size newSize) => Resized?.Invoke(this, (Vector2i)newSize);
+        private void OnWindowResized(Size size) => Resized?.Invoke(this, Size = new Vector2i(size.Width, size.Height));
 
-        private void OnWindowFocusedChanged(bool focused) => FocusChanged?.Invoke(this, Focused);
+        private void OnWindowFocusedChanged(bool focused) => FocusChanged?.Invoke(this, Focused = focused);
 
         private void OnWindowClosing() => Closing?.Invoke(this);
 
