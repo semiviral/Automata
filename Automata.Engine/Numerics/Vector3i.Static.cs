@@ -30,9 +30,9 @@ namespace Automata.Engine.Numerics
             return new Vector3i(x, y, z);
         }
 
-        public static int Project1D(Vector3i a, int size) => a._X + (size * (a._Z + (size * a._Y)));
+        public static int Project1D(Vector3i a, int size) => a.X + (size * (a.Z + (size * a.Y)));
 
-        public static int Sum(Vector3i a) => a._X + a._Y + a._Z;
+        public static int Sum(Vector3i a) => a.X + a.Y + a.Z;
 
         public static Vector3i Abs(Vector3i a) => AbsImpl(a);
 
@@ -321,7 +321,7 @@ namespace Automata.Engine.Numerics
 
         private static Vector3i AbsImpl(Vector3i a)
         {
-            static Vector3i SoftwareFallback(Vector3i a0) => new Vector3i(Math.Abs(a0._X), Math.Abs(a0._Y), Math.Abs(a0._Z));
+            static Vector3i SoftwareFallback(Vector3i a0) => new Vector3i(Math.Abs(a0.X), Math.Abs(a0.Y), Math.Abs(a0.Z));
 
             if (Ssse3.IsSupported)
             {

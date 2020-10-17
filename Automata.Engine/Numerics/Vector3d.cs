@@ -24,14 +24,10 @@ namespace Automata.Engine.Numerics
         public static Vector3d UnitY { get; } = new Vector3d(0d, 1d, 0d);
         public static Vector3d UnitZ { get; } = new Vector3d(0d, 0d, 1d);
 
-        private readonly double _X;
-        private readonly double _Y;
-        private readonly double _Z;
-        private readonly double _W;
-
-        public double X => _X;
-        public double Y => _Y;
-        public double Z => _Z;
+        public readonly double X;
+        public readonly double Y;
+        public readonly double Z;
+        public readonly double W;
 
         public double this[int index] => index switch
         {
@@ -46,9 +42,9 @@ namespace Automata.Engine.Numerics
 
         #region Constructors
 
-        public Vector3d(double value) => (_X, _Y, _Z, _W) = (value, value, value, value);
-        public Vector3d(double x, double y) => (_X, _Y, _Z, _W) = (x, y, 0d, 0d);
-        public Vector3d(double x, double y, double z) => (_X, _Y, _Z, _W) = (x, y, z, 0d);
+        public Vector3d(double value) => (X, Y, Z, W) = (value, value, value, value);
+        public Vector3d(double x, double y) => (X, Y, Z, W) = (x, y, 0d, 0d);
+        public Vector3d(double x, double y, double z) => (X, Y, Z, W) = (x, y, z, 0d);
 
         #endregion
 
@@ -69,7 +65,7 @@ namespace Automata.Engine.Numerics
 
         public override int GetHashCode() => X.GetHashCode() ^ Y.GetHashCode() ^ Z.GetHashCode();
 
-        public override string ToString() => string.Format(FormatHelper.VECTOR_3_COMPONENT, nameof(Vector3d), _X, _Y, _Z);
+        public override string ToString() => string.Format(FormatHelper.VECTOR_3_COMPONENT, nameof(Vector3d), X, Y, Z);
 
         #endregion
 

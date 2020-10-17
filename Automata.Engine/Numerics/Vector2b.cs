@@ -20,8 +20,8 @@ namespace Automata.Engine.Numerics
     {
         #region Fields / Properties
 
-        public static Vector2b True = new Vector2b(true);
-        public static Vector2b False = new Vector2b(false);
+        public static Vector2b True { get; } = new Vector2b(true);
+        public static Vector2b False { get; } = new Vector2b(false);
 
         private readonly byte _X;
         private readonly byte _Y;

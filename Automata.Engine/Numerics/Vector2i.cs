@@ -29,11 +29,8 @@ namespace Automata.Engine.Numerics
         public static Vector2i UnitX { get; } = new Vector2i(1, 0);
         public static Vector2i UnitY { get; } = new Vector2i(0, 1);
 
-        private readonly int _X;
-        private readonly int _Y;
-
-        public int X => _X;
-        public int Y => _Y;
+        public readonly int X;
+        public readonly int Y;
 
         public int this[int index] => index switch
         {
@@ -47,8 +44,8 @@ namespace Automata.Engine.Numerics
 
         #region Constructors
 
-        public Vector2i(int xy) => (_X, _Y) = (xy, xy);
-        public Vector2i(int x, int y) => (_X, _Y) = (x, y);
+        public Vector2i(int xy) => (X, Y) = (xy, xy);
+        public Vector2i(int x, int y) => (X, Y) = (x, y);
 
         #endregion
 
@@ -69,7 +66,7 @@ namespace Automata.Engine.Numerics
 
         public override int GetHashCode() => X.GetHashCode() ^ Y.GetHashCode();
 
-        public override string ToString() => string.Format(FormatHelper.VECTOR_2_COMPONENT, nameof(Vector2i), _X, _Y);
+        public override string ToString() => string.Format(FormatHelper.VECTOR_2_COMPONENT, nameof(Vector2i), X, Y);
 
         #endregion
 

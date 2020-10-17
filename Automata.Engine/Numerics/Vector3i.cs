@@ -25,14 +25,13 @@ namespace Automata.Engine.Numerics
 
         public static Vector3i Zero { get; } = new Vector3i(0);
         public static Vector3i One { get; } = new Vector3i(1);
+        public static Vector3i UnitX { get; } = new Vector3i(1, 0, 0);
+        public static Vector3i UnitY { get; } = new Vector3i(0, 1, 0);
+        public static Vector3i UnitZ { get; } = new Vector3i(0, 0, 1);
 
-        private readonly int _X;
-        private readonly int _Y;
-        private readonly int _Z;
-
-        public int X => _X;
-        public int Y => _Y;
-        public int Z => _Z;
+        public readonly int X;
+        public readonly int Y;
+        public readonly int Z;
 
         public int this[int index] => index switch
         {
@@ -47,8 +46,8 @@ namespace Automata.Engine.Numerics
 
         #region Constructors
 
-        public Vector3i(int xyz) => (_X, _Y, _Z) = (xyz, xyz, xyz);
-        public Vector3i(int x, int y, int z) => (_X, _Y, _Z) = (x, y, z);
+        public Vector3i(int xyz) => (X, Y, Z) = (xyz, xyz, xyz);
+        public Vector3i(int x, int y, int z) => (X,Y, Z) = (x, y, z);
 
         #endregion
 
@@ -69,7 +68,7 @@ namespace Automata.Engine.Numerics
 
         public override int GetHashCode() => X.GetHashCode() ^ Y.GetHashCode() ^ Z.GetHashCode();
 
-        public override string ToString() => string.Format(FormatHelper.VECTOR_3_COMPONENT, nameof(Vector3i), _X, _Y, _Z);
+        public override string ToString() => string.Format(FormatHelper.VECTOR_3_COMPONENT, nameof(Vector3i), X, Y, Z);
 
         #endregion
 
