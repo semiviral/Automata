@@ -26,6 +26,8 @@ namespace Automata.Engine.Numerics
 
         public static Vector2i Zero { get; } = new Vector2i(0);
         public static Vector2i One { get; } = new Vector2i(1);
+        public static Vector2i UnitX { get; } = new Vector2i(1, 0);
+        public static Vector2i UnitY { get; } = new Vector2i(0, 1);
 
         private readonly int _X;
         private readonly int _Y;
@@ -66,6 +68,8 @@ namespace Automata.Engine.Numerics
         }
 
         public override int GetHashCode() => X.GetHashCode() ^ Y.GetHashCode();
+
+        public override string ToString() => string.Format(FormatHelper.VECTOR_2_COMPONENT, nameof(Vector2i), _X, _Y);
 
         #endregion
 

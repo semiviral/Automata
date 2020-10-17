@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
+using Vortice.Direct3D12;
 
 #endregion
 
@@ -21,8 +22,6 @@ namespace Automata.Engine.Numerics
     public readonly partial struct Vector3i
     {
         #region Fields / Properties
-
-        private static readonly string _ToStringFormat = $"{typeof(Vector3i)}({{0}}, {{1}}, {{2}})";
 
         public static Vector3i Zero { get; } = new Vector3i(0);
         public static Vector3i One { get; } = new Vector3i(1);
@@ -70,7 +69,7 @@ namespace Automata.Engine.Numerics
 
         public override int GetHashCode() => X.GetHashCode() ^ Y.GetHashCode() ^ Z.GetHashCode();
 
-        public override string ToString() => string.Format(_ToStringFormat, X, Y, Z);
+        public override string ToString() => string.Format(FormatHelper.VECTOR_3_COMPONENT, nameof(Vector3i), _X, _Y, _Z);
 
         #endregion
 

@@ -39,36 +39,35 @@ namespace Automata.Game.Chunks.Generation
 
             DiagnosticsProvider.EnableGroup<ChunkGenerationDiagnosticGroup>();
 
-            HandledComponents = new ComponentTypes(typeof(Translation), typeof(ChunkState), typeof(BlocksCollection));
+            HandledComponents = new ComponentTypes(typeof(Translation), typeof(Chunk));
         }
 
         public override void Update(EntityManager entityManager, TimeSpan delta)
         {
-            foreach (IEntity entity in entityManager.GetEntitiesWithComponents<ChunkID, Translation, ChunkState, BlocksCollection>())
+            foreach (IEntity entity in entityManager.GetEntitiesWithComponents<Chunk, Translation>())
             {
-                ChunkID chunkID = entity.GetComponent<ChunkID>();
-                ChunkState chunkState = entity.GetComponent<ChunkState>();
+                Chunk chunk = entity.GetComponent<Chunk>();
 
-                switch (chunkState.Value)
+                switch (chunk.State)
                 {
                     case GenerationState.Ungenerated:
                         Translation translation = entity.GetComponent<Translation>();
                         BuildStep.Parameters parameters = new BuildStep.Parameters(GenerationConstants.Seed, GenerationConstants.FREQUENCY,
                             GenerationConstants.PERSISTENCE, Vector3i.FromVector3(translation.Value));
-                        BoundedThreadPool.QueueWork(() => GenerateChunk(chunkID.Value, parameters));
+                        BoundedThreadPool.QueueWork(() => GenerateChunk(chunk.ID, parameters));
 
-                        chunkState.Value = chunkState.Value.Next();
+                        chunk.State = chunk.State.Next();
                         break;
                     case GenerationState.AwaitingBuilding:
-                        if (_PendingBlockCollections.TryRemove(chunkID.Value, out INodeCollection<ushort>? nodeCollection))
+                        if (_PendingBlockCollections.TryRemove(chunk.ID, out INodeCollection<ushort>? nodeCollection))
                         {
-                            entity.GetComponent<BlocksCollection>().Value = nodeCollection;
-                            chunkState.Value = chunkState.Value.Next();
+                            chunk.Blocks = nodeCollection;
+                            chunk.State = chunk.State.Next();
                         }
 
                         break;
                     case GenerationState.AwaitingMeshing:
-                        if (_PendingMeshes.TryRemove(chunkID.Value, out PendingMesh<int>? pendingMesh))
+                        if (_PendingMeshes.TryRemove(chunk.ID, out PendingMesh<int>? pendingMesh))
                         {
                             Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
                             stopwatch.Restart();
@@ -90,11 +89,11 @@ namespace Automata.Game.Chunks.Generation
 
                             DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new ApplyMeshTime(stopwatch.Elapsed));
                             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
-                                $"Applied mesh: '{chunkID.Value}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms)"));
+                                $"Applied mesh: '{chunk.ID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms)"));
 
                             DiagnosticsSystem.Stopwatches.Return(stopwatch);
 
-                            chunkState.Value = chunkState.Value.Next();
+                            chunk.State = chunk.State.Next();
                         }
 
                         break;

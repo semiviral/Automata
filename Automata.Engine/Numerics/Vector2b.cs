@@ -20,7 +20,8 @@ namespace Automata.Engine.Numerics
     {
         #region Fields / Properties
 
-        private static readonly string _ToStringFormat = $"{typeof(Vector2b)}({{0}}, {{1}})";
+        public static Vector2b True = new Vector2b(true);
+        public static Vector2b False = new Vector2b(false);
 
         private readonly byte _X;
         private readonly byte _Y;
@@ -70,7 +71,7 @@ namespace Automata.Engine.Numerics
 
         public override int GetHashCode() => _X.GetHashCode() ^ _Y.GetHashCode();
 
-        public override string ToString() => string.Format(_ToStringFormat, X, Y);
+        public override string ToString() => string.Format(FormatHelper.VECTOR_2_COMPONENT, nameof(Vector2b), _X, _Y);
 
         #endregion
 

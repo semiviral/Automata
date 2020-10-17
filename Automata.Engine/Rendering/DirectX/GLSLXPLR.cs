@@ -13,6 +13,7 @@ namespace Automata.Engine.Rendering.DirectX
 {
     public class GLSLXPLR : Singleton<GLSLXPLR>
     {
+        private const string _GLSL_XPLR_EXECUTABLE = "glslc.exe";
         private const string _GLSLC_ARGUMENTS_FORMAT = "-o \"{0}\" \"{1}\"";
 
         private const string _DEFAULT_VERTEX =
@@ -59,11 +60,6 @@ namespace Automata.Engine.Rendering.DirectX
                 }
             ";
 
-        private static readonly string[] _AssociatedFiles =
-        {
-            "glslc.exe"
-        };
-
         private byte[]? _DefaultFragmentShader;
         private byte[]? _DefaultVertexShader;
 
@@ -93,20 +89,17 @@ namespace Automata.Engine.Rendering.DirectX
         {
             Log.Information(string.Format(_LogFormat, "Validating transpiler."));
 
-            foreach (string fileName in _AssociatedFiles)
+            if (!File.Exists($"{Environment.CurrentDirectory}/{_GLSL_XPLR_EXECUTABLE}"))
             {
-                if (!File.Exists($"{Environment.CurrentDirectory}/{fileName}"))
-                {
-                    Log.Error(string.Format(_LogFormat, $"Transpiler missing required file: {fileName}"));
-                    return;
-                }
+                Log.Error(string.Format(_LogFormat, $"Transpiler missing required file: {_GLSL_XPLR_EXECUTABLE}"));
+                return;
             }
 
             _TranspilerProcess = new Process
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = $"{Environment.CurrentDirectory}/{_AssociatedFiles[0]}",
+                    FileName = $"{Environment.CurrentDirectory}/{_GLSL_XPLR_EXECUTABLE}",
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,

@@ -9,16 +9,10 @@ namespace Automata.Engine.Rendering.OpenGL
 {
     public class Texture2D : Texture, IDisposable
     {
-        public Texture2D(uint width, uint height, TextureFormat textureFormat)
-            : this(width, height, textureFormat, WrapMode.Repeat) { }
-
-        public Texture2D(uint width, uint height, TextureFormat textureFormat, WrapMode wrapMode)
+        public Texture2D(uint width, uint height, TextureFormat textureFormat, WrapMode wrapMode = WrapMode.Repeat)
             : this(width, height, textureFormat, wrapMode, FilterMode.Point) { }
 
-        public Texture2D(uint width, uint height, TextureFormat textureFormat, WrapMode wrapMode, FilterMode filterMode)
-            : this(width, height, textureFormat, wrapMode, filterMode, true) { }
-
-        public Texture2D(uint width, uint height, TextureFormat textureFormat, WrapMode wrapMode, FilterMode filterMode, bool mipmapping)
+        public Texture2D(uint width, uint height, TextureFormat textureFormat, WrapMode wrapMode, FilterMode filterMode, bool mipmapping = true)
         {
             Create(width, height, textureFormat, wrapMode, filterMode, mipmapping);
         }

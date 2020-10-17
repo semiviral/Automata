@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Numerics;
 using Automata.Engine;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
@@ -17,21 +16,21 @@ namespace Automata.Game.Chunks
 {
     public class ChunkRegionLoaderSystem : ComponentSystem
     {
-        private readonly Dictionary<Vector3, IEntity> _ChunkEntities;
+        private readonly Dictionary<Vector3i, IEntity> _ChunkEntities;
 
-        private readonly HashSet<Vector3> _ActivatingChunks;
-        private readonly HashSet<Vector3> _DeactivatingChunks;
+        private readonly HashSet<Vector3i> _ActivatingChunks;
+        private readonly HashSet<Vector3i> _DeactivatingChunks;
 
-        private readonly Stack<Vector3> _ActivationPendingChunks;
-        private readonly Stack<Vector3> _DeactivationPendingChunks;
+        private readonly Stack<Vector3i> _ActivationPendingChunks;
+        private readonly Stack<Vector3i> _DeactivationPendingChunks;
 
         public ChunkRegionLoaderSystem()
         {
-            _ChunkEntities = new Dictionary<Vector3, IEntity>();
-            _ActivatingChunks = new HashSet<Vector3>();
-            _DeactivatingChunks = new HashSet<Vector3>();
-            _ActivationPendingChunks = new Stack<Vector3>();
-            _DeactivationPendingChunks = new Stack<Vector3>();
+            _ChunkEntities = new Dictionary<Vector3i, IEntity>();
+            _ActivatingChunks = new HashSet<Vector3i>();
+            _DeactivatingChunks = new HashSet<Vector3i>();
+            _ActivationPendingChunks = new Stack<Vector3i>();
+            _DeactivationPendingChunks = new Stack<Vector3i>();
 
             HandledComponents = new ComponentTypes(typeof(Translation), typeof(ChunkLoader));
         }
@@ -43,19 +42,20 @@ namespace Automata.Game.Chunks
         {
             foreach ((Translation translation, ChunkLoader chunkLoader) in entityManager.GetComponents<Translation, ChunkLoader>())
             {
-                if (!translation.Changed)
+                Vector3i difference = Vector3i.Abs(Vector3i.FromVector3(translation.Value) - chunkLoader.Origin);
+                if (Vector3b.All(difference < GenerationConstants.CHUNK_SIZE))
                 {
                     continue;
                 }
 
-                Vector3 roundedTranslation = translation.Value.RoundBy(new Vector3(GenerationConstants.CHUNK_SIZE));
+                chunkLoader.Origin = Vector3i.RoundBy(Vector3i.FromVector3(translation.Value), GenerationConstants.CHUNK_SIZE);
 
                 // allocate list of chunks requiring deactivation
-                foreach ((Vector3 origin, IEntity _) in _ChunkEntities)
+                foreach ((Vector3i origin, IEntity _) in _ChunkEntities)
                 {
-                    Vector3i difference = Vector3i.Abs(Vector3i.FromVector3(origin - roundedTranslation));
+                    Vector3i chunkDifference = Vector3i.Abs(origin - chunkLoader.Origin);
 
-                    if (IsWithinLoaderRange(difference, chunkLoader))
+                    if (IsWithinLoaderRange(chunkDifference, chunkLoader))
                     {
                         _DeactivatingChunks.Remove(origin);
                     }
@@ -69,19 +69,24 @@ namespace Automata.Game.Chunks
                 for (int z = -chunkLoader.Radius; z < (chunkLoader.Radius + 1); z++)
                 for (int x = -chunkLoader.Radius; x < (chunkLoader.Radius + 1); x++)
                 {
-                    Vector3 localOrigin = new Vector3(x, y, z) * GenerationConstants.CHUNK_SIZE;
-                    Vector3 globalOrigin = localOrigin + new Vector3(roundedTranslation.X, 0f, roundedTranslation.Z);
+                    Vector3i localOrigin = new Vector3i(x, y, z) * GenerationConstants.CHUNK_SIZE;
+                    Vector3i globalOrigin = localOrigin + new Vector3i(chunkLoader.Origin.X, 0, chunkLoader.Origin.Z);
+
+                    // do not add chunks that already exist
+                    if (_ChunkEntities.ContainsKey(globalOrigin))
+                    {
+                        continue;
+                    }
 
                     _ActivatingChunks.Add(globalOrigin);
                 }
 
-                _ActivatingChunks.RemoveWhere(origin => _ChunkEntities.ContainsKey(origin));
-                foreach (Vector3 origin in _ActivatingChunks)
+                foreach (Vector3i origin in _ActivatingChunks)
                 {
                     _ActivationPendingChunks.Push(origin);
                 }
 
-                foreach (Vector3 origin in _DeactivatingChunks)
+                foreach (Vector3i origin in _DeactivatingChunks)
                 {
                     _DeactivationPendingChunks.Push(origin);
                 }
@@ -103,16 +108,16 @@ namespace Automata.Game.Chunks
             Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkRegionLoaderSystem),
                 $"Region loading: {_ActivationPendingChunks.Count} activations, {_DeactivationPendingChunks.Count} deactivations"));
 
-            while (_ActivationPendingChunks.TryPop(out Vector3 origin))
+            while (_ActivationPendingChunks.TryPop(out Vector3i origin))
             {
                 IEntity chunk = entityManager.ComposeEntity<ChunkComposition>(true);
                 chunk.GetComponent<Translation>().Value = origin;
-                chunk.GetComponent<ChunkState>().Value = GenerationState.Ungenerated;
+                chunk.GetComponent<Chunk>().State = GenerationState.Ungenerated;
 
                 _ChunkEntities.Add(origin, chunk);
             }
 
-            while (_DeactivationPendingChunks.TryPop(out Vector3 origin))
+            while (_DeactivationPendingChunks.TryPop(out Vector3i origin))
             {
                 _ChunkEntities.Remove(origin, out IEntity? entity);
 

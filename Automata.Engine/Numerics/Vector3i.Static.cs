@@ -19,6 +19,9 @@ namespace Automata.Engine.Numerics
         public static Vector3i FromVector3(Vector3 a) => new Vector3i((int)a.X, (int)a.Y, (int)a.Z);
         public static Vector3i FromVector3d(Vector3d a) => new Vector3i((int)a.X, (int)a.Y, (int)a.Z);
 
+        public static Vector3i RoundBy(Vector3i a, Vector3i by) => (a / by) * by;
+        public static Vector3i RoundBy(Vector3i a, int by) => (a / by) * by;
+
         public static Vector3i Project3D(int index, int bounds)
         {
             int xQuotient = Math.DivRem(index, bounds, out int x);

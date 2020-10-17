@@ -33,7 +33,7 @@ namespace Automata.Game
         private static void Main()
         {
             Log.Logger = new LoggerConfiguration()
-                .WriteTo.Console().MinimumLevel.Is(LogEventLevel.Debug)
+                .WriteTo.Console().MinimumLevel.Is(LogEventLevel.Verbose)
                 .CreateLogger();
             Log.Information("Logger initialized.");
 
