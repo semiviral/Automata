@@ -7,10 +7,8 @@ using System.Runtime.Intrinsics.X86;
 
 #endregion
 
-// ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable UnusedMember.Global
-// ReSharper disable NotAccessedField.Local
 // ReSharper disable InconsistentNaming
 
 namespace Automata.Engine.Numerics
@@ -18,8 +16,6 @@ namespace Automata.Engine.Numerics
     [StructLayout(LayoutKind.Sequential)]
     public readonly partial struct Vector2b
     {
-        #region Fields / Properties
-
         public static Vector2b True { get; } = new Vector2b(true);
         public static Vector2b False { get; } = new Vector2b(false);
 
@@ -36,11 +32,6 @@ namespace Automata.Engine.Numerics
             _ => throw new IndexOutOfRangeException(nameof(index))
         };
 
-        #endregion
-
-
-        #region Constructors
-
         private Vector2b(byte x, byte y) => (_X, _Y) = (x, y);
 
         public Vector2b(bool value)
@@ -51,9 +42,6 @@ namespace Automata.Engine.Numerics
         }
 
         public Vector2b(bool x, bool y) => (_X, _Y) = (x.AsByte(), y.AsByte());
-
-        #endregion
-
 
         #region Overrides
 
@@ -75,7 +63,6 @@ namespace Automata.Engine.Numerics
 
         #endregion
 
-
         #region Operators
 
         public static Vector2b operator ==(Vector2b a, Vector2b b) => EqualsImpl(a, b);
@@ -83,7 +70,6 @@ namespace Automata.Engine.Numerics
         public static Vector2b operator !(Vector2b a) => new Vector2b((byte)~a._X, (byte)~a._Y);
 
         #endregion
-
 
         #region Conversions
 

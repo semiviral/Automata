@@ -10,20 +10,15 @@ using System.Runtime.Intrinsics.X86;
 
 #endregion
 
-// ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
-// ReSharper disable ConvertToAutoProperty
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable UnusedMember.Global
 // ReSharper disable InconsistentNaming
-// ReSharper disable RedundantCast
 
 namespace Automata.Engine.Numerics
 {
     [StructLayout(LayoutKind.Sequential)]
     public readonly partial struct Vector2i
     {
-        #region Fields / Properties
-
         public static Vector2i Zero { get; } = new Vector2i(0);
         public static Vector2i One { get; } = new Vector2i(1);
         public static Vector2i UnitX { get; } = new Vector2i(1, 0);
@@ -39,16 +34,8 @@ namespace Automata.Engine.Numerics
             _ => throw new IndexOutOfRangeException(nameof(index))
         };
 
-        #endregion
-
-
-        #region Constructors
-
         public Vector2i(int xy) => (X, Y) = (xy, xy);
         public Vector2i(int x, int y) => (X, Y) = (x, y);
-
-        #endregion
-
 
         #region Overrides
 
@@ -69,7 +56,6 @@ namespace Automata.Engine.Numerics
         public override string ToString() => string.Format(FormatHelper.VECTOR_2_COMPONENT, nameof(Vector2i), X, Y);
 
         #endregion
-
 
         #region Operators
 
@@ -110,7 +96,6 @@ namespace Automata.Engine.Numerics
         public static Vector2b operator <(int a, Vector2i b) => LessThanImpl(a, b);
 
         #endregion
-
 
         #region Conversion Operators
 

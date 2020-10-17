@@ -5,19 +5,17 @@ using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
-// ReSharper disable MemberCanBePrivate.Global
-// ReSharper disable ConvertToAutoProperty
-// ReSharper disable UnusedMember.Global
-
 #endregion
+
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable UnusedMember.Global
+// ReSharper disable InconsistentNaming
 
 namespace Automata.Engine.Numerics
 {
     [StructLayout(LayoutKind.Sequential)]
     public readonly partial struct Vector3d
     {
-        #region Fields / Properties
-
         public static Vector3d Zero { get; } = new Vector3d(0d);
         public static Vector3d One { get; } = new Vector3d(1d);
         public static Vector3d UnitX { get; } = new Vector3d(1d, 0d, 0d);
@@ -37,17 +35,9 @@ namespace Automata.Engine.Numerics
             _ => throw new IndexOutOfRangeException(nameof(index))
         };
 
-        #endregion
-
-
-        #region Constructors
-
         public Vector3d(double value) => (X, Y, Z, W) = (value, value, value, value);
         public Vector3d(double x, double y) => (X, Y, Z, W) = (x, y, 0d, 0d);
         public Vector3d(double x, double y, double z) => (X, Y, Z, W) = (x, y, z, 0d);
-
-        #endregion
-
 
         #region Overrides
 
@@ -68,7 +58,6 @@ namespace Automata.Engine.Numerics
         public override string ToString() => string.Format(FormatHelper.VECTOR_3_COMPONENT, nameof(Vector3d), X, Y, Z);
 
         #endregion
-
 
         #region Operators
 
@@ -105,7 +94,6 @@ namespace Automata.Engine.Numerics
         public static Vector3b operator <(double a, Vector3d b) => LessThanImpl(a, b);
 
         #endregion
-
 
         #region Conversions
 

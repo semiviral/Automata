@@ -8,20 +8,15 @@ using System.Runtime.Intrinsics;
 
 #endregion
 
-// ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable UnusedMember.Global
-// ReSharper disable ConvertToAutoProperty
 // ReSharper disable InconsistentNaming
-// ReSharper disable RedundantCast
 
 namespace Automata.Engine.Numerics
 {
     [StructLayout(LayoutKind.Sequential)]
     public readonly partial struct Vector3i
     {
-        #region Fields / Properties
-
         public static Vector3i Zero { get; } = new Vector3i(0);
         public static Vector3i One { get; } = new Vector3i(1);
         public static Vector3i UnitX { get; } = new Vector3i(1, 0, 0);
@@ -40,16 +35,8 @@ namespace Automata.Engine.Numerics
             _ => throw new IndexOutOfRangeException(nameof(index))
         };
 
-        #endregion
-
-
-        #region Constructors
-
         public Vector3i(int xyz) => (X, Y, Z) = (xyz, xyz, xyz);
         public Vector3i(int x, int y, int z) => (X, Y, Z) = (x, y, z);
-
-        #endregion
-
 
         #region Overrides
 
@@ -70,7 +57,6 @@ namespace Automata.Engine.Numerics
         public override string ToString() => string.Format(FormatHelper.VECTOR_3_COMPONENT, nameof(Vector3i), X, Y, Z);
 
         #endregion
-
 
         #region Operators
 
@@ -118,7 +104,6 @@ namespace Automata.Engine.Numerics
         public static Vector3b operator <=(Vector3i a, int b) => LessThanOrEqualImpl(a, b);
 
         #endregion
-
 
         #region Conversions
 

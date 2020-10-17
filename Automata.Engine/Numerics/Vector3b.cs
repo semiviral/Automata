@@ -7,10 +7,8 @@ using System.Runtime.Intrinsics.X86;
 
 #endregion
 
-// ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
-// ReSharper disable NotAccessedField.Local
-// ReSharper disable UnusedMember.Global
 // ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable UnusedMember.Global
 // ReSharper disable InconsistentNaming
 
 namespace Automata.Engine.Numerics
@@ -18,8 +16,6 @@ namespace Automata.Engine.Numerics
     [StructLayout(LayoutKind.Sequential)]
     public readonly partial struct Vector3b
     {
-        #region Fields / Properties
-
         public static Vector3b True { get; } = new Vector3b(true);
         public static Vector3b False { get; } = new Vector3b(false);
 
@@ -39,11 +35,6 @@ namespace Automata.Engine.Numerics
             _ => throw new IndexOutOfRangeException(nameof(index))
         };
 
-        #endregion
-
-
-        #region Constructors
-
         private Vector3b(byte x, byte y, byte z) => (_X, _Y, _Z) = (x, y, z);
 
         public Vector3b(bool value)
@@ -55,9 +46,6 @@ namespace Automata.Engine.Numerics
 
         public Vector3b(bool x, bool y, bool z) =>
             (_X, _Y, _Z) = (x.AsByte(), y.AsByte(), z.AsByte());
-
-        #endregion
-
 
         #region Overrides
 
@@ -79,7 +67,6 @@ namespace Automata.Engine.Numerics
 
         #endregion
 
-
         #region Operators
 
         public static Vector3b operator ==(Vector3b a, Vector3b b) => EqualsImpl(a, b);
@@ -88,7 +75,6 @@ namespace Automata.Engine.Numerics
         public static Vector3b operator |(Vector3b a, Vector3b b) => OrImpl(a, b);
 
         #endregion
-
 
         #region Conversions
 
