@@ -31,8 +31,8 @@ namespace Automata.Engine.Rendering
                 Camera camera = entity.GetComponent<Camera>();
 
                 // adjust view
-                if (entity.TryGetComponent(out Translation translation)
-                    && entity.TryGetComponent(out Rotation rotation)
+                if (entity.TryGetComponent(out Translation? translation)
+                    && entity.TryGetComponent(out Rotation? rotation)
                     && (translation.Changed || rotation.Changed))
                 {
                     camera.View = Matrix4x4.Identity

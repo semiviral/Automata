@@ -15,11 +15,11 @@ namespace Automata.Engine.Entities
         Dictionary<Type, IComponent>.KeyCollection ComponentTypes { get; }
 
         void AddComponent(IComponent component);
-        void RemoveComponent<T>() where T : IComponent;
+        void RemoveComponent<T>() where T : class, IComponent;
         void RemoveComponent(Type type);
-        T GetComponent<T>() where T : IComponent;
+        T GetComponent<T>() where T : class, IComponent;
 
-        bool TryGetComponent<T>([MaybeNullWhen(false)] out T component) where T : IComponent;
+        bool TryGetComponent<T>([NotNullWhen(true)] out T? component) where T : class, IComponent;
         bool TryGetComponent(Type type, [NotNullWhen(true)] out IComponent? component);
         IComponent GetComponent(Type componentType);
 

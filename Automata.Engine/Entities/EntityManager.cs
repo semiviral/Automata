@@ -13,13 +13,11 @@ namespace Automata.Engine.Entities
     public sealed class EntityManager
     {
         private readonly Dictionary<Guid, IEntity> _Entities;
-        private readonly Dictionary<Type, List<IEntity>> _EntitiesByComponent;
         private readonly Dictionary<Type, int> _ComponentCountByType;
 
         public EntityManager()
         {
             _Entities = new Dictionary<Guid, IEntity>();
-            _EntitiesByComponent = new Dictionary<Type, List<IEntity>>();
             _ComponentCountByType = new Dictionary<Type, int>();
         }
 
@@ -79,7 +77,7 @@ namespace Automata.Engine.Entities
         /// <remarks>
         ///     Use this method to ensure <see cref="EntityManager" /> caches remain accurate.
         /// </remarks>
-        public void RemoveComponent<T>(IEntity entity) where T : IComponent => RemoveComponentInternal(entity, typeof(T));
+        public void RemoveComponent<T>(IEntity entity) where T : class, IComponent => RemoveComponentInternal(entity, typeof(T));
 
         public void RemoveComponent(IEntity entity, Type type) => RemoveComponentInternal(entity, type);
 
@@ -91,7 +89,6 @@ namespace Automata.Engine.Entities
             }
 
             entity.RemoveComponent(type);
-            _EntitiesByComponent[type].Remove(entity);
             _ComponentCountByType[type] -= 1;
         }
 
@@ -130,7 +127,7 @@ namespace Automata.Engine.Entities
         /// <remarks>
         ///     Use this method to ensure <see cref="EntityManager" /> caches remain accurate.
         /// </remarks>
-        public void RegisterComponent<T>(IEntity entity) where T : IComponent =>
+        public void RegisterComponent<T>(IEntity entity) where T : class, IComponent =>
             RegisterComponentInternal(entity, typeof(T), null);
 
         private void RegisterComponentInternal(IEntity entity, Type type, IComponent? component)
@@ -151,17 +148,11 @@ namespace Automata.Engine.Entities
                 entity.AddComponent(instance);
             }
 
-            if (!_EntitiesByComponent.ContainsKey(type))
-            {
-                _EntitiesByComponent.Add(type, new List<IEntity>());
-            }
-
             if (!_ComponentCountByType.ContainsKey(type))
             {
                 _ComponentCountByType.Add(type, 0);
             }
 
-            _EntitiesByComponent[type].Add(entity);
             _ComponentCountByType[type] += 1;
         }
 
@@ -169,7 +160,7 @@ namespace Automata.Engine.Entities
 
         #region Get .. Data
 
-        public IEnumerable<T> GetComponentsAssignableFrom<T>() where T : IComponent
+        public IEnumerable<T> GetComponentsAssignableFrom<T>() where T : class, IComponent
         {
             foreach (IEntity entity in _Entities.Values)
             {
@@ -195,31 +186,36 @@ namespace Automata.Engine.Entities
         ///     any additions or subtractions from the collection will throw a collection modified exception.
         /// </remarks>
         public IEnumerable<IEntity> GetEntitiesWithComponents<T1>()
-            where T1 : IComponent =>
-            _EntitiesByComponent.TryGetValue(typeof(T1), out List<IEntity>? entities)
-                ? entities
-                : Enumerable.Empty<IEntity>();
-
+            where T1 : class, IComponent
+        {
+            foreach (IEntity entity in _Entities.Values)
+            {
+                if (entity.TryGetComponent<T1>(out _))
+                {
+                    yield return entity;
+                }
+            }
+        }
 
         public IEnumerable<IEntity> GetEntitiesWithComponents<T1, T2>()
-            where T1 : IComponent
-            where T2 : IComponent =>
+            where T1 : class, IComponent
+            where T2 : class, IComponent =>
             GetEntitiesWithComponents<T1>()
                 .Intersect(GetEntitiesWithComponents<T2>());
 
         public IEnumerable<IEntity> GetEntitiesWithComponents<T1, T2, T3>()
-            where T1 : IComponent
-            where T2 : IComponent
-            where T3 : IComponent =>
+            where T1 : class, IComponent
+            where T2 : class, IComponent
+            where T3 : class, IComponent =>
             GetEntitiesWithComponents<T1>()
                 .Intersect(GetEntitiesWithComponents<T2>())
                 .Intersect(GetEntitiesWithComponents<T3>());
 
         public IEnumerable<IEntity> GetEntitiesWithComponents<T1, T2, T3, T4>()
-            where T1 : IComponent
-            where T2 : IComponent
-            where T3 : IComponent
-            where T4 : IComponent =>
+            where T1 : class, IComponent
+            where T2 : class, IComponent
+            where T3 : class, IComponent
+            where T4 : class, IComponent =>
             GetEntitiesWithComponents<T1>()
                 .Intersect(GetEntitiesWithComponents<T2>())
                 .Intersect(GetEntitiesWithComponents<T3>())
@@ -231,30 +227,64 @@ namespace Automata.Engine.Entities
         /// <typeparam name="T1">Type of <see cref="IComponent" /> to return.</typeparam>
         /// <returns><see cref="IEnumerable{T}" /> of all instances of <see cref="IComponent" /> type <see cref="T1" />.</returns>
         public IEnumerable<T1> GetComponents<T1>()
-            where T1 : class, IComponent =>
-            GetEntitiesWithComponents<T1>().Select(entity =>
-                entity.GetComponent<T1>());
+            where T1 : class, IComponent
+        {
+            foreach (IEntity entity in _Entities.Values)
+            {
+                if (entity.TryGetComponent(out T1? component))
+                {
+                    yield return component;
+                }
+            }
+        }
 
         public IEnumerable<(T1, T2)> GetComponents<T1, T2>()
             where T1 : class, IComponent
-            where T2 : class, IComponent =>
-            GetEntitiesWithComponents<T1, T2>().Select(entity =>
-                (entity.GetComponent<T1>(), entity.GetComponent<T2>()));
+            where T2 : class, IComponent
+        {
+            foreach (IEntity entity in _Entities.Values)
+            {
+                if (entity.TryGetComponent(out T1? component)
+                    && entity.TryGetComponent(out T2? component2))
+                {
+                    yield return (component, component2);
+                }
+            }
+        }
 
         public IEnumerable<(T1, T2, T3)> GetComponents<T1, T2, T3>()
             where T1 : class, IComponent
             where T2 : class, IComponent
-            where T3 : class, IComponent =>
-            GetEntitiesWithComponents<T1, T2, T3>().Select(entity =>
-                (entity.GetComponent<T1>(), entity.GetComponent<T2>(), entity.GetComponent<T3>()));
+            where T3 : class, IComponent
+        {
+            foreach (IEntity entity in _Entities.Values)
+            {
+                if (entity.TryGetComponent(out T1? component)
+                    && entity.TryGetComponent(out T2? component2)
+                    && entity.TryGetComponent(out T3? component3))
+                {
+                    yield return (component, component2, component3);
+                }
+            }
+        }
 
         public IEnumerable<(T1, T2, T3, T4)> GetComponents<T1, T2, T3, T4>()
             where T1 : class, IComponent
             where T2 : class, IComponent
             where T3 : class, IComponent
-            where T4 : class, IComponent =>
-            GetEntitiesWithComponents<T1, T2, T3, T4>().Select(entity =>
-                (entity.GetComponent<T1>(), entity.GetComponent<T2>(), entity.GetComponent<T3>(), entity.GetComponent<T4>()));
+            where T4 : class, IComponent
+        {
+            foreach (IEntity entity in _Entities.Values)
+            {
+                if (entity.TryGetComponent(out T1? component)
+                    && entity.TryGetComponent(out T2? component2)
+                    && entity.TryGetComponent(out T3? component3)
+                    && entity.TryGetComponent(out T4? component4))
+                {
+                    yield return (component, component2, component3, component4);
+                }
+            }
+        }
 
         public int GetComponentCount<T>() where T : IComponent => _ComponentCountByType[typeof(T)];
 
@@ -265,14 +295,7 @@ namespace Automata.Engine.Entities
                 throw new TypeLoadException(type.ToString());
             }
 
-            if (_ComponentCountByType.TryGetValue(type, out int count))
-            {
-                return count;
-            }
-            else
-            {
-                return 0;
-            }
+            return _ComponentCountByType.TryGetValue(type, out int count) ? count : 0;
         }
 
         #endregion

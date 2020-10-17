@@ -79,17 +79,17 @@ namespace Automata.Engine.Rendering
                         {
                             Matrix4x4 model = Matrix4x4.Identity;
 
-                            if (entity.TryGetComponent(out Scale modelScale))
+                            if (entity.TryGetComponent(out Scale? modelScale))
                             {
                                 model *= Matrix4x4.CreateScale(modelScale.Value);
                             }
 
-                            if (entity.TryGetComponent(out Rotation modelRotation))
+                            if (entity.TryGetComponent(out Rotation? modelRotation))
                             {
                                 model *= Matrix4x4.CreateFromQuaternion(modelRotation.Value);
                             }
 
-                            if (entity.TryGetComponent(out Translation modelTranslation))
+                            if (entity.TryGetComponent(out Translation? modelTranslation))
                             {
                                 model *= Matrix4x4.CreateTranslation(modelTranslation.Value);
                             }

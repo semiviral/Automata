@@ -52,7 +52,7 @@ namespace Automata.Engine.Collections
             return true;
         }
 
-        bool IProducerConsumerCollection<T>.TryTake(out T item) => TryDequeue(out item);
+        bool IProducerConsumerCollection<T>.TryTake([MaybeNullWhen(false)] out T item) => TryDequeue(out item);
 
         void ICollection.CopyTo(Array array, int index)
         {

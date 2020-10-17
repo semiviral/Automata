@@ -26,13 +26,13 @@ namespace Automata.Engine.Entities
 
         public void AddComponent(IComponent component) => _Components.Add(component.GetType(), component);
 
-        public void RemoveComponent<T>() where T : IComponent => _Components.Remove(typeof(T));
+        public void RemoveComponent<T>() where T : class, IComponent => _Components.Remove(typeof(T));
 
         public void RemoveComponent(Type type) => _Components.Remove(type);
 
-        public T GetComponent<T>() where T : IComponent => (T)_Components[typeof(T)];
+        public T GetComponent<T>() where T : class, IComponent => (T)_Components[typeof(T)];
 
-        public bool TryGetComponent<T>([MaybeNullWhen(false)] out T component) where T : IComponent
+        public bool TryGetComponent<T>([NotNullWhen(true)] out T? component) where T : class, IComponent
         {
             if (_Components.TryGetValue(typeof(T), out IComponent? componentBase))
             {

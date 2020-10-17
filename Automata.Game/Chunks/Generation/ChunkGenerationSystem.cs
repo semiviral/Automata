@@ -72,7 +72,7 @@ namespace Automata.Game.Chunks.Generation
                             Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
                             stopwatch.Restart();
 
-                            if (!entity.TryGetComponent(out RenderMesh renderMesh))
+                            if (!entity.TryGetComponent(out RenderMesh? renderMesh))
                             {
                                 renderMesh = new RenderMesh();
 
