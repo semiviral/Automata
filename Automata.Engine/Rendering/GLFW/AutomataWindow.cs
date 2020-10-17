@@ -20,35 +20,10 @@ namespace Automata.Engine.Rendering.GLFW
 {
     public class AutomataWindow : Singleton<AutomataWindow>
     {
-        #region Private Member Variables
-
         private readonly Stopwatch _DeltaTimer;
 
         private IWindow? _Window;
         private TimeSpan _MinimumFrameTime;
-
-        private IWindow Window
-        {
-            get
-            {
-                if (_Window == null)
-                {
-                    throw new NullReferenceException(nameof(Window));
-                }
-                else
-                {
-                    return _Window;
-                }
-            }
-            set =>
-                throw new InvalidOperationException(
-                    $"Property '{nameof(Window)}' cannot be set. Use '{nameof(CreateWindow)}' or one of its overloads instead."
-                );
-        }
-
-        #endregion
-
-        #region Public Member Variables
 
         public IGLContext? GLContext => Window.GLContext;
 
@@ -56,8 +31,6 @@ namespace Automata.Engine.Rendering.GLFW
         {
             get
             {
-                Debug.Assert(Window != null);
-
                 if (Window.VkSurface == null)
                 {
                     throw new NotSupportedException("Vulkan is not supported by windowing.");
@@ -67,20 +40,38 @@ namespace Automata.Engine.Rendering.GLFW
             }
         }
 
-        public Vector2i Size { get; private set; }
+        private IWindow Window
+        {
+            get
+            {
+                if (_Window is null)
+                {
+                    throw new NullReferenceException(nameof(Window));
+                }
+                else
+                {
+                    return _Window;
+                }
+            }
+        }
+
+        public Vector2i Size
+        {
+            get => (Vector2i)Window.Size;
+            set => Window.Size = (Size)value;
+        }
+
+        public Vector2i Position
+        {
+            get => (Vector2i)Window.Position;
+            set => Window.Position = (Point)value;
+        }
+
         public bool Focused { get; private set; }
-
-        public Vector2i Position => (Vector2i)Window.Position;
-
-        #endregion
-
-        #region Events
 
         public event WindowResizedEventHandler? Resized;
         public event WindowFocusChangedEventHandler? FocusChanged;
         public event WindowClosingEventHandler? Closing;
-
-        #endregion
 
         public AutomataWindow()
         {
@@ -178,7 +169,7 @@ namespace Automata.Engine.Rendering.GLFW
 
         #region Event Subscriptors
 
-        private void OnWindowResized(Size size) => Resized?.Invoke(this, Size = new Vector2i(size.Width, size.Height));
+        private void OnWindowResized(Size size) => Resized?.Invoke(this, Size);
 
         private void OnWindowFocusedChanged(bool focused) => FocusChanged?.Invoke(this, Focused = focused);
 
