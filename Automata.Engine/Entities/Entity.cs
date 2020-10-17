@@ -21,6 +21,7 @@ namespace Automata.Engine.Entities
         }
 
         public Dictionary<Type, IComponent>.KeyCollection ComponentTypes => _Components.Keys;
+        public Dictionary<Type, IComponent>.ValueCollection Components => _Components.Values;
 
         public Guid ID { get; }
 
@@ -57,5 +58,7 @@ namespace Automata.Engine.Entities
 
             return _Components[componentType];
         }
+
+        public bool HasComponent<T>() where T : class, IComponent => _Components.ContainsKey(typeof(T));
     }
 }

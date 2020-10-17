@@ -40,10 +40,10 @@ namespace Automata.Engine.Rendering
                 }
 
                 // adjust projection
-                if (_NewAspectRatio > -0f)
+                if (_NewAspectRatio > 0f)
                 {
                     const float near_clipping_plane = 0.1f;
-                    const float far_clipping_plane = 100f;
+                    const float far_clipping_plane = 1000f;
 
                     camera.Projection = Matrix4x4.CreatePerspectiveFieldOfView(AutomataMath.ToRadians(90f), _NewAspectRatio, near_clipping_plane,
                         far_clipping_plane);

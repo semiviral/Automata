@@ -164,11 +164,11 @@ namespace Automata.Engine.Entities
         {
             foreach (IEntity entity in _Entities.Values)
             {
-                foreach (Type type in entity.ComponentTypes)
+                foreach (IComponent component in entity.Components)
                 {
-                    if (typeof(T).IsAssignableFrom(type))
+                    if (component is T componentT)
                     {
-                        yield return (T)entity.GetComponent(type);
+                        yield return componentT;
                     }
                 }
             }
@@ -186,16 +186,8 @@ namespace Automata.Engine.Entities
         ///     any additions or subtractions from the collection will throw a collection modified exception.
         /// </remarks>
         public IEnumerable<IEntity> GetEntitiesWithComponents<T1>()
-            where T1 : class, IComponent
-        {
-            foreach (IEntity entity in _Entities.Values)
-            {
-                if (entity.TryGetComponent<T1>(out _))
-                {
-                    yield return entity;
-                }
-            }
-        }
+            where T1 : class, IComponent =>
+            _Entities.Values.Where(entity => entity.HasComponent<T1>());
 
         public IEnumerable<IEntity> GetEntitiesWithComponents<T1, T2>()
             where T1 : class, IComponent

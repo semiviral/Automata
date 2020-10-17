@@ -78,6 +78,8 @@ namespace Automata.Engine.Rendering.GLFW
             AssignSingletonInstance(this);
 
             _DeltaTimer = new Stopwatch();
+
+            Focused = true;
         }
 
         public void CreateWindow(WindowOptions windowOptions)
