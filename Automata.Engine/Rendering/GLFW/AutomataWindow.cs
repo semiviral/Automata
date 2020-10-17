@@ -48,7 +48,6 @@ namespace Automata.Engine.Rendering.GLFW
 
         #endregion
 
-
         #region Public Member Variables
 
         public IGLContext? GLContext => Window.GLContext;
