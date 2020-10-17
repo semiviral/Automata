@@ -1,6 +1,7 @@
 #region
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
@@ -59,7 +60,7 @@ namespace Automata.Engine.Numerics
 
         public override int GetHashCode() => _X.GetHashCode() ^ _Y.GetHashCode();
 
-        public override string ToString() => string.Format(FormatHelper.VECTOR_2_COMPONENT, nameof(Vector2b), _X, _Y);
+        public override string ToString() => string.Format(FormatHelper.VECTOR_2_COMPONENT, nameof(Vector2b), X, Y);
 
         #endregion
 
@@ -73,8 +74,8 @@ namespace Automata.Engine.Numerics
 
         #region Conversions
 
-        public static unsafe explicit operator Vector128<byte>(Vector2b a) => Sse2.LoadVector128(&a._X);
-        public static unsafe explicit operator Vector2b(Vector128<byte> a) => *(Vector2b*)&a;
+        public static explicit operator Vector128<byte>(Vector2b a) => Unsafe.As<Vector2b, Vector128<byte>>(ref a);
+        public static explicit operator Vector2b(Vector128<byte> a) => Unsafe.As<Vector128<byte>, Vector2b>(ref a);
 
         public static explicit operator Vector2b(Vector128<int> a) => new Vector2b(
             (byte)a.GetElement(0),
