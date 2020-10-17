@@ -33,7 +33,7 @@ namespace Automata.Engine.Input
 
             foreach (IEntity entity in entityManager.GetEntitiesWithComponents<InputListener, Translation>())
             {
-                Vector3d transformedMovementVector = entity.TryGetComponent(out Rotation rotation)
+                Vector3d transformedMovementVector = entity.TryGetComponent(out Rotation? rotation)
                     ? Vector3d.Transform(movementVector, Quaternion.Conjugate(rotation.Value))
                     : movementVector;
 
@@ -55,14 +55,14 @@ namespace Automata.Engine.Input
                 movementVector -= Vector3d.UnitZ * deltaTime;
             }
 
-            if (InputManager.Instance.IsKeyPressed(Key.D))
-            {
-                movementVector -= Vector3d.UnitX * deltaTime;
-            }
-
             if (InputManager.Instance.IsKeyPressed(Key.A))
             {
                 movementVector += Vector3d.UnitX * deltaTime;
+            }
+
+            if (InputManager.Instance.IsKeyPressed(Key.D))
+            {
+                movementVector -= Vector3d.UnitX * deltaTime;
             }
 
             return movementVector;

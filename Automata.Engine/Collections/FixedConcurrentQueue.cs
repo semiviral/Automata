@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 #endregion
@@ -84,8 +85,8 @@ namespace Automata.Engine.Collections
             }
         }
 
-        private bool TryDequeue(out T item) => _InternalQueue.TryDequeue(out item);
+        private bool TryDequeue([MaybeNullWhen(false)] out T item) => _InternalQueue.TryDequeue(out item);
 
-        public bool TryPeek(out T item) => _InternalQueue.TryPeek(out item);
+        public bool TryPeek([MaybeNullWhen(false)] out T item) => _InternalQueue.TryPeek(out item);
     }
 }

@@ -48,7 +48,11 @@ namespace Automata.Game.Chunks
                     continue;
                 }
 
+                Vector3i chunkLoaderOldOrigin = chunkLoader.Origin;
                 chunkLoader.Origin = Vector3i.RoundBy(Vector3i.FromVector3(translation.Value), GenerationConstants.CHUNK_SIZE);
+
+                Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkRegionLoaderSystem),
+                    $"Recalculating chunk region: old {chunkLoaderOldOrigin}, new {chunkLoader.Origin}"));
 
                 // allocate list of chunks requiring deactivation
                 foreach ((Vector3i origin, IEntity _) in _ChunkEntities)

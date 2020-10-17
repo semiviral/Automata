@@ -21,28 +21,28 @@ namespace Automata.Engine
         {
             get
             {
-                if (!(_Instance is object))
+                if (TryValidate())
                 {
-                    throw new NullReferenceException($"'{typeof(T)}' has not been instantiated.");
+                    return _Instance;
                 }
                 else
                 {
-                    return _Instance;
+                    throw new NullReferenceException($"'{typeof(T)}' has not been instantiated.");
                 }
             }
         }
 
         public static void Validate()
         {
-            if (!(Instance is object))
+            if (Instance is null)
             {
                 throw new InvalidOperationException($"Singleton '{typeof(T)}' has not been instantiated.");
             }
         }
 
-        public static bool TryValidate() => _Instance is object;
+        public static bool TryValidate() => _Instance is not null;
 
-        protected string _LogFormat { get; } = $"({typeof(T).Name}) {{0}}";
+        protected string _LogFormat { get; } = string.Format(FormatHelper.DEFAULT_LOGGING, typeof(T), "{0}");
 
         protected void AssignSingletonInstance(T instance)
         {
