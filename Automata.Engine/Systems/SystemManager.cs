@@ -95,7 +95,7 @@ namespace Automata.Engine.Systems
 
             componentSystem.Registered();
 
-            Log.Debug($"({nameof(SystemManager)}) Registered {nameof(ComponentSystem)}: {typeof(TSystem)}");
+            Log.Information($"({nameof(SystemManager)}) Registered {nameof(ComponentSystem)}: {typeof(TSystem)}");
         }
 
         /// <summary>

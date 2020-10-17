@@ -55,7 +55,7 @@ namespace Automata.Engine
                 _SingletonInstance = this;
                 _Instance = instance;
 
-                Log.Debug($"Singleton '{typeof(T)}' has been instantiated.");
+                Log.Information($"Singleton '{typeof(T)}' has been instantiated.");
             }
         }
     }
