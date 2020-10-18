@@ -15,7 +15,6 @@ namespace Automata.Engine.Numerics
         public static bool All(Vector2b a) => a.X && a.Y;
         public static bool Any(Vector2b a) => a.X || a.Y;
 
-
         #region Intrinsics
 
         private static Vector2b EqualsImpl(Vector2b a, Vector2b b)

@@ -43,16 +43,12 @@ namespace Automata.Engine.Numerics
 
         public Vector2b(bool x, bool y) => (_X, _Y) = (x.AsByte(), y.AsByte());
 
-        #region Overrides
-
         public override bool Equals(object? obj) => obj is Vector2b other && Equals(other);
         public bool Equals(Vector2b other) => All(this == other);
 
         public override int GetHashCode() => _X.GetHashCode() ^ _Y.GetHashCode();
 
         public override string ToString() => string.Format(FormatHelper.VECTOR_2_COMPONENT, nameof(Vector2b), X, Y);
-
-        #endregion
 
         #region Operators
 
