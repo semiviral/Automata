@@ -273,17 +273,8 @@ namespace Automata.Engine.Entities
             }
         }
 
-        public int GetComponentCount<T>() where T : IComponent => _ComponentCountByType[typeof(T)];
-
-        public int GetComponentCount(Type type)
-        {
-            if (!typeof(IComponent).IsAssignableFrom(type))
-            {
-                throw new TypeLoadException(type.ToString());
-            }
-
-            return _ComponentCountByType.TryGetValue(type, out int count) ? count : 0;
-        }
+        public int GetComponentCount<T>() where T : class, IComponent => _ComponentCountByType.TryGetValue(typeof(T), out int count) ? count : 0;
+        public int GetComponentCount(Type type) => _ComponentCountByType.TryGetValue(type, out int count) ? count : 0;
 
         #endregion
     }
