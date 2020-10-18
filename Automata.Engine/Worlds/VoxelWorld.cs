@@ -1,6 +1,10 @@
+#region
+
 using System.Collections.Generic;
 using Automata.Engine.Entities;
 using Automata.Engine.Numerics;
+
+#endregion
 
 namespace Automata.Engine.Worlds
 {
@@ -11,6 +15,5 @@ namespace Automata.Engine.Worlds
         public IReadOnlyCollection<IEntity> Chunks => _Chunks.Values;
 
         public VoxelWorld(bool active) : base(active) { }
-
     }
 }
