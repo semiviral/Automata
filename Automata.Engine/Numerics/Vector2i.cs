@@ -50,9 +50,9 @@ namespace Automata.Engine.Numerics
         public static Vector2b operator ==(Vector2i a, int b) => EqualsImpl(a, b);
         public static Vector2b operator ==(int a, Vector2i b) => EqualsImpl(a, b);
 
-        public static Vector2b operator !=(Vector2i a, Vector2i b) => NotEqualsImpl(a, b);
-        public static Vector2b operator !=(Vector2i a, int b) => NotEqualsImpl(a, b);
-        public static Vector2b operator !=(int a, Vector2i b) => NotEqualsImpl(a, b);
+        public static Vector2b operator !=(Vector2i a, Vector2i b) => !EqualsImpl(a, b);
+        public static Vector2b operator !=(Vector2i a, int b) => !EqualsImpl(a, b);
+        public static Vector2b operator !=(int a, Vector2i b) => !EqualsImpl(a, b);
 
         public static Vector2i operator &(Vector2i a, Vector2i b) => BitwiseAndImpl(a, b);
         public static Vector2i operator &(Vector2i a, int b) => BitwiseAndImpl(a, b);
@@ -73,6 +73,10 @@ namespace Automata.Engine.Numerics
         public static Vector2i operator *(Vector2i a, Vector2i b) => MultiplyImpl(a, b);
         public static Vector2i operator *(Vector2i a, int b) => MultiplyImpl(a, b);
         public static Vector2i operator *(int a, Vector2i b) => MultiplyImpl(a, b);
+
+        public static Vector2i operator /(Vector2i a, Vector2i b) => DivideImpl(a, b);
+        public static Vector2i operator /(Vector2i a, int b) => DivideImpl(a, b);
+        public static Vector2i operator /(int a, Vector2i b) => DivideImpl(a, b);
 
         public static Vector2b operator >(Vector2i a, Vector2i b) => GreaterThanImpl(a, b);
         public static Vector2b operator >(Vector2i a, int b) => GreaterThanImpl(a, b);

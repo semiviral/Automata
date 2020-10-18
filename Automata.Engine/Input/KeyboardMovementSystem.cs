@@ -4,7 +4,6 @@ using System;
 using System.Numerics;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
-using Automata.Engine.Numerics;
 using Automata.Engine.Rendering.GLFW;
 using Automata.Engine.Systems;
 using Silk.NET.Input.Common;
@@ -23,46 +22,47 @@ namespace Automata.Engine.Input
                 return;
             }
 
-            Vector3d movementVector = GetMovementVector(delta.TotalSeconds);
+            Vector3 movementVector = GetMovementVector((float)delta.TotalSeconds);
 
-            if (Vector3b.All(movementVector == Vector3d.Zero))
+            if (movementVector == Vector3.Zero)
             {
                 return;
             }
 
             foreach (IEntity entity in entityManager.GetEntitiesWithComponents<Translation, KeyboardListener>())
             {
-                Vector3d transformedMovementVector = entity.TryGetComponent(out Rotation? rotation)
-                    ? Vector3d.Transform(movementVector, Quaternion.Conjugate(rotation.Value))
+                movementVector = entity.TryGetComponent(out Rotation? rotation)
+                    ? Vector3.Transform(movementVector, rotation.Value)
                     : movementVector;
 
                 float sensitivity = entity.GetComponent<KeyboardListener>().Sensitivity;
-                entity.GetComponent<Translation>().Value += Vector3d.AsVector3(sensitivity * transformedMovementVector);
+                Translation translation = entity.GetComponent<Translation>();
+                translation.Value += sensitivity * movementVector;
             }
         }
 
-        private static Vector3d GetMovementVector(double deltaTime)
+        private static Vector3 GetMovementVector(float deltaTime)
         {
-            Vector3d movementVector = Vector3d.Zero;
+            Vector3 movementVector = Vector3.Zero;
 
             if (InputManager.Instance.IsKeyPressed(Key.W))
             {
-                movementVector += Vector3d.UnitZ * deltaTime;
+                movementVector += Vector3.UnitZ * deltaTime;
             }
 
             if (InputManager.Instance.IsKeyPressed(Key.S))
             {
-                movementVector -= Vector3d.UnitZ * deltaTime;
+                movementVector -= Vector3.UnitZ * deltaTime;
             }
 
             if (InputManager.Instance.IsKeyPressed(Key.A))
             {
-                movementVector += Vector3d.UnitX * deltaTime;
+                movementVector += Vector3.UnitX * deltaTime;
             }
 
             if (InputManager.Instance.IsKeyPressed(Key.D))
             {
-                movementVector -= Vector3d.UnitX * deltaTime;
+                movementVector -= Vector3.UnitX * deltaTime;
             }
 
             return movementVector;

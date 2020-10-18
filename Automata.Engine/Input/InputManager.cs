@@ -73,7 +73,9 @@ namespace Automata.Engine.Input
             }
 
             PointF position = _Mice[mouseIndex].Position;
-            return Unsafe.As<PointF, Vector2>(ref position);
+            position.Y = -position.Y;
+
+            return Unsafe.As<PointF, Vector2>(ref position) - (Vector2)AutomataWindow.Instance.Position;
         }
 
         /// <summary>
@@ -91,7 +93,7 @@ namespace Automata.Engine.Input
 
             PointF pointerPosition = _Mice[mouseIndex].Position;
 
-            return Unsafe.As<PointF, Vector2>(ref pointerPosition) - ((Vector2)AutomataWindow.Instance.Size / 2f);
+            return GetMousePosition(0) - ((Vector2)AutomataWindow.Instance.Size / 2f);
         }
 
         public void SetMousePositionRelative(int mouseIndex, Vector2 position)

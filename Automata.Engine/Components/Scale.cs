@@ -1,7 +1,21 @@
+using System.Runtime.InteropServices;
+
 namespace Automata.Engine.Components
 {
-    public class Scale : IComponent
+    public class Scale : IComponentChangeable
     {
-        public float Value { get; set; } = 1f;
+        private float _Value = 1f;
+
+        public float Value
+        {
+            get => _Value;
+            set
+            {
+                _Value = value;
+                Changed = true;
+            }
+        }
+
+        public bool Changed { get; set; }
     }
 }

@@ -28,15 +28,30 @@ namespace Automata.Engine.Rendering
             foreach (IEntity entity in entityManager.GetEntitiesWithComponents<Camera>())
             {
                 Camera camera = entity.GetComponent<Camera>();
+                Matrix4x4 calculatedView = Matrix4x4.Identity;
+                bool recalculateView = false;
 
-                // adjust view
-                if (entity.TryGetComponent(out Translation? translation)
-                    && entity.TryGetComponent(out Rotation? rotation)
-                    && (translation.Changed || rotation.Changed))
+                if (entity.TryGetComponent(out Scale? scale))
                 {
-                    camera.View = Matrix4x4.Identity
-                                  * Matrix4x4.CreateTranslation(translation.Value)
-                                  * Matrix4x4.CreateFromQuaternion(rotation.Value);
+                    calculatedView *= Matrix4x4.CreateScale(scale.Value);
+                    recalculateView |= scale.Changed;
+                }
+
+                if (entity.TryGetComponent(out Translation? translation))
+                {
+                    calculatedView *= Matrix4x4.CreateTranslation(translation.Value);
+                    recalculateView |= translation.Changed;
+                }
+
+                if (entity.TryGetComponent(out Rotation? rotation))
+                {
+                    calculatedView *= Matrix4x4.CreateFromQuaternion(rotation.Value);
+                    recalculateView |= rotation.Changed;
+                }
+
+                if (recalculateView)
+                {
+                    camera.View = calculatedView;
                 }
 
                 // adjust projection
@@ -51,7 +66,7 @@ namespace Automata.Engine.Rendering
                 }
             }
 
-            _NewAspectRatio = -0f;
+            _NewAspectRatio = 0f;
         }
 
         private void GameWindowResized(object sender, Vector2i newSize)

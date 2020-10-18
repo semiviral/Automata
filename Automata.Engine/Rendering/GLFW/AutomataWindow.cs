@@ -67,6 +67,8 @@ namespace Automata.Engine.Rendering.GLFW
             set => Window.Position = (Point)value;
         }
 
+        public Vector2i Center => Position - (Size / 2);
+
         public bool Focused { get; private set; }
 
         public event WindowResizedEventHandler? Resized;

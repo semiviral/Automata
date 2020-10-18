@@ -37,7 +37,7 @@ namespace Automata.Game.Chunks
         [HandlesComponents(DistinctionStrategy.All, typeof(Translation), typeof(ChunkLoader))]
         public override void Update(EntityManager entityManager, TimeSpan delta)
         {
-            IEnumerable<(Translation Translation, ChunkLoader ChunkLoader)> components = entityManager.GetComponents<Translation, ChunkLoader>();
+            List<(Translation Translation, ChunkLoader ChunkLoader)> components = entityManager.GetComponents<Translation, ChunkLoader>().ToList();
 
             bool recalculateChunkRegions = false;
             foreach ((Translation translation, ChunkLoader chunkLoader) in components)
@@ -96,12 +96,13 @@ namespace Automata.Game.Chunks
 
         private static IEnumerable<Vector3i> GetActiveChunkLoaderRegion(ChunkLoader chunkLoader)
         {
+            Vector3i chunkLoaderOriginYAdjusted = new Vector3i(chunkLoader.Origin.X, 0, chunkLoader.Origin.Z);
             for (int y = 0; y < GenerationConstants.WORLD_HEIGHT_IN_CHUNKS; y++)
             for (int z = -chunkLoader.Radius; z < (chunkLoader.Radius + 1); z++)
             for (int x = -chunkLoader.Radius; x < (chunkLoader.Radius + 1); x++)
             {
                 Vector3i localOrigin = new Vector3i(x, y, z) * GenerationConstants.CHUNK_SIZE;
-                yield return localOrigin + new Vector3i(chunkLoader.Origin.X, 0, chunkLoader.Origin.Z);
+                yield return localOrigin + chunkLoaderOriginYAdjusted;
             }
         }
     }

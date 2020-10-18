@@ -1,6 +1,7 @@
 #region
 
 using System;
+using System.Numerics;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
@@ -28,6 +29,8 @@ namespace Automata.Engine.Numerics
 
 
         #region Intrinsics
+
+        #region EqualsImpl
 
         private static Vector2b EqualsImpl(Vector2i a, Vector2i b)
         {
@@ -71,28 +74,10 @@ namespace Automata.Engine.Numerics
             }
         }
 
+        #endregion
 
-        private static Vector2b NotEqualsImpl(Vector2i a, Vector2i b)
-        {
-            static Vector2b SoftwareFallback(Vector2i a0, Vector2i b0) => new Vector2b(a0.X != b0.X, a0.Y != b0.Y);
 
-            return SoftwareFallback(a, b);
-        }
-
-        private static Vector2b NotEqualsImpl(Vector2i a, int b)
-        {
-            static Vector2b SoftwareFallback(Vector2i a0, int b0) => new Vector2b(a0.X != b0, a0.Y != b0);
-
-            return SoftwareFallback(a, b);
-        }
-
-        private static Vector2b NotEqualsImpl(int a, Vector2i b)
-        {
-            static Vector2b SoftwareFallback(int a0, Vector2i b0) => new Vector2b(a0 != b0.X, a0 != b0.Y);
-
-            return SoftwareFallback(a, b);
-        }
-
+        #region BitwiseAndImpl
 
         private static Vector2i BitwiseAndImpl(Vector2i a, Vector2i b)
         {
@@ -136,6 +121,10 @@ namespace Automata.Engine.Numerics
             }
         }
 
+        #endregion
+
+
+        #region BitwiseOrImpl
 
         private static Vector2i BitwiseOrImpl(Vector2i a, Vector2i b)
         {
@@ -179,6 +168,10 @@ namespace Automata.Engine.Numerics
             }
         }
 
+        #endregion
+
+
+        #region AddImpl
 
         private static Vector2i AddImpl(Vector2i a, Vector2i b)
         {
@@ -222,6 +215,10 @@ namespace Automata.Engine.Numerics
             }
         }
 
+        #endregion
+
+
+        #region SubtractImpl
 
         private static Vector2i SubtractImpl(Vector2i a, Vector2i b)
         {
@@ -265,28 +262,80 @@ namespace Automata.Engine.Numerics
             }
         }
 
+        #endregion
+
+
+        #region MultiplyImpl
 
         private static Vector2i MultiplyImpl(Vector2i a, Vector2i b)
         {
-            static Vector2i SoftwareFallback(Vector2i a0, Vector2i b0) => new Vector2i(a0.X * b0.X, a0.Y * b0.Y);
+            if (Sse41.IsSupported)
+            {
+                return (Vector2i)Sse41.MultiplyLow((Vector128<int>)a, (Vector128<int>)b);
+            }
+            else
+            {
+                static Vector2i SoftwareFallback(Vector2i a0, Vector2i b0) => new Vector2i(a0.X * b0.X, a0.Y * b0.Y);
 
-            return SoftwareFallback(a, b);
+                return SoftwareFallback(a, b);
+            }
         }
 
         private static Vector2i MultiplyImpl(Vector2i a, int b)
         {
-            static Vector2i SoftwareFallback(Vector2i a0, int b0) => new Vector2i(a0.X * b0, a0.Y * b0);
+            if (Sse41.IsSupported)
+            {
+                return (Vector2i)Sse41.MultiplyLow((Vector128<int>)a, Vector128.Create(b));
+            }
+            else
+            {
+                static Vector2i SoftwareFallback(Vector2i a0, int b0) => new Vector2i(a0.X * b0, a0.Y * b0);
 
-            return SoftwareFallback(a, b);
+                return SoftwareFallback(a, b);
+            }
         }
 
         private static Vector2i MultiplyImpl(int a, Vector2i b)
         {
-            static Vector2i SoftwareFallback(int a0, Vector2i b0) => new Vector2i(a0 * b0.X, a0 * b0.Y);
+            if (Sse41.IsSupported)
+            {
+                return (Vector2i)Sse41.MultiplyLow(Vector128.Create(a), (Vector128<int>)b);
+            }
+            else
+            {
+                static Vector2i SoftwareFallback(int a0, Vector2i b0) => new Vector2i(a0 * b0.X, a0 * b0.Y);
+
+                return SoftwareFallback(a, b);
+            }
+        }
+
+        #endregion
+
+
+        #region DivideImpl
+
+        private static Vector2i DivideImpl(Vector2i a, Vector2i b)
+        {
+            static Vector2i SoftwareFallback(Vector2i a0, Vector2i b0) => new Vector2i(a0.X / b0.X, a0.Y / b0.Y);
 
             return SoftwareFallback(a, b);
         }
 
+        private static Vector2i DivideImpl(Vector2i a, int b)
+        {
+            static Vector2i SoftwareFallback(Vector2i a0, int b0) => new Vector2i(a0.X / b0, a0.Y / b0);
+
+            return SoftwareFallback(a, b);
+        }
+
+        private static Vector2i DivideImpl(int a, Vector2i b)
+        {
+            static Vector2i SoftwareFallback(int a0, Vector2i b0) => new Vector2i(a0 / b0.X, a0 / b0.Y);
+
+            return SoftwareFallback(a, b);
+        }
+
+        #endregion
 
         private static Vector2b GreaterThanImpl(Vector2i a, Vector2i b)
         {
