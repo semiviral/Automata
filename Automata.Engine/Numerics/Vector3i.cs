@@ -90,7 +90,7 @@ namespace Automata.Engine.Numerics
         public static Vector3b operator >=(Vector3i a, Vector3i b) => GreaterThanImpl(a, b) | EqualsImpl(a, b);
         public static Vector3b operator >=(Vector3i a, int b) => GreaterThanImpl(a, b) | EqualsImpl(a, b);
         public static Vector3b operator >=(int a, Vector3i b) => GreaterThanImpl(a, b) | EqualsImpl(a, b);
-        
+
         public static Vector3b operator <=(Vector3i a, Vector3i b) => LessThanImpl(a, b) | EqualsImpl(a, b);
         public static Vector3b operator <=(Vector3i a, int b) => LessThanImpl(a, b) | EqualsImpl(a, b);
         public static Vector3b operator <=(int a, Vector3i b) => LessThanImpl(a, b) | EqualsImpl(a, b);
