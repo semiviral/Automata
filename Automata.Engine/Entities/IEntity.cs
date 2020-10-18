@@ -9,7 +9,7 @@ using Automata.Engine.Components;
 
 namespace Automata.Engine.Entities
 {
-    public interface IEntity
+    public interface IEntity : IEquatable<IEntity>
     {
         Guid ID { get; }
         Dictionary<Type, IComponent>.KeyCollection ComponentTypes { get; }

@@ -60,5 +60,15 @@ namespace Automata.Engine.Entities
         }
 
         public bool HasComponent<T>() where T : class, IComponent => _Components.ContainsKey(typeof(T));
+
+        public bool Equals(IEntity? other) => other is not null && ID.Equals(other.ID);
+
+        public override bool Equals(object? obj) => obj is IEntity entity && Equals(entity);
+
+        public override int GetHashCode() => ID.GetHashCode();
+
+        public static bool operator ==(Entity? left, Entity? right) => Equals(left, right);
+
+        public static bool operator !=(Entity? left, Entity? right) => !Equals(left, right);
     }
 }

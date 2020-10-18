@@ -22,27 +22,25 @@ namespace Automata.Engine.Input
                 return;
             }
 
-            Log.Debug(InputManager.Instance.GetMousePosition(0).ToString());
-
-            Vector2 offset = InputManager.Instance.GetMousePositionRelative();
+            Vector2 relativeMousePosition = InputManager.Instance.GetMousePositionCenterRelative(0);
 
             // if offset is zero, the mouse has not moved, so return
-            if (offset == Vector2.Zero)
+            if (relativeMousePosition == Vector2.Zero)
             {
                 return;
             }
 
             // convert to axis angles (a la yaw/pitch/roll)
-            Vector3 axisAngles = new Vector3(offset.Y, offset.X, 0f) * (float)delta.TotalSeconds;
+            Vector3 axisAngles = new Vector3(-relativeMousePosition.Y, relativeMousePosition.X, 0f) * (float)delta.TotalSeconds;
 
             foreach ((Rotation rotation, MouseListener mouseListener) in entityManager.GetComponents<Rotation, MouseListener>())
             {
                 // accumulate angles
-                rotation.AccumulateAngles(-axisAngles * mouseListener.Sensitivity);
+                rotation.AccumulateAngles(axisAngles * mouseListener.Sensitivity);
             }
 
             // reset mouse position to center of screen
-            //InputManager.Instance.SetMousePositionRelative(0, Vector2.Zero);
+            InputManager.Instance.SetMousePositionRelative(0, Vector2.Zero);
         }
     }
 }

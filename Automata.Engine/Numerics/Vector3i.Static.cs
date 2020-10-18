@@ -32,12 +32,13 @@ namespace Automata.Engine.Numerics
 
         public static int Project1D(Vector3i a, int size) => a.X + (size * (a.Z + (size * a.Y)));
 
-        public static int Sum(Vector3i a) => a.X + a.Y + a.Z;
+        public static long Sum(Vector3i a) => a.X + a.Y + a.Z;
 
         public static Vector3i Abs(Vector3i a) => AbsImpl(a);
 
-
         #region Intrinsics
+
+        #region EqualsImpl
 
         private static Vector3b EqualsImpl(Vector3i a, Vector3i b)
         {
@@ -81,28 +82,9 @@ namespace Automata.Engine.Numerics
             }
         }
 
+        #endregion
 
-        private static Vector3b NotEqualsImpl(Vector3i a, Vector3i b)
-        {
-            static Vector3b SoftwareFallback(Vector3i a0, Vector3i b0) => new Vector3b(a0.X != b0.X, a0.Y != b0.Y, a0.Z != b0.Z);
-
-            return SoftwareFallback(a, b);
-        }
-
-        private static Vector3b NotEqualsImpl(Vector3i a, int b)
-        {
-            static Vector3b SoftwareFallback(Vector3i a0, int b0) => new Vector3b(a0.X != b0, a0.Y != b0, a0.Z != b0);
-
-            return SoftwareFallback(a, b);
-        }
-
-        private static Vector3b NotEqualsImpl(int a, Vector3i b)
-        {
-            static Vector3b SoftwareFallback(int a0, Vector3i b0) => new Vector3b(a0 != b0.X, a0 != b0.Y, a0 != b0.Z);
-
-            return SoftwareFallback(a, b);
-        }
-
+        #region BitwiseAndImpl
 
         private static Vector3i BitwiseAndImpl(Vector3i a, Vector3i b)
         {
@@ -146,6 +128,9 @@ namespace Automata.Engine.Numerics
             }
         }
 
+        #endregion
+
+        #region BitwiseOrImpl
 
         private static Vector3i BitwiseOrImpl(Vector3i a, Vector3i b)
         {
@@ -189,6 +174,9 @@ namespace Automata.Engine.Numerics
             }
         }
 
+        #endregion
+
+        #region AddImpl
 
         private static Vector3i AddImpl(Vector3i a, Vector3i b)
         {
@@ -232,6 +220,9 @@ namespace Automata.Engine.Numerics
             }
         }
 
+        #endregion
+
+        #region SubtractImpl
 
         private static Vector3i SubtractImpl(Vector3i a, Vector3i b)
         {
@@ -275,28 +266,55 @@ namespace Automata.Engine.Numerics
             }
         }
 
+        #endregion
+
+        #region MultiplyImpl
 
         private static Vector3i MultiplyImpl(Vector3i a, Vector3i b)
         {
             static Vector3i SoftwareFallback(Vector3i a0, Vector3i b0) => new Vector3i(a0.X * b0.X, a0.Y * b0.Y, a0.Z * b0.Z);
 
-            return SoftwareFallback(a, b);
+            if (Sse41.IsSupported)
+            {
+                return (Vector3i)Sse41.MultiplyLow((Vector128<int>)a, (Vector128<int>)b);
+            }
+            else
+            {
+                return SoftwareFallback(a, b);
+            }
         }
 
         private static Vector3i MultiplyImpl(Vector3i a, int b)
         {
             static Vector3i SoftwareFallback(Vector3i a0, int b0) => new Vector3i(a0.X * b0, a0.Y * b0, a0.Z * b0);
 
-            return SoftwareFallback(a, b);
+            if (Sse41.IsSupported)
+            {
+                return (Vector3i)Sse41.MultiplyLow((Vector128<int>)a, Vector128.Create(b));
+            }
+            else
+            {
+                return SoftwareFallback(a, b);
+            }
         }
 
         private static Vector3i MultiplyImpl(int a, Vector3i b)
         {
             static Vector3i SoftwareFallback(int a0, Vector3i b0) => new Vector3i(a0 * b0.X, a0 * b0.Y, a0 * b0.Z);
 
-            return SoftwareFallback(a, b);
+            if (Sse41.IsSupported)
+            {
+                return (Vector3i)Sse41.MultiplyLow(Vector128.Create(a), (Vector128<int>)b);
+            }
+            else
+            {
+                return SoftwareFallback(a, b);
+            }
         }
 
+        #endregion
+
+        #region DivideImpl
 
         private static Vector3i DivideImpl(Vector3i a, Vector3i b)
         {
@@ -319,6 +337,10 @@ namespace Automata.Engine.Numerics
             return SoftwareFallback(a, b);
         }
 
+        #endregion
+
+        #region AbsImpl
+
         private static Vector3i AbsImpl(Vector3i a)
         {
             static Vector3i SoftwareFallback(Vector3i a0) => new Vector3i(Math.Abs(a0.X), Math.Abs(a0.Y), Math.Abs(a0.Z));
@@ -333,6 +355,9 @@ namespace Automata.Engine.Numerics
             }
         }
 
+        #endregion
+
+        #region GreaterThanImpl
 
         private static Vector3b GreaterThanImpl(Vector3i a, Vector3i b)
         {
@@ -376,6 +401,9 @@ namespace Automata.Engine.Numerics
             }
         }
 
+        #endregion
+
+        #region LessThanImpl
 
         private static Vector3b LessThanImpl(Vector3i a, Vector3i b)
         {
@@ -419,19 +447,7 @@ namespace Automata.Engine.Numerics
             }
         }
 
-        private static Vector3b GreaterThanOrEqualImpl(Vector3i a, int b)
-        {
-            Vector3b equal = EqualsImpl(a, b);
-            Vector3b greaterThan = GreaterThanImpl(a, b);
-            return equal | greaterThan;
-        }
-
-        private static Vector3b LessThanOrEqualImpl(Vector3i a, int b)
-        {
-            Vector3b equal = EqualsImpl(a, b);
-            Vector3b lessThan = LessThanImpl(a, b);
-            return equal | lessThan;
-        }
+        #endregion
 
         #endregion
     }

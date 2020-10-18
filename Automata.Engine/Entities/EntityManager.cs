@@ -12,12 +12,12 @@ namespace Automata.Engine.Entities
 {
     public sealed class EntityManager
     {
-        private readonly Dictionary<Guid, IEntity> _Entities;
+        private readonly List<IEntity> _Entities;
         private readonly Dictionary<Type, int> _ComponentCountByType;
 
         public EntityManager()
         {
-            _Entities = new Dictionary<Guid, IEntity>();
+            _Entities = new List<IEntity>();
             _ComponentCountByType = new Dictionary<Type, int>();
         }
 
@@ -47,7 +47,7 @@ namespace Automata.Engine.Entities
 
         private void AddEntityInternal(IEntity entity)
         {
-            _Entities.Add(entity.ID, entity);
+            _Entities.Add(entity);
 
             foreach (Type type in entity.ComponentTypes)
             {
@@ -57,7 +57,7 @@ namespace Automata.Engine.Entities
 
         private void RemoveEntityInternal(IEntity entity)
         {
-            _Entities.Remove(entity.ID);
+            _Entities.Remove(entity);
 
             foreach (Type type in entity.ComponentTypes)
             {
@@ -162,19 +162,14 @@ namespace Automata.Engine.Entities
 
         public IEnumerable<T> GetComponentsAssignableFrom<T>() where T : class, IComponent
         {
-            foreach (IEntity entity in _Entities.Values)
+            foreach (IComponent component in _Entities.SelectMany(entity => entity.Components))
             {
-                foreach (IComponent component in entity.Components)
+                if (component is T componentT)
                 {
-                    if (component is T componentT)
-                    {
-                        yield return componentT;
-                    }
+                    yield return componentT;
                 }
             }
         }
-
-        public IEntity GetEntity(Guid guid) => _Entities[guid];
 
         /// <summary>
         ///     Returns <see cref="IEnumerable{T}" /> of entities containing component <see cref="T1" />.
@@ -187,7 +182,7 @@ namespace Automata.Engine.Entities
         /// </remarks>
         public IEnumerable<IEntity> GetEntitiesWithComponents<T1>()
             where T1 : class, IComponent =>
-            _Entities.Values.Where(entity => entity.HasComponent<T1>());
+            _Entities.Where(entity => entity.HasComponent<T1>());
 
         public IEnumerable<IEntity> GetEntitiesWithComponents<T1, T2>()
             where T1 : class, IComponent
@@ -221,7 +216,7 @@ namespace Automata.Engine.Entities
         public IEnumerable<T1> GetComponents<T1>()
             where T1 : class, IComponent
         {
-            foreach (IEntity entity in _Entities.Values)
+            foreach (IEntity entity in _Entities)
             {
                 if (entity.TryGetComponent(out T1? component))
                 {
@@ -234,7 +229,7 @@ namespace Automata.Engine.Entities
             where T1 : class, IComponent
             where T2 : class, IComponent
         {
-            foreach (IEntity entity in _Entities.Values)
+            foreach (IEntity entity in _Entities)
             {
                 if (entity.TryGetComponent(out T1? component)
                     && entity.TryGetComponent(out T2? component2))
@@ -249,7 +244,7 @@ namespace Automata.Engine.Entities
             where T2 : class, IComponent
             where T3 : class, IComponent
         {
-            foreach (IEntity entity in _Entities.Values)
+            foreach (IEntity entity in _Entities)
             {
                 if (entity.TryGetComponent(out T1? component)
                     && entity.TryGetComponent(out T2? component2)
@@ -266,7 +261,7 @@ namespace Automata.Engine.Entities
             where T3 : class, IComponent
             where T4 : class, IComponent
         {
-            foreach (IEntity entity in _Entities.Values)
+            foreach (IEntity entity in _Entities)
             {
                 if (entity.TryGetComponent(out T1? component)
                     && entity.TryGetComponent(out T2? component2)

@@ -65,7 +65,7 @@ namespace Automata.Engine.Input
         public bool IsKeyPressed(Key key) => _Keyboards.Any(keyboard => keyboard.IsKeyPressed(key));
         public bool IsButtonPressed(MouseButton mouseButton) => _Mice.Any(mouse => mouse.IsButtonPressed(mouseButton));
 
-        public Vector2 GetMousePosition(int mouseIndex = 0)
+        public Vector2 GetMousePosition(int mouseIndex)
         {
             if ((mouseIndex < 0) || (mouseIndex >= _Mice.Count))
             {
@@ -73,9 +73,9 @@ namespace Automata.Engine.Input
             }
 
             PointF position = _Mice[mouseIndex].Position;
-            position.Y = -position.Y;
+            position.Y = -position.Y + AutomataWindow.Instance.Size.Y;
 
-            return Unsafe.As<PointF, Vector2>(ref position) - (Vector2)AutomataWindow.Instance.Position;
+            return Unsafe.As<PointF, Vector2>(ref position);
         }
 
         /// <summary>
@@ -84,17 +84,7 @@ namespace Automata.Engine.Input
         /// <param name="mouseIndex"></param>
         /// <returns></returns>
         /// <exception cref="IndexOutOfRangeException"></exception>
-        public Vector2 GetMousePositionRelative(int mouseIndex = 0)
-        {
-            if ((mouseIndex < 0) || (mouseIndex >= _Mice.Count))
-            {
-                throw new IndexOutOfRangeException(nameof(mouseIndex));
-            }
-
-            PointF pointerPosition = _Mice[mouseIndex].Position;
-
-            return GetMousePosition(0) - ((Vector2)AutomataWindow.Instance.Size / 2f);
-        }
+        public Vector2 GetMousePositionCenterRelative(int mouseIndex) => GetMousePosition(mouseIndex) - (Vector2)AutomataWindow.Instance.Center;
 
         public void SetMousePositionRelative(int mouseIndex, Vector2 position)
         {
@@ -103,11 +93,9 @@ namespace Automata.Engine.Input
                 throw new IndexOutOfRangeException(nameof(mouseIndex));
             }
 
-            position += (Vector2)AutomataWindow.Instance.Size / 2f;
-
+            position += (Vector2)AutomataWindow.Instance.Center;
             _Mice[mouseIndex].Position = Unsafe.As<Vector2, PointF>(ref position);
         }
-
 
         #region Keyboard Events
 
@@ -125,7 +113,6 @@ namespace Automata.Engine.Input
         }
 
         #endregion
-
 
         #region Mouse Events
 

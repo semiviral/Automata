@@ -80,14 +80,14 @@ namespace Automata.Engine.Rendering
                                 model *= Matrix4x4.CreateScale(modelScale.Value);
                             }
 
-                            if (entity.TryGetComponent(out Translation? modelTranslation))
-                            {
-                                model *= Matrix4x4.CreateTranslation(modelTranslation.Value);
-                            }
-
                             if (entity.TryGetComponent(out Rotation? modelRotation))
                             {
                                 model *= Matrix4x4.CreateFromQuaternion(modelRotation.Value);
+                            }
+
+                            if (entity.TryGetComponent(out Translation? modelTranslation))
+                            {
+                                model *= Matrix4x4.CreateTranslation(modelTranslation.Value);
                             }
 
                             Matrix4x4 modelView = model * camera.View;
