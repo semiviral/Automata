@@ -6,6 +6,7 @@ using Automata.Engine.Components;
 using Automata.Engine.Entities;
 using Automata.Engine.Rendering.GLFW;
 using Automata.Engine.Systems;
+using Serilog;
 
 #endregion
 
@@ -21,7 +22,8 @@ namespace Automata.Engine.Input
                 return;
             }
 
-            Vector2 relativeMousePosition = InputManager.Instance.GetMousePositionCenterRelative(0);
+            Vector2 relativeMousePosition = InputManager.Instance.GetMousePositionCenterRelative(0) * (float)delta.TotalSeconds;
+            relativeMousePosition.Y = -relativeMousePosition.Y; // invert y axis for proper rotation
 
             // if offset is zero, the mouse has not moved, so return
             if (relativeMousePosition == Vector2.Zero)
@@ -29,13 +31,10 @@ namespace Automata.Engine.Input
                 return;
             }
 
-            // convert to axis angles (a la yaw/pitch/roll)
-            Vector3 axisAngles = new Vector3(-relativeMousePosition.Y, relativeMousePosition.X, 0f) * (float)delta.TotalSeconds;
-
             foreach ((Rotation rotation, MouseListener mouseListener) in entityManager.GetComponents<Rotation, MouseListener>())
             {
                 // accumulate angles
-                rotation.AccumulateAngles(axisAngles * mouseListener.Sensitivity);
+                rotation.AccumulateAngles(relativeMousePosition * mouseListener.Sensitivity);
             }
 
             // reset mouse position to center of screen

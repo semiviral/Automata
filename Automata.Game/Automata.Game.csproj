@@ -28,6 +28,12 @@
         <Link>Resources\Shaders\PackedVertexes.glsl</Link>
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </AdditionalFiles>
+      <Content Include="..\Resources\DefaultFragment.glsl">
+        <Link>Shaders\DefaultFragment.glsl</Link>
+      </Content>
+      <Content Include="..\Resources\PackedVertexes.glsl">
+        <Link>Shaders\PackedVertexes.glsl</Link>
+      </Content>
       <Content Include="..\Resources\RaymarchFragment.glsl">
         <Link>Resources\Shaders\RaymarchFragment.glsl</Link>
       </Content>

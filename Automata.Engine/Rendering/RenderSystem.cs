@@ -4,6 +4,7 @@ using System;
 using System.Numerics;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
+using Automata.Engine.Numerics;
 using Automata.Engine.Rendering.GLFW;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
@@ -21,13 +22,15 @@ namespace Automata.Engine.Rendering
 
         private readonly GL _GL;
 
+        private float _NewAspectRatio;
+
         public RenderSystem()
         {
+            GameWindowResized(null!, AutomataWindow.Instance.Size);
+            AutomataWindow.Instance.Resized += GameWindowResized;
+
             _GL = GLAPI.Instance.GL;
-
             _GL.ClearColor(0.2f, 0.2f, 0.2f, 1f);
-
-            // enable depth testing
             _GL.Enable(GLEnum.DepthTest);
 
             if (_ENABLE_BACK_FACE_CULLING)
@@ -49,18 +52,35 @@ namespace Automata.Engine.Rendering
 
                 Vector4 viewport = new Vector4(0f, 0f, AutomataWindow.Instance.Size.X, AutomataWindow.Instance.Size.Y);
 
-                foreach ((Translation cameraTranslation, Camera camera, RenderShader renderShader) in
-                    entityManager.GetComponents<Translation, Camera, RenderShader>())
+                foreach (IEntity cameraEntity in entityManager.GetEntitiesWithComponents<Camera>())
                 {
-                    renderShader.Value.Use();
+                    Camera camera = cameraEntity.GetComponent<Camera>();
 
-                    foreach (IEntity entity in entityManager.GetEntitiesWithComponents<RenderMesh>())
+                    if ((cameraEntity.TryGetComponent(out Scale? cameraScale) && cameraScale.Changed)
+                        | (cameraEntity.TryGetComponent(out Translation? cameraTranslation) && cameraTranslation.Changed)
+                        | (cameraEntity.TryGetComponent(out Rotation? cameraRotation) && cameraRotation.Changed))
                     {
-                        RenderMesh renderMesh = entity.GetComponent<RenderMesh>();
+                        camera.View = Matrix4x4.Identity;
+                        camera.View *= Matrix4x4.CreateScale(cameraScale?.Value ?? Scale.DEFAULT);
+                        camera.View *= Matrix4x4.CreateTranslation(cameraTranslation?.Value ?? Vector3.Zero);
+                        camera.View *= Matrix4x4.CreateFromQuaternion(cameraRotation?.Value ?? Quaternion.Identity);
+                    }
 
-                        if (renderMesh.Mesh is null
-                            || !renderMesh.Mesh.Visible
-                            || (renderMesh.Mesh.IndexesLength == 0))
+                    if (_NewAspectRatio > 0f)
+                    {
+                        camera.CalculateProjection(_NewAspectRatio);
+                    }
+
+                    if (!cameraEntity.TryGetComponent(out RenderShader? renderShader))
+                    {
+                        continue;
+                    }
+
+                    foreach (IEntity objectEntity in entityManager.GetEntitiesWithComponents<RenderMesh>())
+                    {
+                        RenderMesh renderMesh = objectEntity.GetComponent<RenderMesh>();
+
+                        if (renderMesh.Mesh.Visible || (renderMesh.Mesh.IndexesLength == 0))
                         {
                             continue;
                         }
@@ -69,9 +89,9 @@ namespace Automata.Engine.Rendering
 
                         if (renderShader.Value.HasAutomataUniforms)
                         {
-                            if ((entity.TryGetComponent(out Scale? modelScale) && modelScale.Changed)
-                                | (entity.TryGetComponent(out Rotation? modelRotation) && modelRotation.Changed)
-                                | (entity.TryGetComponent(out Translation? modelTranslation) && modelTranslation.Changed))
+                            if ((objectEntity.TryGetComponent(out Scale? modelScale) && modelScale.Changed)
+                                | (objectEntity.TryGetComponent(out Rotation? modelRotation) && modelRotation.Changed)
+                                | (objectEntity.TryGetComponent(out Translation? modelTranslation) && modelTranslation.Changed))
                             {
                                 renderMesh.Model = Matrix4x4.Identity;
                                 renderMesh.Model *= Matrix4x4.CreateScale(modelScale?.Value ?? Scale.DEFAULT);
@@ -87,7 +107,8 @@ namespace Automata.Engine.Rendering
                             renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_MV, modelView);
                             renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_MVP, modelViewProjection);
                             renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_OBJECT, modelInverted);
-                            renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC3_CAMERA_WORLD_POSITION, cameraTranslation.Value);
+                            renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC3_CAMERA_WORLD_POSITION,
+                                cameraTranslation?.Value ?? Vector3.Zero);
                             renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_CAMERA_PROJECTION_PARAMS, camera.ProjectionParameters);
                             renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_VIEWPORT, viewport);
                         }
@@ -102,11 +123,18 @@ namespace Automata.Engine.Rendering
 #endif
                     }
                 }
+
+                _NewAspectRatio = 0f;
             }
             catch (Exception ex)
             {
                 Log.Error($"({nameof(RenderSystem)}) Error: {ex.Message}\r\n{ex.StackTrace}");
             }
+        }
+
+        private void GameWindowResized(object sender, Vector2i newSize)
+        {
+            _NewAspectRatio = (float)newSize.X / (float)newSize.Y;
         }
     }
 }

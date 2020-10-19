@@ -58,28 +58,28 @@ namespace Automata.Game.Chunks.Generation
 
                         chunk.State = chunk.State.Next();
                         break;
-                    case GenerationState.AwaitingBuilding
-                        when _PendingBlockCollections.TryRemove(chunk.ID, out INodeCollection<ushort>? nodeCollection):
-                        chunk.Blocks = nodeCollection;
+                    case GenerationState.AwaitingBuilding when _PendingBlockCollections.TryRemove(chunk.ID, out INodeCollection<ushort>? blocks):
+                        chunk.Blocks = blocks;
                         chunk.State = chunk.State.Next();
-
                         break;
                     case GenerationState.AwaitingMeshing when _PendingMeshes.TryRemove(chunk.ID, out PendingMesh<int>? pendingMesh):
                         Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
                         stopwatch.Restart();
 
-                        if (!entity.TryGetComponent(out RenderMesh? renderMesh))
-                        {
-                            renderMesh = new RenderMesh();
-
-                            entityManager.RegisterComponent(entity, renderMesh);
-                        }
-
                         Mesh<int> mesh = new Mesh<int>();
                         mesh.VertexArrayObject.VertexAttributeIPointer(0u, 1, VertexAttribPointerType.Int, 0);
                         mesh.VertexesBuffer.SetBufferData(pendingMesh.Vertexes);
                         mesh.IndexesBuffer.SetBufferData(pendingMesh.Indexes);
-                        renderMesh.Mesh = mesh;
+
+
+                        if (entity.TryGetComponent(out RenderMesh? renderMesh))
+                        {
+                            renderMesh.Mesh = mesh;
+                        }
+                        else
+                        {
+                            entityManager.RegisterComponent(entity, renderMesh = new RenderMesh(mesh));
+                        }
 
                         if (entity.TryGetComponent(out Scale? modelScale)
                             | entity.TryGetComponent(out Rotation? modelRotation)
