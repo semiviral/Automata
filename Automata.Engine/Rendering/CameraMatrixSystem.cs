@@ -28,41 +28,21 @@ namespace Automata.Engine.Rendering
             foreach (IEntity entity in entityManager.GetEntitiesWithComponents<Camera>())
             {
                 Camera camera = entity.GetComponent<Camera>();
-                Matrix4x4 calculatedView = Matrix4x4.Identity;
-                bool recalculateView = false;
 
-                if (entity.TryGetComponent(out Scale? scale))
+                if ((entity.TryGetComponent(out Scale? scale) && scale.Changed)
+                    | (entity.TryGetComponent(out Translation? translation) && translation.Changed)
+                    | (entity.TryGetComponent(out Rotation? rotation) && rotation.Changed))
                 {
-                    calculatedView *= Matrix4x4.CreateScale(scale.Value);
-                    recalculateView |= scale.Changed;
-                }
-
-                if (entity.TryGetComponent(out Translation? translation))
-                {
-                    calculatedView *= Matrix4x4.CreateTranslation(translation.Value);
-                    recalculateView |= translation.Changed;
-                }
-
-                if (entity.TryGetComponent(out Rotation? rotation))
-                {
-                    calculatedView *= Matrix4x4.CreateFromQuaternion(rotation.Value);
-                    recalculateView |= rotation.Changed;
-                }
-
-                if (recalculateView)
-                {
-                    camera.View = calculatedView;
+                    camera.View = Matrix4x4.Identity;
+                    camera.View *= Matrix4x4.CreateScale(scale?.Value ?? Scale.DEFAULT);
+                    camera.View *= Matrix4x4.CreateTranslation(translation?.Value ?? Vector3.Zero);
+                    camera.View *= Matrix4x4.CreateFromQuaternion(rotation?.Value ?? Quaternion.Identity);
                 }
 
                 // adjust projection
                 if (_NewAspectRatio > 0f)
                 {
-                    const float near_clipping_plane = 0.1f;
-                    const float far_clipping_plane = 1000f;
-
-                    camera.Projection = Matrix4x4.CreatePerspectiveFieldOfView(AutomataMath.ToRadians(90f), _NewAspectRatio, near_clipping_plane,
-                        far_clipping_plane);
-                    camera.ProjectionParameters = new Vector4(1f, near_clipping_plane, far_clipping_plane, 1f / far_clipping_plane);
+                    camera.CalculateProjection(_NewAspectRatio);
                 }
             }
 

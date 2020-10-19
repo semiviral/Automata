@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Numerics;
 using Automata.Engine;
 using Automata.Engine.Collections;
 using Automata.Engine.Components;
@@ -79,6 +80,16 @@ namespace Automata.Game.Chunks.Generation
                         mesh.VertexesBuffer.SetBufferData(pendingMesh.Vertexes);
                         mesh.IndexesBuffer.SetBufferData(pendingMesh.Indexes);
                         renderMesh.Mesh = mesh;
+
+                        if (entity.TryGetComponent(out Scale? modelScale)
+                            | entity.TryGetComponent(out Rotation? modelRotation)
+                            | entity.TryGetComponent(out Translation? modelTranslation))
+                        {
+                            renderMesh.Model = Matrix4x4.Identity;
+                            renderMesh.Model *= Matrix4x4.CreateScale(modelScale?.Value ?? Scale.DEFAULT);
+                            renderMesh.Model *= Matrix4x4.CreateFromQuaternion(modelRotation?.Value ?? Quaternion.Identity);
+                            renderMesh.Model *= Matrix4x4.CreateTranslation(modelTranslation?.Value ?? Vector3.Zero);
+                        }
 
                         stopwatch.Stop();
 

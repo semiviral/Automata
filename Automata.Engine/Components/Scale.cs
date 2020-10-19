@@ -2,7 +2,9 @@ namespace Automata.Engine.Components
 {
     public class Scale : IComponentChangeable
     {
-        private float _Value = 1f;
+        public const float DEFAULT = 1f;
+
+        private float _Value;
 
         public float Value
         {
@@ -13,6 +15,8 @@ namespace Automata.Engine.Components
                 Changed = true;
             }
         }
+
+        public Scale() => Value = DEFAULT;
 
         public bool Changed { get; set; }
     }

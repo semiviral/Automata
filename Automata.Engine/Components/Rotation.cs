@@ -21,6 +21,8 @@ namespace Automata.Engine.Components
             }
         }
 
+        public Rotation() => Value = Quaternion.Identity;
+
         public bool Changed { get; set; }
 
         public void AccumulateAngles(Vector3 axisAngles)
