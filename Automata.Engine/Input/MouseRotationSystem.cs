@@ -6,7 +6,6 @@ using Automata.Engine.Components;
 using Automata.Engine.Entities;
 using Automata.Engine.Rendering.GLFW;
 using Automata.Engine.Systems;
-using Serilog;
 
 #endregion
 

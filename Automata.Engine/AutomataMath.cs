@@ -4,6 +4,8 @@ using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Automata.Engine.Components;
+using Automata.Engine.Entities;
 
 #endregion
 
@@ -36,5 +38,24 @@ namespace Automata.Engine
 
         public static Vector3 RoundBy(this Vector3 a, Vector3 b) =>
             new Vector3((float)Math.Floor(a.X / b.X), (float)Math.Floor(a.Y / b.Y), (float)Math.Floor(a.Z / b.Z)) * b;
+
+        public static bool TryCreateModelMatrixFromEntity(IEntity entity, out Matrix4x4 modelMatrix)
+        {
+            if ((entity.TryGetComponent(out Scale? modelScale) && modelScale.Changed)
+                | (entity.TryGetComponent(out Rotation? modelRotation) && modelRotation.Changed)
+                | (entity.TryGetComponent(out Translation? modelTranslation) && modelTranslation.Changed))
+            {
+                modelMatrix = Matrix4x4.Identity;
+                modelMatrix *= Matrix4x4.CreateScale(modelScale?.Value ?? Scale.DEFAULT);
+                modelMatrix *= Matrix4x4.CreateFromQuaternion(modelRotation?.Value ?? Quaternion.Identity);
+                modelMatrix *= Matrix4x4.CreateTranslation(modelTranslation?.Value ?? Vector3.Zero);
+                return true;
+            }
+            else
+            {
+                modelMatrix = default;
+                return false;
+            }
+        }
     }
 }

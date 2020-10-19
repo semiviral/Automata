@@ -71,7 +71,11 @@ namespace Automata.Engine.Rendering
                         camera.CalculateProjection(_NewAspectRatio);
                     }
 
-                    if (!cameraEntity.TryGetComponent(out RenderShader? renderShader))
+                    if (cameraEntity.TryGetComponent(out RenderShader? renderShader))
+                    {
+                        renderShader.Value.Use();
+                    }
+                    else
                     {
                         continue;
                     }
@@ -80,7 +84,7 @@ namespace Automata.Engine.Rendering
                     {
                         RenderMesh renderMesh = objectEntity.GetComponent<RenderMesh>();
 
-                        if (renderMesh.Mesh.Visible || (renderMesh.Mesh.IndexesLength == 0))
+                        if (!renderMesh.Mesh.Visible || (renderMesh.Mesh.IndexesLength == 0))
                         {
                             continue;
                         }
@@ -115,12 +119,10 @@ namespace Automata.Engine.Rendering
 
                         _GL.DrawElements(PrimitiveType.Triangles, renderMesh.Mesh?.IndexesLength ?? 0u, DrawElementsType.UnsignedInt, null);
 
-#if DEBUG
                         if (_GL.GetError() != GLEnum.NoError)
                         {
                             throw new Exception();
                         }
-#endif
                     }
                 }
 

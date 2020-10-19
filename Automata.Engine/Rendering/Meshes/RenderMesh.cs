@@ -14,9 +14,6 @@ namespace Automata.Engine.Rendering.Meshes
         public Matrix4x4 Model { get; set; } = Matrix4x4.Identity;
         public IMesh Mesh { get; set; }
 
-        public RenderMesh(IMesh mesh)
-        {
-            Mesh = mesh;
-        }
+        public RenderMesh(IMesh mesh) => Mesh = mesh;
     }
 }
