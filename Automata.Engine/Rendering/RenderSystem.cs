@@ -85,7 +85,8 @@ namespace Automata.Engine.Rendering
 
                         if (renderShader.Value.HasAutomataUniforms)
                         {
-                            if ((objectEntity.TryGetComponent(out Scale? modelScale) && modelScale.Changed)
+                            if (renderMesh.Changed
+                                | (objectEntity.TryGetComponent(out Scale? modelScale) && modelScale.Changed)
                                 | (objectEntity.TryGetComponent(out Rotation? modelRotation) && modelRotation.Changed)
                                 | (objectEntity.TryGetComponent(out Translation? modelTranslation) && modelTranslation.Changed))
                             {

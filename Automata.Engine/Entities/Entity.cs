@@ -14,17 +14,15 @@ namespace Automata.Engine.Entities
     {
         private readonly Dictionary<Type, IComponent> _Components;
 
+        public Guid ID { get; }
+        public IReadOnlyDictionary<Type, IComponent> Components => _Components;
+
         public Entity()
         {
             _Components = new Dictionary<Type, IComponent>();
 
             ID = Guid.NewGuid();
         }
-
-        public Dictionary<Type, IComponent>.KeyCollection ComponentTypes => _Components.Keys;
-        public Dictionary<Type, IComponent>.ValueCollection Components => _Components.Values;
-
-        public Guid ID { get; }
 
         public void AddComponent(IComponent component) => _Components.Add(component.GetType(), component);
 

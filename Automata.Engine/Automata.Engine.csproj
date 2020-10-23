@@ -19,6 +19,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Reference Include="Automata.Game, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+        <HintPath>..\Automata.Game\bin\Debug\netcoreapp3.1\Automata.Game.dll</HintPath>
+      </Reference>
       <Reference Include="ConcurrentAsyncScheduler, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
         <HintPath>..\References\ConcurrentAsyncScheduler.dll</HintPath>
       </Reference>

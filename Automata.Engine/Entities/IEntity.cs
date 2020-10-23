@@ -13,8 +13,7 @@ namespace Automata.Engine.Entities
     public interface IEntity : IEquatable<IEntity>
     {
         Guid ID { get; }
-        Dictionary<Type, IComponent>.KeyCollection ComponentTypes { get; }
-        public Dictionary<Type, IComponent>.ValueCollection Components { get; }
+        IReadOnlyDictionary<Type, IComponent> Components { get; }
 
         void AddComponent(IComponent component);
 

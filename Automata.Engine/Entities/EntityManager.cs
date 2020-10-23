@@ -44,14 +44,14 @@ namespace Automata.Engine.Entities
         {
             _Entities.Add(entity);
 
-            foreach (Type type in entity.ComponentTypes) RegisterComponent(entity, entity.GetComponent(type));
+            foreach (Type type in entity.Components.Keys) RegisterComponent(entity, entity.GetComponent(type));
         }
 
         private void RemoveEntityInternal(IEntity entity)
         {
             _Entities.Remove(entity);
 
-            foreach (Type type in entity.ComponentTypes) RemoveComponent(entity, type);
+            foreach (Type type in entity.Components.Keys) RemoveComponent(entity, type);
         }
 
 
@@ -141,7 +141,7 @@ namespace Automata.Engine.Entities
 
         public IEnumerable<T> GetComponentsAssignableFrom<T>() where T : class, IComponent
         {
-            foreach (IComponent component in _Entities.SelectMany(entity => entity.Components))
+            foreach (IComponent component in _Entities.SelectMany(entity => entity.Components.Values))
             {
                 if (component is T componentT) yield return componentT;
             }

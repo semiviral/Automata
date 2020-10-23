@@ -3,13 +3,11 @@
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Numerics;
 using Automata.Engine;
 using Automata.Engine.Collections;
 using Automata.Engine.Components;
 using Automata.Engine.Diagnostics;
 using Automata.Engine.Entities;
-using Automata.Engine.Extensions;
 using Automata.Engine.Input;
 using Automata.Engine.Numerics;
 using Automata.Engine.Rendering.Meshes;
@@ -52,18 +50,15 @@ namespace Automata.Game.Chunks.Generation
                 switch (chunk.State)
                 {
                     case GenerationState.Ungenerated:
-                        Translation translation = entity.GetComponent<Translation>();
+                        BoundedThreadPool.QueueWork(() => GenerateChunk(chunk.ID,
+                            new BuildStep.Parameters(GenerationConstants.Seed, GenerationConstants.FREQUENCY, GenerationConstants.PERSISTENCE,
+                                Vector3i.FromVector3(entity.GetComponent<Translation>().Value))));
 
-                        BuildStep.Parameters parameters = new BuildStep.Parameters(GenerationConstants.Seed, GenerationConstants.FREQUENCY,
-                            GenerationConstants.PERSISTENCE, Vector3i.FromVector3(translation.Value));
-
-                        BoundedThreadPool.QueueWork(() => GenerateChunk(chunk.ID, parameters));
-
-                        chunk.State = chunk.State.Next();
+                        chunk.State += 1;
                         break;
                     case GenerationState.AwaitingBuilding when _PendingBlockCollections.TryRemove(chunk.ID, out INodeCollection<ushort>? blocks):
                         chunk.Blocks = blocks;
-                        chunk.State = chunk.State.Next();
+                        chunk.State += 1;
                         break;
                     case GenerationState.AwaitingMeshing when _PendingMeshes.TryRemove(chunk.ID, out PendingMesh<int>? pendingMesh):
                         Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
@@ -75,17 +70,7 @@ namespace Automata.Game.Chunks.Generation
                         mesh.IndexesBuffer.SetBufferData(pendingMesh.Indexes);
 
                         if (entity.TryGetComponent(out RenderMesh? renderMesh)) renderMesh.Mesh = mesh;
-                        else entityManager.RegisterComponent(entity, renderMesh = new RenderMesh(mesh));
-
-                        if (entity.TryGetComponent(out Scale? modelScale)
-                            | entity.TryGetComponent(out Rotation? modelRotation)
-                            | entity.TryGetComponent(out Translation? modelTranslation))
-                        {
-                            renderMesh.Model = Matrix4x4.Identity;
-                            renderMesh.Model *= Matrix4x4.CreateScale(modelScale?.Value ?? Scale.DEFAULT);
-                            renderMesh.Model *= Matrix4x4.CreateFromQuaternion(modelRotation?.Value ?? Quaternion.Identity);
-                            renderMesh.Model *= Matrix4x4.CreateTranslation(modelTranslation?.Value ?? Vector3.Zero);
-                        }
+                        else entityManager.RegisterComponent(entity, new RenderMesh(mesh));
 
                         stopwatch.Stop();
 
@@ -96,7 +81,7 @@ namespace Automata.Game.Chunks.Generation
 
                         DiagnosticsSystem.Stopwatches.Return(stopwatch);
 
-                        chunk.State = chunk.State.Next();
+                        chunk.State += 1;
                         break;
                 }
             }
