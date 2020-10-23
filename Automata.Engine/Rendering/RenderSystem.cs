@@ -14,6 +14,7 @@ using Silk.NET.OpenGL;
 
 #endregion
 
+
 namespace Automata.Engine.Rendering
 {
     public class RenderSystem : ComponentSystem
@@ -69,28 +70,16 @@ namespace Automata.Engine.Rendering
                         camera.View = inverted;
                     }
 
-                    if (_NewAspectRatio > 0f)
-                    {
-                        camera.CalculateProjection(_NewAspectRatio);
-                    }
+                    if (_NewAspectRatio > 0f) camera.CalculateProjection(_NewAspectRatio);
 
-                    if (cameraEntity.TryGetComponent(out RenderShader? renderShader))
-                    {
-                        renderShader.Value.Use();
-                    }
-                    else
-                    {
-                        continue;
-                    }
+                    if (cameraEntity.TryGetComponent(out RenderShader? renderShader)) renderShader.Value.Use();
+                    else continue;
 
                     foreach (IEntity objectEntity in entityManager.GetEntitiesWithComponents<RenderMesh>())
                     {
                         RenderMesh renderMesh = objectEntity.GetComponent<RenderMesh>();
 
-                        if (!renderMesh.Mesh.Visible || (renderMesh.Mesh.IndexesLength == 0))
-                        {
-                            continue;
-                        }
+                        if (!renderMesh.Mesh.Visible || (renderMesh.Mesh.IndexesLength == 0)) continue;
 
                         renderMesh.Mesh.BindVertexArrayObject();
 
@@ -114,18 +103,17 @@ namespace Automata.Engine.Rendering
                             renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_MV, modelView);
                             renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_MVP, modelViewProjection);
                             renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_OBJECT, modelInverted);
+
                             renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC3_CAMERA_WORLD_POSITION,
                                 cameraTranslation?.Value ?? Vector3.Zero);
+
                             renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_CAMERA_PROJECTION_PARAMS, camera.ProjectionParameters);
                             renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_VIEWPORT, viewport);
                         }
 
                         _GL.DrawElements(PrimitiveType.Triangles, renderMesh.Mesh.IndexesLength, DrawElementsType.UnsignedInt, null);
 
-                        if (_GL.GetError() != GLEnum.NoError)
-                        {
-                            throw new Exception();
-                        }
+                        if (_GL.GetError() != GLEnum.NoError) throw new Exception();
                     }
                 }
 
@@ -137,9 +125,6 @@ namespace Automata.Engine.Rendering
             }
         }
 
-        private void GameWindowResized(object sender, Vector2i newSize)
-        {
-            _NewAspectRatio = (float)newSize.X / (float)newSize.Y;
-        }
+        private void GameWindowResized(object sender, Vector2i newSize) { _NewAspectRatio = (float)newSize.X / (float)newSize.Y; }
     }
 }

@@ -1,7 +1,9 @@
 #region
 
 using System.Numerics;
+using System.Transactions;
 using Automata.Engine.Components;
+using Automata.Engine.Entities;
 
 #endregion
 
