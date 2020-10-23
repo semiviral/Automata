@@ -42,7 +42,7 @@ namespace Automata.Engine.Rendering
             }
         }
 
-        [HandlesComponents(DistinctionStrategy.All, typeof(Translation), typeof(Camera), typeof(RenderMesh))]
+        [HandlesComponents(DistinctionStrategy.Any, typeof(Camera), typeof(RenderMesh))]
         public override unsafe void Update(EntityManager entityManager, TimeSpan delta)
         {
             try
@@ -62,8 +62,11 @@ namespace Automata.Engine.Rendering
                     {
                         camera.View = Matrix4x4.Identity;
                         camera.View *= Matrix4x4.CreateScale(cameraScale?.Value ?? Scale.DEFAULT);
-                        camera.View *= Matrix4x4.CreateTranslation(cameraTranslation?.Value ?? Vector3.Zero);
                         camera.View *= Matrix4x4.CreateFromQuaternion(cameraRotation?.Value ?? Quaternion.Identity);
+                        camera.View *= Matrix4x4.CreateTranslation(cameraTranslation?.Value ?? Vector3.Zero);
+
+                        Matrix4x4.Invert(camera.View, out Matrix4x4 inverted);
+                        camera.View = inverted;
                     }
 
                     if (_NewAspectRatio > 0f)
@@ -117,7 +120,7 @@ namespace Automata.Engine.Rendering
                             renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_VIEWPORT, viewport);
                         }
 
-                        _GL.DrawElements(PrimitiveType.Triangles, renderMesh.Mesh?.IndexesLength ?? 0u, DrawElementsType.UnsignedInt, null);
+                        _GL.DrawElements(PrimitiveType.Triangles, renderMesh.Mesh.IndexesLength, DrawElementsType.UnsignedInt, null);
 
                         if (_GL.GetError() != GLEnum.NoError)
                         {

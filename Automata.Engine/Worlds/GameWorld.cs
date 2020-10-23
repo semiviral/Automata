@@ -12,11 +12,8 @@ namespace Automata.Engine.Worlds
     {
         public GameWorld(bool active) : base(active)
         {
-            // input systems
             SystemManager.RegisterSystem<KeyboardMovementSystem, FirstOrderSystem>(SystemRegistrationOrder.Before);
             SystemManager.RegisterSystem<MouseRotationSystem, FirstOrderSystem>(SystemRegistrationOrder.Before);
-
-            // rendering systems
             SystemManager.RegisterSystem<RenderSystem, RenderOrderSystem>(SystemRegistrationOrder.Before);
         }
     }

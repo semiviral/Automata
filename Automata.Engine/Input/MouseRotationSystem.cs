@@ -22,7 +22,7 @@ namespace Automata.Engine.Input
             }
 
             Vector2 relativeMousePosition = InputManager.Instance.GetMousePositionCenterRelative(0) * (float)delta.TotalSeconds;
-            relativeMousePosition.Y = -relativeMousePosition.Y; // invert y axis for proper rotation
+            relativeMousePosition.X = -relativeMousePosition.X; // invert y axis for proper rotation
 
             // if offset is zero, the mouse has not moved, so return
             if (relativeMousePosition == Vector2.Zero)

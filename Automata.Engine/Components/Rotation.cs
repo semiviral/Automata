@@ -33,7 +33,7 @@ namespace Automata.Engine.Components
             Quaternion yaw = Quaternion.CreateFromAxisAngle(Vector3.UnitY, _AccumulatedAngles.X);
             Quaternion pitch = Quaternion.CreateFromAxisAngle(Vector3.UnitX, _AccumulatedAngles.Y);
 
-            Value = pitch * yaw;
+            Value = yaw * pitch;
         }
     }
 }
