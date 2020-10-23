@@ -3,12 +3,12 @@
 using System;
 using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
 using System.Threading;
-using Automata.Engine.Collections;
+using Automata.Engine.Diagnostics;
 using Automata.Engine.Input;
 using Automata.Engine.Numerics;
 using Automata.Engine.Worlds;
+using DiagnosticsProviderNS;
 using Serilog;
 using Silk.NET.Core.Contexts;
 using Silk.NET.Input.Common;
@@ -102,8 +102,6 @@ namespace Automata.Engine.Rendering.GLFW
         {
             try
             {
-                FixedConcurrentQueue<double> averageFPS = new FixedConcurrentQueue<double>(1000);
-
                 while (!Window.IsClosing)
                 {
                     _DeltaTimer.Restart();
@@ -118,9 +116,6 @@ namespace Automata.Engine.Rendering.GLFW
                     Window.SwapBuffers();
 
                     if (CheckWaitForNextMonitorRefresh()) WaitForNextMonitorRefresh();
-
-                    averageFPS.Enqueue(1d / _DeltaTimer.Elapsed.TotalSeconds);
-                    Window.Title = $"Automata {averageFPS.Average():0.00} FPS";
                 }
             }
             catch (Exception ex)

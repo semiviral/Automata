@@ -119,8 +119,7 @@ namespace Automata.Engine.Rendering.DirectX
             string temporaryShader = Path.GetTempFileName();
             File.WriteAllText(temporaryShader, _DEFAULT_VERTEX);
 
-            if (TryTranspileShader(temporaryShader, out _DefaultVertexShader))
-                Log.Information(string.Format(_LogFormat, "Transpiled default vertex shader."));
+            if (TryTranspileShader(temporaryShader, out _DefaultVertexShader)) Log.Information(string.Format(_LogFormat, "Transpiled default vertex shader."));
             else
             {
                 Log.Error(string.Format(_LogFormat, "Failed to transpile vertex shader."));

@@ -13,16 +13,16 @@ namespace Automata.Engine
         public static void CreateSingleton<T>() where T : Singleton<T>, new() => new T();
     }
 
-    public class Singleton<T>
+    public class Singleton<T> where T : class
     {
         private static Singleton<T>? _SingletonInstance;
-        private static T _Instance = default!;
+        private static T? _Instance;
 
         public static T Instance
         {
             get
             {
-                if (TryValidate()) return _Instance;
+                if (TryValidate()) return _Instance!;
                 else throw new NullReferenceException($"'{typeof(T)}' has not been instantiated.");
             }
         }

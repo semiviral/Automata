@@ -278,8 +278,7 @@ namespace Automata.Engine.Rendering.Vulkan
 
             fixed (Instance* vkInstance = &_VKInstance)
             {
-                if (VK.CreateInstance(&instanceCreateInfo, null, vkInstance) != Result.Success)
-                    throw new Exception("Failed to create Vulkan instance.");
+                if (VK.CreateInstance(&instanceCreateInfo, null, vkInstance) != Result.Success) throw new Exception("Failed to create Vulkan instance.");
             }
 
             Log.Information(string.Format(_VulkanInstanceCreationFormat, "assigning Vulkan instance."));
@@ -346,8 +345,7 @@ namespace Automata.Engine.Rendering.Vulkan
         {
             Log.Information(string.Format(_VulkanDebugMessengerCreationFormat, "-begin-"));
 
-            if (!_ENABLE_VULKAN_VALIDATION || !VK.TryGetExtension(out _ExtDebugUtils))
-                throw new Exception("Failed to get extension for debug messenger.");
+            if (!_ENABLE_VULKAN_VALIDATION || !VK.TryGetExtension(out _ExtDebugUtils)) throw new Exception("Failed to get extension for debug messenger.");
 
             Log.Information(string.Format(_VulkanDebugMessengerCreationFormat, "initializing creation info."));
 
@@ -779,8 +777,7 @@ namespace Automata.Engine.Rendering.Vulkan
         {
             foreach (SurfaceFormatKHR surfaceFormat in availableFormats)
             {
-                if ((surfaceFormat.Format == Format.B8G8R8Srgb) && (surfaceFormat.ColorSpace == ColorSpaceKHR.ColorspaceSrgbNonlinearKhr))
-                    return surfaceFormat;
+                if ((surfaceFormat.Format == Format.B8G8R8Srgb) && (surfaceFormat.ColorSpace == ColorSpaceKHR.ColorspaceSrgbNonlinearKhr)) return surfaceFormat;
             }
 
             return availableFormats[0];
@@ -789,9 +786,8 @@ namespace Automata.Engine.Rendering.Vulkan
         private static PresentModeKHR ChooseSwapPresentationMode(IEnumerable<PresentModeKHR> availablePresentationModes)
         {
             foreach (PresentModeKHR presentationMode in availablePresentationModes)
-            {
-                if (presentationMode == PresentModeKHR.PresentModeMailboxKhr) return presentationMode;
-            }
+                if (presentationMode == PresentModeKHR.PresentModeMailboxKhr)
+                    return presentationMode;
 
             return PresentModeKHR.PresentModeFifoKhr;
         }
@@ -1364,8 +1360,7 @@ namespace Automata.Engine.Rendering.Vulkan
 
             VK.DestroyCommandPool(_LogicalDevice, _CommandPool, (AllocationCallbacks*)null!);
 
-            foreach (Framebuffer framebuffer in _SwapChainFramebuffers)
-                VK.DestroyFramebuffer(_LogicalDevice, framebuffer, (AllocationCallbacks*)null!);
+            foreach (Framebuffer framebuffer in _SwapChainFramebuffers) VK.DestroyFramebuffer(_LogicalDevice, framebuffer, (AllocationCallbacks*)null!);
 
             VK.DestroyPipeline(_LogicalDevice, _GraphicsPipeline, (AllocationCallbacks*)null!);
             VK.DestroyRenderPass(_LogicalDevice, _RenderPass, (AllocationCallbacks*)null!);

@@ -76,8 +76,7 @@ namespace Automata.Game.Blocks
         public void RegisterBlockDefinition(string blockName, Func<Direction, string>? uvsRule, params BlockDefinition.Property[] properties)
         {
             if (string.IsNullOrWhiteSpace(blockName)) throw new ArgumentException("Argument cannot be empty.", nameof(blockName));
-            else if (BlockDefinitions.Count >= ushort.MaxValue)
-                throw new OverflowException($"{nameof(BlockRegistry)} has run out of valid block IDs.");
+            else if (BlockDefinitions.Count >= ushort.MaxValue) throw new OverflowException($"{nameof(BlockRegistry)} has run out of valid block IDs.");
 
             ushort blockId = (ushort)BlockDefinitions.Count;
             blockName = blockName.ToLowerInvariant();
@@ -156,7 +155,7 @@ namespace Automata.Game.Blocks
                 return true;
             }
 
-            blockDefinition = default;
+            blockDefinition = null;
             return false;
         }
 

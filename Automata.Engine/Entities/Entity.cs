@@ -41,7 +41,7 @@ namespace Automata.Engine.Entities
             }
             else
             {
-                component = default;
+                component = null;
                 return false;
             }
         }

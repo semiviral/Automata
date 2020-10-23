@@ -93,7 +93,7 @@ namespace Automata.Game.Chunks.Generation
         {
             static INodeCollection<ushort> GenerateNodeCollectionImpl(ref Span<ushort> blocks)
             {
-                Octree<ushort> blocksCompressed = new Octree<ushort>(GenerationConstants.CHUNK_SIZE, BlockRegistry.AirID, false);
+                Octree<ushort> blocksCompressed = new Octree<ushort>(GenerationConstants.CHUNK_SIZE, BlockRegistry.AirID);
 
                 int index = 0;
 

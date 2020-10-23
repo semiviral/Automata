@@ -118,10 +118,7 @@ namespace Automata.Engine.Input
 
         private void OnMouseMoved(IMouse mouse, PointF point) { MouseMoved?.Invoke(mouse, new Vector2(point.X, point.Y)); }
 
-        private void OnMouseScrolled(IMouse mouse, ScrollWheel scrollWheel)
-        {
-            MouseScrolled?.Invoke(mouse, new Vector2(scrollWheel.X, scrollWheel.Y));
-        }
+        private void OnMouseScrolled(IMouse mouse, ScrollWheel scrollWheel) { MouseScrolled?.Invoke(mouse, new Vector2(scrollWheel.X, scrollWheel.Y)); }
 
         #endregion
     }
