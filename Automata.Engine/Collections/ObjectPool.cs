@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 
 #endregion
 
+
 namespace Automata.Engine.Collections
 {
     public class ObjectPool<T>

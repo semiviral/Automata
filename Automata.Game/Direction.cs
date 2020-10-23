@@ -9,6 +9,7 @@ using Automata.Engine.Numerics;
 
 #endregion
 
+
 namespace Automata.Game
 {
     /// <summary>
@@ -46,7 +47,6 @@ namespace Automata.Game
         ///     Negative on Z axis
         /// </summary>
         South = 0b0010_0000,
-
 
         Mask = 0b0011_1111
     }

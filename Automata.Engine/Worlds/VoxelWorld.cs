@@ -6,6 +6,7 @@ using Automata.Engine.Numerics;
 
 #endregion
 
+
 namespace Automata.Engine.Worlds
 {
     public class VoxelWorld : GameWorld

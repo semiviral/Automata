@@ -4,6 +4,7 @@ using System;
 
 #endregion
 
+
 namespace Automata.Engine.Systems
 {
     [AttributeUsage(AttributeTargets.Method)]

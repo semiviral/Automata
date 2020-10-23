@@ -9,6 +9,7 @@ using Serilog;
 
 #endregion
 
+
 // ReSharper disable MemberCanBePrivate.Global
 
 namespace Automata.Game.Blocks
@@ -50,19 +51,14 @@ namespace Automata.Game.Blocks
             Log.Information($"({nameof(BlockRegistry)}) Creating property buckets.");
 
             foreach (BlockDefinition.Property property in EnumExtensions.GetEnumsList<BlockDefinition.Property>())
-            {
                 _PropertiesBuckets.Add(property, new HashSet<ushort>());
-            }
         }
 
         private void SortBlockDefinitionPropertiesToBuckets(BlockDefinition blockDefinition)
         {
             foreach (BlockDefinition.Property property in EnumExtensions.GetEnumsList<BlockDefinition.Property>())
             {
-                if (blockDefinition.HasProperty(property))
-                {
-                    _PropertiesBuckets[property].Add(blockDefinition.Id);
-                }
+                if (blockDefinition.HasProperty(property)) _PropertiesBuckets[property].Add(blockDefinition.Id);
             }
         }
 
@@ -79,14 +75,9 @@ namespace Automata.Game.Blocks
         /// </param>
         public void RegisterBlockDefinition(string blockName, Func<Direction, string>? uvsRule, params BlockDefinition.Property[] properties)
         {
-            if (string.IsNullOrWhiteSpace(blockName))
-            {
-                throw new ArgumentException("Argument cannot be empty.", nameof(blockName));
-            }
+            if (string.IsNullOrWhiteSpace(blockName)) throw new ArgumentException("Argument cannot be empty.", nameof(blockName));
             else if (BlockDefinitions.Count >= ushort.MaxValue)
-            {
                 throw new OverflowException($"{nameof(BlockRegistry)} has run out of valid block IDs.");
-            }
 
             ushort blockId = (ushort)BlockDefinitions.Count;
             blockName = blockName.ToLowerInvariant();
@@ -144,10 +135,7 @@ namespace Automata.Game.Blocks
         {
             blockName = string.Empty;
 
-            if (!BlockIdExists(blockId))
-            {
-                return false;
-            }
+            if (!BlockIdExists(blockId)) return false;
 
             blockName = BlockDefinitions[blockId].BlockName;
             return true;
@@ -155,10 +143,7 @@ namespace Automata.Game.Blocks
 
         public IReadOnlyBlockDefinition GetBlockDefinition(ushort blockId)
         {
-            if (!BlockIdExists(blockId))
-            {
-                throw new ArgumentException("Given block ID does not exist.", nameof(blockId));
-            }
+            if (!BlockIdExists(blockId)) throw new ArgumentException("Given block ID does not exist.", nameof(blockId));
 
             return BlockDefinitions[blockId];
         }

@@ -5,6 +5,7 @@ using Silk.NET.OpenGL;
 
 #endregion
 
+
 namespace Automata.Engine.Rendering.OpenGL
 {
     public class Texture2D : Texture, IDisposable
@@ -33,10 +34,7 @@ namespace Automata.Engine.Rendering.OpenGL
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)filterModeGl);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)filterModeGl);
 
-            if (mipmapping)
-            {
-                GL.GenerateMipmap(TextureTarget.Texture2D);
-            }
+            if (mipmapping) GL.GenerateMipmap(TextureTarget.Texture2D);
         }
 
         public override void Bind(TextureUnit textureSlot)

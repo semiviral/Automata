@@ -5,6 +5,7 @@ using Automata.Engine.Numerics;
 
 #endregion
 
+
 namespace Automata.Engine.Collections
 {
     public interface INodeCollection<T>

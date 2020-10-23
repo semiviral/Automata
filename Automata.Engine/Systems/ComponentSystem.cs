@@ -5,6 +5,7 @@ using Automata.Engine.Entities;
 
 #endregion
 
+
 namespace Automata.Engine.Systems
 {
     public abstract class ComponentSystem : IDisposable
@@ -36,10 +37,7 @@ namespace Automata.Engine.Systems
 
         public void Dispose()
         {
-            if (_Disposed)
-            {
-                return;
-            }
+            if (_Disposed) return;
 
             DisposeInternal();
             GC.SuppressFinalize(this);

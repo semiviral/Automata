@@ -5,6 +5,7 @@ using Automata.Engine.Numerics;
 
 #endregion
 
+
 namespace Automata.Game.Chunks
 {
     public class ChunkLoader : IComponent

@@ -6,6 +6,7 @@ using Automata.Engine.Systems;
 
 #endregion
 
+
 namespace Automata.Engine.Diagnostics
 {
     public class DiagnosticsSystem : ComponentSystem

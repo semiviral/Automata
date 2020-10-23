@@ -6,6 +6,7 @@ using Automata.Engine.Numerics;
 
 #endregion
 
+
 namespace Automata.Engine.Noise
 {
     public static class OpenSimplexSlim
@@ -70,6 +71,7 @@ namespace Automata.Engine.Noise
             float y0 = y - Y0;
 
             int i1, j1;
+
             if (x0 > y0)
             {
                 i1 = 1;
@@ -89,10 +91,8 @@ namespace Automata.Engine.Noise
             float n0, n1, n2;
 
             t = (float)0.5 - (x0 * x0) - (y0 * y0);
-            if (t < 0)
-            {
-                n0 = 0;
-            }
+
+            if (t < 0) n0 = 0;
             else
             {
                 t *= t;
@@ -100,10 +100,8 @@ namespace Automata.Engine.Noise
             }
 
             t = (float)0.5 - (x1 * x1) - (y1 * y1);
-            if (t < 0)
-            {
-                n1 = 0;
-            }
+
+            if (t < 0) n1 = 0;
             else
             {
                 t *= t;
@@ -111,10 +109,8 @@ namespace Automata.Engine.Noise
             }
 
             t = (float)0.5 - (x2 * x2) - (y2 * y2);
-            if (t < 0)
-            {
-                n2 = 0;
-            }
+
+            if (t < 0) n2 = 0;
             else
             {
                 t *= t;
@@ -265,10 +261,8 @@ namespace Automata.Engine.Noise
             float n0, n1, n2, n3;
 
             t = (float)0.6 - (x0 * x0) - (y0 * y0) - (z0 * z0);
-            if (t < 0)
-            {
-                n0 = 0;
-            }
+
+            if (t < 0) n0 = 0;
             else
             {
                 t *= t;
@@ -276,10 +270,8 @@ namespace Automata.Engine.Noise
             }
 
             t = (float)0.6 - (x1 * x1) - (y1 * y1) - (z1 * z1);
-            if (t < 0)
-            {
-                n1 = 0;
-            }
+
+            if (t < 0) n1 = 0;
             else
             {
                 t *= t;
@@ -287,10 +279,8 @@ namespace Automata.Engine.Noise
             }
 
             t = (float)0.6 - (x2 * x2) - (y2 * y2) - (z2 * z2);
-            if (t < 0)
-            {
-                n2 = 0;
-            }
+
+            if (t < 0) n2 = 0;
             else
             {
                 t *= t;
@@ -298,10 +288,8 @@ namespace Automata.Engine.Noise
             }
 
             t = (float)0.6 - (x3 * x3) - (y3 * y3) - (z3 * z3);
-            if (t < 0)
-            {
-                n3 = 0;
-            }
+
+            if (t < 0) n3 = 0;
             else
             {
                 t *= t;

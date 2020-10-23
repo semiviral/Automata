@@ -7,6 +7,7 @@ using System.Runtime.Intrinsics;
 
 #endregion
 
+
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable UnusedMember.Global
 // ReSharper disable InconsistentNaming
@@ -50,6 +51,7 @@ namespace Automata.Engine.Numerics
 
         public override string ToString() => string.Format(FormatHelper.VECTOR_2_COMPONENT, nameof(Vector2b), X, Y);
 
+
         #region Operators
 
         public static Vector2b operator ==(Vector2b a, Vector2b b) => EqualsImpl(a, b);
@@ -57,6 +59,7 @@ namespace Automata.Engine.Numerics
         public static Vector2b operator !(Vector2b a) => new Vector2b((byte)~a._X, (byte)~a._Y);
 
         #endregion
+
 
         #region Conversions
 

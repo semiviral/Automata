@@ -9,6 +9,7 @@ using Serilog;
 
 #endregion
 
+
 namespace Automata.Engine.Rendering.DirectX
 {
     public class GLSLXPLR : Singleton<GLSLXPLR>
@@ -119,9 +120,7 @@ namespace Automata.Engine.Rendering.DirectX
             File.WriteAllText(temporaryShader, _DEFAULT_VERTEX);
 
             if (TryTranspileShader(temporaryShader, out _DefaultVertexShader))
-            {
                 Log.Information(string.Format(_LogFormat, "Transpiled default vertex shader."));
-            }
             else
             {
                 Log.Error(string.Format(_LogFormat, "Failed to transpile vertex shader."));
@@ -131,9 +130,7 @@ namespace Automata.Engine.Rendering.DirectX
             File.WriteAllText(temporaryShader, _DEFAULT_FRAGMENT);
 
             if (TryTranspileShader(temporaryShader, out _DefaultFragmentShader))
-            {
                 Log.Information(string.Format(_LogFormat, "Transpiled default fragment shader."));
-            }
             else
             {
                 Log.Error(string.Format(_LogFormat, "Failed to transpile fragment shader."));
@@ -165,16 +162,14 @@ namespace Automata.Engine.Rendering.DirectX
             _TranspilerProcess.StartInfo.Arguments = string.Empty;
 
             bool error = false;
+
             while (!_TranspilerProcess.StandardError.EndOfStream)
             {
                 Log.Error(string.Format(_LogFormat, _TranspilerProcess.StandardError.ReadLine()));
                 error = true;
             }
 
-            if (error)
-            {
-                return false;
-            }
+            if (error) return false;
 
             shaderBytes = File.ReadAllBytes(tempOutputFile);
             File.Delete(tempOutputFile);

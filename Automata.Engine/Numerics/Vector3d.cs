@@ -7,6 +7,7 @@ using System.Runtime.Intrinsics.X86;
 
 #endregion
 
+
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable UnusedMember.Global
 // ReSharper disable InconsistentNaming
@@ -45,6 +46,7 @@ namespace Automata.Engine.Numerics
 
         public override string ToString() => string.Format(FormatHelper.VECTOR_3_COMPONENT, nameof(Vector3d), X, Y, Z);
 
+
         #region Operators
 
         public static Vector3b operator ==(Vector3d a, Vector3d b) => EqualsImpl(a, b);
@@ -80,6 +82,7 @@ namespace Automata.Engine.Numerics
         public static Vector3b operator <(double a, Vector3d b) => LessThanImpl(a, b);
 
         #endregion
+
 
         #region Conversions
 

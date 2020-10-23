@@ -15,6 +15,7 @@ using Silk.NET.Vulkan.Extensions.KHR;
 
 #endregion
 
+
 // ReSharper disable RedundantLogicalConditionalExpressionOperand
 // ReSharper disable HeuristicUnreachableCode
 // ReSharper disable RedundantCast
@@ -59,7 +60,6 @@ namespace Automata.Engine.Rendering.Vulkan
         private static readonly string _VulkanCommandPoolCreationFormat = $"({nameof(VKAPI)}) Creating command pool: {{0}}";
         private static readonly string _VulkanCommandBuffersCreationFormat = $"({nameof(VKAPI)}) Creating command buffers: {{0}}";
         private static readonly string _VulkanSemaphoreCreationFormat = $"({nameof(VKAPI)}) Creating semaphores: {{0}}";
-
 
         private readonly string[] _ValidationLayers =
         {
@@ -121,6 +121,7 @@ namespace Automata.Engine.Rendering.Vulkan
             AssignSingletonInstance(this);
             VK = Vk.GetApi();
         }
+
 
         #region Vulkan Initialization
 
@@ -186,9 +187,7 @@ namespace Automata.Engine.Rendering.Vulkan
             }
 
             if (VK.QueueSubmit(_GraphicsQueue, 1, &submitInfo, default) != Result.Success)
-            {
                 throw new Exception("Failed to submit draw command to command buffer.");
-            }
 
             PresentInfoKHR presentInfo = new PresentInfoKHR
             {
@@ -214,6 +213,7 @@ namespace Automata.Engine.Rendering.Vulkan
             _CurrentFrame = (_CurrentFrame + 1) % _MAX_FRAMES_IN_FLIGHT;
         }
 
+
         #region Create Instance
 
         private unsafe void CreateInstance()
@@ -221,9 +221,7 @@ namespace Automata.Engine.Rendering.Vulkan
             Log.Information(string.Format(_VulkanInstanceCreationFormat, "-begin-"));
 
             if (_ENABLE_VULKAN_VALIDATION && !CheckValidationLayerSupport())
-            {
                 throw new NotSupportedException($"Validation layers specified in '{nameof(_ValidationLayers)}' not present.");
-            }
 
             Log.Information(string.Format(_VulkanInstanceCreationFormat, "building application info."));
 
@@ -239,7 +237,6 @@ namespace Automata.Engine.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanInstanceCreationFormat, "building instance creation info."));
 
-
             InstanceCreateInfo instanceCreateInfo = new InstanceCreateInfo
             {
                 SType = StructureType.InstanceCreateInfo,
@@ -249,15 +246,10 @@ namespace Automata.Engine.Rendering.Vulkan
             byte** requiredExtensions = (byte**)AutomataWindow.Instance.Surface.GetRequiredExtensions(out uint extensionCount);
             byte** aggregateExtensions = stackalloc byte*[(int)(extensionCount + _InstanceExtensions.Length)];
 
-            for (int index = 0; index < extensionCount; index++)
-            {
-                aggregateExtensions[index] = requiredExtensions[index];
-            }
+            for (int index = 0; index < extensionCount; index++) aggregateExtensions[index] = requiredExtensions[index];
 
             for (int index = 0; index < _InstanceExtensions.Length; index++)
-            {
                 aggregateExtensions[extensionCount + index] = (byte*)SilkMarshal.MarshalStringToPtr(_InstanceExtensions[index]);
-            }
 
             extensionCount += (uint)_InstanceExtensions.Length;
 
@@ -287,9 +279,7 @@ namespace Automata.Engine.Rendering.Vulkan
             fixed (Instance* vkInstance = &_VKInstance)
             {
                 if (VK.CreateInstance(&instanceCreateInfo, null, vkInstance) != Result.Success)
-                {
                     throw new Exception("Failed to create Vulkan instance.");
-                }
             }
 
             Log.Information(string.Format(_VulkanInstanceCreationFormat, "assigning Vulkan instance."));
@@ -298,27 +288,18 @@ namespace Automata.Engine.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanInstanceCreationFormat, "querying surface extension."));
 
-            if (!VK.TryGetExtension(out _KHRSurface))
-            {
-                throw new NotSupportedException("KHR_surface extension not found.");
-            }
+            if (!VK.TryGetExtension(out _KHRSurface)) throw new NotSupportedException("KHR_surface extension not found.");
 
             Log.Information(string.Format(_VulkanInstanceCreationFormat, "querying swapchain extension."));
 
-            if (!VK.TryGetExtension(out _KHRSwapChain))
-            {
-                throw new NotSupportedException("KHR_swapchain extension not found.");
-            }
+            if (!VK.TryGetExtension(out _KHRSwapChain)) throw new NotSupportedException("KHR_swapchain extension not found.");
 
             Log.Information(string.Format(_VulkanInstanceCreationFormat, "freeing unmanaged memory."));
 
             Marshal.FreeHGlobal((IntPtr)applicationInfo.PApplicationName);
             Marshal.FreeHGlobal((IntPtr)applicationInfo.PEngineName);
 
-            if (_ENABLE_VULKAN_VALIDATION)
-            {
-                SilkMarshal.FreeStringArrayPtr((IntPtr)instanceCreateInfo.PpEnabledLayerNames, _ValidationLayers.Length);
-            }
+            if (_ENABLE_VULKAN_VALIDATION) SilkMarshal.FreeStringArrayPtr((IntPtr)instanceCreateInfo.PpEnabledLayerNames, _ValidationLayers.Length);
 
             Log.Information(string.Format(_VulkanInstanceCreationFormat, "-success-"));
         }
@@ -338,16 +319,14 @@ namespace Automata.Engine.Rendering.Vulkan
                 bool layerFound = layerProperties.Any(layerProperty =>
                     validationLayer == Marshal.PtrToStringAnsi((IntPtr)layerProperty.LayerName));
 
-                if (!layerFound)
-                {
-                    return false;
-                }
+                if (!layerFound) return false;
             }
 
             return true;
         }
 
         #endregion
+
 
         #region Create Surface
 
@@ -360,6 +339,7 @@ namespace Automata.Engine.Rendering.Vulkan
 
         #endregion
 
+
         #region Debug Messenger
 
         private unsafe void SetupDebugMessenger()
@@ -367,9 +347,7 @@ namespace Automata.Engine.Rendering.Vulkan
             Log.Information(string.Format(_VulkanDebugMessengerCreationFormat, "-begin-"));
 
             if (!_ENABLE_VULKAN_VALIDATION || !VK.TryGetExtension(out _ExtDebugUtils))
-            {
                 throw new Exception("Failed to get extension for debug messenger.");
-            }
 
             Log.Information(string.Format(_VulkanDebugMessengerCreationFormat, "initializing creation info."));
 
@@ -378,14 +356,10 @@ namespace Automata.Engine.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanDebugMessengerCreationFormat, "assigning debug messenger."));
 
-
             fixed (DebugUtilsMessengerEXT* debugMessenger = &_DebugMessenger)
             {
                 if (_ExtDebugUtils.CreateDebugUtilsMessenger(VKInstance, &createInfo, (AllocationCallbacks*)null!, debugMessenger)
-                    != Result.Success)
-                {
-                    throw new Exception($"Failed to create '{typeof(DebugUtilsMessengerEXT)}'");
-                }
+                    != Result.Success) throw new Exception($"Failed to create '{typeof(DebugUtilsMessengerEXT)}'");
             }
 
             Log.Information(string.Format(_VulkanDebugMessengerCreationFormat, "-success-"));
@@ -413,8 +387,7 @@ namespace Automata.Engine.Rendering.Vulkan
                     case DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityErrorBitExt:
                         Log.Error(string.Format(messageFormat, messageType, Marshal.PtrToStringAnsi((IntPtr)callbackData->PMessage)));
                         break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(messageSeverity), messageSeverity, null);
+                    default: throw new ArgumentOutOfRangeException(nameof(messageSeverity), messageSeverity, null);
                 }
 
                 return Vk.False;
@@ -422,13 +395,16 @@ namespace Automata.Engine.Rendering.Vulkan
 
             createInfo.SType = StructureType.DebugUtilsMessengerCreateInfoExt;
             createInfo.MessageSeverity = messageSeverityFlags;
+
             createInfo.MessageType = DebugUtilsMessageTypeFlagsEXT.DebugUtilsMessageTypeGeneralBitExt
                                      | DebugUtilsMessageTypeFlagsEXT.DebugUtilsMessageTypeValidationBitExt
                                      | DebugUtilsMessageTypeFlagsEXT.DebugUtilsMessageTypePerformanceBitExt;
+
             createInfo.PfnUserCallback = FuncPtr.Of<DebugUtilsMessengerCallbackFunctionEXT>(DebugCallback);
         }
 
         #endregion
+
 
         #region Physical Device Selection
 
@@ -441,10 +417,7 @@ namespace Automata.Engine.Rendering.Vulkan
             uint deviceCount = 0u;
             VK.EnumeratePhysicalDevices(VKInstance, &deviceCount, (PhysicalDevice*)null!);
 
-            if (deviceCount == 0u)
-            {
-                throw new Exception("No GPUs found with Vulkan support.");
-            }
+            if (deviceCount == 0u) throw new Exception("No GPUs found with Vulkan support.");
 
             Log.Information(string.Format(_VulkanPhysicalDeviceSelectionFormat, $"{deviceCount} GPUs found."));
 
@@ -464,10 +437,7 @@ namespace Automata.Engine.Rendering.Vulkan
 
                     return;
                 }
-                else
-                {
-                    Log.Information(string.Format(_VulkanPhysicalDeviceSelectionFormat, $"'{gpuName}' failed."));
-                }
+                else Log.Information(string.Format(_VulkanPhysicalDeviceSelectionFormat, $"'{gpuName}' failed."));
             }
 
             throw new Exception("No suitable GPUs found.");
@@ -490,7 +460,6 @@ namespace Automata.Engine.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanPhysicalDeviceSelectionFormat, $"verified '{gpuName}' device type."));
 
-
             if (!CheckDeviceExtensionSupport(physicalDevice))
             {
                 Log.Information(string.Format(_VulkanPhysicalDeviceSelectionFormat,
@@ -501,7 +470,6 @@ namespace Automata.Engine.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanPhysicalDeviceSelectionFormat,
                 $"verified '{gpuName}' extensions support ({string.Join(", ", _DeviceExtensions)})."));
-
 
             _SwapChainSupportDetails = GetSwapChainSupport(physicalDevice);
 
@@ -523,7 +491,6 @@ namespace Automata.Engine.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanPhysicalDeviceSelectionFormat, $"verified '{gpuName}' swap chain presentation modes."));
 
-
             queueFamilyIndices = FindQueueFamilies(physicalDevice);
 
             if (!queueFamilyIndices.IsCompleted())
@@ -534,7 +501,6 @@ namespace Automata.Engine.Rendering.Vulkan
             }
 
             Log.Information(string.Format(_VulkanPhysicalDeviceSelectionFormat, $"verified '{gpuName}' queue families."));
-
 
             VK.GetPhysicalDeviceFeatures(physicalDevice, out PhysicalDeviceFeatures physicalDeviceFeatures);
 
@@ -561,9 +527,7 @@ namespace Automata.Engine.Rendering.Vulkan
             List<string?> requiredExtensions = new List<string?>(_DeviceExtensions);
 
             for (uint index = 0u; index < extensionCount; index++)
-            {
                 requiredExtensions.Remove(Marshal.PtrToStringAnsi((IntPtr)extensionProperties[index].ExtensionName));
-            }
 
             return requiredExtensions.Count == 0;
         }
@@ -587,15 +551,9 @@ namespace Automata.Engine.Rendering.Vulkan
                 _KHRSurface.GetPhysicalDeviceSurfaceFormats(physicalDevice, _Surface, &surfaceFormatsCount, surfaceFormats);
 
                 swapChainSupportDetails.Formats = new SurfaceFormatKHR[(int)surfaceFormatsCount];
-                for (int index = 0; index < surfaceFormatsCount; index++)
-                {
-                    swapChainSupportDetails.Formats[index] = surfaceFormats[index];
-                }
+                for (int index = 0; index < surfaceFormatsCount; index++) swapChainSupportDetails.Formats[index] = surfaceFormats[index];
             }
-            else
-            {
-                throw new NotSupportedException("This device does not support surface formats.");
-            }
+            else throw new NotSupportedException("This device does not support surface formats.");
 
             uint presentationModeCount;
             _KHRSurface.GetPhysicalDeviceSurfacePresentModes(physicalDevice, _Surface, &presentationModeCount, (PresentModeKHR*)null!);
@@ -606,15 +564,9 @@ namespace Automata.Engine.Rendering.Vulkan
                 _KHRSurface.GetPhysicalDeviceSurfacePresentModes(physicalDevice, _Surface, &presentationModeCount, presentModes);
 
                 swapChainSupportDetails.PresentModes = new PresentModeKHR[(int)presentationModeCount];
-                for (int index = 0; index < presentationModeCount; index++)
-                {
-                    swapChainSupportDetails.PresentModes[index] = presentModes[index];
-                }
+                for (int index = 0; index < presentationModeCount; index++) swapChainSupportDetails.PresentModes[index] = presentModes[index];
             }
-            else
-            {
-                throw new NotSupportedException("Device does not support presentation formats.");
-            }
+            else throw new NotSupportedException("Device does not support presentation formats.");
 
             return swapChainSupportDetails;
         }
@@ -633,28 +585,20 @@ namespace Automata.Engine.Rendering.Vulkan
             {
                 QueueFamilyProperties queueFamily = queueFamilyProperties[index];
 
-                if (queueFamily.QueueFlags.HasFlag(QueueFlags.QueueGraphicsBit))
-                {
-                    indices.GraphicsFamily = index;
-                }
+                if (queueFamily.QueueFlags.HasFlag(QueueFlags.QueueGraphicsBit)) indices.GraphicsFamily = index;
 
                 _KHRSurface.GetPhysicalDeviceSurfaceSupport(physicalDevice, index, _Surface, out Bool32 presentationSupport);
 
-                if (presentationSupport == Vk.True)
-                {
-                    indices.PresentationFamily = index;
-                }
+                if (presentationSupport == Vk.True) indices.PresentationFamily = index;
 
-                if (indices.IsCompleted())
-                {
-                    break;
-                }
+                if (indices.IsCompleted()) break;
             }
 
             return indices;
         }
 
         #endregion
+
 
         #region Create Logical Device
 
@@ -687,6 +631,7 @@ namespace Automata.Engine.Rendering.Vulkan
             Log.Information(string.Format(_VulkanLogicalDeviceCreationFormat, "initializing device creation info."));
 
             PhysicalDeviceFeatures physicalDeviceFeatures = new PhysicalDeviceFeatures();
+
             DeviceCreateInfo deviceCreateInfo = new DeviceCreateInfo
             {
                 SType = StructureType.DeviceCreateInfo,
@@ -713,14 +658,10 @@ namespace Automata.Engine.Rendering.Vulkan
             fixed (Device* logicalDevice = &_LogicalDevice)
             {
                 if (VK.CreateDevice(_PhysicalDevice, &deviceCreateInfo, (AllocationCallbacks*)null!, logicalDevice)
-                    != Result.Success)
-                {
-                    throw new Exception("Failed to create logical device.");
-                }
+                    != Result.Success) throw new Exception("Failed to create logical device.");
             }
 
             Log.Information(string.Format(_VulkanLogicalDeviceCreationFormat, "assigning graphics queue."));
-
 
             Debug.Assert(_QueueFamilyIndices.GraphicsFamily != null);
 
@@ -743,6 +684,7 @@ namespace Automata.Engine.Rendering.Vulkan
 
         #endregion
 
+
         #region Create Swapchain
 
         private unsafe void CreateSwapChain()
@@ -763,11 +705,10 @@ namespace Automata.Engine.Rendering.Vulkan
 
             if ((_SwapChainSupportDetails.SurfaceCapabilities.MaxImageCount > 0)
                 && (minImageCount > _SwapChainSupportDetails.SurfaceCapabilities.MaxImageCount))
-            {
                 minImageCount = _SwapChainSupportDetails.SurfaceCapabilities.MaxImageCount;
-            }
 
             Log.Information(string.Format(_VulkanSwapChainCreationFormat, "initializing swap chain creation info."));
+
             SwapchainCreateInfoKHR swapChainCreateInfo = new SwapchainCreateInfoKHR
             {
                 SType = StructureType.SwapchainCreateInfoKhr,
@@ -798,6 +739,7 @@ namespace Automata.Engine.Rendering.Vulkan
                     _QueueFamilyIndices.GraphicsFamily.Value,
                     _QueueFamilyIndices.PresentationFamily.Value
                 };
+
                 swapChainCreateInfo.PQueueFamilyIndices = indices;
             }
             else
@@ -807,16 +749,12 @@ namespace Automata.Engine.Rendering.Vulkan
                 swapChainCreateInfo.PQueueFamilyIndices = (uint*)null!;
             }
 
-
             Log.Information(string.Format(_VulkanSwapChainCreationFormat, "creating swap chain."));
 
             fixed (SwapchainKHR* swapChainFixed = &_SwapChain)
             {
                 if (_KHRSwapChain.CreateSwapchain(_LogicalDevice, &swapChainCreateInfo, (AllocationCallbacks*)null!, swapChainFixed)
-                    != Result.Success)
-                {
-                    throw new Exception("Failed to create swap chain.");
-                }
+                    != Result.Success) throw new Exception("Failed to create swap chain.");
             }
 
             Log.Information(string.Format(_VulkanSwapChainCreationFormat, "getting swap chain images."));
@@ -842,9 +780,7 @@ namespace Automata.Engine.Rendering.Vulkan
             foreach (SurfaceFormatKHR surfaceFormat in availableFormats)
             {
                 if ((surfaceFormat.Format == Format.B8G8R8Srgb) && (surfaceFormat.ColorSpace == ColorSpaceKHR.ColorspaceSrgbNonlinearKhr))
-                {
                     return surfaceFormat;
-                }
             }
 
             return availableFormats[0];
@@ -854,10 +790,7 @@ namespace Automata.Engine.Rendering.Vulkan
         {
             foreach (PresentModeKHR presentationMode in availablePresentationModes)
             {
-                if (presentationMode == PresentModeKHR.PresentModeMailboxKhr)
-                {
-                    return presentationMode;
-                }
+                if (presentationMode == PresentModeKHR.PresentModeMailboxKhr) return presentationMode;
             }
 
             return PresentModeKHR.PresentModeFifoKhr;
@@ -865,15 +798,14 @@ namespace Automata.Engine.Rendering.Vulkan
 
         private static Extent2D ChooseSwapExtents(SurfaceCapabilitiesKHR surfaceCapabilities)
         {
-            if (surfaceCapabilities.CurrentExtent.Width != int.MaxValue)
-            {
-                return surfaceCapabilities.CurrentExtent;
-            }
+            if (surfaceCapabilities.CurrentExtent.Width != int.MaxValue) return surfaceCapabilities.CurrentExtent;
             else
             {
                 Extent2D adjustedExtent = new Extent2D((uint)AutomataWindow.Instance.Size.X, (uint)AutomataWindow.Instance.Size.Y);
+
                 adjustedExtent.Width = Math.Max(surfaceCapabilities.MinImageExtent.Width,
                     Math.Min(surfaceCapabilities.MinImageExtent.Width, adjustedExtent.Width));
+
                 adjustedExtent.Height = Math.Max(surfaceCapabilities.MinImageExtent.Height,
                     Math.Min(surfaceCapabilities.MinImageExtent.Height, adjustedExtent.Height));
 
@@ -882,6 +814,7 @@ namespace Automata.Engine.Rendering.Vulkan
         }
 
         #endregion
+
 
         #region Create Image Views
 
@@ -910,18 +843,15 @@ namespace Automata.Engine.Rendering.Vulkan
                 fixed (ImageView* swapChainImageViews = &_SwapChainImageViews[index])
                 {
                     if (VK.CreateImageView(_LogicalDevice, &imageViewCreateInfo, (AllocationCallbacks*)null!, swapChainImageViews)
-                        != Result.Success)
-                    {
-                        throw new Exception($"Failed to create image views for index {index}.");
-                    }
+                        != Result.Success) throw new Exception($"Failed to create image views for index {index}.");
                 }
             }
-
 
             Log.Information(string.Format(_VulkanImageViewCreationFormat, "-success-"));
         }
 
         #endregion
+
 
         #region Render Pass
 
@@ -986,16 +916,14 @@ namespace Automata.Engine.Rendering.Vulkan
             fixed (RenderPass* renderPassFixed = &_RenderPass)
             {
                 if (VK.CreateRenderPass(_LogicalDevice, &renderPassCreateInfo, (AllocationCallbacks*)null!, renderPassFixed) != Result.Success)
-                {
                     throw new Exception("Failed to create render pass.");
-                }
             }
-
 
             Log.Information(string.Format(_VulkanRenderPassCreationFormat, "-success-"));
         }
 
         #endregion
+
 
         #region Create Graphics Pipeline
 
@@ -1033,7 +961,6 @@ namespace Automata.Engine.Rendering.Vulkan
                 vertexShaderStageCreateInfo,
                 fragmentShaderStageCreateInfo
             };
-
 
             Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "creating vertex stage information."));
 
@@ -1086,7 +1013,6 @@ namespace Automata.Engine.Rendering.Vulkan
                 PScissors = &scissor
             };
 
-
             Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "creating rasterization information."));
 
             PipelineRasterizationStateCreateInfo rasterizationStateCreateInfo = new PipelineRasterizationStateCreateInfo
@@ -1103,7 +1029,6 @@ namespace Automata.Engine.Rendering.Vulkan
                 DepthBiasSlopeFactor = 0f,
             };
 
-
             Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "creating multisampling information."));
 
             PipelineMultisampleStateCreateInfo multisampleStateCreateInfo = new PipelineMultisampleStateCreateInfo
@@ -1116,7 +1041,6 @@ namespace Automata.Engine.Rendering.Vulkan
                 AlphaToCoverageEnable = Vk.False,
                 AlphaToOneEnable = Vk.False
             };
-
 
             Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "creating color blender information."));
 
@@ -1179,10 +1103,7 @@ namespace Automata.Engine.Rendering.Vulkan
             fixed (PipelineLayout* pipelineLayoutFixed = &_PipelineLayout)
             {
                 if (VK.CreatePipelineLayout(_LogicalDevice, &pipelineLayoutCreateInfo, (AllocationCallbacks*)null!, pipelineLayoutFixed)
-                    != Result.Success)
-                {
-                    throw new Exception("Failed to create pipeline layout.");
-                }
+                    != Result.Success) throw new Exception("Failed to create pipeline layout.");
             }
 
             Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "creating final graphics pipeline."));
@@ -1213,10 +1134,7 @@ namespace Automata.Engine.Rendering.Vulkan
             {
                 if (VK.CreateGraphicsPipelines(_LogicalDevice, default, 1, &graphicsPipelineCreateInfo, (AllocationCallbacks*)null!,
                         graphicsPipelineFixed)
-                    != Result.Success)
-                {
-                    throw new Exception("Failed to create graphics pipeline.");
-                }
+                    != Result.Success) throw new Exception("Failed to create graphics pipeline.");
             }
 
             Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "destroying shader modules."));
@@ -1241,15 +1159,15 @@ namespace Automata.Engine.Rendering.Vulkan
             }
 
             ShaderModule shaderModule;
+
             if (VK.CreateShaderModule(_LogicalDevice, &shaderModuleCreateInfo, (AllocationCallbacks*)null!, &shaderModule) != Result.Success)
-            {
                 throw new Exception("Failed to create shader module.");
-            }
 
             return shaderModule;
         }
 
         #endregion
+
 
         #region Create Framebuffers
 
@@ -1288,10 +1206,7 @@ namespace Automata.Engine.Rendering.Vulkan
                 fixed (Framebuffer* swapChainFramebuffersFixed = _SwapChainFramebuffers)
                 {
                     if (VK.CreateFramebuffer(_LogicalDevice, &framebufferCreateInfo, (AllocationCallbacks*)null!, &swapChainFramebuffersFixed[index])
-                        != Result.Success)
-                    {
-                        throw new Exception($"Failed to create framebuffer (index {index}).");
-                    }
+                        != Result.Success) throw new Exception($"Failed to create framebuffer (index {index}).");
                 }
             }
 
@@ -1299,6 +1214,7 @@ namespace Automata.Engine.Rendering.Vulkan
         }
 
         #endregion
+
 
         #region Create Command Pool
 
@@ -1322,15 +1238,14 @@ namespace Automata.Engine.Rendering.Vulkan
             fixed (CommandPool* commandPoolFixed = &_CommandPool)
             {
                 if (VK.CreateCommandPool(_LogicalDevice, &commandPoolCreateInfo, (AllocationCallbacks*)null!, commandPoolFixed) != Result.Success)
-                {
                     throw new Exception("Failed to create command pool.");
-                }
             }
 
             Log.Information(string.Format(_VulkanCommandPoolCreationFormat, "-success-"));
         }
 
         #endregion
+
 
         #region CreateCommandBuffers
 
@@ -1357,9 +1272,7 @@ namespace Automata.Engine.Rendering.Vulkan
             fixed (CommandBuffer* commandBuffersFixed = _CommandBuffers)
             {
                 if (VK.AllocateCommandBuffers(_LogicalDevice, &commandBufferAllocateInfo, commandBuffersFixed) != Result.Success)
-                {
                     throw new Exception("Failed to create command buffers.");
-                }
             }
 
             Log.Information(string.Format(_VulkanCommandBuffersCreationFormat, "configuring command buffers."));
@@ -1374,9 +1287,7 @@ namespace Automata.Engine.Rendering.Vulkan
                 };
 
                 if (VK.BeginCommandBuffer(_CommandBuffers[index], &commandBufferBeginInfo) != Result.Success)
-                {
                     throw new Exception("Failed to begin recording command buffer.");
-                }
 
                 ClearValue clearValue = new ClearValue(new ClearColorValue(0f, 0f, 0f, 1f));
 
@@ -1395,16 +1306,14 @@ namespace Automata.Engine.Rendering.Vulkan
                 VK.CmdDraw(_CommandBuffers[index], 3, 1, 0, 0);
                 VK.CmdEndRenderPass(_CommandBuffers[index]);
 
-                if (VK.EndCommandBuffer(_CommandBuffers[index]) != Result.Success)
-                {
-                    throw new Exception("Failed to record command buffer.");
-                }
+                if (VK.EndCommandBuffer(_CommandBuffers[index]) != Result.Success) throw new Exception("Failed to record command buffer.");
             }
 
             Log.Information(string.Format(_VulkanCommandBuffersCreationFormat, "-success-"));
         }
 
         #endregion
+
 
         #region Create Semaphores
 
@@ -1430,18 +1339,11 @@ namespace Automata.Engine.Rendering.Vulkan
                     {
                         if (VK.CreateSemaphore(_LogicalDevice, &semaphoreCreateInfo, (AllocationCallbacks*)null!,
                                 &imageAvailableSemaphoresFixed[index])
-                            != Result.Success)
-                        {
-                            throw new Exception("Failed to create image availability semaphore.");
-                        }
-
+                            != Result.Success) throw new Exception("Failed to create image availability semaphore.");
 
                         if (VK.CreateSemaphore(_LogicalDevice, &semaphoreCreateInfo, (AllocationCallbacks*)null!,
                                 &renderFinishedSemaphoresFixed[index])
-                            != Result.Success)
-                        {
-                            throw new Exception("Failed to create render finished semaphore.");
-                        }
+                            != Result.Success) throw new Exception("Failed to create render finished semaphore.");
                     }
                 }
             }
@@ -1450,6 +1352,7 @@ namespace Automata.Engine.Rendering.Vulkan
         }
 
         #endregion
+
 
         public unsafe void DestroyVulkanInstance()
         {
@@ -1462,35 +1365,24 @@ namespace Automata.Engine.Rendering.Vulkan
             VK.DestroyCommandPool(_LogicalDevice, _CommandPool, (AllocationCallbacks*)null!);
 
             foreach (Framebuffer framebuffer in _SwapChainFramebuffers)
-            {
                 VK.DestroyFramebuffer(_LogicalDevice, framebuffer, (AllocationCallbacks*)null!);
-            }
 
             VK.DestroyPipeline(_LogicalDevice, _GraphicsPipeline, (AllocationCallbacks*)null!);
             VK.DestroyRenderPass(_LogicalDevice, _RenderPass, (AllocationCallbacks*)null!);
             VK.DestroyPipelineLayout(_LogicalDevice, _PipelineLayout, (AllocationCallbacks*)null!);
 
-            foreach (ImageView imageView in _SwapChainImageViews)
-            {
-                VK.DestroyImageView(_LogicalDevice, imageView, (AllocationCallbacks*)null!);
-            }
+            foreach (ImageView imageView in _SwapChainImageViews) VK.DestroyImageView(_LogicalDevice, imageView, (AllocationCallbacks*)null!);
 
             _KHRSwapChain.DestroySwapchain(_LogicalDevice, _SwapChain, (AllocationCallbacks*)null!);
             VK.DestroyDevice(_LogicalDevice, (AllocationCallbacks*)null!);
 
-            if (_ENABLE_VULKAN_VALIDATION)
-            {
-                _ExtDebugUtils.DestroyDebugUtilsMessenger(VKInstance, _DebugMessenger, (AllocationCallbacks*)null!);
-            }
+            if (_ENABLE_VULKAN_VALIDATION) _ExtDebugUtils.DestroyDebugUtilsMessenger(VKInstance, _DebugMessenger, (AllocationCallbacks*)null!);
 
             _KHRSurface.DestroySurface(VKInstance, _Surface, (AllocationCallbacks*)null!);
             VK.DestroyInstance(VKInstance, (AllocationCallbacks*)null!);
         }
 
-        ~VKAPI()
-        {
-            DestroyVulkanInstance();
-        }
+        ~VKAPI() { DestroyVulkanInstance(); }
     }
 
     #endregion

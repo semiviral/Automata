@@ -23,6 +23,7 @@ using Silk.NET.OpenGL;
 
 #endregion
 
+
 namespace Automata.Game.Chunks.Generation
 {
     public class ChunkGenerationSystem : ComponentSystem
@@ -52,8 +53,10 @@ namespace Automata.Game.Chunks.Generation
                 {
                     case GenerationState.Ungenerated:
                         Translation translation = entity.GetComponent<Translation>();
+
                         BuildStep.Parameters parameters = new BuildStep.Parameters(GenerationConstants.Seed, GenerationConstants.FREQUENCY,
                             GenerationConstants.PERSISTENCE, Vector3i.FromVector3(translation.Value));
+
                         BoundedThreadPool.QueueWork(() => GenerateChunk(chunk.ID, parameters));
 
                         chunk.State = chunk.State.Next();
@@ -71,15 +74,8 @@ namespace Automata.Game.Chunks.Generation
                         mesh.VertexesBuffer.SetBufferData(pendingMesh.Vertexes);
                         mesh.IndexesBuffer.SetBufferData(pendingMesh.Indexes);
 
-
-                        if (entity.TryGetComponent(out RenderMesh? renderMesh))
-                        {
-                            renderMesh.Mesh = mesh;
-                        }
-                        else
-                        {
-                            entityManager.RegisterComponent(entity, renderMesh = new RenderMesh(mesh));
-                        }
+                        if (entity.TryGetComponent(out RenderMesh? renderMesh)) renderMesh.Mesh = mesh;
+                        else entityManager.RegisterComponent(entity, renderMesh = new RenderMesh(mesh));
 
                         if (entity.TryGetComponent(out Scale? modelScale)
                             | entity.TryGetComponent(out Rotation? modelRotation)
@@ -94,6 +90,7 @@ namespace Automata.Game.Chunks.Generation
                         stopwatch.Stop();
 
                         DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new ApplyMeshTime(stopwatch.Elapsed));
+
                         Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
                             $"Applied mesh: '{chunk.ID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms)"));
 
@@ -114,35 +111,28 @@ namespace Automata.Game.Chunks.Generation
                 Octree<ushort> blocksCompressed = new Octree<ushort>(GenerationConstants.CHUNK_SIZE, BlockRegistry.AirID, false);
 
                 int index = 0;
+
                 for (int y = 0; y < GenerationConstants.CHUNK_SIZE; y++)
                 for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
                 for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++, index++)
-                {
                     blocksCompressed.SetPoint(x, y, z, blocks[index]);
-                }
 
                 return blocksCompressed;
             }
 
-            if (parameters is null || _BuildSteps is null)
-            {
-                throw new InvalidOperationException("Job data has not been provided.");
-            }
-
+            if (parameters is null || _BuildSteps is null) throw new InvalidOperationException("Job data has not been provided.");
 
             Span<ushort> blocks = stackalloc ushort[GenerationConstants.CHUNK_SIZE_CUBED];
 
             Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
             stopwatch.Restart();
 
-            foreach (BuildStep generationStep in _BuildSteps)
-            {
-                generationStep.Generate(parameters, blocks);
-            }
+            foreach (BuildStep generationStep in _BuildSteps) generationStep.Generate(parameters, blocks);
 
             stopwatch.Stop();
 
             DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new BuildingTime(stopwatch.Elapsed));
+
             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
                 $"Built: '{chunkID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms)"));
 
@@ -154,6 +144,7 @@ namespace Automata.Game.Chunks.Generation
             stopwatch.Stop();
 
             DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new InsertionTime(stopwatch.Elapsed));
+
             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
                 $"Insertion: '{chunkID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms)"));
 
@@ -165,9 +156,9 @@ namespace Automata.Game.Chunks.Generation
             stopwatch.Stop();
 
             DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new MeshingTime(stopwatch.Elapsed));
+
             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
                 $"Meshed: '{chunkID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms, vertexes {pendingMesh.Vertexes.Length}, indexes {pendingMesh.Indexes.Length})"));
-
 
             DiagnosticsSystem.Stopwatches.Return(stopwatch);
         }
@@ -181,13 +172,9 @@ namespace Automata.Game.Chunks.Generation
                 _KeysPressed = false;
                 return;
             }
-            else if (_KeysPressed)
-            {
-                return;
-            }
+            else if (_KeysPressed) return;
 
             _KeysPressed = true;
-
 
             Log.Information(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(DiagnosticsSystem),
                 $"Average generation times: {DiagnosticsProvider.GetGroup<ChunkGenerationDiagnosticGroup>()}"));

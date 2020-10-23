@@ -5,6 +5,7 @@ using System.Numerics;
 
 #endregion
 
+
 namespace Automata.Engine.Numerics.Color
 {
     /// <summary>
@@ -35,18 +36,10 @@ namespace Automata.Engine.Numerics.Color
 
         public void CopyTo(float[] array, int index)
         {
-            if (array == null)
-            {
-                throw new NullReferenceException($"Argument '{nameof(array)}' cannot be null.");
-            }
+            if (array == null) throw new NullReferenceException($"Argument '{nameof(array)}' cannot be null.");
             else if ((index < 0) || (index >= array.Length))
-            {
                 throw new ArgumentOutOfRangeException(nameof(index), "Argument not within bounds of given array.");
-            }
-            else if ((array.Length - index) < 4)
-            {
-                throw new ArgumentException("Array with given start index not large enough to copy to.");
-            }
+            else if ((array.Length - index) < 4) throw new ArgumentException("Array with given start index not large enough to copy to.");
 
             _RawValue.CopyTo(array, index);
         }

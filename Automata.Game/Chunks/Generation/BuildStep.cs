@@ -5,6 +5,7 @@ using Automata.Engine.Numerics;
 
 #endregion
 
+
 namespace Automata.Game.Chunks.Generation
 {
     public abstract class BuildStep

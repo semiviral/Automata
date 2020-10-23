@@ -8,6 +8,7 @@ using DiagnosticsProviderNS;
 
 #endregion
 
+
 namespace Automata.Game.Chunks.Generation
 {
     public class BuildingTime : TimeSpanDiagnosticData
@@ -66,8 +67,7 @@ namespace Automata.Game.Chunks.Generation
                 case ApplyMeshTime applyMeshTime:
                     _ApplyMeshTimes.Add(applyMeshTime);
                     break;
-                default:
-                    throw new ArgumentException("Data is not of a valid type for this diagnostic group.", nameof(data));
+                default: throw new ArgumentException("Data is not of a valid type for this diagnostic group.", nameof(data));
             }
         }
 

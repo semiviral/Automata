@@ -4,6 +4,7 @@ using Automata.Engine.Components;
 
 #endregion
 
+
 namespace Automata.Engine.Rendering.OpenGL
 {
     public class RenderShader : IComponent

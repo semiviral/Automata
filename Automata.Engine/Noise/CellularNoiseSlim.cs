@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 
 #endregion
 
+
 namespace Automata.Engine.Noise
 {
     public static class CellularNoiseSlim
@@ -418,30 +419,20 @@ namespace Automata.Engine.Noise
                     }
 
                     break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(distanceFunction), distanceFunction, null);
+                default: throw new ArgumentOutOfRangeException(nameof(distanceFunction), distanceFunction, null);
             }
 
             switch (returnType)
             {
-                case CellularReturnType.CellValue:
-                    return ValCoord3D(seed, xc, yc, zc);
-                case CellularReturnType.Distance:
-                    return distance;
-                case CellularReturnType.NoiseLookup:
-                    break;
-                case CellularReturnType.Distance2:
-                    break;
-                case CellularReturnType.Distance2Add:
-                    break;
-                case CellularReturnType.Distance2Sub:
-                    break;
-                case CellularReturnType.Distance2Mul:
-                    break;
-                case CellularReturnType.Distance2Div:
-                    break;
-                default:
-                    return 0;
+                case CellularReturnType.CellValue: return ValCoord3D(seed, xc, yc, zc);
+                case CellularReturnType.Distance: return distance;
+                case CellularReturnType.NoiseLookup: break;
+                case CellularReturnType.Distance2: break;
+                case CellularReturnType.Distance2Add: break;
+                case CellularReturnType.Distance2Sub: break;
+                case CellularReturnType.Distance2Mul: break;
+                case CellularReturnType.Distance2Div: break;
+                default: return 0;
             }
 
             return 0f;

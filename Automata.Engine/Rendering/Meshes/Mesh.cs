@@ -5,6 +5,7 @@ using Silk.NET.OpenGL;
 
 #endregion
 
+
 namespace Automata.Engine.Rendering.Meshes
 {
     public class Mesh<T> : IMesh where T : unmanaged
@@ -24,9 +25,6 @@ namespace Automata.Engine.Rendering.Meshes
             VertexArrayObject = new VertexArrayObject<T, uint>(GLAPI.Instance.GL, VertexesBuffer, IndexesBuffer);
         }
 
-        public void BindVertexArrayObject()
-        {
-            VertexArrayObject.Bind();
-        }
+        public void BindVertexArrayObject() { VertexArrayObject.Bind(); }
     }
 }

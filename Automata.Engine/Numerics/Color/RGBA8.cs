@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 
 #endregion
 
+
 namespace Automata.Engine.Numerics.Color
 {
     /// <summary>
@@ -32,6 +33,7 @@ namespace Automata.Engine.Numerics.Color
         public byte A => _A;
 
         #endregion
+
 
         public RGBA8(byte r, byte g, byte b) => (_R, _G, _B, _A) = (r, g, b, 255);
         public RGBA8(byte r, byte g, byte b, byte a) => (_R, _G, _B, _A) = (r, g, b, a);

@@ -5,6 +5,7 @@ using Silk.NET.OpenGL;
 
 #endregion
 
+
 namespace Automata.Engine.Rendering.OpenGL
 {
     public abstract class Texture
@@ -30,6 +31,7 @@ namespace Automata.Engine.Rendering.OpenGL
             Bilinear,
             Trilinear
         }
+
 
         #region Static Methods
 
@@ -63,6 +65,7 @@ namespace Automata.Engine.Rendering.OpenGL
 
         #endregion
 
+
         protected readonly GL GL;
         protected readonly uint Handle;
 
@@ -74,9 +77,6 @@ namespace Automata.Engine.Rendering.OpenGL
 
         public abstract void Bind(TextureUnit textureSlot);
 
-        public void Dispose()
-        {
-            GL.DeleteTexture(Handle);
-        }
+        public void Dispose() { GL.DeleteTexture(Handle); }
     }
 }

@@ -10,6 +10,7 @@ using System.Runtime.Intrinsics.X86;
 
 #endregion
 
+
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable UnusedMember.Global
 // ReSharper disable InconsistentNaming
@@ -43,6 +44,7 @@ namespace Automata.Engine.Numerics
         public override int GetHashCode() => X.GetHashCode() ^ Y.GetHashCode();
 
         public override string ToString() => string.Format(FormatHelper.VECTOR_2_COMPONENT, nameof(Vector2i), X, Y);
+
 
         #region Operators
 
@@ -87,6 +89,7 @@ namespace Automata.Engine.Numerics
         public static Vector2b operator <(int a, Vector2i b) => LessThanImpl(a, b);
 
         #endregion
+
 
         #region Conversion Operators
 

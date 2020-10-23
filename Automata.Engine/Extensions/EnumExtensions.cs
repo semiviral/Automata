@@ -5,6 +5,7 @@ using System.Collections.Generic;
 
 #endregion
 
+
 namespace Automata.Engine.Extensions
 {
     public static class EnumExtensions

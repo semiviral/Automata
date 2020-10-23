@@ -7,6 +7,7 @@ using Automata.Engine.Components;
 
 #endregion
 
+
 namespace Automata.Engine.Entities
 {
     public class Entity : IEntity
@@ -52,9 +53,7 @@ namespace Automata.Engine.Entities
         public IComponent GetComponent(Type componentType)
         {
             if (!typeof(IComponent).IsAssignableFrom(componentType))
-            {
                 throw new ArgumentException($"Type must be assignable from {nameof(IComponent)}.", nameof(componentType));
-            }
 
             return _Components[componentType];
         }

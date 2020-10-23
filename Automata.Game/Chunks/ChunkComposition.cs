@@ -6,6 +6,7 @@ using Automata.Engine.Systems;
 
 #endregion
 
+
 namespace Automata.Game.Chunks
 {
     public class ChunkComposition : IEntityComposition

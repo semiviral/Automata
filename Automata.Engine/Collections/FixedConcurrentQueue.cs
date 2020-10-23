@@ -9,6 +9,7 @@ using System.Threading;
 
 #endregion
 
+
 namespace Automata.Engine.Collections
 {
     public class FixedConcurrentQueue<T> : IProducerConsumerCollection<T>, IReadOnlyCollection<T>
@@ -56,33 +57,18 @@ namespace Automata.Engine.Collections
 
         void ICollection.CopyTo(Array array, int index)
         {
-            if (array is T[] arrayAs)
-            {
-                _InternalQueue.CopyTo(arrayAs, index);
-            }
-            else
-            {
-                throw new ArgumentNullException(nameof(array));
-            }
+            if (array is T[] arrayAs) _InternalQueue.CopyTo(arrayAs, index);
+            else throw new ArgumentNullException(nameof(array));
         }
 
-        public void CopyTo(T[] array, int index)
-        {
-            _InternalQueue.CopyTo(array, index);
-        }
+        public void CopyTo(T[] array, int index) { _InternalQueue.CopyTo(array, index); }
 
         public void Enqueue(T item)
         {
             _InternalQueue.Enqueue(item);
 
-            if (Count == MaximumSize)
-            {
-                _InternalQueue.TryDequeue(out T _);
-            }
-            else
-            {
-                Interlocked.Increment(ref _Count);
-            }
+            if (Count == MaximumSize) _InternalQueue.TryDequeue(out T _);
+            else Interlocked.Increment(ref _Count);
         }
 
         private bool TryDequeue([MaybeNullWhen(false)] out T item) => _InternalQueue.TryDequeue(out item);

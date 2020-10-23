@@ -5,6 +5,7 @@ using Silk.NET.OpenGL;
 
 #endregion
 
+
 namespace Automata.Engine.Rendering.OpenGL
 {
     public class VertexArrayObject<TVertexType, TIndexType> : IDisposable
@@ -24,10 +25,7 @@ namespace Automata.Engine.Rendering.OpenGL
             ebo.Bind();
         }
 
-        public void Dispose()
-        {
-            _GL.DeleteVertexArray(_Handle);
-        }
+        public void Dispose() { _GL.DeleteVertexArray(_Handle); }
 
         public unsafe void VertexAttributePointer(uint index, int count, VertexAttribPointerType type, int offset)
         {
@@ -41,9 +39,6 @@ namespace Automata.Engine.Rendering.OpenGL
             _GL.EnableVertexAttribArray(index);
         }
 
-        public void Bind()
-        {
-            _GL.BindVertexArray(_Handle);
-        }
+        public void Bind() { _GL.BindVertexArray(_Handle); }
     }
 }

@@ -5,6 +5,7 @@ using Silk.NET.OpenGL;
 
 #endregion
 
+
 namespace Automata.Engine.Rendering.OpenGL
 {
     public class BufferObject<TDataType> : IDisposable where TDataType : unmanaged
@@ -23,10 +24,7 @@ namespace Automata.Engine.Rendering.OpenGL
             Bind();
         }
 
-        public void Dispose()
-        {
-            _GL.DeleteBuffer(_Handle);
-        }
+        public void Dispose() { _GL.DeleteBuffer(_Handle); }
 
         public unsafe void SetBufferData(Span<TDataType> data)
         {
@@ -37,9 +35,6 @@ namespace Automata.Engine.Rendering.OpenGL
             }
         }
 
-        public void Bind()
-        {
-            _GL.BindBuffer(_BufferType, _Handle);
-        }
+        public void Bind() { _GL.BindBuffer(_BufferType, _Handle); }
     }
 }

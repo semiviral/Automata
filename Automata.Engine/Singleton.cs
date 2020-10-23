@@ -5,6 +5,7 @@ using Serilog;
 
 #endregion
 
+
 namespace Automata.Engine
 {
     public static class Singleton
@@ -21,23 +22,14 @@ namespace Automata.Engine
         {
             get
             {
-                if (TryValidate())
-                {
-                    return _Instance;
-                }
-                else
-                {
-                    throw new NullReferenceException($"'{typeof(T)}' has not been instantiated.");
-                }
+                if (TryValidate()) return _Instance;
+                else throw new NullReferenceException($"'{typeof(T)}' has not been instantiated.");
             }
         }
 
         public static void Validate()
         {
-            if (Instance is null)
-            {
-                throw new InvalidOperationException($"Singleton '{typeof(T)}' has not been instantiated.");
-            }
+            if (Instance is null) throw new InvalidOperationException($"Singleton '{typeof(T)}' has not been instantiated.");
         }
 
         public static bool TryValidate() => _Instance is not null;
@@ -47,9 +39,7 @@ namespace Automata.Engine
         protected void AssignSingletonInstance(T instance)
         {
             if ((_SingletonInstance != default) && (_SingletonInstance != this))
-            {
                 throw new ArgumentException($"Singleton for type {typeof(T)} already exists.", nameof(instance));
-            }
             else
             {
                 _SingletonInstance = this;

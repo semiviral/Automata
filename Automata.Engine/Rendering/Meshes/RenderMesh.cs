@@ -6,6 +6,7 @@ using Automata.Engine.Components;
 
 #endregion
 
+
 namespace Automata.Engine.Rendering.Meshes
 {
     public class RenderMesh : IComponent

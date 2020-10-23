@@ -4,6 +4,7 @@ using Silk.NET.Vulkan;
 
 #endregion
 
+
 namespace Automata.Engine.Rendering.Vulkan
 {
     public struct SwapChainSupportDetails

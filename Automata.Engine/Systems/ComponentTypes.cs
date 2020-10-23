@@ -7,6 +7,7 @@ using Automata.Engine.Components;
 
 #endregion
 
+
 namespace Automata.Engine.Systems
 {
     public enum DistinctionStrategy
@@ -37,14 +38,8 @@ namespace Automata.Engine.Systems
 
             foreach (Type type in types)
             {
-                if (!typeof(IComponent).IsAssignableFrom(type))
-                {
-                    throw new TypeLoadException($"All given types must implement {typeof(IComponent)}.");
-                }
-                else if (!_Types.Add(type))
-                {
-                    throw new ArgumentException($"Cannot specify the same {nameof(IComponent)} type more than once.");
-                }
+                if (!typeof(IComponent).IsAssignableFrom(type)) throw new TypeLoadException($"All given types must implement {typeof(IComponent)}.");
+                else if (!_Types.Add(type)) throw new ArgumentException($"Cannot specify the same {nameof(IComponent)} type more than once.");
                 else
                 {
                     const int prime = 239;
@@ -58,12 +53,14 @@ namespace Automata.Engine.Systems
 
         public override int GetHashCode() => _CompositeHashCode;
 
+
         #region IEnumerable
 
         IEnumerator IEnumerable.GetEnumerator() => _Types.GetEnumerator();
         public IEnumerator<Type> GetEnumerator() => ((IEnumerable<Type>)_Types).GetEnumerator();
 
         #endregion
+
 
         #region IEquatable
 

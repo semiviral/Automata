@@ -13,6 +13,7 @@ using Silk.NET.Windowing.Common;
 
 #endregion
 
+
 namespace Automata.Engine.Input
 {
     public delegate void KeyboardInputEventHandler(IKeyboard keyboard, Key key, int arg);
@@ -67,10 +68,7 @@ namespace Automata.Engine.Input
 
         public Vector2 GetMousePosition(int mouseIndex)
         {
-            if ((mouseIndex < 0) || (mouseIndex >= _Mice.Count))
-            {
-                throw new IndexOutOfRangeException(nameof(mouseIndex));
-            }
+            if ((mouseIndex < 0) || (mouseIndex >= _Mice.Count)) throw new IndexOutOfRangeException(nameof(mouseIndex));
 
             PointF position = _Mice[mouseIndex].Position;
             position.Y = -position.Y + AutomataWindow.Instance.Size.Y;
@@ -88,31 +86,24 @@ namespace Automata.Engine.Input
 
         public void SetMousePositionRelative(int mouseIndex, Vector2 position)
         {
-            if ((mouseIndex < 0) || (mouseIndex >= _Mice.Count))
-            {
-                throw new IndexOutOfRangeException(nameof(mouseIndex));
-            }
+            if ((mouseIndex < 0) || (mouseIndex >= _Mice.Count)) throw new IndexOutOfRangeException(nameof(mouseIndex));
 
             position += (Vector2)AutomataWindow.Instance.Center;
             _Mice[mouseIndex].Position = Unsafe.As<Vector2, PointF>(ref position);
         }
+
 
         #region Keyboard Events
 
         public event KeyboardInputEventHandler? KeyUp;
         public event KeyboardInputEventHandler? KeyDown;
 
-        private void OnKeyUp(IKeyboard keyboard, Key key, int arg)
-        {
-            KeyUp?.Invoke(keyboard, key, arg);
-        }
+        private void OnKeyUp(IKeyboard keyboard, Key key, int arg) { KeyUp?.Invoke(keyboard, key, arg); }
 
-        private void OnKeyDown(IKeyboard keyboard, Key key, int arg)
-        {
-            KeyDown?.Invoke(keyboard, key, arg);
-        }
+        private void OnKeyDown(IKeyboard keyboard, Key key, int arg) { KeyDown?.Invoke(keyboard, key, arg); }
 
         #endregion
+
 
         #region Mouse Events
 
@@ -121,20 +112,11 @@ namespace Automata.Engine.Input
         public event MouseMovedEventHandler? MouseMoved;
         public event MouseScrolledEventHandler? MouseScrolled;
 
-        private void OnMouseButtonDown(IMouse mouse, MouseButton button)
-        {
-            MouseButtonDown?.Invoke(mouse, button);
-        }
+        private void OnMouseButtonDown(IMouse mouse, MouseButton button) { MouseButtonDown?.Invoke(mouse, button); }
 
-        private void OnMouseButtonUp(IMouse mouse, MouseButton button)
-        {
-            MouseButtonUp?.Invoke(mouse, button);
-        }
+        private void OnMouseButtonUp(IMouse mouse, MouseButton button) { MouseButtonUp?.Invoke(mouse, button); }
 
-        private void OnMouseMoved(IMouse mouse, PointF point)
-        {
-            MouseMoved?.Invoke(mouse, new Vector2(point.X, point.Y));
-        }
+        private void OnMouseMoved(IMouse mouse, PointF point) { MouseMoved?.Invoke(mouse, new Vector2(point.X, point.Y)); }
 
         private void OnMouseScrolled(IMouse mouse, ScrollWheel scrollWheel)
         {

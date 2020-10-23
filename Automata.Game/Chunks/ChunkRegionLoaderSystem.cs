@@ -13,6 +13,7 @@ using Serilog;
 
 #endregion
 
+
 namespace Automata.Game.Chunks
 {
     public class ChunkRegionLoaderSystem : ComponentSystem
@@ -40,6 +41,7 @@ namespace Automata.Game.Chunks
             List<(Translation Translation, ChunkLoader ChunkLoader)> components = entityManager.GetComponents<Translation, ChunkLoader>().ToList();
 
             bool recalculateChunkRegions = false;
+
             foreach ((Translation translation, ChunkLoader chunkLoader) in components)
             {
                 Vector3i translationVector3i = Vector3i.FromVector3(translation.Value);
@@ -52,10 +54,7 @@ namespace Automata.Game.Chunks
                 }
             }
 
-            if (!recalculateChunkRegions)
-            {
-                return;
-            }
+            if (!recalculateChunkRegions) return;
 
             HashSet<Vector3i> withinLoaderRange = new HashSet<Vector3i>(components.SelectMany(loader =>
                 GetActiveChunkLoaderRegion(loader.ChunkLoader)));
@@ -80,10 +79,7 @@ namespace Automata.Game.Chunks
             {
                 _ChunkEntities.Remove(origin, out IEntity? entity);
 
-                if (entity is null)
-                {
-                    continue;
-                }
+                if (entity is null) continue;
 
                 entityManager.RemoveEntity(entity);
 
@@ -97,6 +93,7 @@ namespace Automata.Game.Chunks
         private static IEnumerable<Vector3i> GetActiveChunkLoaderRegion(ChunkLoader chunkLoader)
         {
             Vector3i chunkLoaderOriginYAdjusted = new Vector3i(chunkLoader.Origin.X, 0, chunkLoader.Origin.Z);
+
             for (int y = 0; y < GenerationConstants.WORLD_HEIGHT_IN_CHUNKS; y++)
             for (int z = -chunkLoader.Radius; z < (chunkLoader.Radius + 1); z++)
             for (int x = -chunkLoader.Radius; x < (chunkLoader.Radius + 1); x++)

@@ -1,8 +1,10 @@
 // ReSharper disable ConvertToAutoPropertyWithPrivateSetter
 
+
 #region
 
 #endregion
+
 
 #region
 
@@ -11,6 +13,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 #endregion
+
 
 namespace Automata.Engine.Collections
 {
@@ -21,6 +24,7 @@ namespace Automata.Engine.Collections
         /// </summary>
         /// <param name="value">Initial value of the collection.</param>
         public OctreeNode(T value) => Value = value;
+
 
         #region Instance Members
 
@@ -34,10 +38,7 @@ namespace Automata.Engine.Collections
         {
             get
             {
-                if (_Nodes == null)
-                {
-                    throw new NullReferenceException(nameof(_Nodes));
-                }
+                if (_Nodes == null) throw new NullReferenceException(nameof(_Nodes));
 
                 return _Nodes[index];
             }
@@ -45,15 +46,13 @@ namespace Automata.Engine.Collections
 
         #endregion
 
+
         #region Data Operations
 
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public T GetPoint(int extent, int x, int y, int z)
         {
-            if (IsUniform)
-            {
-                return Value;
-            }
+            if (IsUniform) return Value;
 
             Debug.Assert(_Nodes != null);
 
@@ -67,10 +66,7 @@ namespace Automata.Engine.Collections
         {
             if (IsUniform)
             {
-                if (Value.Equals(newValue))
-                {
-                    return;
-                }
+                if (Value.Equals(newValue)) return;
                 else if (extent < 1)
                 {
                     // reached smallest possible depth (usually 1x1x1) so
@@ -78,10 +74,7 @@ namespace Automata.Engine.Collections
                     Value = newValue;
                     return;
                 }
-                else
-                {
-                    Populate();
-                }
+                else Populate();
             }
 
             Debug.Assert(_Nodes != null);
@@ -93,13 +86,11 @@ namespace Automata.Engine.Collections
 
             // on each recursion back-step, ensure integrity of node
             // and collapse if all child node values are equal
-            if (CheckShouldCollapse())
-            {
-                Collapse();
-            }
+            if (CheckShouldCollapse()) Collapse();
         }
 
         #endregion
+
 
         #region Helper Methods
 
@@ -120,10 +111,7 @@ namespace Automata.Engine.Collections
 
         public void PopulateRecursive(float extent)
         {
-            if (extent <= 1f)
-            {
-                return;
-            }
+            if (extent <= 1f) return;
 
             extent /= 2f;
 
@@ -131,10 +119,7 @@ namespace Automata.Engine.Collections
 
             Debug.Assert(_Nodes != null);
 
-            foreach (OctreeNode<T> octreeNode in _Nodes)
-            {
-                octreeNode.PopulateRecursive(extent);
-            }
+            foreach (OctreeNode<T> octreeNode in _Nodes) octreeNode.PopulateRecursive(extent);
         }
 
         private void Collapse()
@@ -147,10 +132,7 @@ namespace Automata.Engine.Collections
 
         private bool CheckShouldCollapse()
         {
-            if (IsUniform)
-            {
-                return false;
-            }
+            if (IsUniform) return false;
 
             Debug.Assert(_Nodes != null);
 
@@ -161,10 +143,7 @@ namespace Automata.Engine.Collections
             // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (OctreeNode<T> octreeNode in _Nodes)
             {
-                if (!octreeNode.IsUniform || !octreeNode.Value.Equals(firstValue))
-                {
-                    return false;
-                }
+                if (!octreeNode.IsUniform || !octreeNode.Value.Equals(firstValue)) return false;
             }
 
             return true;
@@ -172,22 +151,13 @@ namespace Automata.Engine.Collections
 
         public void CollapseRecursive()
         {
-            if (IsUniform)
-            {
-                return;
-            }
+            if (IsUniform) return;
 
             Debug.Assert(_Nodes != null);
 
-            foreach (OctreeNode<T> octreeNode in _Nodes)
-            {
-                octreeNode.CollapseRecursive();
-            }
+            foreach (OctreeNode<T> octreeNode in _Nodes) octreeNode.CollapseRecursive();
 
-            if (CheckShouldCollapse())
-            {
-                Collapse();
-            }
+            if (CheckShouldCollapse()) Collapse();
         }
 
         #endregion

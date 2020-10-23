@@ -4,6 +4,7 @@ using Automata.Engine.Systems;
 
 #endregion
 
+
 namespace Automata.Engine.Entities
 {
     public interface IEntityComposition

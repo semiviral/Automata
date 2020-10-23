@@ -23,6 +23,7 @@ using Silk.NET.Windowing.Common;
 
 #endregion
 
+
 namespace Automata.Game
 {
     internal class Program
@@ -35,6 +36,7 @@ namespace Automata.Game
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console().MinimumLevel.Is(LogEventLevel.Debug)
                 .CreateLogger();
+
             Log.Information("Logger initialized.");
 
             if (!Directory.Exists(_LocalDataPath))
@@ -112,18 +114,22 @@ namespace Automata.Game
             world.EntityManager.RegisterComponent<Translation>(player);
             world.EntityManager.RegisterComponent<Rotation>(player);
             world.EntityManager.RegisterComponent<Camera>(player);
+
             world.EntityManager.RegisterComponent(player, new KeyboardListener
             {
                 Sensitivity = 400f
             });
+
             world.EntityManager.RegisterComponent(player, new MouseListener
             {
                 Sensitivity = 40f
             });
+
             world.EntityManager.RegisterComponent(player, new RenderShader
             {
                 Value = Shader.LoadShader("Resources/Shaders/PackedVertexes.glsl", "Resources/Shaders/DefaultFragment.glsl")
             });
+
             world.EntityManager.RegisterComponent(player, new ChunkLoader
             {
                 Radius = 4
@@ -165,10 +171,7 @@ namespace Automata.Game
 
         private static void ApplicationCloseCallback(object sender)
         {
-            if (VKAPI.TryValidate())
-            {
-                VKAPI.Instance.DestroyVulkanInstance();
-            }
+            if (VKAPI.TryValidate()) VKAPI.Instance.DestroyVulkanInstance();
 
             BoundedThreadPool.Stop();
         }

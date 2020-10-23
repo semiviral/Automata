@@ -16,6 +16,7 @@ using Silk.NET.Windowing.Common;
 
 #endregion
 
+
 namespace Automata.Engine.Rendering.GLFW
 {
     public class AutomataWindow : Singleton<AutomataWindow>
@@ -31,10 +32,7 @@ namespace Automata.Engine.Rendering.GLFW
         {
             get
             {
-                if (Window.VkSurface == null)
-                {
-                    throw new NotSupportedException("Vulkan is not supported by windowing.");
-                }
+                if (Window.VkSurface == null) throw new NotSupportedException("Vulkan is not supported by windowing.");
 
                 return Window.VkSurface;
             }
@@ -44,28 +42,14 @@ namespace Automata.Engine.Rendering.GLFW
         {
             get
             {
-                if (_Window is null)
-                {
-                    throw new NullReferenceException(nameof(Window));
-                }
-                else
-                {
-                    return _Window;
-                }
+                if (_Window is null) throw new NullReferenceException(nameof(Window));
+                else return _Window;
             }
         }
 
-        public Vector2i Size
-        {
-            get => (Vector2i)Window.Size;
-            set => Window.Size = (Size)value;
-        }
+        public Vector2i Size { get => (Vector2i)Window.Size; set => Window.Size = (Size)value; }
 
-        public Vector2i Position
-        {
-            get => (Vector2i)Window.Position;
-            set => Window.Position = (Point)value;
-        }
+        public Vector2i Position { get => (Vector2i)Window.Position; set => Window.Position = (Point)value; }
 
         public Vector2i Center => Size / 2;
 
@@ -102,10 +86,8 @@ namespace Automata.Engine.Rendering.GLFW
             const double default_refresh_rate = 60d;
 
             double refreshRate;
-            if (Window.Monitor.VideoMode.RefreshRate.HasValue)
-            {
-                refreshRate = Window.Monitor.VideoMode.RefreshRate.Value;
-            }
+
+            if (Window.Monitor.VideoMode.RefreshRate.HasValue) refreshRate = Window.Monitor.VideoMode.RefreshRate.Value;
             else
             {
                 refreshRate = default_refresh_rate;
@@ -128,23 +110,14 @@ namespace Automata.Engine.Rendering.GLFW
 
                     Window.DoEvents();
 
-                    if (InputManager.Instance.IsKeyPressed(Key.Escape))
-                    {
-                        Window.Close();
-                    }
+                    if (InputManager.Instance.IsKeyPressed(Key.Escape)) Window.Close();
 
-                    if (!Window.IsClosing)
-                    {
-                        World.GlobalUpdate(_DeltaTimer);
-                    }
+                    if (!Window.IsClosing) World.GlobalUpdate(_DeltaTimer);
 
                     Window.DoEvents();
                     Window.SwapBuffers();
 
-                    if (CheckWaitForNextMonitorRefresh())
-                    {
-                        WaitForNextMonitorRefresh();
-                    }
+                    if (CheckWaitForNextMonitorRefresh()) WaitForNextMonitorRefresh();
 
                     averageFPS.Enqueue(1d / _DeltaTimer.Elapsed.TotalSeconds);
                     Window.Title = $"Automata {averageFPS.Average():0.00} FPS";
@@ -170,6 +143,7 @@ namespace Automata.Engine.Rendering.GLFW
             TimeSpan frameWait = _MinimumFrameTime - _DeltaTimer.Elapsed;
             Thread.Sleep(frameWait <= TimeSpan.Zero ? TimeSpan.Zero : frameWait);
         }
+
 
         #region Event Subscriptors
 

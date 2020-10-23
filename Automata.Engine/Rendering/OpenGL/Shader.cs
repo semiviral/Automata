@@ -10,6 +10,7 @@ using Silk.NET.OpenGL;
 
 #endregion
 
+
 namespace Automata.Engine.Rendering.OpenGL
 {
     public class Shader : IDisposable
@@ -121,10 +122,7 @@ namespace Automata.Engine.Rendering.OpenGL
             _GL.LinkProgram(_Handle);
 
             string infoLog = _GL.GetProgramInfoLog(_Handle);
-            if (!string.IsNullOrWhiteSpace(infoLog))
-            {
-                throw new ShaderProgramException(infoLog);
-            }
+            if (!string.IsNullOrWhiteSpace(infoLog)) throw new ShaderProgramException(infoLog);
 
             _GL.DetachShader(_Handle, vertexShaderHandle);
             _GL.DetachShader(_Handle, fragmentShaderHandle);
@@ -142,15 +140,9 @@ namespace Automata.Engine.Rendering.OpenGL
             }
         }
 
-        public void Dispose()
-        {
-            _GL.DeleteProgram(_Handle);
-        }
+        public void Dispose() { _GL.DeleteProgram(_Handle); }
 
-        public void Use()
-        {
-            _GL.UseProgram(_Handle);
-        }
+        public void Use() { _GL.UseProgram(_Handle); }
 
 
         #region Set .. Get .. As Try
@@ -163,10 +155,7 @@ namespace Automata.Engine.Rendering.OpenGL
 
                 return true;
             }
-            else
-            {
-                return false;
-            }
+            else return false;
         }
 
         public bool TrySetUniform(string name, float value)
@@ -177,10 +166,7 @@ namespace Automata.Engine.Rendering.OpenGL
 
                 return true;
             }
-            else
-            {
-                return false;
-            }
+            else return false;
         }
 
         public bool TrySetUniform(string name, Vector3 value)
@@ -191,10 +177,7 @@ namespace Automata.Engine.Rendering.OpenGL
 
                 return true;
             }
-            else
-            {
-                return false;
-            }
+            else return false;
         }
 
         public bool TrySetUniform(string name, Vector4 value)
@@ -205,10 +188,7 @@ namespace Automata.Engine.Rendering.OpenGL
 
                 return true;
             }
-            else
-            {
-                return false;
-            }
+            else return false;
         }
 
         public unsafe bool TrySetUniform(string name, Matrix4x4 value)
@@ -221,15 +201,13 @@ namespace Automata.Engine.Rendering.OpenGL
                 _GL.ProgramUniformMatrix4(_Handle, location, 1, false, span);
                 return true;
             }
-            else
-            {
-                return false;
-            }
+            else return false;
         }
 
         private bool TryGetUniformLocation(string name, out int location) => _CachedUniformLocations.TryGetValue(name, out location);
 
         #endregion
+
 
         public static Shader LoadShader(string vertexShaderPath, string fragmentShaderPath)
         {
@@ -253,10 +231,7 @@ namespace Automata.Engine.Rendering.OpenGL
             gl.CompileShader(handle);
 
             string infoLog = gl.GetShaderInfoLog(handle);
-            if (!string.IsNullOrWhiteSpace(infoLog))
-            {
-                throw new ShaderLoadException(shaderType, infoLog);
-            }
+            if (!string.IsNullOrWhiteSpace(infoLog)) throw new ShaderLoadException(shaderType, infoLog);
 
             return handle;
         }

@@ -8,6 +8,7 @@ using System.Runtime.Intrinsics;
 
 #endregion
 
+
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable UnusedMember.Global
 // ReSharper disable InconsistentNaming
@@ -44,6 +45,7 @@ namespace Automata.Engine.Numerics
         public override int GetHashCode() => X.GetHashCode() ^ Y.GetHashCode() ^ Z.GetHashCode();
 
         public override string ToString() => string.Format(FormatHelper.VECTOR_3_COMPONENT, nameof(Vector3i), X, Y, Z);
+
 
         #region Operators
 
@@ -96,6 +98,7 @@ namespace Automata.Engine.Numerics
         public static Vector3b operator <=(int a, Vector3i b) => LessThanImpl(a, b) | EqualsImpl(a, b);
 
         #endregion
+
 
         #region Conversions
 

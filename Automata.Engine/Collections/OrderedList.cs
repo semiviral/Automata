@@ -6,6 +6,7 @@ using System.Collections.Generic;
 
 #endregion
 
+
 namespace Automata.Engine.Collections
 {
     public class OrderedList<T> : IReadOnlyCollection<T> where T : notnull

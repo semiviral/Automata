@@ -6,6 +6,7 @@ using System;
 
 #endregion
 
+
 namespace Automata.Game.Blocks
 {
     public class BlockDefinition : IBlockDefinition
@@ -26,21 +27,14 @@ namespace Automata.Game.Blocks
 
         public ushort Id { get; }
 
-        static BlockDefinition()
-        {
-            _DefaultUVsRule = direction => string.Empty;
-        }
-
+        static BlockDefinition() { _DefaultUVsRule = direction => string.Empty; }
 
         public BlockDefinition(ushort id, string blockName, Func<Direction, string> uvsRule, params Property[] properties)
         {
             Id = id;
             BlockName = blockName;
 
-            foreach (Property property in properties)
-            {
-                Properties |= property;
-            }
+            foreach (Property property in properties) Properties |= property;
 
             _UVsRule = uvsRule ?? _DefaultUVsRule;
         }

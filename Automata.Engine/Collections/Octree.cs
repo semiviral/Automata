@@ -7,6 +7,7 @@ using Automata.Engine.Numerics;
 
 #endregion
 
+
 namespace Automata.Engine.Collections
 {
     public class Octree<T> : INodeCollection<T> where T : IEquatable<T>
@@ -16,10 +17,7 @@ namespace Automata.Engine.Collections
 
         public Octree(int size, T initialValue, bool fullyPopulate)
         {
-            if ((size <= 0) || ((size & (size - 1)) != 0))
-            {
-                throw new ArgumentException($"Size must be a power of two ({size}).", nameof(size));
-            }
+            if ((size <= 0) || ((size & (size - 1)) != 0)) throw new ArgumentException($"Size must be a power of two ({size}).", nameof(size));
 
             _Extent = size >> 1;
             _RootNode = new OctreeNode<T>(initialValue);
@@ -38,35 +36,24 @@ namespace Automata.Engine.Collections
 
         public int Length { get; }
 
-
         public IEnumerable<T> GetAllData()
         {
             int size = _Extent << 1;
 
-            for (int index = 0; index < Length; index++)
-            {
-                yield return GetPoint(Vector3i.Project3D(index, size));
-            }
+            for (int index = 0; index < Length; index++) yield return GetPoint(Vector3i.Project3D(index, size));
         }
 
         public void CopyTo(T[] destinationArray)
         {
-            if (destinationArray.Rank != 1)
-            {
-                throw new RankException("Only single dimension arrays are supported here.");
-            }
+            if (destinationArray.Rank != 1) throw new RankException("Only single dimension arrays are supported here.");
             else if (destinationArray.Length < Length)
-            {
                 throw new ArgumentOutOfRangeException(nameof(destinationArray), "Destination array was not long enough.");
-            }
 
             int size = _Extent << 1;
 
-            for (int index = 0; index < destinationArray.Length; index++)
-            {
-                destinationArray[index] = GetPoint(Vector3i.Project3D(index, size));
-            }
+            for (int index = 0; index < destinationArray.Length; index++) destinationArray[index] = GetPoint(Vector3i.Project3D(index, size));
         }
+
 
         #region GetPoint
 
@@ -92,6 +79,7 @@ namespace Automata.Engine.Collections
         }
 
         #endregion
+
 
         #region SetPoint
 

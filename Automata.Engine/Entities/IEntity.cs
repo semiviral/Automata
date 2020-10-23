@@ -7,6 +7,7 @@ using Automata.Engine.Components;
 
 #endregion
 
+
 namespace Automata.Engine.Entities
 {
     public interface IEntity : IEquatable<IEntity>

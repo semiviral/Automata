@@ -8,6 +8,7 @@ using Serilog;
 
 #endregion
 
+
 namespace Automata.Engine.Entities
 {
     public sealed class EntityManager
@@ -29,18 +30,12 @@ namespace Automata.Engine.Entities
             {
                 IComponent? component = (IComponent?)Activator.CreateInstance(type);
 
-                if (component is null)
-                {
-                    throw new InvalidOperationException("Types used for composition must implement a parameterless constructor.");
-                }
+                if (component is null) throw new InvalidOperationException("Types used for composition must implement a parameterless constructor.");
 
                 entity.AddComponent(component);
             }
 
-            if (autoRegister)
-            {
-                RegisterEntity(entity);
-            }
+            if (autoRegister) RegisterEntity(entity);
 
             return entity;
         }
@@ -49,21 +44,16 @@ namespace Automata.Engine.Entities
         {
             _Entities.Add(entity);
 
-            foreach (Type type in entity.ComponentTypes)
-            {
-                RegisterComponent(entity, entity.GetComponent(type));
-            }
+            foreach (Type type in entity.ComponentTypes) RegisterComponent(entity, entity.GetComponent(type));
         }
 
         private void RemoveEntityInternal(IEntity entity)
         {
             _Entities.Remove(entity);
 
-            foreach (Type type in entity.ComponentTypes)
-            {
-                RemoveComponent(entity, type);
-            }
+            foreach (Type type in entity.ComponentTypes) RemoveComponent(entity, type);
         }
+
 
         #region Remove .. Data
 
@@ -84,15 +74,14 @@ namespace Automata.Engine.Entities
         private void RemoveComponentInternal(IEntity entity, Type type)
         {
             if (!typeof(IComponent).IsAssignableFrom(type))
-            {
                 throw new TypeLoadException($"Component types must be assignable from {nameof(IComponent)}.");
-            }
 
             entity.RemoveComponent(type);
             _ComponentCountByType[type] -= 1;
         }
 
         #endregion
+
 
         #region Register .. Data
 
@@ -133,30 +122,20 @@ namespace Automata.Engine.Entities
         private void RegisterComponentInternal(IEntity entity, Type type, IComponent? component)
         {
             if (!typeof(IComponent).IsAssignableFrom(type))
-            {
                 throw new TypeLoadException($"Component types must be assignable from {nameof(IComponent)}.");
-            }
 
             IComponent? instance = component ?? (IComponent?)Activator.CreateInstance(type);
 
-            if (instance is null)
-            {
-                throw new TypeLoadException($"Failed to initialize {nameof(IComponent)} of type '{type.FullName}'.");
-            }
-            else if (!entity.TryGetComponent(type, out _))
-            {
-                entity.AddComponent(instance);
-            }
+            if (instance is null) throw new TypeLoadException($"Failed to initialize {nameof(IComponent)} of type '{type.FullName}'.");
+            else if (!entity.TryGetComponent(type, out _)) entity.AddComponent(instance);
 
-            if (!_ComponentCountByType.ContainsKey(type))
-            {
-                _ComponentCountByType.Add(type, 0);
-            }
+            if (!_ComponentCountByType.ContainsKey(type)) _ComponentCountByType.Add(type, 0);
 
             _ComponentCountByType[type] += 1;
         }
 
         #endregion
+
 
         #region Get .. Data
 
@@ -164,10 +143,7 @@ namespace Automata.Engine.Entities
         {
             foreach (IComponent component in _Entities.SelectMany(entity => entity.Components))
             {
-                if (component is T componentT)
-                {
-                    yield return componentT;
-                }
+                if (component is T componentT) yield return componentT;
             }
         }
 
@@ -218,10 +194,7 @@ namespace Automata.Engine.Entities
         {
             foreach (IEntity entity in _Entities)
             {
-                if (entity.TryGetComponent(out T1? component))
-                {
-                    yield return component;
-                }
+                if (entity.TryGetComponent(out T1? component)) yield return component;
             }
         }
 
@@ -232,10 +205,7 @@ namespace Automata.Engine.Entities
             foreach (IEntity entity in _Entities)
             {
                 if (entity.TryGetComponent(out T1? component)
-                    && entity.TryGetComponent(out T2? component2))
-                {
-                    yield return (component, component2);
-                }
+                    && entity.TryGetComponent(out T2? component2)) yield return (component, component2);
             }
         }
 
@@ -248,10 +218,7 @@ namespace Automata.Engine.Entities
             {
                 if (entity.TryGetComponent(out T1? component)
                     && entity.TryGetComponent(out T2? component2)
-                    && entity.TryGetComponent(out T3? component3))
-                {
-                    yield return (component, component2, component3);
-                }
+                    && entity.TryGetComponent(out T3? component3)) yield return (component, component2, component3);
             }
         }
 
@@ -266,10 +233,7 @@ namespace Automata.Engine.Entities
                 if (entity.TryGetComponent(out T1? component)
                     && entity.TryGetComponent(out T2? component2)
                     && entity.TryGetComponent(out T3? component3)
-                    && entity.TryGetComponent(out T4? component4))
-                {
-                    yield return (component, component2, component3, component4);
-                }
+                    && entity.TryGetComponent(out T4? component4)) yield return (component, component2, component3, component4);
             }
         }
 
