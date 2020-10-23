@@ -776,9 +776,8 @@ namespace Automata.Engine.Rendering.Vulkan
         private static SurfaceFormatKHR ChooseSwapSurfaceFormat(IReadOnlyList<SurfaceFormatKHR> availableFormats)
         {
             foreach (SurfaceFormatKHR surfaceFormat in availableFormats)
-            {
-                if ((surfaceFormat.Format == Format.B8G8R8Srgb) && (surfaceFormat.ColorSpace == ColorSpaceKHR.ColorspaceSrgbNonlinearKhr)) return surfaceFormat;
-            }
+                if ((surfaceFormat.Format == Format.B8G8R8Srgb) && (surfaceFormat.ColorSpace == ColorSpaceKHR.ColorspaceSrgbNonlinearKhr))
+                    return surfaceFormat;
 
             return availableFormats[0];
         }
@@ -786,8 +785,9 @@ namespace Automata.Engine.Rendering.Vulkan
         private static PresentModeKHR ChooseSwapPresentationMode(IEnumerable<PresentModeKHR> availablePresentationModes)
         {
             foreach (PresentModeKHR presentationMode in availablePresentationModes)
-                if (presentationMode == PresentModeKHR.PresentModeMailboxKhr)
-                    return presentationMode;
+            {
+                if (presentationMode == PresentModeKHR.PresentModeMailboxKhr) return presentationMode;
+            }
 
             return PresentModeKHR.PresentModeFifoKhr;
         }

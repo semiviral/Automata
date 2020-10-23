@@ -57,9 +57,8 @@ namespace Automata.Game.Blocks
         private void SortBlockDefinitionPropertiesToBuckets(BlockDefinition blockDefinition)
         {
             foreach (BlockDefinition.Property property in EnumExtensions.GetEnumsList<BlockDefinition.Property>())
-            {
-                if (blockDefinition.HasProperty(property)) _PropertiesBuckets[property].Add(blockDefinition.Id);
-            }
+                if (blockDefinition.HasProperty(property))
+                    _PropertiesBuckets[property].Add(blockDefinition.Id);
         }
 
         /// <summary>

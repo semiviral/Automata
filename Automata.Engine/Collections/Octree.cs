@@ -93,9 +93,8 @@ namespace Automata.Engine.Collections
 
                 // avoiding using linq here for performance sensitivity
                 foreach (OctreeNode<TNode> octreeNode in _Nodes)
-                {
-                    if (!octreeNode.IsUniform || !octreeNode.Value.Equals(firstValue)) return false;
-                }
+                    if (!octreeNode.IsUniform || !octreeNode.Value.Equals(firstValue))
+                        return false;
 
                 return true;
             }

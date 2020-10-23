@@ -140,8 +140,9 @@ namespace Automata.Engine.Entities
         public IEnumerable<T> GetComponentsAssignableFrom<T>() where T : class, IComponent
         {
             foreach (IComponent component in _Entities.SelectMany(entity => entity.Components.Values))
-                if (component is T componentT)
-                    yield return componentT;
+            {
+                if (component is T componentT) yield return componentT;
+            }
         }
 
         /// <summary>
@@ -190,8 +191,9 @@ namespace Automata.Engine.Entities
             where T1 : class, IComponent
         {
             foreach (IEntity entity in _Entities)
-                if (entity.TryGetComponent(out T1? component))
-                    yield return component;
+            {
+                if (entity.TryGetComponent(out T1? component)) yield return component;
+            }
         }
 
         public IEnumerable<(T1, T2)> GetComponents<T1, T2>()
