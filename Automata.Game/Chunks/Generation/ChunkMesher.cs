@@ -82,7 +82,7 @@ namespace Automata.Game.Chunks.Generation
                 0b01_01_10_000001_000001_000001,
                 0b01_01_10_000001_000000_000001,
                 0b01_01_10_000000_000000_000001,
-                0b01_01_10_000000_000001_000001,
+                0b01_01_10_000000_000001_000001
             },
             new[]
             {
@@ -90,7 +90,7 @@ namespace Automata.Game.Chunks.Generation
                 0b01_10_01_000001_000001_000000,
                 0b01_10_01_000001_000001_000001,
                 0b01_10_01_000000_000001_000001,
-                0b01_10_01_000000_000001_000000,
+                0b01_10_01_000000_000001_000000
             },
             new[]
             {
@@ -98,7 +98,7 @@ namespace Automata.Game.Chunks.Generation
                 0b10_01_01_000001_000001_000000,
                 0b10_01_01_000001_000000_000000,
                 0b10_01_01_000001_000000_000001,
-                0b10_01_01_000001_000001_000001,
+                0b10_01_01_000001_000001_000001
             },
             new[]
             {
@@ -106,7 +106,7 @@ namespace Automata.Game.Chunks.Generation
                 0b01_01_00_000000_000001_000000,
                 0b01_01_00_000000_000000_000000,
                 0b01_01_00_000001_000000_000000,
-                0b01_01_00_000001_000001_000000,
+                0b01_01_00_000001_000001_000000
             },
             new[]
             {
@@ -114,7 +114,7 @@ namespace Automata.Game.Chunks.Generation
                 0b01_00_01_000001_000000_000001,
                 0b01_00_01_000001_000000_000000,
                 0b01_00_01_000000_000000_000000,
-                0b01_00_01_000000_000000_000001,
+                0b01_00_01_000000_000000_000001
             },
             new[]
             {
@@ -122,8 +122,8 @@ namespace Automata.Game.Chunks.Generation
                 0b00_01_01_000000_000001_000001,
                 0b00_01_01_000000_000000_000001,
                 0b00_01_01_000000_000000_000000,
-                0b00_01_01_000000_000001_000000,
-            },
+                0b00_01_01_000000_000001_000000
+            }
         };
 
         private static readonly int[] _IndexStepByNormalIndex =
@@ -133,7 +133,7 @@ namespace Automata.Game.Chunks.Generation
             GenerationConstants.CHUNK_SIZE,
             -1,
             -GenerationConstants.CHUNK_SIZE_SQUARED,
-            -GenerationConstants.CHUNK_SIZE,
+            -GenerationConstants.CHUNK_SIZE
         };
 
         public static PendingMesh<int> GeneratePackedMesh(Span<ushort> blocks, INodeCollection<ushort>[] neighbors, bool traversalMeshing)
@@ -231,32 +231,6 @@ namespace Automata.Game.Chunks.Generation
                         // check if current facing block axis value is within the local chunk
                         if (!isFaceCheckOutOfBounds)
                         {
-                            // amount by integer to add to current traversal index to get 3D->1D position of facing block
-                            int facedBlockIndex = traversalIndex + _IndexStepByNormalIndex[normalIndex];
-
-                            // if so, index into block ids and set facingBlockId
-                            ushort facedBlockId = blocks[facedBlockIndex];
-
-                            // if transparent, traverse so long as facing block is not the same block id
-                            // if opaque, traverse so long as facing block is transparent
-                            if (isCurrentBlockTransparent)
-                            {
-                                if (currentBlockId != facedBlockId) break;
-                            }
-                            else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockId, BlockDefinition.Property.Transparent))
-                            {
-                                if (!isNegativeFace)
-                                {
-                                    // we've culled this face, and faced block is opaque as well, so cull it's face inverse to the current.
-                                    Direction inverseFaceDirection = (Direction)(1 << ((normalIndex + 3) % 6));
-                                    faces[facedBlockIndex] |= inverseFaceDirection;
-                                }
-
-                                break;
-                            }
-                        }
-                        else
-                        {
                             // this block of code translates the integer local position to the local position of the neighbor at [normalIndex]
                             int sign = isNegativeFace ? -1 : 1;
                             int iModuloComponentMask = GenerationConstants.CHUNK_SIZE_BIT_MASK << iModulo3Shift;
@@ -278,6 +252,28 @@ namespace Automata.Game.Chunks.Generation
                                 if (currentBlockId != facedBlockId) break;
                             }
                             else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockId, BlockDefinition.Property.Transparent)) break;
+                        }
+                        else
+                        {
+                            // amount by integer to add to current traversal index to get 3D->1D position of facing block
+                            int facedBlockIndex = traversalIndex + _IndexStepByNormalIndex[normalIndex];
+
+                            // if so, index into block ids and set facingBlockId
+                            ushort facedBlockId = blocks[facedBlockIndex];
+
+                            // if transparent, traverse so long as facing block is not the same block id
+                            // if opaque, traverse so long as facing block is transparent
+                            if (isCurrentBlockTransparent)
+                            {
+                                if (currentBlockId != facedBlockId) break;
+                            }
+                            else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockId, BlockDefinition.Property.Transparent))
+                            {
+                                // we've culled this face, and faced block is opaque as well, so cull it's face adjacent to current.
+                                if (!isNegativeFace) faces[facedBlockIndex] |= (Direction)(1 << ((normalIndex + 3) % 6));
+
+                                break;
+                            }
                         }
 
                         faces[traversalIndex] |= faceDirection;
@@ -369,28 +365,6 @@ namespace Automata.Game.Chunks.Generation
 
                 if (!isFaceCheckOutOfBounds)
                 {
-                    // amount by integer to add to current traversal index to get 3D->1D position of facing block
-                    int facedBlockIndex = index + _IndexStepByNormalIndex[normalIndex];
-
-                    // if so, index into block ids and set facingBlockId
-                    ushort facedBlockId = blocks[facedBlockIndex];
-
-                    // if transparent, traverse so long as facing block is not the same block id
-                    // if opaque, traverse so long as facing block is transparent
-                    if (isCurrentBlockTransparent)
-                    {
-                        if (currentBlockId == facedBlockId) continue;
-                    }
-                    else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockId, BlockDefinition.Property.Transparent))
-                    {
-                        Direction inverseFaceDirection = (Direction)(1 << ((normalIndex + 3) % 6));
-                        faces[facedBlockIndex] = faces[facedBlockIndex].WithDirection(inverseFaceDirection);
-
-                        continue;
-                    }
-                }
-                else
-                {
                     // this block of code translates the integer local position to the local position of the neighbor at [normalIndex]
                     int sign = isNegativeFace ? -1 : 1;
                     int iModuloComponentMask = GenerationConstants.CHUNK_SIZE_BIT_MASK << iModulo3Shift;
@@ -412,12 +386,34 @@ namespace Automata.Game.Chunks.Generation
                     }
                     else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockId, BlockDefinition.Property.Transparent)) continue;
                 }
+                else
+                {
+                    // amount by integer to add to current traversal index to get 3D->1D position of facing block
+                    int facedBlockIndex = index + _IndexStepByNormalIndex[normalIndex];
+
+                    // if so, index into block ids and set facingBlockId
+                    ushort facedBlockId = blocks[facedBlockIndex];
+
+                    // if transparent, traverse so long as facing block is not the same block id
+                    // if opaque, traverse so long as facing block is transparent
+                    if (isCurrentBlockTransparent)
+                    {
+                        if (currentBlockId == facedBlockId) continue;
+                    }
+                    else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockId, BlockDefinition.Property.Transparent))
+                    {
+                        // we've culled this face, and faced block is opaque as well, so cull it's face adjacent to current.
+                        if (!isNegativeFace) faces[facedBlockIndex] |= (Direction)(1 << ((normalIndex + 3) % 6));
+
+                        continue;
+                    }
+                }
 
                 // int compressedUv = (textureId << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2))
                 //                    ^ (1 << GenerationConstants.CHUNK_SIZE_BIT_SHIFT)
                 //                    ^ 1;
 
-                faces[index] = faces[index].WithDirection(faceDirection);
+                faces[index] |= faceDirection;
 
                 uint vertexesCount = (uint)vertexes.Count;
 
@@ -507,7 +503,20 @@ namespace Automata.Game.Chunks.Generation
                 bool isFaceCheckOutOfBounds = (!isNegativeFace && (faceCheckAxisValue == (GenerationConstants.CHUNK_SIZE - 1)))
                                               || (isNegativeFace && (faceCheckAxisValue == 0));
 
-                if (!isFaceCheckOutOfBounds)
+                if (isFaceCheckOutOfBounds)
+                {
+                    // index into neighbor blocks collections, call .GetPoint() with adjusted local position
+                    // remark: if there's no neighbor at the index given, then no chunk exists there (for instance,
+                    //     chunks at the edge of render distance). In this case, return NullID so no face is rendered on edges.
+                    ushort facedBlockId = BlockRegistry.NullID;
+
+                    if (isCurrentBlockTransparent)
+                    {
+                        if (currentBlockId == facedBlockId) continue;
+                    }
+                    else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockId, BlockDefinition.Property.Transparent)) continue;
+                }
+                else
                 {
                     // amount by integer to add to current traversal index to get 3D->1D position of facing block
                     int facedBlockIndex = index + _IndexStepByNormalIndex[normalIndex];
@@ -523,29 +532,12 @@ namespace Automata.Game.Chunks.Generation
                     }
                     else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockId, BlockDefinition.Property.Transparent))
                     {
-                        // inverse face direction
-                        faces[facedBlockIndex] |= (Direction)(1 << ((normalIndex + 3) % 6));
+                        // we've culled this face, and faced block is opaque as well, so cull it's face adjacent to current.
+                        if (!isNegativeFace) faces[facedBlockIndex] |= (Direction)(1 << ((normalIndex + 3) % 6));
 
                         continue;
                     }
                 }
-                else
-                {
-                    // index into neighbor blocks collections, call .GetPoint() with adjusted local position
-                    // remark: if there's no neighbor at the index given, then no chunk exists there (for instance,
-                    //     chunks at the edge of render distance). In this case, return NullID so no face is rendered on edges.
-                    ushort facedBlockId = BlockRegistry.NullID;
-
-                    if (isCurrentBlockTransparent)
-                    {
-                        if (currentBlockId == facedBlockId) continue;
-                    }
-                    else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockId, BlockDefinition.Property.Transparent)) continue;
-                }
-
-                // int compressedUv = (textureId << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2))
-                //                    ^ (1 << GenerationConstants.CHUNK_SIZE_BIT_SHIFT)
-                //                    ^ 1;
 
                 faces[index] |= faceDirection;
 
