@@ -16,10 +16,8 @@ namespace Automata.Engine.Collections
         {
             private OctreeNode<TNode>[]? _Nodes;
 
-            public bool IsUniform => _Nodes == null;
-
             public TNode Value { get; private set; }
-
+            public bool IsUniform => _Nodes == null;
             public OctreeNode<TNode>? this[int index] => _Nodes?[index];
 
             /// <summary>
@@ -103,6 +101,11 @@ namespace Automata.Engine.Collections
         private readonly int _Extent;
         private readonly OctreeNode<T> _RootNode;
 
+        public T Value => _RootNode.Value;
+        public bool IsUniform => _RootNode.IsUniform;
+
+        public int Length { get; }
+
         public Octree(int size, T initialValue)
         {
             if ((size <= 0) || ((size & (size - 1)) != 0)) throw new ArgumentException($"Size must be a power of two ({size}).", nameof(size));
@@ -112,11 +115,6 @@ namespace Automata.Engine.Collections
 
             Length = (int)Math.Pow(size, 3);
         }
-
-        public T Value => _RootNode.Value;
-        public bool IsUniform => _RootNode.IsUniform;
-
-        public int Length { get; }
 
         public IEnumerable<T> GetAllData()
         {
@@ -135,9 +133,6 @@ namespace Automata.Engine.Collections
 
             for (int index = 0; index < destinationArray.Length; index++) destinationArray[index] = GetPoint(Vector3i.Project3D(index, size));
         }
-
-
-        #region GetPoint
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T GetPoint(Vector3i point) => GetPointIterative(point.X, point.Y, point.Z);
@@ -160,18 +155,11 @@ namespace Automata.Engine.Collections
             return currentNode.Value;
         }
 
-        #endregion
-
-
-        #region SetPoint
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetPoint(Vector3i point, T value) => _RootNode.SetPoint(_Extent, point.X, point.Y, point.Z, value);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetPoint(int x, int y, int z, T value) => _RootNode.SetPoint(_Extent, x, y, z, value);
-
-        #endregion
     }
 
     public static class Octree

@@ -18,7 +18,6 @@ using Automata.Game.Chunks;
 using Automata.Game.Chunks.Generation;
 using ConcurrentPools;
 using Serilog;
-using Serilog.Events;
 using Silk.NET.Windowing.Common;
 
 #endregion
@@ -29,15 +28,16 @@ namespace Automata.Game
     internal class Program
     {
         private static readonly string _LocalDataPath =
-            $@"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.Create)}/Automata/";
+            $@"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.Create)}\Automata\";
 
         private static void Main()
         {
             Log.Logger = new LoggerConfiguration()
-                .WriteTo.Console().MinimumLevel.Is(LogEventLevel.Debug)
+                .MinimumLevel.Debug()
+                .WriteTo.Console()
                 .CreateLogger();
 
-            Log.Information("Logger initialized.");
+            Log.Debug("Logger initialized.");
 
             if (!Directory.Exists(_LocalDataPath))
             {
@@ -127,7 +127,7 @@ namespace Automata.Game
 
             world.EntityManager.RegisterComponent(player, new RenderShader
             {
-                Value = Shader.LoadShader("Resources/Shaders/PackedVertexes.glsl", "Resources/Shaders/DefaultFragment.glsl")
+                Value = Shader.LoadShader("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl")
             });
 
             world.EntityManager.RegisterComponent(player, new ChunkLoader

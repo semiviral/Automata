@@ -49,10 +49,10 @@ namespace Automata.Game.Chunks.Generation
 
                 switch (chunk.State)
                 {
-                    case GenerationState.Ungenerated:
+                    case GenerationState.Ungenerated when entity.TryGetComponent(out Translation? translation):
                         BoundedThreadPool.QueueWork(() => GenerateChunk(chunk.ID,
                             new BuildStep.Parameters(GenerationConstants.Seed, GenerationConstants.FREQUENCY, GenerationConstants.PERSISTENCE,
-                                Vector3i.FromVector3(entity.GetComponent<Translation>().Value))));
+                                Vector3i.FromVector3(translation.Value))));
 
                         chunk.State += 1;
                         break;

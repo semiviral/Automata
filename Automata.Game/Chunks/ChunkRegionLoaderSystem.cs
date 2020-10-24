@@ -64,17 +64,6 @@ namespace Automata.Game.Chunks
 
             int totalActivations = 0, totalDeactivations = 0;
 
-            foreach (Vector3i origin in activations)
-            {
-                IEntity chunk = entityManager.ComposeEntity<ChunkComposition>(true);
-                chunk.GetComponent<Translation>().Value = origin;
-                chunk.GetComponent<Chunk>().State = GenerationState.Ungenerated;
-
-                _ChunkEntities.Add(origin, chunk);
-
-                totalActivations += 1;
-            }
-
             foreach (Vector3i origin in deactivations)
             {
                 _ChunkEntities.Remove(origin, out IEntity? entity);
@@ -84,6 +73,17 @@ namespace Automata.Game.Chunks
                 entityManager.RemoveEntity(entity);
 
                 totalDeactivations += 1;
+            }
+
+            foreach (Vector3i origin in activations)
+            {
+                IEntity chunk = entityManager.ComposeEntity<ChunkComposition>(true);
+                chunk.GetComponent<Translation>().Value = origin;
+                chunk.GetComponent<Chunk>().State = GenerationState.Ungenerated;
+
+                _ChunkEntities.Add(origin, chunk);
+
+                totalActivations += 1;
             }
 
             Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkRegionLoaderSystem),

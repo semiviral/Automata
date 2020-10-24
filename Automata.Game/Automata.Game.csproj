@@ -20,31 +20,31 @@
     </ItemGroup>
 
     <ItemGroup>
-      <AdditionalFiles Include="..\Resources\DefaultFragment.glsl">
-        <Link>Resources\Shaders\DefaultFragment.glsl</Link>
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </AdditionalFiles>
-      <AdditionalFiles Include="..\Resources\PackedVertexes.glsl">
-        <Link>Resources\Shaders\PackedVertexes.glsl</Link>
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </AdditionalFiles>
       <Content Include="..\Resources\DefaultFragment.glsl">
         <Link>Shaders\DefaultFragment.glsl</Link>
       </Content>
       <Content Include="..\Resources\PackedVertexes.glsl">
         <Link>Shaders\PackedVertexes.glsl</Link>
       </Content>
-      <Content Include="..\Resources\RaymarchFragment.glsl">
+      <Content Include="..\Resources\Shaders\DefaultFragment.glsl">
+        <Link>Resources\Shaders\DefaultFragment.glsl</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="..\Resources\Shaders\DefaultVertex.glsl">
+        <Link>Resources\Shaders\DefaultVertex.glsl</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="..\Resources\Shaders\PackedVertex.glsl">
+        <Link>Resources\Shaders\PackedVertex.glsl</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="..\Resources\Shaders\RaymarchFragment.glsl">
         <Link>Resources\Shaders\RaymarchFragment.glsl</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
-      <Content Include="..\Resources\RaymarchVertex.glsl">
+      <Content Include="..\Resources\Shaders\RaymarchVertex.glsl">
         <Link>Resources\Shaders\RaymarchVertex.glsl</Link>
-      </Content>
-      <Content Include="bin\Debug\netcoreapp3.1\DefaultFragment.glsl">
-        <Link>Shaders\DefaultFragment.glsl</Link>
-      </Content>
-      <Content Include="bin\Debug\netcoreapp3.1\PackedVertexes.glsl">
-        <Link>Shaders\PackedVertexes.glsl</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
     </ItemGroup>
 

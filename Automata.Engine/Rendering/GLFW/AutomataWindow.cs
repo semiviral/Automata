@@ -123,22 +123,9 @@ namespace Automata.Engine.Rendering.GLFW
             }
         }
 
-        private bool CheckWaitForNextMonitorRefresh() =>
-            Window.VSync switch
-            {
-                VSyncMode.On => true,
-                VSyncMode.Off => false,
-                _ => throw new ArgumentOutOfRangeException()
-            };
+        private bool CheckWaitForNextMonitorRefresh() => Window.VSync == VSyncMode.On;
 
-        private void WaitForNextMonitorRefresh()
-        {
-            TimeSpan frameWait = _MinimumFrameTime - _DeltaTimer.Elapsed;
-            Thread.Sleep(frameWait <= TimeSpan.Zero ? TimeSpan.Zero : frameWait);
-        }
-
-
-        #region Event Subscriptors
+        private void WaitForNextMonitorRefresh() => Thread.Sleep(Math.Max((_MinimumFrameTime - _DeltaTimer.Elapsed).Milliseconds, 0));
 
         private void OnWindowResized(Size size) => Resized?.Invoke(this, Size);
 
@@ -149,7 +136,5 @@ namespace Automata.Engine.Rendering.GLFW
         }
 
         private void OnWindowClosing() => Closing?.Invoke(this);
-
-        #endregion
     }
 }
