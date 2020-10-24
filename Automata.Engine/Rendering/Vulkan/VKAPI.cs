@@ -61,6 +61,8 @@ namespace Automata.Engine.Rendering.Vulkan
         private static readonly string _VulkanCommandBuffersCreationFormat = $"({nameof(VKAPI)}) Creating command buffers: {{0}}";
         private static readonly string _VulkanSemaphoreCreationFormat = $"({nameof(VKAPI)}) Creating semaphores: {{0}}";
 
+        private static AllocationCallbacks AllocationCallbacksNull = default!;
+
         private readonly string[] _ValidationLayers =
         {
             "VK_LAYER_KHRONOS_validation"
@@ -110,10 +112,11 @@ namespace Automata.Engine.Rendering.Vulkan
         private Semaphore[] _RenderFinishedSemaphores;
 
         private int _CurrentFrame;
+        private Instance _VKInstance;
 
         public Vk VK { get; }
 
-        public Instance VKInstance { get; }
+        public Instance VKInstance => _VKInstance;
 
         public VKAPI()
         {
@@ -275,10 +278,7 @@ namespace Automata.Engine.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanInstanceCreationFormat, "creating instance."));
 
-            fixed (Instance* vkInstance = &VKInstance)
-            {
-                if (VK.CreateInstance(&instanceCreateInfo, null, vkInstance) != Result.Success) throw new Exception("Failed to create Vulkan instance.");
-            }
+            if (VK.CreateInstance(ref instanceCreateInfo, ref AllocationCallbacksNull, out _VKInstance) != Result.Success) throw new Exception("Failed to create Vulkan instance.");
 
             Log.Information(string.Format(_VulkanInstanceCreationFormat, "assigning Vulkan instance."));
 
@@ -775,8 +775,9 @@ namespace Automata.Engine.Rendering.Vulkan
         private static SurfaceFormatKHR ChooseSwapSurfaceFormat(IReadOnlyList<SurfaceFormatKHR> availableFormats)
         {
             foreach (SurfaceFormatKHR surfaceFormat in availableFormats)
-                if ((surfaceFormat.Format == Format.B8G8R8Srgb) && (surfaceFormat.ColorSpace == ColorSpaceKHR.ColorspaceSrgbNonlinearKhr))
-                    return surfaceFormat;
+            {
+                if ((surfaceFormat.Format == Format.B8G8R8Srgb) && (surfaceFormat.ColorSpace == ColorSpaceKHR.ColorspaceSrgbNonlinearKhr)) return surfaceFormat;
+            }
 
             return availableFormats[0];
         }
@@ -784,9 +785,8 @@ namespace Automata.Engine.Rendering.Vulkan
         private static PresentModeKHR ChooseSwapPresentationMode(IEnumerable<PresentModeKHR> availablePresentationModes)
         {
             foreach (PresentModeKHR presentationMode in availablePresentationModes)
-            {
-                if (presentationMode == PresentModeKHR.PresentModeMailboxKhr) return presentationMode;
-            }
+                if (presentationMode == PresentModeKHR.PresentModeMailboxKhr)
+                    return presentationMode;
 
             return PresentModeKHR.PresentModeFifoKhr;
         }

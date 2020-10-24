@@ -22,6 +22,13 @@ namespace Automata.Engine
         public static float ToRadians(float degrees) => degrees * ((float)Math.PI / 180f);
         public static Vector3 ToRadians(Vector3 degrees) => new Vector3(ToRadians(degrees.X), ToRadians(degrees.Y), ToRadians(degrees.Z));
 
+        public static unsafe float GetValue(this Matrix4x4 matrix, uint row,  uint column)
+        {
+            if (row >= 4u) throw new ArgumentOutOfRangeException(nameof(row));
+            else if (column >= 4u) throw new ArgumentOutOfRangeException(nameof(row));
+
+            return (&matrix.M11)[(row * 4u) + column];
+        }
         // row major
         public static unsafe Span<float> Unroll(this Matrix4x4 matrix) => MemoryMarshal.CreateSpan(ref matrix.M11, sizeof(Matrix4x4) / sizeof(float));
 
