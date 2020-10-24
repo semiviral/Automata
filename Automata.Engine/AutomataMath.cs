@@ -17,18 +17,18 @@ namespace Automata.Engine
 {
     public static class AutomataMath
     {
-        public static float UnLerp(float a, float b, float interpolant) => (interpolant - a) / (b - a);
+        public static float Unlerp(float a, float b, float interpolant) => (interpolant - a) / (b - a);
 
         public static float ToRadians(float degrees) => degrees * ((float)Math.PI / 180f);
-        public static Vector3 ToRadians(Vector3 degrees) => new Vector3(ToRadians(degrees.X), ToRadians(degrees.Y), ToRadians(degrees.Z));
 
-        public static unsafe float GetValue(this Matrix4x4 matrix, uint row,  uint column)
+        public static unsafe float GetValue(this Matrix4x4 matrix, uint row, uint column)
         {
             if (row >= 4u) throw new ArgumentOutOfRangeException(nameof(row));
             else if (column >= 4u) throw new ArgumentOutOfRangeException(nameof(row));
 
             return (&matrix.M11)[(row * 4u) + column];
         }
+
         // row major
         public static unsafe Span<float> Unroll(this Matrix4x4 matrix) => MemoryMarshal.CreateSpan(ref matrix.M11, sizeof(Matrix4x4) / sizeof(float));
 
@@ -70,23 +70,6 @@ namespace Automata.Engine
         public static Vector3 RoundBy(this Vector3 a, Vector3 b) =>
             new Vector3((float)Math.Floor(a.X / b.X), (float)Math.Floor(a.Y / b.Y), (float)Math.Floor(a.Z / b.Z)) * b;
 
-        public static bool TryCreateModelMatrixFromEntity(IEntity entity, out Matrix4x4 modelMatrix)
-        {
-            if ((entity.TryGetComponent(out Scale? modelScale) && modelScale.Changed)
-                | (entity.TryGetComponent(out Rotation? modelRotation) && modelRotation.Changed)
-                | (entity.TryGetComponent(out Translation? modelTranslation) && modelTranslation.Changed))
-            {
-                modelMatrix = Matrix4x4.Identity;
-                modelMatrix *= Matrix4x4.CreateScale(modelScale?.Value ?? Scale.DEFAULT);
-                modelMatrix *= Matrix4x4.CreateFromQuaternion(modelRotation?.Value ?? Quaternion.Identity);
-                modelMatrix *= Matrix4x4.CreateTranslation(modelTranslation?.Value ?? Vector3.Zero);
-                return true;
-            }
-            else
-            {
-                modelMatrix = default;
-                return false;
-            }
-        }
+        public static float Distance(this Plane plane, Vector3 point) => plane.D + Vector3.Dot(plane.Normal, point);
     }
 }
