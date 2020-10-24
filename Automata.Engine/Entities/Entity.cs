@@ -26,9 +26,19 @@ namespace Automata.Engine.Entities
 
         public void AddComponent(IComponent component) => _Components.Add(component.GetType(), component);
 
-        public void RemoveComponent<T>() where T : class, IComponent => _Components.Remove(typeof(T));
+        public T RemoveComponent<T>() where T : class, IComponent
+        {
+            T component = (T)_Components[typeof(T)];
+            _Components.Remove(typeof(T));
+            return component;
+        }
 
-        public void RemoveComponent(Type type) => _Components.Remove(type);
+        public IComponent RemoveComponent(Type type)
+        {
+            IComponent component = _Components[type];
+            _Components.Remove(type);
+            return component;
+        }
 
         public T GetComponent<T>() where T : class, IComponent => (T)_Components[typeof(T)];
 

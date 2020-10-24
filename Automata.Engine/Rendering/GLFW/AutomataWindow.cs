@@ -51,6 +51,8 @@ namespace Automata.Engine.Rendering.GLFW
 
         public Vector2i Center => Size / 2;
 
+        public string Title { get => Window.Title; set => Window.Title = value; }
+
         public bool Focused { get; private set; }
 
         public event WindowResizedEventHandler? Resized;

@@ -1,5 +1,6 @@
 #region
 
+using System;
 using Automata.Engine.Rendering.OpenGL;
 using Silk.NET.OpenGL;
 
@@ -8,7 +9,7 @@ using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.Meshes
 {
-    public class Mesh<T> : IMesh where T : unmanaged
+    public class Mesh<T> : IMesh, IDisposable where T : unmanaged
     {
         public bool Visible { get; }
         public BufferObject<T> VertexesBuffer { get; }
@@ -25,6 +26,13 @@ namespace Automata.Engine.Rendering.Meshes
             VertexArrayObject = new VertexArrayObject<T, uint>(GLAPI.Instance.GL, VertexesBuffer, IndexesBuffer);
         }
 
-        public void BindVertexArrayObject() { VertexArrayObject.Bind(); }
+        public void BindVertexArrayObject() => VertexArrayObject.Bind();
+
+        public void Dispose()
+        {
+            VertexesBuffer.Dispose();
+            IndexesBuffer.Dispose();
+            VertexArrayObject.Dispose();
+        }
     }
 }

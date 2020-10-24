@@ -8,6 +8,13 @@ using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.OpenGL
 {
+    public enum BufferDraw
+    {
+        StreamDraw = 35040,
+        StaticDraw = 35044,
+        DynamicDraw = 35048
+    }
+
     public class BufferObject<TDataType> : IDisposable where TDataType : unmanaged
     {
         private readonly BufferTargetARB _BufferType;
@@ -24,17 +31,13 @@ namespace Automata.Engine.Rendering.OpenGL
             Bind();
         }
 
-        public void Dispose() { _GL.DeleteBuffer(_Handle); }
-
-        public unsafe void SetBufferData(Span<TDataType> data)
+        public unsafe void SetBufferData(Span<TDataType> data, BufferDraw bufferDraw)
         {
-            fixed (void* dataPtr = data)
-            {
-                Length = (uint)(data.Length * sizeof(TDataType));
-                _GL.BufferData(_BufferType, Length, dataPtr, BufferUsageARB.StaticDraw);
-            }
+            Length = (uint)(data.Length * sizeof(TDataType));
+            _GL.BufferData(_BufferType, Length, data, (BufferUsageARB)bufferDraw);
         }
 
-        public void Bind() { _GL.BindBuffer(_BufferType, _Handle); }
+        public void Bind() => _GL.BindBuffer(_BufferType, _Handle);
+        public void Dispose() => _GL.DeleteBuffer(_Handle);
     }
 }

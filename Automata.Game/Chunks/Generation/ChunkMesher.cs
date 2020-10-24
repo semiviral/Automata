@@ -104,12 +104,12 @@ namespace Automata.Game.Chunks.Generation
 
                 if (traversalMeshing)
                 {
-                    TraverseIndex(blocks, faces, vertexes, indexes, neighbors, index, localPosition, currentBlockId,
+                    PackedTraverseIndex(blocks, faces, vertexes, indexes, neighbors, index, localPosition, currentBlockId,
                         BlockRegistry.Instance.CheckBlockHasProperty(currentBlockId, BlockDefinition.Property.Transparent));
                 }
                 else
                 {
-                    NaiveMeshIndex(blocks, faces, vertexes, indexes, neighbors, index, localPosition, currentBlockId,
+                    PackedNaiveMeshIndex(blocks, faces, vertexes, indexes, neighbors, index, localPosition, currentBlockId,
                         BlockRegistry.Instance.CheckBlockHasProperty(currentBlockId, BlockDefinition.Property.Transparent));
                 }
             }
@@ -117,7 +117,7 @@ namespace Automata.Game.Chunks.Generation
             return new PendingMesh<int>(vertexes.ToArray(), indexes.ToArray());
         }
 
-        private static void TraverseIndex(Span<ushort> blocks, Span<Direction> faces, ICollection<int> vertexes, ICollection<uint> indexes,
+        private static void PackedTraverseIndex(Span<ushort> blocks, Span<Direction> faces, ICollection<int> vertexes, ICollection<uint> indexes,
             IReadOnlyList<INodeCollection<ushort>> neighbors, int index, int localPosition, ushort currentBlockId, bool isCurrentBlockTransparent)
         {
             // iterate once over all 6 faces of given cubic space
@@ -195,7 +195,7 @@ namespace Automata.Game.Chunks.Generation
                                 {
                                     // we've culled this face, and faced block is opaque as well, so cull it's face inverse to the current.
                                     Direction inverseFaceDirection = (Direction)(1 << ((normalIndex + 3) % 6));
-                                    faces[facedBlockIndex] |= faces[facedBlockIndex].WithDirection(inverseFaceDirection);
+                                    faces[facedBlockIndex] |= inverseFaceDirection;
                                 }
 
                                 break;
@@ -208,15 +208,15 @@ namespace Automata.Game.Chunks.Generation
                             int iModuloComponentMask = GenerationConstants.CHUNK_SIZE_BIT_MASK << iModulo3Shift;
                             int translatedLocalPosition = localPosition + (traversals << traversalNormalShift);
 
-                            int finalLocalPosition = (~iModuloComponentMask & translatedLocalPosition)
-                                                     | (AutomataMath.Wrap(((translatedLocalPosition & iModuloComponentMask) >> iModulo3Shift) + sign,
-                                                            GenerationConstants.CHUNK_SIZE, 0, GenerationConstants.CHUNK_SIZE - 1)
-                                                        << iModulo3Shift);
+                            int neighborLocalPosition = (~iModuloComponentMask & translatedLocalPosition)
+                                                        | (AutomataMath.Wrap(((translatedLocalPosition & iModuloComponentMask) >> iModulo3Shift) + sign,
+                                                               GenerationConstants.CHUNK_SIZE, 0, GenerationConstants.CHUNK_SIZE - 1)
+                                                           << iModulo3Shift);
 
                             // index into neighbor blocks collections, call .GetPoint() with adjusted local position
                             // remark: if there's no neighbor at the index given, then no chunk exists there (for instance,
                             //     chunks at the edge of render distance). In this case, return NullID so no face is rendered on edges.
-                            ushort facedBlockId = neighbors[normalIndex]?.GetPoint(DecompressVertex(finalLocalPosition))
+                            ushort facedBlockId = neighbors[normalIndex]?.GetPoint(DecompressVertex(neighborLocalPosition))
                                                   ?? BlockRegistry.NullID;
 
                             if (isCurrentBlockTransparent)
@@ -226,7 +226,7 @@ namespace Automata.Game.Chunks.Generation
                             else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockId, BlockDefinition.Property.Transparent)) break;
                         }
 
-                        faces[traversalIndex] = faces[traversalIndex].WithDirection(faceDirection);
+                        faces[traversalIndex] |= faceDirection;
                     }
 
                     // if it's the first traversal and we've only made a 1x1x1 face, continue to test next axis
@@ -287,12 +287,7 @@ namespace Automata.Game.Chunks.Generation
             }
         }
 
-        private static Vector3i DecompressVertex(int vertex) =>
-            new Vector3i(vertex & GenerationConstants.CHUNK_SIZE_BIT_MASK,
-                (vertex >> GenerationConstants.CHUNK_SIZE_BIT_SHIFT) & GenerationConstants.CHUNK_SIZE_BIT_MASK,
-                (vertex >> (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2)) & GenerationConstants.CHUNK_SIZE_BIT_MASK);
-
-        private static void NaiveMeshIndex(Span<ushort> blocks, Span<Direction> faces, ICollection<int> vertexes, ICollection<uint> indexes,
+        private static void PackedNaiveMeshIndex(Span<ushort> blocks, Span<Direction> faces, ICollection<int> vertexes, ICollection<uint> indexes,
             IReadOnlyList<INodeCollection<ushort>> neighbors, int index, int localPosition, ushort currentBlockId, bool isCurrentBlockTransparent)
         {
             // iterate once over all 6 faces of given cubic space
@@ -398,5 +393,10 @@ namespace Automata.Game.Chunks.Generation
                 //_MeshData.AddVertex(compressedUv & int.MaxValue);
             }
         }
+
+        private static Vector3i DecompressVertex(int vertex) =>
+            new Vector3i(vertex & GenerationConstants.CHUNK_SIZE_BIT_MASK,
+                (vertex >> GenerationConstants.CHUNK_SIZE_BIT_SHIFT) & GenerationConstants.CHUNK_SIZE_BIT_MASK,
+                (vertex >> (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2)) & GenerationConstants.CHUNK_SIZE_BIT_MASK);
     }
 }

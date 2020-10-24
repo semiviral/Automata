@@ -132,7 +132,7 @@ namespace Automata.Game
 
             world.EntityManager.RegisterComponent(player, new ChunkLoader
             {
-                Radius = 4
+                Radius = 1
             });
         }
 
@@ -147,26 +147,6 @@ namespace Automata.Game
             InitializeDefaultWorld(out World world);
 
             InitializePlayerEntity(world);
-
-            // const int radius = 3;
-            //
-            // for (int x = -radius; x < (radius + 1); x++)
-            // for (int z = -radius; z < (radius + 1); z++)
-            // for (int y = 0; y < (GenerationConstants.WORLD_HEIGHT / GenerationConstants.CHUNK_SIZE); y++)
-            // {
-            //     Entity chunk = new Entity();
-            //     world.EntityManager.RegisterEntity(chunk);
-            //     world.EntityManager.RegisterComponent(chunk, new Translation
-            //     {
-            //         Value = new Vector3(x, y, z) * GenerationConstants.CHUNK_SIZE
-            //     });
-            //     world.EntityManager.RegisterComponent(chunk, new ChunkState
-            //     {
-            //         Value = GenerationState.Ungenerated
-            //     });
-            //     world.EntityManager.RegisterComponent<ChunkID>(chunk);
-            //     world.EntityManager.RegisterComponent<BlocksCollection>(chunk);
-            // }
         }
 
         private static void ApplicationCloseCallback(object sender)

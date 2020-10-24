@@ -19,20 +19,10 @@ namespace Automata.Game.Chunks
     public class ChunkRegionLoaderSystem : ComponentSystem
     {
         private readonly Dictionary<Vector3i, IEntity> _ChunkEntities;
-        private readonly HashSet<Vector3i> _ActivatingChunks;
-        private readonly HashSet<Vector3i> _NotWithinLoaderRange;
-        private readonly HashSet<Vector3i> _WithinLoaderRange;
-        private readonly Stack<Vector3i> _ActivationPendingChunks;
-        private readonly Stack<Vector3i> _DeactivationPendingChunks;
 
         public ChunkRegionLoaderSystem()
         {
             _ChunkEntities = new Dictionary<Vector3i, IEntity>();
-            _ActivatingChunks = new HashSet<Vector3i>();
-            _NotWithinLoaderRange = new HashSet<Vector3i>();
-            _WithinLoaderRange = new HashSet<Vector3i>();
-            _ActivationPendingChunks = new Stack<Vector3i>();
-            _DeactivationPendingChunks = new Stack<Vector3i>();
         }
 
         [HandlesComponents(DistinctionStrategy.All, typeof(Translation), typeof(ChunkLoader))]

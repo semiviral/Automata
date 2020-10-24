@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Linq;
 using Automata.Engine;
 using Automata.Engine.Collections;
 using Automata.Engine.Components;
@@ -10,8 +11,11 @@ using Automata.Engine.Diagnostics;
 using Automata.Engine.Entities;
 using Automata.Engine.Input;
 using Automata.Engine.Numerics;
+using Automata.Engine.Rendering.GLFW;
 using Automata.Engine.Rendering.Meshes;
+using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Systems;
+using Automata.Engine.Worlds;
 using Automata.Game.Blocks;
 using ConcurrentPools;
 using DiagnosticsProviderNS;
@@ -52,7 +56,7 @@ namespace Automata.Game.Chunks.Generation
                     case GenerationState.Ungenerated when entity.TryGetComponent(out Translation? translation):
                         BoundedThreadPool.QueueWork(() => GenerateChunk(chunk.ID,
                             new BuildStep.Parameters(GenerationConstants.Seed, GenerationConstants.FREQUENCY, GenerationConstants.PERSISTENCE,
-                                Vector3i.FromVector3(translation.Value))));
+                                Vector3i.FromVector3(translation.Value)), _BuildSteps));
 
                         chunk.State += 1;
                         break;
@@ -66,8 +70,8 @@ namespace Automata.Game.Chunks.Generation
 
                         Mesh<int> mesh = new Mesh<int>();
                         mesh.VertexArrayObject.VertexAttributeIPointer(0u, 1, VertexAttribPointerType.Int, 0);
-                        mesh.VertexesBuffer.SetBufferData(pendingMesh.Vertexes);
-                        mesh.IndexesBuffer.SetBufferData(pendingMesh.Indexes);
+                        mesh.VertexesBuffer.SetBufferData(pendingMesh.Vertexes, BufferDraw.DynamicDraw);
+                        mesh.IndexesBuffer.SetBufferData(pendingMesh.Indexes, BufferDraw.DynamicDraw);
 
                         if (entity.TryGetComponent(out RenderMesh? renderMesh)) renderMesh.Mesh = mesh;
                         else entityManager.RegisterComponent(entity, new RenderMesh(mesh));
@@ -87,9 +91,16 @@ namespace Automata.Game.Chunks.Generation
             }
 
             DiagnosticsInputCheck();
+
+            if (World.TryGetWorld("core", out World? world))
+            {
+                ChunkLoader chunkLoader = world.EntityManager.GetComponents<ChunkLoader>().First();
+
+                AutomataWindow.Instance.Title = $"Automata (ChunkPosition {chunkLoader.Origin})";
+            }
         }
 
-        private void GenerateChunk(Guid chunkID, BuildStep.Parameters parameters)
+        private void GenerateChunk(Guid chunkID, BuildStep.Parameters parameters, OrderedList<BuildStep> buildSteps)
         {
             static INodeCollection<ushort> GenerateNodeCollectionImpl(ref Span<ushort> blocks)
             {
@@ -105,14 +116,12 @@ namespace Automata.Game.Chunks.Generation
                 return blocksCompressed;
             }
 
-            if (parameters is null || _BuildSteps is null) throw new InvalidOperationException("Job data has not been provided.");
-
             Span<ushort> blocks = stackalloc ushort[GenerationConstants.CHUNK_SIZE_CUBED];
 
             Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
             stopwatch.Restart();
 
-            foreach (BuildStep generationStep in _BuildSteps) generationStep.Generate(parameters, blocks);
+            foreach (BuildStep generationStep in buildSteps) generationStep.Generate(parameters, blocks);
 
             stopwatch.Stop();
 
@@ -124,7 +133,7 @@ namespace Automata.Game.Chunks.Generation
             stopwatch.Restart();
 
             INodeCollection<ushort> nodeCollection = GenerateNodeCollectionImpl(ref blocks);
-            _PendingBlockCollections.AddOrUpdate(chunkID, nodeCollection, (guid, collection) => nodeCollection);
+            if (!_PendingBlockCollections.TryAdd(chunkID, nodeCollection)) Log.Error($"Failed to add chunk({parameters.Origin}) blocks.");
 
             stopwatch.Stop();
 
@@ -136,7 +145,7 @@ namespace Automata.Game.Chunks.Generation
             stopwatch.Restart();
 
             PendingMesh<int> pendingMesh = ChunkMesher.GenerateMesh(blocks, new INodeCollection<ushort>[6], true);
-            _PendingMeshes.AddOrUpdate(chunkID, pendingMesh, (guid, mesh) => pendingMesh);
+            if (!_PendingMeshes.TryAdd(chunkID, pendingMesh)) Log.Error($"Failed to add chunk({parameters.Origin}) mesh.");
 
             stopwatch.Stop();
 

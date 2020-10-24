@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Automata.Engine.Entities;
 using Automata.Engine.Systems;
 using Serilog;
@@ -39,7 +40,7 @@ namespace Automata.Engine.Worlds
             Log.Information($"({nameof(World)}) Registered {nameof(World)}: '{name}' {world.GetType()}");
         }
 
-        public static void TryGetWorld(string name, out World? world) => Worlds.TryGetValue(name, out world);
+        public static bool TryGetWorld(string name, [NotNullWhen(true)] out World? world) => Worlds.TryGetValue(name, out world);
 
         public static void GlobalUpdate(Stopwatch frameTimer)
         {

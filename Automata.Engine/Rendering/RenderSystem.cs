@@ -37,9 +37,9 @@ namespace Automata.Engine.Rendering
             if (_ENABLE_BACK_FACE_CULLING)
             {
                 // enable and configure face culling
-                _GL.Enable(GLEnum.CullFace);
                 _GL.FrontFace(FrontFaceDirection.Ccw);
                 _GL.CullFace(CullFaceMode.Back);
+                _GL.Enable(GLEnum.CullFace);
             }
         }
 

@@ -21,7 +21,12 @@ void main()
             ((vert >> 20) & 3) - 1,
             ((vert >> 22) & 3) - 1
         );
-    vec3 normalLerpedColor = vec3(smoothstep(-1.0, 1.0, uncompressedNormal.x), smoothstep(-1.0, 1.0, uncompressedNormal.y), smoothstep(-1.0, 1.0, uncompressedNormal.z));
+    vec3 normalLerpedColor = vec3
+        (
+            smoothstep(-1.0, 1.0, uncompressedNormal.x),
+            smoothstep(-1.0, 1.0, uncompressedNormal.y),
+            smoothstep(-1.0, 1.0, uncompressedNormal.z)
+        );
 
     gl_Position = _mvp * uncompressedPosition;
     fColor = vec4(normalLerpedColor, 1.0);
