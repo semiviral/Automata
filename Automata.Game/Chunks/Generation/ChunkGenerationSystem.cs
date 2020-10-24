@@ -79,10 +79,11 @@ namespace Automata.Game.Chunks.Generation
 
                         if (Shader.TryLoadShaderWithCache("Resources/Shaders/DefaultVertex.glsl", "Resources/Shaders/DefaultFragment.glsl", out Shader? shader))
                         {
-                            entityManager.RegisterComponent(entity, new RenderShader
+                            if (entity.TryGetComponent(out RenderShader? renderShader))
                             {
-                                Value = shader
-                            });
+                                if (renderShader.Value.ID != shader.ID) renderShader.Value = shader;
+                            }
+                            else entityManager.RegisterComponent(entity, new RenderShader(shader));
                         }
                         else Log.Error($"Failed to load a shader for chunk at {translation.Value}.");
 

@@ -10,9 +10,9 @@ namespace Automata.Engine.Rendering.OpenGL
 {
     public class RenderShader : IComponent, IDisposable
     {
-        private static readonly Shader _DefaultShader = new Shader();
+        public Shader Value { get; set; }
 
-        public Shader Value { get; set; } = _DefaultShader;
+        public RenderShader(Shader value) => Value = value;
 
         public void Dispose() => Value.Dispose();
     }
