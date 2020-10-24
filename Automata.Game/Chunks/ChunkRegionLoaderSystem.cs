@@ -3,10 +3,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using Automata.Engine;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
 using Automata.Engine.Numerics;
+using Automata.Engine.Rendering;
 using Automata.Engine.Systems;
 using Automata.Game.Chunks.Generation;
 using Serilog;
@@ -66,6 +68,7 @@ namespace Automata.Game.Chunks
                 IEntity chunk = entityManager.ComposeEntity<ChunkComposition>(true);
                 chunk.GetComponent<Translation>().Value = origin;
                 chunk.GetComponent<Chunk>().State = GenerationState.Ungenerated;
+                chunk.GetComponent<Bounds>().Value = new BoundingBox(origin, new Vector3(GenerationConstants.CHUNK_SIZE));
 
                 _ChunkEntities.Add(origin, chunk);
 

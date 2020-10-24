@@ -133,7 +133,6 @@ namespace Automata.Game.Blocks
         public HashSet<ushort> GetPropertyBucket(BlockDefinition.Property property) => _PropertyBuckets[property];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool CheckBlockHasProperty(ushort blockId, BlockDefinition.Property property) =>
-            (BlockDefinitions[blockId].Properties & property) == property;
+        public bool CheckBlockHasProperty(ushort blockId, BlockDefinition.Property property) => BlockDefinitions[blockId].Properties.HasFlag(property);
     }
 }

@@ -70,6 +70,5 @@ namespace Automata.Engine
         public static Vector3 RoundBy(this Vector3 a, Vector3 b) =>
             new Vector3((float)Math.Floor(a.X / b.X), (float)Math.Floor(a.Y / b.Y), (float)Math.Floor(a.Z / b.Z)) * b;
 
-        public static float Distance(this Plane plane, Vector3 point) => plane.D + Vector3.Dot(plane.Normal, point);
     }
 }

@@ -1,5 +1,8 @@
 using System;
 using System.Numerics;
+using System.Runtime.CompilerServices;
+using Automata.Engine.Numerics;
+using Plane = Automata.Engine.Numerics.Plane;
 
 namespace Automata.Engine.Rendering
 {
@@ -12,6 +15,8 @@ namespace Automata.Engine.Rendering
         private const int _LEFT = 4;
         private const int _RIGHT = 5;
 
+        public const int PLANES_SPAN_LENGTH = 6;
+
         public enum Boundary
         {
             Outside,
@@ -21,11 +26,11 @@ namespace Automata.Engine.Rendering
 
         private readonly ReadOnlySpan<Plane> _Planes;
 
-        public Frustum(Span<Plane> backingSpan, Matrix4x4 mvp)
+        public Frustum(Span<Plane> planes, Matrix4x4 mvp)
         {
-            if (backingSpan.Length != 6) throw new ArgumentOutOfRangeException(nameof(backingSpan), "Length must be 6.");
+            if (planes.Length != PLANES_SPAN_LENGTH) throw new ArgumentOutOfRangeException(nameof(planes), "Length must be 6.");
 
-            backingSpan[_NEAR] = new Plane
+            planes[_NEAR] = new Plane
             (
                 mvp.GetValue(2, 0) + mvp.GetValue(3, 0),
                 mvp.GetValue(2, 1) + mvp.GetValue(3, 1),
@@ -33,7 +38,7 @@ namespace Automata.Engine.Rendering
                 mvp.GetValue(2, 3) + mvp.GetValue(3, 3)
             );
 
-            backingSpan[_FAR] = new Plane
+            planes[_FAR] = new Plane
             (
                 -mvp.GetValue(2, 0) + mvp.GetValue(3, 0),
                 -mvp.GetValue(2, 1) + mvp.GetValue(3, 1),
@@ -41,7 +46,7 @@ namespace Automata.Engine.Rendering
                 -mvp.GetValue(2, 3) + mvp.GetValue(3, 3)
             );
 
-            backingSpan[_BOTTOM] = new Plane
+            planes[_BOTTOM] = new Plane
             (
                 mvp.GetValue(1, 0) + mvp.GetValue(3, 0),
                 mvp.GetValue(1, 1) + mvp.GetValue(3, 1),
@@ -49,7 +54,7 @@ namespace Automata.Engine.Rendering
                 mvp.GetValue(1, 3) + mvp.GetValue(3, 3)
             );
 
-            backingSpan[_TOP] = new Plane
+            planes[_TOP] = new Plane
             (
                 -mvp.GetValue(1, 0) + mvp.GetValue(3, 0),
                 -mvp.GetValue(1, 1) + mvp.GetValue(3, 1),
@@ -57,7 +62,7 @@ namespace Automata.Engine.Rendering
                 -mvp.GetValue(1, 3) + mvp.GetValue(3, 3)
             );
 
-            backingSpan[_LEFT] = new Plane
+            planes[_LEFT] = new Plane
             (
                 mvp.GetValue(0, 0) + mvp.GetValue(3, 0),
                 mvp.GetValue(0, 1) + mvp.GetValue(3, 1),
@@ -65,7 +70,7 @@ namespace Automata.Engine.Rendering
                 mvp.GetValue(0, 3) + mvp.GetValue(3, 3)
             );
 
-            backingSpan[_RIGHT] = new Plane
+            planes[_RIGHT] = new Plane
             (
                 -mvp.GetValue(0, 0) + mvp.GetValue(3, 0),
                 -mvp.GetValue(0, 1) + mvp.GetValue(3, 1),
@@ -73,7 +78,7 @@ namespace Automata.Engine.Rendering
                 -mvp.GetValue(0, 3) + mvp.GetValue(3, 3)
             );
 
-            _Planes = backingSpan;
+            _Planes = planes;
         }
 
         public Boundary PointWithin(Vector3 point) =>
@@ -88,7 +93,10 @@ namespace Automata.Engine.Rendering
 
         public Boundary BoxWithin(BoundingBox box)
         {
-            static bool BoxOutsidePlane(Plane plane, BoundingBox box) => plane.Distance(box.GetGreaterSumVertex(plane.Normal)) < 0f;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static bool BoxOutsidePlane(Plane plane, BoundingBox box) => plane.Distance(box.GreaterSumVertex(plane.Normal)) < 0f;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static bool BoxIntersectPlane(Plane plane, BoundingBox box) => plane.Distance(box.GetLesserSumVertex(plane.Normal)) > 0f;
 
             Plane plane = _Planes[_NEAR];

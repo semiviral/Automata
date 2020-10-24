@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace Automata.Engine.Rendering
+namespace Automata.Engine.Numerics
 {
     public readonly struct BoundingBox
     {
@@ -9,7 +9,7 @@ namespace Automata.Engine.Rendering
 
         public BoundingBox(Vector3 origin, Vector3 extents) => (Origin, Extents) = (origin, extents);
 
-        public Vector3 GetGreaterSumVertex(Vector3 a)
+        public Vector3 GreaterSumVertex(Vector3 a)
         {
             Vector3 result = Origin;
             if (a.X > 0f) result.X += Extents.X;

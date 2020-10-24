@@ -44,11 +44,11 @@ namespace Automata.Game.Blocks
         public string BlockName { get; }
         public Property Properties { get; }
 
-        public bool Transparent => (Properties & Property.Transparent) == Property.Transparent;
-        public bool Collideable => (Properties & Property.Collideable) == Property.Collideable;
-        public bool Destroyable => (Properties & Property.Destroyable) == Property.Destroyable;
-        public bool Collectible => (Properties & Property.Collectible) == Property.Collectible;
-        public bool LightSource => (Properties & Property.LightSource) == Property.LightSource;
+        public bool Transparent => Properties.HasFlag(Property.Transparent);
+        public bool Collideable => Properties.HasFlag(Property.Collideable);
+        public bool Destroyable => Properties.HasFlag(Property.Destroyable);
+        public bool Collectible => Properties.HasFlag(Property.Collectible);
+        public bool LightSource => Properties.HasFlag(Property.LightSource);
 
         public virtual bool GetUVs(Direction direction, out string spriteName)
         {

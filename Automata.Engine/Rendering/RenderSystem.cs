@@ -11,6 +11,7 @@ using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Systems;
 using Serilog;
 using Silk.NET.OpenGL;
+using Plane = Automata.Engine.Numerics.Plane;
 
 #endregion
 
@@ -51,6 +52,7 @@ namespace Automata.Engine.Rendering
                 _GL.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
 
                 Vector4 viewport = new Vector4(0f, 0f, AutomataWindow.Instance.Size.X, AutomataWindow.Instance.Size.Y);
+                Span<Plane> planes = stackalloc Plane[Frustum.PLANES_SPAN_LENGTH];
 
                 foreach (IEntity cameraEntity in entityManager.GetEntitiesWithComponents<Camera>())
                 {
@@ -85,25 +87,23 @@ namespace Automata.Engine.Rendering
                             currentShader = renderShader;
                         }
 
-                        renderMesh.Mesh!.Bind();
+                        if (renderMesh.Changed
+                            | (objectEntity.TryGetComponent(out Scale? modelScale) && modelScale.Changed)
+                            | (objectEntity.TryGetComponent(out Rotation? modelRotation) && modelRotation.Changed)
+                            | (objectEntity.TryGetComponent(out Translation? modelTranslation) && modelTranslation.Changed))
+                        {
+                            renderMesh.Model = Matrix4x4.Identity;
+                            renderMesh.Model *= Matrix4x4.CreateTranslation(modelTranslation?.Value ?? Vector3.Zero);
+                            renderMesh.Model *= Matrix4x4.CreateFromQuaternion(modelRotation?.Value ?? Quaternion.Identity);
+                            renderMesh.Model *= Matrix4x4.CreateScale(modelScale?.Value ?? Scale.DEFAULT);
+                        }
+
+                        Matrix4x4.Invert(renderMesh.Model, out Matrix4x4 modelInverted);
+                        Matrix4x4 modelView = renderMesh.Model * camera.View;
+                        Matrix4x4 modelViewProjection = modelView * camera.Projection;
 
                         if (renderShader.Value.HasAutomataUniforms)
                         {
-                            if (renderMesh.Changed
-                                | (objectEntity.TryGetComponent(out Scale? modelScale) && modelScale.Changed)
-                                | (objectEntity.TryGetComponent(out Rotation? modelRotation) && modelRotation.Changed)
-                                | (objectEntity.TryGetComponent(out Translation? modelTranslation) && modelTranslation.Changed))
-                            {
-                                renderMesh.Model = Matrix4x4.Identity;
-                                renderMesh.Model *= Matrix4x4.CreateTranslation(modelTranslation?.Value ?? Vector3.Zero);
-                                renderMesh.Model *= Matrix4x4.CreateFromQuaternion(modelRotation?.Value ?? Quaternion.Identity);
-                                renderMesh.Model *= Matrix4x4.CreateScale(modelScale?.Value ?? Scale.DEFAULT);
-                            }
-
-                            Matrix4x4.Invert(renderMesh.Model, out Matrix4x4 modelInverted);
-                            Matrix4x4 modelView = renderMesh.Model * camera.View;
-                            Matrix4x4 modelViewProjection = modelView * camera.Projection;
-
                             renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_WORLD, renderMesh.Model);
                             renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_MV, modelView);
                             renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_MVP, modelViewProjection);
@@ -116,6 +116,17 @@ namespace Automata.Engine.Rendering
                             renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_VIEWPORT, viewport);
                         }
 
+                        if (objectEntity.TryGetComponent(out Bounds? bounds))
+                        {
+                            Frustum frustum = new Frustum(planes, modelViewProjection);
+
+                            Frustum.Boundary boundary = frustum.BoxWithin(bounds.Value);
+
+                            if (boundary is Frustum.Boundary.Outside) continue;
+                        }
+
+                        renderMesh.Mesh!.Bind();
+
                         _GL.DrawElements(PrimitiveType.Triangles, renderMesh.Mesh.IndexesLength, DrawElementsType.UnsignedInt, null);
 
                         CheckForGLErrorsAndThrow();
@@ -126,6 +137,7 @@ namespace Automata.Engine.Rendering
                 _NewAspectRatio = 0f;
             }
             catch (Exception ex)
+
             {
                 Log.Error($"({nameof(RenderSystem)}) Error: {ex}\r\n{ex.StackTrace}");
             }
