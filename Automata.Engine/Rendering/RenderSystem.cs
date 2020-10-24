@@ -123,7 +123,8 @@ namespace Automata.Engine.Rendering
                             Frustum.Boundary sphericBoundary = Frustum.Boundary.Outside;
 
                             // try to test spherical bounds
-                            if ((bounds.Spheric != Sphere.Zero) && (sphericBoundary = frustum.SphereWithin(bounds.Spheric)) is Frustum.Boundary.Outside) continue;
+                            if ((bounds.Spheric != Sphere.Zero)
+                                && (sphericBoundary = frustum.SphereWithin(bounds.Spheric)) is Frustum.Boundary.Outside) continue;
 
                             // if spherical bounds fails (i.e. intersects) try cubic
                             if (sphericBoundary is not Frustum.Boundary.Inside

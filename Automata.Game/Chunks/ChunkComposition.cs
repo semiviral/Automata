@@ -2,7 +2,6 @@
 
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
-using Automata.Engine.Rendering;
 using Automata.Engine.Systems;
 
 #endregion

@@ -1,5 +1,3 @@
-using System.Numerics;
-using Automata.Engine.Numerics;
 using Automata.Engine.Numerics.Shapes;
 
 namespace Automata.Engine.Components

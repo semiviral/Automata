@@ -5,8 +5,6 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Automata.Engine.Components;
-using Automata.Engine.Entities;
 
 #endregion
 
@@ -17,8 +15,6 @@ namespace Automata.Engine
 {
     public static class AutomataMath
     {
-
-
         public static float Unlerp(float a, float b, float interpolant) => (interpolant - a) / (b - a);
         public static float ToRadians(float degrees) => degrees * ((float)Math.PI / 180f);
 
@@ -70,6 +66,5 @@ namespace Automata.Engine
 
         public static Vector3 RoundBy(this Vector3 a, Vector3 b) =>
             new Vector3((float)Math.Floor(a.X / b.X), (float)Math.Floor(a.Y / b.Y), (float)Math.Floor(a.Z / b.Z)) * b;
-
     }
 }
