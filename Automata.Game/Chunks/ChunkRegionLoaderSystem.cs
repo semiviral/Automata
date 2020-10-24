@@ -69,8 +69,10 @@ namespace Automata.Game.Chunks
                 IEntity chunk = entityManager.ComposeEntity<ChunkComposition>(true);
                 chunk.GetComponent<Translation>().Value = origin;
                 chunk.GetComponent<Chunk>().State = GenerationState.Ungenerated;
-                chunk.GetComponent<Bounds>().Cubic = new Cube(origin, new Vector3(GenerationConstants.CHUNK_SIZE));
 
+                Bounds bounds = chunk.GetComponent<Bounds>();
+                bounds.Spheric = new Sphere(origin, GenerationConstants.CHUNK_SIZE / 2);
+                bounds.Cubic = new Cube(origin, new Vector3(GenerationConstants.CHUNK_SIZE));
                 _ChunkEntities.Add(origin, chunk);
 
                 totalActivations += 1;

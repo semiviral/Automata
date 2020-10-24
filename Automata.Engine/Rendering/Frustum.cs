@@ -1,13 +1,12 @@
 using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using Automata.Engine.Numerics;
 using Automata.Engine.Numerics.Shapes;
 using Plane = Automata.Engine.Numerics.Shapes.Plane;
 
 namespace Automata.Engine.Rendering
 {
-    public readonly ref struct ClipFrustum
+    public readonly ref struct Frustum
     {
         private const int _NEAR = 0;
         private const int _FAR = 1;
@@ -27,7 +26,7 @@ namespace Automata.Engine.Rendering
 
         private readonly ReadOnlySpan<Plane> _Planes;
 
-        public ClipFrustum(Span<Plane> planes, Matrix4x4 mvp)
+        public Frustum(Span<Plane> planes, Matrix4x4 mvp)
         {
             if (planes.Length != PLANES_SPAN_LENGTH) throw new ArgumentOutOfRangeException(nameof(planes), "Length must be 6.");
 
@@ -92,39 +91,40 @@ namespace Automata.Engine.Rendering
                 ? Boundary.Outside
                 : Boundary.Inside;
 
-        public Boundary SphereWithin(Vector3 origin, float radius)
+        public Boundary SphereWithin(Sphere sphere)
         {
             Boundary result = Boundary.Inside;
 
-            float distance = _Planes[_NEAR].Distance(origin);
+            float distance = _Planes[_NEAR].Distance(sphere.Center);
 
-            if (distance < -radius) return Boundary.Outside;
-            else if (distance < radius) result = Boundary.Intersect;
+            if (distance < -sphere.Radius) return Boundary.Outside;
+            else if (distance < sphere.Radius) result = Boundary.Intersect;
 
-            distance = _Planes[_FAR].Distance(origin);
+            distance = _Planes[_FAR].Distance(sphere.Center);
 
-            if (distance < -radius) return Boundary.Outside;
-            else if (distance < radius) result = Boundary.Intersect;
+            if (distance < -sphere.Radius) return Boundary.Outside;
+            else if (distance < sphere.Radius) result = Boundary.Intersect;
 
-            distance = _Planes[_BOTTOM].Distance(origin);
+            distance = _Planes[_BOTTOM].Distance(sphere.Center);
 
-            if (distance < -radius) return Boundary.Outside;
-            else if (distance < radius) result = Boundary.Intersect;
+            if (distance < -sphere.Radius) return Boundary.Outside;
+            else if (distance < sphere.Radius) result = Boundary.Intersect;
 
-            distance = _Planes[_TOP].Distance(origin);
+            distance = _Planes[_TOP].Distance(sphere.Center);
 
-            if (distance < -radius) return Boundary.Outside;
-            else if (distance < radius) result = Boundary.Intersect;
+            if (distance < -sphere.Radius) return Boundary.Outside;
+            else if (distance < sphere.Radius) result = Boundary.Intersect;
 
-            distance = _Planes[_LEFT].Distance(origin);
+            distance = _Planes[_LEFT].Distance(sphere.Center);
 
-            if (distance < -radius) return Boundary.Outside;
-            else if (distance < radius) result = Boundary.Intersect;
+            if (distance < -sphere.Radius) return Boundary.Outside;
+            else if (distance < sphere.Radius) result = Boundary.Intersect;
 
-            distance = _Planes[_RIGHT].Distance(origin);
+            distance = _Planes[_RIGHT].Distance(sphere.Center);
 
-            if (distance < -radius) return Boundary.Outside;
-            else if (distance < radius) result = Boundary.Intersect;
+            if (distance < -sphere.Radius) return Boundary.Outside;
+            else if (distance < sphere.Radius) result = Boundary.Intersect;
+
             return result;
         }
 

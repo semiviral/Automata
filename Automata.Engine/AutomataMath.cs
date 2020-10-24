@@ -71,8 +71,5 @@ namespace Automata.Engine
         public static Vector3 RoundBy(this Vector3 a, Vector3 b) =>
             new Vector3((float)Math.Floor(a.X / b.X), (float)Math.Floor(a.Y / b.Y), (float)Math.Floor(a.Z / b.Z)) * b;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3 AsVector3(this Vector4 a) => Unsafe.As<Vector4, Vector3>(ref a);
-
     }
 }

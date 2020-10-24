@@ -5,6 +5,7 @@ using System.Numerics;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
 using Automata.Engine.Numerics;
+using Automata.Engine.Numerics.Shapes;
 using Automata.Engine.Rendering.GLFW;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
@@ -52,7 +53,7 @@ namespace Automata.Engine.Rendering
                 _GL.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
 
                 Vector4 viewport = new Vector4(0f, 0f, AutomataWindow.Instance.Size.X, AutomataWindow.Instance.Size.Y);
-                Span<Plane> planes = stackalloc Plane[ClipFrustum.PLANES_SPAN_LENGTH];
+                Span<Plane> planes = stackalloc Plane[Frustum.PLANES_SPAN_LENGTH];
 
                 foreach (IEntity cameraEntity in entityManager.GetEntitiesWithComponents<Camera>())
                 {
@@ -118,20 +119,16 @@ namespace Automata.Engine.Rendering
 
                         if (objectEntity.TryGetComponent(out Bounds? bounds))
                         {
-                            ClipFrustum clipFrustum = new ClipFrustum(planes, modelViewProjection);
-                            ClipFrustum.Boundary boundary = ClipFrustum.Boundary.Outside;
+                            Frustum frustum = new Frustum(planes, modelViewProjection);
+                            Frustum.Boundary sphericBoundary = Frustum.Boundary.Outside;
 
                             // try to test spherical bounds
-                            if (bounds.Spheric != Vector4.Zero )
-                            {
-                                boundary = clipFrustum.SphereWithin(bounds.Spheric.AsVector3(), bounds.Spheric.W);
-                                if (boundary is ClipFrustum.Boundary.Outside) continue;
-                            }
+                            if ((bounds.Spheric != Sphere.Zero) && (sphericBoundary = frustum.SphereWithin(bounds.Spheric)) is Frustum.Boundary.Outside) continue;
 
                             // if spherical bounds fails (i.e. intersects) try cubic
-                            if (boundary is not ClipFrustum.Boundary.Inside
-                                && bounds.Cubic is not null
-                                && clipFrustum.BoxWithin(bounds.Cubic.Value) is ClipFrustum.Boundary.Outside) continue;
+                            if (sphericBoundary is not Frustum.Boundary.Inside
+                                && (bounds.Cubic != Cube.Zero)
+                                && frustum.BoxWithin(bounds.Cubic) is Frustum.Boundary.Outside) continue;
                         }
 
                         renderMesh.Mesh!.Bind();
