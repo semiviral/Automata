@@ -65,16 +65,19 @@ namespace Automata.Engine.Rendering.OpenGL
                 }
             ";
 
-        private static Dictionary<string, Shader> _CachedShaders = new Dictionary<string, Shader>();
+        private static readonly Dictionary<string, Shader> _CachedShaders = new Dictionary<string, Shader>();
 
         private readonly GL _GL;
         private readonly uint _Handle;
         private readonly Dictionary<string, int> _CachedUniformLocations;
 
+        public Guid ID { get; }
         public bool HasAutomataUniforms { get; }
 
         internal unsafe Shader()
         {
+            ID = Guid.NewGuid();
+
             _GL = GLAPI.Instance.GL;
 
             uint vertexShaderHandle = CreateGPUShader(ShaderType.VertexShader, _DefaultVertexShaderPacked);
@@ -194,14 +197,11 @@ namespace Automata.Engine.Rendering.OpenGL
             else return false;
         }
 
-        public unsafe bool TrySetUniform(string name, Matrix4x4 value)
+        public bool TrySetUniform(string name, Matrix4x4 value)
         {
             if (TryGetUniformLocation(name, out int location))
             {
-                Span<float> span = stackalloc float[sizeof(Matrix4x4) / sizeof(float)];
-                value.UnrollInto(ref span);
-
-                _GL.ProgramUniformMatrix4(_Handle, location, 1, false, span);
+                _GL.ProgramUniformMatrix4(_Handle, location, 1, false, value.Unroll());
                 return true;
             }
             else return false;

@@ -1,6 +1,8 @@
 #region
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -22,8 +24,30 @@ namespace Automata.Engine
         public static Vector3 ToRadians(Vector3 degrees) => new Vector3(ToRadians(degrees.X), ToRadians(degrees.Y), ToRadians(degrees.Z));
 
         // row major
-        public static void UnrollInto(this Matrix4x4 matrix, ref Span<float> unrolled) =>
-            MemoryMarshal.Write(MemoryMarshal.Cast<float, byte>(unrolled), ref matrix);
+        public static unsafe Span<float> Unroll(this Matrix4x4 matrix) => MemoryMarshal.CreateSpan(ref matrix.M11, sizeof(Matrix4x4) / sizeof(float));
+
+        public static IEnumerable<float> UnrollColumnMajor(this Matrix4x4 matrix)
+        {
+            yield return matrix.M11;
+            yield return matrix.M21;
+            yield return matrix.M31;
+            yield return matrix.M41;
+
+            yield return matrix.M12;
+            yield return matrix.M22;
+            yield return matrix.M32;
+            yield return matrix.M42;
+
+            yield return matrix.M13;
+            yield return matrix.M23;
+            yield return matrix.M33;
+            yield return matrix.M43;
+
+            yield return matrix.M14;
+            yield return matrix.M24;
+            yield return matrix.M34;
+            yield return matrix.M44;
+        }
 
         public static int Wrap(int v, int delta, int minVal, int maxVal)
         {

@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Numerics;
+using System.Runtime.InteropServices;
 using Automata.Engine;
 using Automata.Engine.Collections;
 using Automata.Engine.Numerics;
@@ -15,7 +17,59 @@ namespace Automata.Game.Chunks.Generation
 {
     public static class ChunkMesher
     {
-        private static readonly int[][] _VertexesByIteration =
+        private static readonly Vector3[][] _VertexesByIteration =
+        {
+            new[]
+            {
+                // East
+                new Vector3(1f, 1f, 1f),
+                new Vector3(1f, 0f, 1f),
+                new Vector3(0f, 0f, 1f),
+                new Vector3(0f, 1f, 1f)
+            },
+            new[]
+            {
+                // Up
+                new Vector3(1f, 1f, 0f),
+                new Vector3(1f, 1f, 1f),
+                new Vector3(0f, 1f, 1f),
+                new Vector3(0f, 1f, 0f)
+            },
+            new[]
+            {
+                // North
+                new Vector3(1f, 1f, 0f),
+                new Vector3(1f, 0f, 0f),
+                new Vector3(1f, 0f, 1f),
+                new Vector3(1f, 1f, 1f)
+            },
+            new[]
+            {
+                // West
+                new Vector3(0f, 1f, 0f),
+                new Vector3(0f, 0f, 0f),
+                new Vector3(1f, 0f, 0f),
+                new Vector3(1f, 1f, 0f)
+            },
+            new[]
+            {
+                // Down
+                new Vector3(1f, 0f, 1f),
+                new Vector3(1f, 0f, 0f),
+                new Vector3(0f, 0f, 0f),
+                new Vector3(0f, 0f, 1f)
+            },
+            new[]
+            {
+                // South
+                new Vector3(0f, 1f, 1f),
+                new Vector3(0f, 0f, 1f),
+                new Vector3(0f, 0f, 0f),
+                new Vector3(0f, 1f, 0f)
+            }
+        };
+
+        private static readonly int[][] _PackedVertexesByIteration =
         {
             // 3   0
             //
@@ -82,7 +136,7 @@ namespace Automata.Game.Chunks.Generation
             -GenerationConstants.CHUNK_SIZE,
         };
 
-        public static PendingMesh<int> GenerateMesh(Span<ushort> blocks, INodeCollection<ushort>[] neighbors, bool traversalMeshing)
+        public static PendingMesh<int> GeneratePackedMesh(Span<ushort> blocks, INodeCollection<ushort>[] neighbors, bool traversalMeshing)
         {
             Span<Direction> faces = stackalloc Direction[blocks.Length];
             faces.Clear();
@@ -252,7 +306,7 @@ namespace Automata.Game.Chunks.Generation
                     int traversalShiftedMask = GenerationConstants.CHUNK_SIZE_BIT_MASK << traversalNormalShift;
                     int unaryTraversalShiftedMask = ~traversalShiftedMask;
 
-                    Span<int> compressedVertices = _VertexesByIteration[normalIndex];
+                    Span<int> compressedVertices = _PackedVertexesByIteration[normalIndex];
 
                     vertexes.Add(localPosition
                                  + ((unaryTraversalShiftedMask & compressedVertices[0])
@@ -374,7 +428,7 @@ namespace Automata.Game.Chunks.Generation
                 indexes.Add(2u + vertexesCount);
                 indexes.Add(3u + vertexesCount);
 
-                Span<int> compressedVertexes = _VertexesByIteration[normalIndex];
+                Span<int> compressedVertexes = _PackedVertexesByIteration[normalIndex];
 
                 vertexes.Add(localPosition + compressedVertexes[0]);
 
@@ -398,5 +452,118 @@ namespace Automata.Game.Chunks.Generation
             new Vector3i(vertex & GenerationConstants.CHUNK_SIZE_BIT_MASK,
                 (vertex >> GenerationConstants.CHUNK_SIZE_BIT_SHIFT) & GenerationConstants.CHUNK_SIZE_BIT_MASK,
                 (vertex >> (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2)) & GenerationConstants.CHUNK_SIZE_BIT_MASK);
+
+        public static PendingMesh<Vector3> GenerateMesh(Span<ushort> blocks)
+        {
+            Span<Direction> faces = stackalloc Direction[blocks.Length];
+            faces.Clear();
+
+            List<Vector3> vertexes = new List<Vector3>();
+            List<uint> indexes = new List<uint>();
+
+            int index = 0;
+
+            for (int y = 0; y < GenerationConstants.CHUNK_SIZE; y++)
+            for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
+            for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++, index++)
+            {
+                ushort currentBlockId = blocks[index];
+
+                if (currentBlockId == BlockRegistry.AirID) continue;
+
+                Vector3 localPosition = new Vector3(x, y, z);
+
+                NaiveMeshIndex(blocks, faces, vertexes, indexes, index, localPosition, currentBlockId,
+                    BlockRegistry.Instance.CheckBlockHasProperty(currentBlockId, BlockDefinition.Property.Transparent));
+            }
+
+            return new PendingMesh<Vector3>(vertexes.ToArray(), indexes.ToArray());
+        }
+
+        private static void NaiveMeshIndex(Span<ushort> blocks, Span<Direction> faces, ICollection<Vector3> vertexes, ICollection<uint> indexes, int index,
+            Vector3 localPosition, ushort currentBlockId, bool isCurrentBlockTransparent)
+        {
+            ReadOnlySpan<float> localPositionSpan = MemoryMarshal.Cast<Vector3, float>(stackalloc Vector3[]
+            {
+                localPosition
+            });
+
+            // iterate once over all 6 faces of given cubic space
+            for (int normalIndex = 0; normalIndex < 6; normalIndex++)
+            {
+                // face direction always exists on a single bit, so shift 1 by the current normalIndex (0-5)
+                Direction faceDirection = (Direction)(1 << normalIndex);
+
+                if (faces[index].HasDirection(faceDirection)) continue;
+
+                // indicates whether the current face checking direction is negative or positive
+                bool isNegativeFace = (normalIndex - 3) >= 0;
+
+                // axis value of the current face check direction
+                // example: for iteration normalIndex == 0—which is positive X—it'd be equal to localPosition.x
+                int faceCheckAxisValue = (int)localPositionSpan[normalIndex % 3];
+
+                // indicates whether or not the face check is within the current chunk bounds
+                bool isFaceCheckOutOfBounds = (!isNegativeFace && (faceCheckAxisValue == (GenerationConstants.CHUNK_SIZE - 1)))
+                                              || (isNegativeFace && (faceCheckAxisValue == 0));
+
+                if (!isFaceCheckOutOfBounds)
+                {
+                    // amount by integer to add to current traversal index to get 3D->1D position of facing block
+                    int facedBlockIndex = index + _IndexStepByNormalIndex[normalIndex];
+
+                    // if so, index into block ids and set facingBlockId
+                    ushort facedBlockId = blocks[facedBlockIndex];
+
+                    // if transparent, traverse so long as facing block is not the same block id
+                    // if opaque, traverse so long as facing block is transparent
+                    if (isCurrentBlockTransparent)
+                    {
+                        if (currentBlockId == facedBlockId) continue;
+                    }
+                    else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockId, BlockDefinition.Property.Transparent))
+                    {
+                        // inverse face direction
+                        faces[facedBlockIndex] |= (Direction)(1 << ((normalIndex + 3) % 6));
+
+                        continue;
+                    }
+                }
+                else
+                {
+                    // index into neighbor blocks collections, call .GetPoint() with adjusted local position
+                    // remark: if there's no neighbor at the index given, then no chunk exists there (for instance,
+                    //     chunks at the edge of render distance). In this case, return NullID so no face is rendered on edges.
+                    ushort facedBlockId = BlockRegistry.NullID;
+
+                    if (isCurrentBlockTransparent)
+                    {
+                        if (currentBlockId == facedBlockId) continue;
+                    }
+                    else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockId, BlockDefinition.Property.Transparent)) continue;
+                }
+
+                // int compressedUv = (textureId << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2))
+                //                    ^ (1 << GenerationConstants.CHUNK_SIZE_BIT_SHIFT)
+                //                    ^ 1;
+
+                faces[index] |= faceDirection;
+
+                uint vertexesCount = (uint)vertexes.Count;
+
+                indexes.Add(0u + vertexesCount);
+                indexes.Add(1u + vertexesCount);
+                indexes.Add(3u + vertexesCount);
+                indexes.Add(1u + vertexesCount);
+                indexes.Add(2u + vertexesCount);
+                indexes.Add(3u + vertexesCount);
+
+                Span<Vector3> compressedVertexes = _VertexesByIteration[normalIndex];
+                vertexes.Add(localPosition + compressedVertexes[0]);
+                vertexes.Add(localPosition + compressedVertexes[1]);
+                vertexes.Add(localPosition + compressedVertexes[2]);
+                vertexes.Add(localPosition + compressedVertexes[3]);
+            }
+        }
     }
 }

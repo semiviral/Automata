@@ -76,9 +76,7 @@ namespace Automata.Engine.Rendering
                     {
                         RenderMesh renderMesh = objectEntity.GetComponent<RenderMesh>();
 
-                        if (!objectEntity.TryGetComponent(out RenderShader? renderShader)
-                            || !renderMesh.Mesh.Visible
-                            || (renderMesh.Mesh.IndexesLength == 0)) continue;
+                        if (!renderMesh.ShouldRender || !objectEntity.TryGetComponent(out RenderShader? renderShader)) continue;
 
                         renderShader.Value.Use();
                         renderMesh.Mesh.BindVertexArrayObject();
@@ -91,9 +89,9 @@ namespace Automata.Engine.Rendering
                                 | (objectEntity.TryGetComponent(out Translation? modelTranslation) && modelTranslation.Changed))
                             {
                                 renderMesh.Model = Matrix4x4.Identity;
-                                renderMesh.Model *= Matrix4x4.CreateScale(modelScale?.Value ?? Scale.DEFAULT);
-                                renderMesh.Model *= Matrix4x4.CreateFromQuaternion(modelRotation?.Value ?? Quaternion.Identity);
                                 renderMesh.Model *= Matrix4x4.CreateTranslation(modelTranslation?.Value ?? Vector3.Zero);
+                                renderMesh.Model *= Matrix4x4.CreateFromQuaternion(modelRotation?.Value ?? Quaternion.Identity);
+                                renderMesh.Model *= Matrix4x4.CreateScale(modelScale?.Value ?? Scale.DEFAULT);
                             }
 
                             Matrix4x4.Invert(renderMesh.Model, out Matrix4x4 modelInverted);
@@ -114,7 +112,7 @@ namespace Automata.Engine.Rendering
 
                         _GL.DrawElements(PrimitiveType.Triangles, renderMesh.Mesh.IndexesLength, DrawElementsType.UnsignedInt, null);
 
-                        if (_GL.GetError() != GLEnum.NoError) throw new Exception();
+                        CheckForGLErrorsAndThrow();
                     }
                 }
 
@@ -122,7 +120,18 @@ namespace Automata.Engine.Rendering
             }
             catch (Exception ex)
             {
-                Log.Error($"({nameof(RenderSystem)}) Error: {ex.Message}\r\n{ex.StackTrace}");
+                Log.Error($"({nameof(RenderSystem)}) Error: {ex}\r\n{ex.StackTrace}");
+            }
+        }
+
+        private void CheckForGLErrorsAndThrow()
+        {
+            GLEnum glError = _GL.GetError();
+
+            switch (glError)
+            {
+                case GLEnum.NoError: break;
+                default: throw new OpenGLException(glError);
             }
         }
 

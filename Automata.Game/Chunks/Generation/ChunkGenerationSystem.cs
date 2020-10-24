@@ -2,8 +2,11 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Numerics;
 using Automata.Engine;
 using Automata.Engine.Collections;
 using Automata.Engine.Components;
@@ -32,14 +35,14 @@ namespace Automata.Game.Chunks.Generation
     {
         private readonly OrderedList<BuildStep> _BuildSteps;
         private readonly ConcurrentDictionary<Guid, INodeCollection<ushort>> _PendingBlockCollections;
-        private readonly ConcurrentDictionary<Guid, PendingMesh<int>> _PendingMeshes;
+        private readonly ConcurrentDictionary<Guid, PendingMesh<Vector3>> _PendingMeshes;
 
         public ChunkGenerationSystem()
         {
             _BuildSteps = new OrderedList<BuildStep>();
             _BuildSteps.AddLast(new TerrainBuildStep());
             _PendingBlockCollections = new ConcurrentDictionary<Guid, INodeCollection<ushort>>();
-            _PendingMeshes = new ConcurrentDictionary<Guid, PendingMesh<int>>();
+            _PendingMeshes = new ConcurrentDictionary<Guid, PendingMesh<Vector3>>();
 
             DiagnosticsProvider.EnableGroup<ChunkGenerationDiagnosticGroup>();
         }
@@ -64,19 +67,19 @@ namespace Automata.Game.Chunks.Generation
                         chunk.Blocks = blocks;
                         chunk.State += 1;
                         break;
-                    case GenerationState.AwaitingMeshing when _PendingMeshes.TryRemove(chunk.ID, out PendingMesh<int>? pendingMesh):
+                    case GenerationState.AwaitingMeshing when _PendingMeshes.TryRemove(chunk.ID, out PendingMesh<Vector3>? pendingMesh):
                         Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
                         stopwatch.Restart();
 
-                        Mesh<int> mesh = new Mesh<int>();
-                        mesh.VertexArrayObject.VertexAttributeIPointer(0u, 1, VertexAttribPointerType.Int, 0);
+                        Mesh<Vector3> mesh = new Mesh<Vector3>();
+                        mesh.ModifyVertexAttributes<float>(0u, 0);
                         mesh.VertexesBuffer.SetBufferData(pendingMesh.Vertexes, BufferDraw.DynamicDraw);
                         mesh.IndexesBuffer.SetBufferData(pendingMesh.Indexes, BufferDraw.DynamicDraw);
 
                         if (entity.TryGetComponent(out RenderMesh? renderMesh)) renderMesh.Mesh = mesh;
                         else entityManager.RegisterComponent(entity, new RenderMesh(mesh));
 
-                        if (Shader.TryLoadShaderWithCache("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl", out Shader? shader))
+                        if (Shader.TryLoadShaderWithCache("Resources/Shaders/DefaultVertex.glsl", "Resources/Shaders/DefaultFragment.glsl", out Shader? shader))
                         {
                             entityManager.RegisterComponent(entity, new RenderShader
                             {
@@ -109,7 +112,7 @@ namespace Automata.Game.Chunks.Generation
             }
         }
 
-        private void GenerateChunk(Guid chunkID, BuildStep.Parameters parameters, OrderedList<BuildStep> buildSteps)
+        private void GenerateChunk(Guid chunkID, BuildStep.Parameters parameters, IEnumerable<BuildStep> buildSteps)
         {
             static INodeCollection<ushort> GenerateNodeCollectionImpl(ref Span<ushort> blocks)
             {
@@ -153,7 +156,7 @@ namespace Automata.Game.Chunks.Generation
 
             stopwatch.Restart();
 
-            PendingMesh<int> pendingMesh = ChunkMesher.GenerateMesh(blocks, new INodeCollection<ushort>[6], true);
+            PendingMesh<Vector3> pendingMesh = ChunkMesher.GenerateMesh(blocks);
             if (!_PendingMeshes.TryAdd(chunkID, pendingMesh)) Log.Error($"Failed to add chunk({parameters.Origin}) mesh.");
 
             stopwatch.Stop();

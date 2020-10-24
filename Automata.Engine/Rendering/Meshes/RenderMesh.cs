@@ -28,6 +28,8 @@ namespace Automata.Engine.Rendering.Meshes
 
         public bool Changed { get; set; }
 
+        public bool ShouldRender => Mesh.Visible && Mesh.IndexesLength > 0;
+
         public RenderMesh(IMesh mesh) => Mesh = mesh;
 
         public void Dispose() => _Mesh.Dispose();
