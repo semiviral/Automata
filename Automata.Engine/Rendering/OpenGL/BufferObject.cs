@@ -33,6 +33,7 @@ namespace Automata.Engine.Rendering.OpenGL
         private readonly uint _Handle;
 
         public uint Length { get; private set; }
+        public uint ByteLength { get; private set; }
 
         public BufferObject(GL gl, BufferTargetARB bufferType)
         {
@@ -44,11 +45,16 @@ namespace Automata.Engine.Rendering.OpenGL
         public unsafe void SetBufferData(Span<TDataType> data, BufferDraw bufferDraw)
         {
             Bind();
-            Length = (uint)(data.Length * sizeof(TDataType));
-            _GL.BufferData(_BufferType, Length, data, (BufferUsageARB)bufferDraw);
+
+            Length = (uint)data.Length;
+            ByteLength = Length * (uint)sizeof(TDataType);
+            _GL.BufferData(_BufferType, ByteLength, data, (BufferUsageARB)bufferDraw);
+
+            Unbind();
         }
 
         public void Bind() => _GL.BindBuffer(_BufferType, _Handle);
+        public void Unbind() => _GL.BindBuffer(_BufferType, 0);
         public void Dispose() => _GL.DeleteBuffer(_Handle);
     }
 }

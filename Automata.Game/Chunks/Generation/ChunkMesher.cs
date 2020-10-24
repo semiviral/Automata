@@ -9,6 +9,7 @@ using Automata.Engine.Collections;
 using Automata.Engine.Numerics;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Game.Blocks;
+using Serilog;
 
 #endregion
 
@@ -229,7 +230,7 @@ namespace Automata.Game.Chunks.Generation
                         traversalIndex += traversalIndexStep) // increment traversal index by index step to adjust local working position
                     {
                         // check if current facing block axis value is within the local chunk
-                        if (!isFaceCheckOutOfBounds)
+                        if (isFaceCheckOutOfBounds)
                         {
                             // this block of code translates the integer local position to the local position of the neighbor at [normalIndex]
                             int sign = isNegativeFace ? -1 : 1;
@@ -363,7 +364,7 @@ namespace Automata.Game.Chunks.Generation
                 bool isFaceCheckOutOfBounds = (!isNegativeFace && (faceCheckAxisValue == (GenerationConstants.CHUNK_SIZE - 1)))
                                               || (isNegativeFace && (faceCheckAxisValue == 0));
 
-                if (!isFaceCheckOutOfBounds)
+                if (isFaceCheckOutOfBounds)
                 {
                     // this block of code translates the integer local position to the local position of the neighbor at [normalIndex]
                     int sign = isNegativeFace ? -1 : 1;
@@ -476,7 +477,7 @@ namespace Automata.Game.Chunks.Generation
             return new PendingMesh<Vector3>(vertexes.ToArray(), indexes.ToArray());
         }
 
-        private static void NaiveMeshIndex(Span<ushort> blocks, Span<Direction> faces, ICollection<Vector3> vertexes, ICollection<uint> indexes, int index,
+        private static void NaiveMeshIndex(Span<ushort> blocks, Span<Direction> faces, List<Vector3> vertexes, ICollection<uint> indexes, int index,
             Vector3 localPosition, ushort currentBlockId, bool isCurrentBlockTransparent)
         {
             ReadOnlySpan<float> localPositionSpan = MemoryMarshal.Cast<Vector3, float>(stackalloc Vector3[]

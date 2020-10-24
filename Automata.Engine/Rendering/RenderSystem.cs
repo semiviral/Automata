@@ -85,7 +85,7 @@ namespace Automata.Engine.Rendering
                             currentShader = renderShader;
                         }
 
-                        renderMesh.Mesh!.BindVertexArrayObject();
+                        renderMesh.Mesh!.Bind();
 
                         if (renderShader.Value.HasAutomataUniforms)
                         {
@@ -122,6 +122,7 @@ namespace Automata.Engine.Rendering
                     }
                 }
 
+                _GL.BindVertexArray(0);
                 _NewAspectRatio = 0f;
             }
             catch (Exception ex)

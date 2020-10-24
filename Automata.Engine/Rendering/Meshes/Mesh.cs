@@ -18,6 +18,7 @@ namespace Automata.Engine.Rendering.Meshes
         public VertexArrayObject<TDataType, uint> VertexArrayObject { get; }
 
         public uint IndexesLength => IndexesBuffer.Length;
+        public uint IndexesByteLength => IndexesBuffer.ByteLength;
 
         public Mesh()
         {
@@ -49,7 +50,8 @@ namespace Automata.Engine.Rendering.Meshes
                 VertexArrayObject.VertexAttributeLPointer(index, dimensions, VertexAttribPointerType.Double, offset);
         }
 
-        public void BindVertexArrayObject() => VertexArrayObject.Bind();
+        public void Bind() => VertexArrayObject.Bind();
+        public void Unbind() => VertexArrayObject.Unbind();
 
         public void Dispose()
         {

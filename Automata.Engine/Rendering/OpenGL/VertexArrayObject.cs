@@ -23,30 +23,42 @@ namespace Automata.Engine.Rendering.OpenGL
             Bind();
             vbo.Bind();
             ebo.Bind();
+            Unbind();
         }
+
+        public void Dispose() => _GL.DeleteVertexArray(_Handle);
 
         public unsafe void VertexAttributePointer(uint attributeIndex, int dimensions, VertexAttribPointerType type, int offset)
         {
             Bind();
+
             _GL.VertexAttribPointer(attributeIndex, dimensions, type, false, (uint)(dimensions * sizeof(TVertexType)), (void*)(offset * sizeof(TVertexType)));
             _GL.EnableVertexAttribArray(attributeIndex);
+
+            Unbind();
         }
 
         public unsafe void VertexAttributeIPointer(uint attributeIndex, int dimensions, VertexAttribPointerType type, int offset)
         {
             Bind();
+
             _GL.VertexAttribIPointer(attributeIndex, dimensions, type, (uint)(dimensions * sizeof(TVertexType)), (void*)(offset * sizeof(TVertexType)));
             _GL.EnableVertexAttribArray(attributeIndex);
+
+            Unbind();
         }
 
         public unsafe void VertexAttributeLPointer(uint attributeIndex, int dimensions, VertexAttribPointerType type, int offset)
         {
             Bind();
+
             _GL.VertexAttribLPointer(attributeIndex, dimensions, type, (uint)(dimensions * sizeof(TVertexType)), (void*)(offset * sizeof(TVertexType)));
             _GL.EnableVertexAttribArray(attributeIndex);
+
+            Unbind();
         }
 
         public void Bind() => _GL.BindVertexArray(_Handle);
-        public void Dispose() => _GL.DeleteVertexArray(_Handle);
+        public void Unbind() => _GL.BindVertexArray(0);
     }
 }
