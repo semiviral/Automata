@@ -19,7 +19,7 @@ namespace Automata.Engine.Numerics
             return result;
         }
 
-        public Vector3 GetLesserSumVertex(Vector3 a)
+        public Vector3 LesserSumVertex(Vector3 a)
         {
             Vector3 result = Origin;
             if (a.X < 0f) result.X += Extents.X;

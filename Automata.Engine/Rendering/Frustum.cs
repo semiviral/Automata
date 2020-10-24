@@ -97,39 +97,41 @@ namespace Automata.Engine.Rendering
             static bool BoxOutsidePlane(Plane plane, BoundingBox box) => plane.Distance(box.GreaterSumVertex(plane.Normal)) < 0f;
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static bool BoxIntersectPlane(Plane plane, BoundingBox box) => plane.Distance(box.GetLesserSumVertex(plane.Normal)) > 0f;
+            static bool BoxIntersectPlane(Plane plane, BoundingBox box) => plane.Distance(box.LesserSumVertex(plane.Normal)) < 0f;
+
+            Boundary result = Boundary.Inside;
 
             Plane plane = _Planes[_NEAR];
 
             if (BoxOutsidePlane(plane, box)) return Boundary.Outside;
-            else if (BoxIntersectPlane(plane, box)) return Boundary.Intersect;
+            else if (BoxIntersectPlane(plane, box)) result = Boundary.Intersect;
 
             plane = _Planes[_FAR];
 
             if (BoxOutsidePlane(plane, box)) return Boundary.Outside;
-            else if (BoxIntersectPlane(plane, box)) return Boundary.Intersect;
+            else if (BoxIntersectPlane(plane, box)) result = Boundary.Intersect;
 
             plane = _Planes[_BOTTOM];
 
             if (BoxOutsidePlane(plane, box)) return Boundary.Outside;
-            else if (BoxIntersectPlane(plane, box)) return Boundary.Intersect;
+            else if (BoxIntersectPlane(plane, box)) result = Boundary.Intersect;
 
             plane = _Planes[_TOP];
 
             if (BoxOutsidePlane(plane, box)) return Boundary.Outside;
-            else if (BoxIntersectPlane(plane, box)) return Boundary.Intersect;
+            else if (BoxIntersectPlane(plane, box)) result = Boundary.Intersect;
 
             plane = _Planes[_LEFT];
 
             if (BoxOutsidePlane(plane, box)) return Boundary.Outside;
-            else if (BoxIntersectPlane(plane, box)) return Boundary.Intersect;
+            else if (BoxIntersectPlane(plane, box)) result = Boundary.Intersect;
 
             plane = _Planes[_RIGHT];
 
             if (BoxOutsidePlane(plane, box)) return Boundary.Outside;
-            else if (BoxIntersectPlane(plane, box)) return Boundary.Intersect;
+            else if (BoxIntersectPlane(plane, box)) result = Boundary.Intersect;
 
-            return Boundary.Inside;
+            return result;
         }
 
         /// <summary>

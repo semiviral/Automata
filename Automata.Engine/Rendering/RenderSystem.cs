@@ -119,10 +119,7 @@ namespace Automata.Engine.Rendering
                         if (objectEntity.TryGetComponent(out Bounds? bounds))
                         {
                             Frustum frustum = new Frustum(planes, modelViewProjection);
-
-                            Frustum.Boundary boundary = frustum.BoxWithin(bounds.Value);
-
-                            if (boundary is Frustum.Boundary.Outside) continue;
+                            if (frustum.BoxWithin(bounds.Value) is Frustum.Boundary.Outside) continue;
                         }
 
                         renderMesh.Mesh!.Bind();
