@@ -1,5 +1,6 @@
 #region
 
+using System;
 using Automata.Engine.Components;
 
 #endregion
@@ -7,10 +8,12 @@ using Automata.Engine.Components;
 
 namespace Automata.Engine.Rendering.OpenGL
 {
-    public class RenderShader : IComponent
+    public class RenderShader : IComponent, IDisposable
     {
         private static readonly Shader _DefaultShader = new Shader();
 
         public Shader Value { get; set; } = _DefaultShader;
+
+        public void Dispose() => Value.Dispose();
     }
 }

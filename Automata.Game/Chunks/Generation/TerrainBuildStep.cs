@@ -38,6 +38,14 @@ namespace Automata.Game.Chunks.Generation
             for (index = 0; index < GenerationConstants.CHUNK_SIZE_CUBED; index++)
             {
                 Vector3i localPosition = Vector3i.Project3D(index, GenerationConstants.CHUNK_SIZE);
+
+                if (Vector3b.Any(localPosition == GenerationConstants.CHUNK_SIZE) || Vector3b.Any(localPosition == 0))
+                {
+                    blocks[index] = BlockRegistry.Instance.GetBlockID("dirt");
+                }
+
+                continue;
+
                 int heightmapIndex = Vector2i.Project1D(new Vector2i(localPosition.X, localPosition.Z), GenerationConstants.CHUNK_SIZE);
                 int noiseHeight = heightmap[heightmapIndex];
 

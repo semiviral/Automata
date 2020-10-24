@@ -20,10 +20,7 @@ namespace Automata.Game.Chunks
     {
         private readonly Dictionary<Vector3i, IEntity> _ChunkEntities;
 
-        public ChunkRegionLoaderSystem()
-        {
-            _ChunkEntities = new Dictionary<Vector3i, IEntity>();
-        }
+        public ChunkRegionLoaderSystem() => _ChunkEntities = new Dictionary<Vector3i, IEntity>();
 
         [HandlesComponents(DistinctionStrategy.All, typeof(Translation), typeof(ChunkLoader))]
         public override void Update(EntityManager entityManager, TimeSpan delta)
@@ -34,14 +31,13 @@ namespace Automata.Game.Chunks
 
             foreach ((Translation translation, ChunkLoader chunkLoader) in components)
             {
-                Vector3i translationVector3i = Vector3i.FromVector3(translation.Value);
-                Vector3i difference = Vector3i.Abs(translationVector3i - chunkLoader.Origin);
+                Vector3i translationInt32 = Vector3i.FromVector3(translation.Value);
+                Vector3i difference = Vector3i.Abs(translationInt32 - chunkLoader.Origin);
 
-                if (Vector3b.Any(difference >= GenerationConstants.CHUNK_SIZE))
-                {
-                    chunkLoader.Origin = chunkLoader.Origin = Vector3i.RoundBy(translationVector3i, GenerationConstants.CHUNK_SIZE);
-                    recalculateChunkRegions = true;
-                }
+                if (Vector3b.All(difference < GenerationConstants.CHUNK_SIZE)) continue;
+
+                chunkLoader.Origin = chunkLoader.Origin = Vector3i.RoundBy(translationInt32, GenerationConstants.CHUNK_SIZE);
+                recalculateChunkRegions = true;
             }
 
             if (!recalculateChunkRegions) return;

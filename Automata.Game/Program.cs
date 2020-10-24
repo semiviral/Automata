@@ -125,11 +125,6 @@ namespace Automata.Game
                 Sensitivity = 40f
             });
 
-            world.EntityManager.RegisterComponent(player, new RenderShader
-            {
-                Value = Shader.LoadShader("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl")
-            });
-
             world.EntityManager.RegisterComponent(player, new ChunkLoader
             {
                 Radius = 1

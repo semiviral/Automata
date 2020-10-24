@@ -72,15 +72,15 @@ namespace Automata.Engine.Rendering
 
                     if (_NewAspectRatio > 0f) camera.CalculateProjection(_NewAspectRatio);
 
-                    if (cameraEntity.TryGetComponent(out RenderShader? renderShader)) renderShader.Value.Use();
-                    else continue;
-
                     foreach (IEntity objectEntity in entityManager.GetEntitiesWithComponents<RenderMesh>())
                     {
                         RenderMesh renderMesh = objectEntity.GetComponent<RenderMesh>();
 
-                        if (!renderMesh.Mesh.Visible || (renderMesh.Mesh.IndexesLength == 0)) continue;
+                        if (!objectEntity.TryGetComponent(out RenderShader? renderShader)
+                            || !renderMesh.Mesh.Visible
+                            || (renderMesh.Mesh.IndexesLength == 0)) continue;
 
+                        renderShader.Value.Use();
                         renderMesh.Mesh.BindVertexArrayObject();
 
                         if (renderShader.Value.HasAutomataUniforms)

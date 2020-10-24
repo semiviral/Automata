@@ -22,11 +22,11 @@ namespace Automata.Engine.Entities
             _ComponentCountByType = new Dictionary<Type, int>();
         }
 
-        public IEntity ComposeEntity<T>(bool autoRegister) where T : IEntityComposition, new()
+        public IEntity ComposeEntity<TEntityComposition>(bool autoRegister) where TEntityComposition : IEntityComposition, new()
         {
             IEntity entity = new Entity();
 
-            foreach (Type type in new T().ComposedTypes)
+            foreach (Type type in new TEntityComposition().ComposedTypes)
             {
                 IComponent? component = (IComponent?)Activator.CreateInstance(type);
 
@@ -63,11 +63,11 @@ namespace Automata.Engine.Entities
         ///     Removes the specified component instance from given <see cref="IEntity" />.
         /// </summary>
         /// <param name="entity"><see cref="IEntity" /> to remove component from.</param>
-        /// <typeparam name="T">Type of component to remove.</typeparam>
+        /// <typeparam name="TComponent">Type of component to remove.</typeparam>
         /// <remarks>
         ///     Use this method to ensure <see cref="EntityManager" /> caches remain accurate.
         /// </remarks>
-        public void RemoveComponent<T>(IEntity entity) where T : class, IComponent => RemoveComponentInternal(entity, typeof(T));
+        public void RemoveComponent<TComponent>(IEntity entity) where TComponent : class, IComponent => RemoveComponentInternal(entity, typeof(TComponent));
 
         public void RemoveComponent(IEntity entity, Type type) => RemoveComponentInternal(entity, type);
 
@@ -139,10 +139,10 @@ namespace Automata.Engine.Entities
 
         #region Get .. Data
 
-        public IEnumerable<T> GetComponentsAssignableFrom<T>() where T : class, IComponent
+        public IEnumerable<TComponent> GetComponentsAssignableFrom<TComponent>() where TComponent : class, IComponent
         {
             foreach (IComponent component in _Entities.SelectMany(entity => entity.Components.Values))
-                if (component is T componentT)
+                if (component is TComponent componentT)
                     yield return componentT;
         }
 
@@ -192,8 +192,9 @@ namespace Automata.Engine.Entities
             where T1 : class, IComponent
         {
             foreach (IEntity entity in _Entities)
-                if (entity.TryGetComponent(out T1? component))
-                    yield return component;
+            {
+                if (entity.TryGetComponent(out T1? component)) yield return component;
+            }
         }
 
         public IEnumerable<(T1, T2)> GetComponents<T1, T2>()
@@ -235,7 +236,9 @@ namespace Automata.Engine.Entities
             }
         }
 
-        public int GetComponentCount<T>() where T : class, IComponent => _ComponentCountByType.TryGetValue(typeof(T), out int count) ? count : 0;
+        public int GetComponentCount<TComponent>() where TComponent : class, IComponent =>
+            _ComponentCountByType.TryGetValue(typeof(TComponent), out int count) ? count : 0;
+
         public int GetComponentCount(Type type) => _ComponentCountByType.TryGetValue(type, out int count) ? count : 0;
 
         #endregion

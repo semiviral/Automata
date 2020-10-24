@@ -49,11 +49,11 @@ namespace Automata.Game.Chunks.Generation
         {
             foreach (IEntity entity in entityManager.GetEntitiesWithComponents<Chunk, Translation>())
             {
-                Chunk chunk = entity.GetComponent<Chunk>();
+                if (!entity.TryGetComponent(out Chunk? chunk) || !entity.TryGetComponent(out Translation? translation)) continue;
 
                 switch (chunk.State)
                 {
-                    case GenerationState.Ungenerated when entity.TryGetComponent(out Translation? translation):
+                    case GenerationState.Ungenerated:
                         BoundedThreadPool.QueueWork(() => GenerateChunk(chunk.ID,
                             new BuildStep.Parameters(GenerationConstants.Seed, GenerationConstants.FREQUENCY, GenerationConstants.PERSISTENCE,
                                 Vector3i.FromVector3(translation.Value)), _BuildSteps));
@@ -75,6 +75,15 @@ namespace Automata.Game.Chunks.Generation
 
                         if (entity.TryGetComponent(out RenderMesh? renderMesh)) renderMesh.Mesh = mesh;
                         else entityManager.RegisterComponent(entity, new RenderMesh(mesh));
+
+                        if (Shader.TryLoadShaderWithCache("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl", out Shader? shader))
+                        {
+                            entityManager.RegisterComponent(entity, new RenderShader
+                            {
+                                Value = shader
+                            });
+                        }
+                        else Log.Error($"Failed to load a shader for chunk at {translation.Value}.");
 
                         stopwatch.Stop();
 

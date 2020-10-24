@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -34,7 +35,7 @@ namespace Automata.Engine.Rendering.OpenGL
             RESERVED_UNIFORM_NAME_VEC4_VIEWPORT,
         };
 
-        private static readonly string _DefaultVertexShader =
+        private static readonly string _DefaultVertexShaderPacked =
             $@"
                 #version 330 core
 
@@ -47,7 +48,7 @@ namespace Automata.Engine.Rendering.OpenGL
                 void main()
                 {{
                     gl_Position = {RESERVED_UNIFORM_NAME_MATRIX_MVP} * vec4(vertex, 1.0);
-                    fragColor = vec4(1.0);
+                    fragColor = vec4(normalize(vertex), 1.0);
                 }}
             ";
 
@@ -64,17 +65,19 @@ namespace Automata.Engine.Rendering.OpenGL
                 }
             ";
 
+        private static Dictionary<string, Shader> _CachedShaders = new Dictionary<string, Shader>();
+
         private readonly GL _GL;
         private readonly uint _Handle;
         private readonly Dictionary<string, int> _CachedUniformLocations;
 
         public bool HasAutomataUniforms { get; }
 
-        public unsafe Shader()
+        internal unsafe Shader()
         {
             _GL = GLAPI.Instance.GL;
 
-            uint vertexShaderHandle = CreateGPUShader(ShaderType.VertexShader, _DefaultVertexShader);
+            uint vertexShaderHandle = CreateGPUShader(ShaderType.VertexShader, _DefaultVertexShaderPacked);
             uint fragmentShaderHandle = CreateGPUShader(ShaderType.FragmentShader, _DefaultFragmentShader);
 
             _Handle = _GL.CreateProgram();
@@ -87,7 +90,7 @@ namespace Automata.Engine.Rendering.OpenGL
             HasAutomataUniforms = _CachedUniformLocations.Keys.Intersect(_ReservedUniformNames).Any();
         }
 
-        public unsafe Shader(uint vertexShaderHandle, uint fragmentShaderHandle)
+        private unsafe Shader(uint vertexShaderHandle, uint fragmentShaderHandle)
         {
             _GL = GLAPI.Instance.GL;
 
@@ -99,9 +102,9 @@ namespace Automata.Engine.Rendering.OpenGL
             }
             catch (ShaderLoadException ex)
             {
-                Log.Error($"Failed to load {ex.Type} shader (will use fallback to default): {ex.InfoLog}");
+                Log.Error($"Failed to load {ex.Type} shader (will fallback to default): {ex.InfoLog}");
 
-                vertexShaderHandle = CreateGPUShader(ShaderType.VertexShader, _DefaultVertexShader);
+                vertexShaderHandle = CreateGPUShader(ShaderType.VertexShader, _DefaultVertexShaderPacked);
                 fragmentShaderHandle = CreateGPUShader(ShaderType.FragmentShader, _DefaultFragmentShader);
                 CreateShader(vertexShaderHandle, fragmentShaderHandle);
             }
@@ -140,9 +143,9 @@ namespace Automata.Engine.Rendering.OpenGL
             }
         }
 
-        public void Dispose() { _GL.DeleteProgram(_Handle); }
-
         public void Use() { _GL.UseProgram(_Handle); }
+
+        public void Dispose() { _GL.DeleteProgram(_Handle); }
 
 
         #region Set .. Get .. As Try
@@ -209,16 +212,42 @@ namespace Automata.Engine.Rendering.OpenGL
         #endregion
 
 
-        public static Shader LoadShader(string vertexShaderPath, string fragmentShaderPath)
+        public static bool TryLoadShaderWithCache(string vertexShaderPath, string fragmentShaderPath, [NotNullWhen(true)] out Shader? shader)
         {
-            uint vertexShaderHandle = CreateGPUShader(ShaderType.VertexShader, File.ReadAllText(vertexShaderPath));
-            uint fragmentShaderHandle = CreateGPUShader(ShaderType.FragmentShader, File.ReadAllText(fragmentShaderPath));
-            Shader shader = new Shader(vertexShaderHandle, fragmentShaderHandle);
+            const string compound_shader_key_format = "{0}:{1}";
+            string compoundShaderKey = string.Format(compound_shader_key_format, vertexShaderPath, fragmentShaderPath);
 
-            Log.Debug($"({nameof(Shader)}) Loaded vertex shader from: {vertexShaderPath}");
-            Log.Debug($"({nameof(Shader)}) Loaded fragment shader from: {fragmentShaderPath}");
+            if (_CachedShaders.TryGetValue(compoundShaderKey, out shader)) return true;
+            else if (TryLoadShader(vertexShaderPath, fragmentShaderPath, out shader))
+            {
+                _CachedShaders.Add(compoundShaderKey, shader);
+                return true;
+            }
+            else return false;
+        }
 
-            return shader;
+        public static bool TryLoadShader(string vertexShaderPath, string fragmentShaderPath, [NotNullWhen(true)] out Shader? shader)
+        {
+            shader = null;
+
+            try
+            {
+                uint vertexShaderHandle = CreateGPUShader(ShaderType.VertexShader, File.ReadAllText(vertexShaderPath));
+                uint fragmentShaderHandle = CreateGPUShader(ShaderType.FragmentShader, File.ReadAllText(fragmentShaderPath));
+                shader = new Shader(vertexShaderHandle, fragmentShaderHandle);
+            }
+            catch (Exception exception)
+            {
+                Log.Error(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(Shader),
+                    $"Failed to load shader: {exception.Message}\r\n{exception.StackTrace}"));
+
+                return false;
+            }
+
+            Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(Shader), $"Loaded vertex shader from: {vertexShaderPath}"));
+            Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(Shader), $"Loaded fragment shader from: {fragmentShaderPath}"));
+
+            return true;
         }
 
         private static uint CreateGPUShader(ShaderType shaderType, string shader)
