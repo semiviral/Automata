@@ -8,6 +8,7 @@ using Automata.Engine;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
 using Automata.Engine.Numerics;
+using Automata.Engine.Numerics.Shapes;
 using Automata.Engine.Rendering;
 using Automata.Engine.Systems;
 using Automata.Game.Chunks.Generation;
@@ -68,7 +69,7 @@ namespace Automata.Game.Chunks
                 IEntity chunk = entityManager.ComposeEntity<ChunkComposition>(true);
                 chunk.GetComponent<Translation>().Value = origin;
                 chunk.GetComponent<Chunk>().State = GenerationState.Ungenerated;
-                chunk.GetComponent<Bounds>().Value = new BoundingBox(origin, new Vector3(GenerationConstants.CHUNK_SIZE));
+                chunk.GetComponent<Bounds>().Cubic = new Cube(origin, new Vector3(GenerationConstants.CHUNK_SIZE));
 
                 _ChunkEntities.Add(origin, chunk);
 

@@ -17,8 +17,9 @@ namespace Automata.Engine
 {
     public static class AutomataMath
     {
-        public static float Unlerp(float a, float b, float interpolant) => (interpolant - a) / (b - a);
 
+
+        public static float Unlerp(float a, float b, float interpolant) => (interpolant - a) / (b - a);
         public static float ToRadians(float degrees) => degrees * ((float)Math.PI / 180f);
 
         public static unsafe float GetValue(this Matrix4x4 matrix, uint row, uint column)
@@ -69,6 +70,9 @@ namespace Automata.Engine
 
         public static Vector3 RoundBy(this Vector3 a, Vector3 b) =>
             new Vector3((float)Math.Floor(a.X / b.X), (float)Math.Floor(a.Y / b.Y), (float)Math.Floor(a.Z / b.Z)) * b;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3 AsVector3(this Vector4 a) => Unsafe.As<Vector4, Vector3>(ref a);
 
     }
 }

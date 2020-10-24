@@ -2,11 +2,12 @@ using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using Automata.Engine.Numerics;
-using Plane = Automata.Engine.Numerics.Plane;
+using Automata.Engine.Numerics.Shapes;
+using Plane = Automata.Engine.Numerics.Shapes.Plane;
 
 namespace Automata.Engine.Rendering
 {
-    public readonly ref struct Frustum
+    public readonly ref struct ClipFrustum
     {
         private const int _NEAR = 0;
         private const int _FAR = 1;
@@ -26,7 +27,7 @@ namespace Automata.Engine.Rendering
 
         private readonly ReadOnlySpan<Plane> _Planes;
 
-        public Frustum(Span<Plane> planes, Matrix4x4 mvp)
+        public ClipFrustum(Span<Plane> planes, Matrix4x4 mvp)
         {
             if (planes.Length != PLANES_SPAN_LENGTH) throw new ArgumentOutOfRangeException(nameof(planes), "Length must be 6.");
 
@@ -91,13 +92,49 @@ namespace Automata.Engine.Rendering
                 ? Boundary.Outside
                 : Boundary.Inside;
 
-        public Boundary BoxWithin(BoundingBox box)
+        public Boundary SphereWithin(Vector3 origin, float radius)
+        {
+            Boundary result = Boundary.Inside;
+
+            float distance = _Planes[_NEAR].Distance(origin);
+
+            if (distance < -radius) return Boundary.Outside;
+            else if (distance < radius) result = Boundary.Intersect;
+
+            distance = _Planes[_FAR].Distance(origin);
+
+            if (distance < -radius) return Boundary.Outside;
+            else if (distance < radius) result = Boundary.Intersect;
+
+            distance = _Planes[_BOTTOM].Distance(origin);
+
+            if (distance < -radius) return Boundary.Outside;
+            else if (distance < radius) result = Boundary.Intersect;
+
+            distance = _Planes[_TOP].Distance(origin);
+
+            if (distance < -radius) return Boundary.Outside;
+            else if (distance < radius) result = Boundary.Intersect;
+
+            distance = _Planes[_LEFT].Distance(origin);
+
+            if (distance < -radius) return Boundary.Outside;
+            else if (distance < radius) result = Boundary.Intersect;
+
+            distance = _Planes[_RIGHT].Distance(origin);
+
+            if (distance < -radius) return Boundary.Outside;
+            else if (distance < radius) result = Boundary.Intersect;
+            return result;
+        }
+
+        public Boundary BoxWithin(Cube box)
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static bool BoxOutsidePlane(Plane plane, BoundingBox box) => plane.Distance(box.GreaterSumVertex(plane.Normal)) < 0f;
+            static bool BoxOutsidePlane(Plane plane, Cube box) => plane.Distance(box.GreaterSumVertex(plane.Normal)) < 0f;
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static bool BoxIntersectPlane(Plane plane, BoundingBox box) => plane.Distance(box.LesserSumVertex(plane.Normal)) < 0f;
+            static bool BoxIntersectPlane(Plane plane, Cube box) => plane.Distance(box.LesserSumVertex(plane.Normal)) < 0f;
 
             Boundary result = Boundary.Inside;
 

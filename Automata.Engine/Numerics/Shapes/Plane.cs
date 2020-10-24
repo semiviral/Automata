@@ -1,9 +1,10 @@
+using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
-namespace Automata.Engine.Numerics
+namespace Automata.Engine.Numerics.Shapes
 {
-    public readonly struct Plane
+    public readonly struct Plane : IEquatable<Plane>
     {
         public readonly Vector3 Normal;
         public readonly float D;
@@ -20,5 +21,13 @@ namespace Automata.Engine.Numerics
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float Distance(Vector3 point) => D + Vector3.Dot(Normal, point);
+
+        public bool Equals(Plane other) => Normal.Equals(other.Normal) && D.Equals(other.D);
+        public override bool Equals(object? obj) => obj is Plane other && Equals(other);
+
+        public override int GetHashCode() => HashCode.Combine(Normal, D);
+
+        public static bool operator ==(Plane left, Plane right) => left.Equals(right);
+        public static bool operator !=(Plane left, Plane right) => !left.Equals(right);
     }
 }

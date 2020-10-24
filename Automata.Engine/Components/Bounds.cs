@@ -1,9 +1,12 @@
+using System.Numerics;
 using Automata.Engine.Numerics;
+using Automata.Engine.Numerics.Shapes;
 
 namespace Automata.Engine.Components
 {
     public class Bounds : IComponent
     {
-        public BoundingBox Value { get; set; }
+        public Sphere Spheric { get; set; }
+        public Cube Cubic { get; set; }
     }
 }
