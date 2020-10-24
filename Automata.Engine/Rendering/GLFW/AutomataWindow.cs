@@ -3,13 +3,17 @@
 using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.Linq;
 using System.Threading;
+using Automata.Engine.Collections;
 using Automata.Engine.Input;
 using Automata.Engine.Numerics;
+using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Worlds;
 using Serilog;
 using Silk.NET.Core.Contexts;
 using Silk.NET.Input.Common;
+using Silk.NET.Vulkan;
 using Silk.NET.Windowing.Common;
 
 #endregion
@@ -19,10 +23,16 @@ namespace Automata.Engine.Rendering.GLFW
 {
     public class AutomataWindow : Singleton<AutomataWindow>
     {
-        private readonly Stopwatch _DeltaTimer;
+        private TimeSpan _MinimumFrameTime;
 
         private IWindow? _Window;
-        private TimeSpan _MinimumFrameTime;
+
+        public AutomataWindow()
+        {
+            AssignSingletonInstance(this);
+
+            Focused = true;
+        }
 
         public IGLContext? GLContext => Window.GLContext;
 
@@ -59,15 +69,6 @@ namespace Automata.Engine.Rendering.GLFW
         public event WindowFocusChangedEventHandler? FocusChanged;
         public event WindowClosingEventHandler? Closing;
 
-        public AutomataWindow()
-        {
-            AssignSingletonInstance(this);
-
-            _DeltaTimer = new Stopwatch();
-
-            Focused = true;
-        }
-
         public void CreateWindow(WindowOptions windowOptions)
         {
             _Window = Silk.NET.Windowing.Window.Create(windowOptions);
@@ -102,20 +103,26 @@ namespace Automata.Engine.Rendering.GLFW
         {
             try
             {
+                Stopwatch deltaTimer = new Stopwatch();
+                BoundedConcurrentQueue<double> fps = new BoundedConcurrentQueue<double>(60);
+
                 while (!Window.IsClosing)
                 {
-                    _DeltaTimer.Restart();
+                    deltaTimer.Restart();
 
                     Window.DoEvents();
 
                     if (InputManager.Instance.IsKeyPressed(Key.Escape)) Window.Close();
 
-                    if (!Window.IsClosing) World.GlobalUpdate(_DeltaTimer);
+                    if (!Window.IsClosing) World.GlobalUpdate(deltaTimer);
 
                     Window.DoEvents();
                     Window.SwapBuffers();
 
-                    if (CheckWaitForNextMonitorRefresh()) WaitForNextMonitorRefresh();
+                    if (CheckWaitForNextMonitorRefresh()) WaitForNextMonitorRefresh(deltaTimer);
+
+                    fps.Enqueue(1d / deltaTimer.Elapsed.TotalSeconds);
+                    Title = $"Automata {fps.Average():0.00} FPS";
                 }
             }
             catch (Exception ex)
@@ -127,9 +134,13 @@ namespace Automata.Engine.Rendering.GLFW
 
         private bool CheckWaitForNextMonitorRefresh() => Window.VSync == VSyncMode.On;
 
-        private void WaitForNextMonitorRefresh() => Thread.Sleep(Math.Max((_MinimumFrameTime - _DeltaTimer.Elapsed).Milliseconds, 0));
+        private void WaitForNextMonitorRefresh(Stopwatch deltaTimer) => Thread.Sleep(Math.Max((_MinimumFrameTime - deltaTimer.Elapsed).Milliseconds, 0));
 
-        private void OnWindowResized(Size size) => Resized?.Invoke(this, (Vector2i)Size);
+        private void OnWindowResized(Size size)
+        {
+            GLAPI.Instance.GL.Viewport(Window.Size);
+            Resized?.Invoke(this, (Vector2i)Size);
+        }
 
         private void OnWindowFocusedChanged(bool focused)
         {

@@ -71,7 +71,6 @@ namespace Automata.Engine.Rendering
 
                     if (_NewAspectRatio > 0f) camera.CalculateProjection(_NewAspectRatio);
 
-
                     RenderShader? currentShader = null;
 
                     foreach (IEntity objectEntity in entityManager.GetEntitiesWithComponents<RenderMesh>())
@@ -80,7 +79,7 @@ namespace Automata.Engine.Rendering
 
                         if (!renderMesh.ShouldRender || !objectEntity.TryGetComponent(out RenderShader? renderShader)) continue;
 
-                        if (currentShader is null || renderShader.Value.ID != currentShader.Value.ID)
+                        if (currentShader is null || (renderShader.Value.ID != currentShader.Value.ID))
                         {
                             renderShader.Value.Use();
                             currentShader = renderShader;
@@ -117,7 +116,7 @@ namespace Automata.Engine.Rendering
                             renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_VIEWPORT, viewport);
                         }
 
-                        _GL.DrawElements(PrimitiveType.TriangleStrip, renderMesh.Mesh.IndexesLength, DrawElementsType.UnsignedInt, null);
+                        _GL.DrawElements(PrimitiveType.Triangles, renderMesh.Mesh.IndexesLength, DrawElementsType.UnsignedInt, null);
 
                         CheckForGLErrorsAndThrow();
                     }
@@ -142,6 +141,6 @@ namespace Automata.Engine.Rendering
             }
         }
 
-        private void GameWindowResized(object sender, Vector2i newSize) { _NewAspectRatio = (float)newSize.X / (float)newSize.Y; }
+        private void GameWindowResized(object sender, Vector2i newSize) => _NewAspectRatio = (float)newSize.X / (float)newSize.Y;
     }
 }

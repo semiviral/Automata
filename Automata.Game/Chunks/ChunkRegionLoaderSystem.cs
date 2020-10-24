@@ -7,6 +7,7 @@ using Automata.Engine;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
 using Automata.Engine.Numerics;
+using Automata.Engine.Rendering.GLFW;
 using Automata.Engine.Systems;
 using Automata.Game.Chunks.Generation;
 using Serilog;

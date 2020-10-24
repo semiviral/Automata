@@ -102,13 +102,6 @@ namespace Automata.Game.Chunks.Generation
             }
 
             DiagnosticsInputCheck();
-
-            if (World.TryGetWorld("core", out World? world))
-            {
-                ChunkLoader chunkLoader = world.EntityManager.GetComponents<ChunkLoader>().First();
-
-                AutomataWindow.Instance.Title = $"Automata (ChunkPosition {chunkLoader.Origin})";
-            }
         }
 
         private void GenerateChunk(Guid chunkID, BuildStep.Parameters parameters, IEnumerable<BuildStep> buildSteps)
