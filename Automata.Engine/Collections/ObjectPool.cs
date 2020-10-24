@@ -10,8 +10,8 @@ namespace Automata.Engine.Collections
 {
     public class ObjectPool<T>
     {
-        private readonly ConcurrentBag<T> _Pool;
         private readonly Func<T> _ObjectFactory;
+        private readonly ConcurrentBag<T> _Pool;
 
         public ObjectPool(Func<T> objectFactory)
         {

@@ -33,10 +33,10 @@ namespace Automata.Game.Chunks.Generation
 
     public class ChunkGenerationDiagnosticGroup : IDiagnosticGroup
     {
+        private readonly ConcurrentBag<ApplyMeshTime> _ApplyMeshTimes;
         private readonly ConcurrentBag<BuildingTime> _BuildingTimes;
         private readonly ConcurrentBag<InsertionTime> _InsertionTimes;
         private readonly ConcurrentBag<MeshingTime> _MeshingTimes;
-        private readonly ConcurrentBag<ApplyMeshTime> _ApplyMeshTimes;
 
         public IEnumerable<BuildingTime> BuildingTimes => _BuildingTimes;
         public IEnumerable<InsertionTime> InsertionTimes => _InsertionTimes;
@@ -49,6 +49,17 @@ namespace Automata.Game.Chunks.Generation
             _InsertionTimes = new ConcurrentBag<InsertionTime>();
             _MeshingTimes = new ConcurrentBag<MeshingTime>();
             _ApplyMeshTimes = new ConcurrentBag<ApplyMeshTime>();
+        }
+
+        public override string ToString()
+        {
+            double buildingTime = BuildingTimes.DefaultIfEmpty().Average(time => ((TimeSpan)time).TotalMilliseconds);
+            double insertionTimes = InsertionTimes.DefaultIfEmpty().Average(time => ((TimeSpan)time).TotalMilliseconds);
+            double meshingTime = MeshingTimes.DefaultIfEmpty().Average(time => ((TimeSpan)time).TotalMilliseconds);
+            double applyMeshTime = ApplyMeshTimes.DefaultIfEmpty().Average(time => ((TimeSpan)time).TotalMilliseconds);
+
+            return
+                $"({nameof(BuildingTime)} {buildingTime:0.00}ms, {nameof(InsertionTime)} {insertionTimes:0.00}ms, {nameof(MeshingTime)} {meshingTime:0.00}ms, {nameof(ApplyMeshTime)} {applyMeshTime:0.00}ms)";
         }
 
         public void CommitData<TDataType>(IDiagnosticData<TDataType> data)
@@ -69,17 +80,6 @@ namespace Automata.Game.Chunks.Generation
                     break;
                 default: throw new ArgumentException("Data is not of a valid type for this diagnostic group.", nameof(data));
             }
-        }
-
-        public override string ToString()
-        {
-            double buildingTime = BuildingTimes.DefaultIfEmpty().Average(time => ((TimeSpan)time).TotalMilliseconds);
-            double insertionTimes = InsertionTimes.DefaultIfEmpty().Average(time => ((TimeSpan)time).TotalMilliseconds);
-            double meshingTime = MeshingTimes.DefaultIfEmpty().Average(time => ((TimeSpan)time).TotalMilliseconds);
-            double applyMeshTime = ApplyMeshTimes.DefaultIfEmpty().Average(time => ((TimeSpan)time).TotalMilliseconds);
-
-            return
-                $"({nameof(BuildingTime)} {buildingTime:0.00}ms, {nameof(InsertionTime)} {insertionTimes:0.00}ms, {nameof(MeshingTime)} {meshingTime:0.00}ms, {nameof(ApplyMeshTime)} {applyMeshTime:0.00}ms)";
         }
     }
 }

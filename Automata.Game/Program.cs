@@ -3,7 +3,6 @@
 using System;
 using System.Drawing;
 using System.IO;
-using System.Numerics;
 using Automata.Engine;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
@@ -31,7 +30,7 @@ namespace Automata.Game
         private static readonly string _LocalDataPath =
             $@"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.Create)}\Automata\";
 
-        private static unsafe void Main()
+        private static void Main()
         {
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()

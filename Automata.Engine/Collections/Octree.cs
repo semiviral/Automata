@@ -91,9 +91,8 @@ namespace Automata.Engine.Collections
 
                 // avoiding using linq here for performance sensitivity
                 foreach (OctreeNode<TNode> octreeNode in _Nodes)
-                {
-                    if (!octreeNode.IsUniform || !octreeNode.Value.Equals(firstValue)) return false;
-                }
+                    if (!octreeNode.IsUniform || !octreeNode.Value.Equals(firstValue))
+                        return false;
 
                 return true;
             }
@@ -101,11 +100,6 @@ namespace Automata.Engine.Collections
 
         private readonly int _Extent;
         private readonly OctreeNode<T> _RootNode;
-
-        public T Value => _RootNode.Value;
-        public bool IsUniform => _RootNode.IsUniform;
-
-        public int Length { get; }
 
         public Octree(int size, T initialValue)
         {
@@ -116,6 +110,32 @@ namespace Automata.Engine.Collections
 
             Length = (int)Math.Pow(size, 3);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public T GetPoint(int x, int y, int z) => GetPointIterative(x, y, z);
+
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        private T GetPointIterative(int x, int y, int z)
+        {
+            OctreeNode<T> currentNode = _RootNode;
+
+            for (int extent = _Extent; !currentNode!.IsUniform; extent /= 2)
+            {
+                Octree.DetermineOctant(extent, ref x, ref y, ref z, out int octant);
+
+                currentNode = currentNode[octant]!;
+            }
+
+            return currentNode.Value;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void SetPoint(int x, int y, int z, T value) => _RootNode.SetPoint(_Extent, x, y, z, value);
+
+        public T Value => _RootNode.Value;
+        public bool IsUniform => _RootNode.IsUniform;
+
+        public int Length { get; }
 
         public IEnumerable<T> GetAllData()
         {
@@ -139,28 +159,7 @@ namespace Automata.Engine.Collections
         public T GetPoint(Vector3i point) => GetPointIterative(point.X, point.Y, point.Z);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T GetPoint(int x, int y, int z) => GetPointIterative(x, y, z);
-
-        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        private T GetPointIterative(int x, int y, int z)
-        {
-            OctreeNode<T> currentNode = _RootNode;
-
-            for (int extent = _Extent; !currentNode!.IsUniform; extent /= 2)
-            {
-                Octree.DetermineOctant(extent, ref x, ref y, ref z, out int octant);
-
-                currentNode = currentNode[octant]!;
-            }
-
-            return currentNode.Value;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetPoint(Vector3i point, T value) => _RootNode.SetPoint(_Extent, point.X, point.Y, point.Z, value);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetPoint(int x, int y, int z, T value) => _RootNode.SetPoint(_Extent, x, y, z, value);
     }
 
     public static class Octree

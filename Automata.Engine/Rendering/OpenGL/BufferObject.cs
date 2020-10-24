@@ -28,8 +28,8 @@ namespace Automata.Engine.Rendering.OpenGL
 
     public class BufferObject<TDataType> : IDisposable where TDataType : unmanaged
     {
-        private readonly GL _GL;
         private readonly BufferTargetARB _BufferType;
+        private readonly GL _GL;
         private readonly uint _Handle;
 
         public uint Length { get; private set; }

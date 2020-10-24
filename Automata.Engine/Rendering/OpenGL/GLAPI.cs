@@ -65,7 +65,7 @@ namespace Automata.Engine.Rendering.OpenGL
             17, 18, 19,
 
             20, 21, 23,
-            21, 22, 23,
+            21, 22, 23
         };
 
             // @formatter:on

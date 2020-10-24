@@ -76,7 +76,6 @@ namespace Automata.Engine.Rendering.Vulkan
             KhrSwapchain.ExtensionName
         };
 
-        private Instance _VKInstance;
         private KhrSurface? _KHRSurface;
         private SurfaceKHR _Surface;
 
@@ -114,7 +113,7 @@ namespace Automata.Engine.Rendering.Vulkan
 
         public Vk VK { get; }
 
-        public Instance VKInstance => _VKInstance;
+        public Instance VKInstance { get; }
 
         public VKAPI()
         {
@@ -193,7 +192,7 @@ namespace Automata.Engine.Rendering.Vulkan
             {
                 SType = StructureType.PresentInfoKhr,
                 WaitSemaphoreCount = 1,
-                PWaitSemaphores = signalSemaphores,
+                PWaitSemaphores = signalSemaphores
             };
 
             fixed (SwapchainKHR* swapChainFixed = &_SwapChain)
@@ -240,7 +239,7 @@ namespace Automata.Engine.Rendering.Vulkan
             InstanceCreateInfo instanceCreateInfo = new InstanceCreateInfo
             {
                 SType = StructureType.InstanceCreateInfo,
-                PApplicationInfo = &applicationInfo,
+                PApplicationInfo = &applicationInfo
             };
 
             byte** requiredExtensions = (byte**)AutomataWindow.Instance.Surface.GetRequiredExtensions(out uint extensionCount);
@@ -276,7 +275,7 @@ namespace Automata.Engine.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanInstanceCreationFormat, "creating instance."));
 
-            fixed (Instance* vkInstance = &_VKInstance)
+            fixed (Instance* vkInstance = &VKInstance)
             {
                 if (VK.CreateInstance(&instanceCreateInfo, null, vkInstance) != Result.Success) throw new Exception("Failed to create Vulkan instance.");
             }
@@ -622,7 +621,7 @@ namespace Automata.Engine.Rendering.Vulkan
                     SType = StructureType.DeviceQueueCreateInfo,
                     QueueFamilyIndex = _QueueFamilyIndices[i].Value,
                     QueueCount = 1,
-                    PQueuePriorities = &queuePriority,
+                    PQueuePriorities = &queuePriority
                 };
             }
 
@@ -776,9 +775,8 @@ namespace Automata.Engine.Rendering.Vulkan
         private static SurfaceFormatKHR ChooseSwapSurfaceFormat(IReadOnlyList<SurfaceFormatKHR> availableFormats)
         {
             foreach (SurfaceFormatKHR surfaceFormat in availableFormats)
-            {
-                if ((surfaceFormat.Format == Format.B8G8R8Srgb) && (surfaceFormat.ColorSpace == ColorSpaceKHR.ColorspaceSrgbNonlinearKhr)) return surfaceFormat;
-            }
+                if ((surfaceFormat.Format == Format.B8G8R8Srgb) && (surfaceFormat.ColorSpace == ColorSpaceKHR.ColorspaceSrgbNonlinearKhr))
+                    return surfaceFormat;
 
             return availableFormats[0];
         }
@@ -786,8 +784,9 @@ namespace Automata.Engine.Rendering.Vulkan
         private static PresentModeKHR ChooseSwapPresentationMode(IEnumerable<PresentModeKHR> availablePresentationModes)
         {
             foreach (PresentModeKHR presentationMode in availablePresentationModes)
-                if (presentationMode == PresentModeKHR.PresentModeMailboxKhr)
-                    return presentationMode;
+            {
+                if (presentationMode == PresentModeKHR.PresentModeMailboxKhr) return presentationMode;
+            }
 
             return PresentModeKHR.PresentModeFifoKhr;
         }
@@ -872,7 +871,7 @@ namespace Automata.Engine.Rendering.Vulkan
             AttachmentReference subpassAttachmentReference = new AttachmentReference
             {
                 Attachment = 0,
-                Layout = ImageLayout.ColorAttachmentOptimal,
+                Layout = ImageLayout.ColorAttachmentOptimal
             };
 
             SubpassDescription subpassDescription = new SubpassDescription
@@ -1022,7 +1021,7 @@ namespace Automata.Engine.Rendering.Vulkan
                 DepthBiasEnable = Vk.False,
                 DepthBiasConstantFactor = 0f,
                 DepthBiasClamp = 0f,
-                DepthBiasSlopeFactor = 0f,
+                DepthBiasSlopeFactor = 0f
             };
 
             Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "creating multisampling information."));
@@ -1061,7 +1060,7 @@ namespace Automata.Engine.Rendering.Vulkan
                 LogicOpEnable = Vk.False,
                 LogicOp = LogicOp.Copy,
                 AttachmentCount = 1,
-                PAttachments = &colorBlendAttachmentState,
+                PAttachments = &colorBlendAttachmentState
             };
 
             colorBlendStateCreateInfo.BlendConstants[0] =
@@ -1146,7 +1145,7 @@ namespace Automata.Engine.Rendering.Vulkan
             ShaderModuleCreateInfo shaderModuleCreateInfo = new ShaderModuleCreateInfo
             {
                 SType = StructureType.ShaderModuleCreateInfo,
-                CodeSize = (UIntPtr)byteCode.Length,
+                CodeSize = (UIntPtr)byteCode.Length
             };
 
             fixed (byte* byteCodeFixed = byteCode)
@@ -1226,7 +1225,7 @@ namespace Automata.Engine.Rendering.Vulkan
             {
                 SType = StructureType.CommandPoolCreateInfo,
                 QueueFamilyIndex = _QueueFamilyIndices.GraphicsFamily.Value,
-                Flags = 0,
+                Flags = 0
             };
 
             Log.Information(string.Format(_VulkanCommandPoolCreationFormat, "assigning command pool."));

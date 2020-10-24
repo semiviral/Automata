@@ -26,8 +26,6 @@ namespace Automata.Engine.Rendering.OpenGL
             Unbind();
         }
 
-        public void Dispose() => _GL.DeleteVertexArray(_Handle);
-
         public unsafe void VertexAttributePointer(uint attributeIndex, int dimensions, VertexAttribPointerType type, int offset)
         {
             Bind();
@@ -60,5 +58,7 @@ namespace Automata.Engine.Rendering.OpenGL
 
         public void Bind() => _GL.BindVertexArray(_Handle);
         public void Unbind() => _GL.BindVertexArray(0);
+
+        public void Dispose() => _GL.DeleteVertexArray(_Handle);
     }
 }

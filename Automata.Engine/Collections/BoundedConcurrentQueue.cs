@@ -13,8 +13,6 @@ namespace Automata.Engine.Collections
     public class BoundedConcurrentQueue<T> : IReadOnlyCollection<T>
     {
         private readonly ConcurrentQueue<T> _ConcurrentQueue;
-
-        public int Count => _ConcurrentQueue.Count;
         public int MaximumSize { get; }
 
         public BoundedConcurrentQueue(int maximumSize) => (_ConcurrentQueue, MaximumSize) = (new ConcurrentQueue<T>(), maximumSize);
@@ -27,6 +25,8 @@ namespace Automata.Engine.Collections
         }
 
         public bool TryDequeue([MaybeNullWhen(false)] out T item) => _ConcurrentQueue.TryDequeue(out item);
+
+        public int Count => _ConcurrentQueue.Count;
 
         public IEnumerator<T> GetEnumerator() => _ConcurrentQueue.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

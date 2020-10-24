@@ -13,7 +13,6 @@ using Automata.Engine.Worlds;
 using Serilog;
 using Silk.NET.Core.Contexts;
 using Silk.NET.Input.Common;
-using Silk.NET.Vulkan;
 using Silk.NET.Windowing.Common;
 
 #endregion
@@ -26,13 +25,6 @@ namespace Automata.Engine.Rendering.GLFW
         private TimeSpan _MinimumFrameTime;
 
         private IWindow? _Window;
-
-        public AutomataWindow()
-        {
-            AssignSingletonInstance(this);
-
-            Focused = true;
-        }
 
         public IGLContext? GLContext => Window.GLContext;
 
@@ -64,6 +56,13 @@ namespace Automata.Engine.Rendering.GLFW
         public string Title { get => Window.Title; set => Window.Title = value; }
 
         public bool Focused { get; private set; }
+
+        public AutomataWindow()
+        {
+            AssignSingletonInstance(this);
+
+            Focused = true;
+        }
 
         public event WindowResizedEventHandler? Resized;
         public event WindowFocusChangedEventHandler? FocusChanged;

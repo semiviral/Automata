@@ -22,20 +22,18 @@ namespace Automata.Engine.Numerics.Color
         public static RGBA8 White => new RGBA8(255, 255, 255, 255);
         public static RGBA8 Transparent => new RGBA8(0, 0, 0, 0);
 
-        private readonly byte _R;
-        private readonly byte _G;
-        private readonly byte _B;
-        private readonly byte _A;
+        public byte R { get; }
 
-        public byte R => _R;
-        public byte G => _G;
-        public byte B => _B;
-        public byte A => _A;
+        public byte G { get; }
+
+        public byte B { get; }
+
+        public byte A { get; }
 
         #endregion
 
 
-        public RGBA8(byte r, byte g, byte b) => (_R, _G, _B, _A) = (r, g, b, 255);
-        public RGBA8(byte r, byte g, byte b, byte a) => (_R, _G, _B, _A) = (r, g, b, a);
+        public RGBA8(byte r, byte g, byte b) => (R, G, B, A) = (r, g, b, 255);
+        public RGBA8(byte r, byte g, byte b, byte a) => (R, G, B, A) = (r, g, b, a);
     }
 }

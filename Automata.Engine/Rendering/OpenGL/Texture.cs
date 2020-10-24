@@ -10,6 +10,13 @@ namespace Automata.Engine.Rendering.OpenGL
 {
     public abstract class Texture
     {
+        public enum FilterMode
+        {
+            Point,
+            Bilinear,
+            Trilinear
+        }
+
         public enum TextureFormat
         {
             R32,
@@ -25,12 +32,18 @@ namespace Automata.Engine.Rendering.OpenGL
             Mirror
         }
 
-        public enum FilterMode
+        protected readonly GL GL;
+        protected readonly uint Handle;
+
+        protected Texture()
         {
-            Point,
-            Bilinear,
-            Trilinear
+            GL = GLAPI.Instance.GL;
+            Handle = GL.GenTexture();
         }
+
+        public abstract void Bind(TextureUnit textureSlot);
+
+        public void Dispose() { GL.DeleteTexture(Handle); }
 
 
         #region Static Methods
@@ -64,19 +77,5 @@ namespace Automata.Engine.Rendering.OpenGL
             };
 
         #endregion
-
-
-        protected readonly GL GL;
-        protected readonly uint Handle;
-
-        protected Texture()
-        {
-            GL = GLAPI.Instance.GL;
-            Handle = GL.GenTexture();
-        }
-
-        public abstract void Bind(TextureUnit textureSlot);
-
-        public void Dispose() { GL.DeleteTexture(Handle); }
     }
 }

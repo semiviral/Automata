@@ -24,8 +24,6 @@ namespace Automata.Engine.Components
 
         public Rotation() => Value = Quaternion.Identity;
 
-        public bool Changed { get; set; }
-
         public void AccumulateAngles(Vector2 axisAngles)
         {
             _AccumulatedAngles += axisAngles;
@@ -36,5 +34,7 @@ namespace Automata.Engine.Components
 
             Value = yaw * pitch;
         }
+
+        public bool Changed { get; set; }
     }
 }

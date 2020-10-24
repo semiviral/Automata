@@ -39,6 +39,8 @@ namespace Automata.Game.Blocks
             _UVsRule = uvsRule ?? _DefaultUVsRule;
         }
 
+        public bool HasProperty(Property flag) => (Properties & flag) == flag;
+
         public string BlockName { get; }
         public Property Properties { get; }
 
@@ -53,7 +55,5 @@ namespace Automata.Game.Blocks
             spriteName = _UVsRule(direction);
             return true;
         }
-
-        public bool HasProperty(Property flag) => (Properties & flag) == flag;
     }
 }

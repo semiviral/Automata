@@ -4,8 +4,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Numerics;
 using Automata.Engine;
 using Automata.Engine.Collections;
 using Automata.Engine.Components;
@@ -13,11 +11,9 @@ using Automata.Engine.Diagnostics;
 using Automata.Engine.Entities;
 using Automata.Engine.Input;
 using Automata.Engine.Numerics;
-using Automata.Engine.Rendering.GLFW;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Systems;
-using Automata.Engine.Worlds;
 using Automata.Game.Blocks;
 using ConcurrentPools;
 using DiagnosticsProviderNS;
@@ -34,6 +30,8 @@ namespace Automata.Game.Chunks.Generation
         private readonly OrderedList<BuildStep> _BuildSteps;
         private readonly ConcurrentDictionary<Guid, INodeCollection<ushort>> _PendingBlockCollections;
         private readonly ConcurrentDictionary<Guid, PendingMesh<int>> _PendingMeshes;
+
+        private bool _KeysPressed;
 
         public ChunkGenerationSystem()
         {
@@ -160,8 +158,6 @@ namespace Automata.Game.Chunks.Generation
 
             DiagnosticsSystem.Stopwatches.Return(stopwatch);
         }
-
-        private bool _KeysPressed;
 
         private void DiagnosticsInputCheck()
         {

@@ -12,12 +12,12 @@ namespace Automata.Engine.Systems
     {
         public bool Enabled { get; protected set; }
 
+        public ComponentSystem() => Enabled = true;
+
         /// <summary>
         ///     Method called when the <see cref="SystemManager" /> registers the system.
         /// </summary>
         public virtual void Registered() { }
-
-        public ComponentSystem() => Enabled = true;
 
         /// <summary>
         ///     Method called once per frame.

@@ -20,11 +20,9 @@ namespace Automata.Engine.Systems
     public class ComponentTypes : IReadOnlyCollection<Type>, IEquatable<ComponentTypes>
     {
         public static readonly ComponentTypes Empty = new ComponentTypes(DistinctionStrategy.Any);
-
-        private readonly HashSet<Type> _Types;
         private readonly int _CompositeHashCode;
 
-        public int Count => _Types.Count;
+        private readonly HashSet<Type> _Types;
 
         public DistinctionStrategy Strategy { get; }
 
@@ -52,6 +50,8 @@ namespace Automata.Engine.Systems
         }
 
         public override int GetHashCode() => _CompositeHashCode;
+
+        public int Count => _Types.Count;
 
 
         #region IEnumerable

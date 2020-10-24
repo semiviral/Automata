@@ -9,7 +9,6 @@ using Automata.Engine.Collections;
 using Automata.Engine.Numerics;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Game.Blocks;
-using Serilog;
 
 #endregion
 

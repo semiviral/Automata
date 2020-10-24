@@ -32,7 +32,7 @@ namespace Automata.Engine.Rendering.OpenGL
             RESERVED_UNIFORM_NAME_MATRIX_OBJECT,
             RESERVED_UNIFORM_NAME_VEC3_CAMERA_WORLD_POSITION,
             RESERVED_UNIFORM_NAME_VEC4_CAMERA_PROJECTION_PARAMS,
-            RESERVED_UNIFORM_NAME_VEC4_VIEWPORT,
+            RESERVED_UNIFORM_NAME_VEC4_VIEWPORT
         };
 
         private static readonly string _DefaultVertexShaderPacked =
@@ -66,10 +66,10 @@ namespace Automata.Engine.Rendering.OpenGL
             ";
 
         private static readonly Dictionary<string, Shader> _CachedShaders = new Dictionary<string, Shader>();
+        private readonly Dictionary<string, int> _CachedUniformLocations;
 
         private readonly GL _GL;
         private readonly uint _Handle;
-        private readonly Dictionary<string, int> _CachedUniformLocations;
 
         public Guid ID { get; }
         public bool HasAutomataUniforms { get; }
@@ -130,6 +130,59 @@ namespace Automata.Engine.Rendering.OpenGL
         }
 
         public void Use() => _GL.UseProgram(_Handle);
+
+        public static bool TryLoadShaderWithCache(string vertexShaderPath, string fragmentShaderPath, [NotNullWhen(true)] out Shader? shader)
+        {
+            const string compound_shader_key_format = "{0}:{1}";
+            string compoundShaderKey = string.Format(compound_shader_key_format, vertexShaderPath, fragmentShaderPath);
+
+            if (_CachedShaders.TryGetValue(compoundShaderKey, out shader)) return true;
+            else if (TryLoadShader(vertexShaderPath, fragmentShaderPath, out shader))
+            {
+                _CachedShaders.Add(compoundShaderKey, shader);
+                return true;
+            }
+            else return false;
+        }
+
+        public static bool TryLoadShader(string vertexShaderPath, string fragmentShaderPath, [NotNullWhen(true)] out Shader? shader)
+        {
+            try
+            {
+                uint vertexShaderHandle = CreateGPUShader(ShaderType.VertexShader, File.ReadAllText(vertexShaderPath));
+                uint fragmentShaderHandle = CreateGPUShader(ShaderType.FragmentShader, File.ReadAllText(fragmentShaderPath));
+                shader = new Shader(vertexShaderHandle, fragmentShaderHandle);
+            }
+            catch (Exception exception)
+            {
+                Log.Error(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(Shader),
+                    $"Failed to load shader: {exception.Message}\r\n{exception.StackTrace}"));
+
+                shader = null;
+                return false;
+            }
+
+            Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(Shader), $"Loaded vertex shader from: {vertexShaderPath}"));
+            Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(Shader), $"Loaded fragment shader from: {fragmentShaderPath}"));
+
+            return true;
+        }
+
+        private static uint CreateGPUShader(ShaderType shaderType, string shader)
+        {
+            GL gl = GLAPI.Instance.GL;
+
+            uint handle = gl.CreateShader(shaderType);
+
+            gl.ShaderSource(handle, shader);
+            gl.CompileShader(handle);
+
+            string infoLog = gl.GetShaderInfoLog(handle);
+            if (!string.IsNullOrWhiteSpace(infoLog)) throw new ShaderLoadException(shaderType, infoLog);
+
+            return handle;
+        }
+
         public void Dispose() => _GL.DeleteProgram(_Handle);
 
 
@@ -192,58 +245,5 @@ namespace Automata.Engine.Rendering.OpenGL
         private bool TryGetUniformLocation(string name, out int location) => _CachedUniformLocations.TryGetValue(name, out location);
 
         #endregion
-
-
-        public static bool TryLoadShaderWithCache(string vertexShaderPath, string fragmentShaderPath, [NotNullWhen(true)] out Shader? shader)
-        {
-            const string compound_shader_key_format = "{0}:{1}";
-            string compoundShaderKey = string.Format(compound_shader_key_format, vertexShaderPath, fragmentShaderPath);
-
-            if (_CachedShaders.TryGetValue(compoundShaderKey, out shader)) return true;
-            else if (TryLoadShader(vertexShaderPath, fragmentShaderPath, out shader))
-            {
-                _CachedShaders.Add(compoundShaderKey, shader);
-                return true;
-            }
-            else return false;
-        }
-
-        public static bool TryLoadShader(string vertexShaderPath, string fragmentShaderPath, [NotNullWhen(true)] out Shader? shader)
-        {
-            try
-            {
-                uint vertexShaderHandle = CreateGPUShader(ShaderType.VertexShader, File.ReadAllText(vertexShaderPath));
-                uint fragmentShaderHandle = CreateGPUShader(ShaderType.FragmentShader, File.ReadAllText(fragmentShaderPath));
-                shader = new Shader(vertexShaderHandle, fragmentShaderHandle);
-            }
-            catch (Exception exception)
-            {
-                Log.Error(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(Shader),
-                    $"Failed to load shader: {exception.Message}\r\n{exception.StackTrace}"));
-
-                shader = null;
-                return false;
-            }
-
-            Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(Shader), $"Loaded vertex shader from: {vertexShaderPath}"));
-            Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(Shader), $"Loaded fragment shader from: {fragmentShaderPath}"));
-
-            return true;
-        }
-
-        private static uint CreateGPUShader(ShaderType shaderType, string shader)
-        {
-            GL gl = GLAPI.Instance.GL;
-
-            uint handle = gl.CreateShader(shaderType);
-
-            gl.ShaderSource(handle, shader);
-            gl.CompileShader(handle);
-
-            string infoLog = gl.GetShaderInfoLog(handle);
-            if (!string.IsNullOrWhiteSpace(infoLog)) throw new ShaderLoadException(shaderType, infoLog);
-
-            return handle;
-        }
     }
 }

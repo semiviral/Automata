@@ -15,7 +15,6 @@ namespace Automata.Engine.Collections
         private readonly Dictionary<Type, LinkedListNode<T>> _Nodes;
 
         public T this[Type type] => _Nodes[type].Value;
-        public int Count => _Nodes.Count;
 
         public OrderedList()
         {
@@ -41,6 +40,8 @@ namespace Automata.Engine.Collections
             _LinkedList.Clear();
             _Nodes.Clear();
         }
+
+        public int Count => _Nodes.Count;
 
         IEnumerator<T> IEnumerable<T>.GetEnumerator() => _LinkedList.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<T>)this).GetEnumerator();

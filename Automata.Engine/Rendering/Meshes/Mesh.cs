@@ -11,14 +11,9 @@ namespace Automata.Engine.Rendering.Meshes
 {
     public class Mesh<TDataType> : IMesh where TDataType : unmanaged
     {
-        public Guid ID { get; }
-        public bool Visible { get; }
         public BufferObject<TDataType> VertexesBuffer { get; }
         public BufferObject<uint> IndexesBuffer { get; }
         public VertexArrayObject<TDataType, uint> VertexArrayObject { get; }
-
-        public uint IndexesLength => IndexesBuffer.Length;
-        public uint IndexesByteLength => IndexesBuffer.ByteLength;
 
         public Mesh()
         {
@@ -49,6 +44,12 @@ namespace Automata.Engine.Rendering.Meshes
             else if (typeof(TAttributePrimitive) == typeof(double))
                 VertexArrayObject.VertexAttributeLPointer(index, dimensions, VertexAttribPointerType.Double, offset);
         }
+
+        public Guid ID { get; }
+        public bool Visible { get; }
+
+        public uint IndexesLength => IndexesBuffer.Length;
+        public uint IndexesByteLength => IndexesBuffer.ByteLength;
 
         public void Bind() => VertexArrayObject.Bind();
         public void Unbind() => VertexArrayObject.Unbind();

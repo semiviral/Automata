@@ -291,7 +291,7 @@ namespace Automata.Engine.Noise
             new Vector3(-0.1842489331f, -0.9777375055f, -0.1004076743f),
             new Vector3(0.0775473789f, -0.9111505856f, 0.4047110257f),
             new Vector3(0.1399838409f, 0.7601631212f, -0.6344734459f),
-            new Vector3(0.4484419361f, -0.845289248f, 0.2904925424f),
+            new Vector3(0.4484419361f, -0.845289248f, 0.2904925424f)
         };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

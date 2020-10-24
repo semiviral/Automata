@@ -13,8 +13,8 @@ namespace Automata.Engine.Entities
 {
     public sealed class EntityManager
     {
-        private readonly List<IEntity> _Entities;
         private readonly Dictionary<Type, int> _ComponentCountByType;
+        private readonly List<IEntity> _Entities;
 
         public EntityManager()
         {
@@ -142,8 +142,9 @@ namespace Automata.Engine.Entities
         public IEnumerable<TComponent> GetComponentsAssignableFrom<TComponent>() where TComponent : class, IComponent
         {
             foreach (IComponent component in _Entities.SelectMany(entity => entity.Components.Values))
-                if (component is TComponent componentT)
-                    yield return componentT;
+            {
+                if (component is TComponent componentT) yield return componentT;
+            }
         }
 
         /// <summary>
@@ -192,9 +193,8 @@ namespace Automata.Engine.Entities
             where T1 : class, IComponent
         {
             foreach (IEntity entity in _Entities)
-            {
-                if (entity.TryGetComponent(out T1? component)) yield return component;
-            }
+                if (entity.TryGetComponent(out T1? component))
+                    yield return component;
         }
 
         public IEnumerable<(T1, T2)> GetComponents<T1, T2>()

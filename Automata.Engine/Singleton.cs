@@ -27,14 +27,14 @@ namespace Automata.Engine
             }
         }
 
+        protected string _LogFormat { get; } = string.Format(FormatHelper.DEFAULT_LOGGING, typeof(T), "{0}");
+
         public static void Validate()
         {
             if (Instance is null) throw new InvalidOperationException($"Singleton '{typeof(T)}' has not been instantiated.");
         }
 
         public static bool TryValidate() => _Instance is not null;
-
-        protected string _LogFormat { get; } = string.Format(FormatHelper.DEFAULT_LOGGING, typeof(T), "{0}");
 
         protected void AssignSingletonInstance(T instance)
         {

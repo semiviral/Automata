@@ -25,9 +25,9 @@ namespace Automata.Engine.Rendering.Meshes
             }
         }
 
-        public bool Changed { get; set; }
+        public bool ShouldRender => Mesh is not null && Mesh.Visible && (Mesh.IndexesByteLength > 0);
 
-        public bool ShouldRender => Mesh is not null && Mesh.Visible && Mesh.IndexesByteLength > 0;
+        public bool Changed { get; set; }
 
         public void Dispose() => _Mesh?.Dispose();
     }
