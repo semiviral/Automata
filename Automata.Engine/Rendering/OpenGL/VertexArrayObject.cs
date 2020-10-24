@@ -25,22 +25,25 @@ namespace Automata.Engine.Rendering.OpenGL
             ebo.Bind();
         }
 
-        public unsafe void VertexAttributePointer(uint index, int dimensions, VertexAttribPointerType type, int offset)
+        public unsafe void VertexAttributePointer(uint attributeIndex, int dimensions, VertexAttribPointerType type, int offset)
         {
-            _GL.VertexAttribPointer(index, dimensions, type, false, (uint)dimensions * (uint)sizeof(TVertexType), (void*)(offset * sizeof(TVertexType)));
-            _GL.EnableVertexAttribArray(index);
+            Bind();
+            _GL.VertexAttribPointer(attributeIndex, dimensions, type, false, (uint)(dimensions * sizeof(TVertexType)), (void*)(offset * sizeof(TVertexType)));
+            _GL.EnableVertexAttribArray(attributeIndex);
         }
 
-        public unsafe void VertexAttributeIPointer(uint index, int dimensions, VertexAttribPointerType type, int offset)
+        public unsafe void VertexAttributeIPointer(uint attributeIndex, int dimensions, VertexAttribPointerType type, int offset)
         {
-            _GL.VertexAttribIPointer(index, dimensions, type, (uint)dimensions * (uint)sizeof(TVertexType), (void*)(offset * sizeof(TVertexType)));
-            _GL.EnableVertexAttribArray(index);
+            Bind();
+            _GL.VertexAttribIPointer(attributeIndex, dimensions, type, (uint)(dimensions * sizeof(TVertexType)), (void*)(offset * sizeof(TVertexType)));
+            _GL.EnableVertexAttribArray(attributeIndex);
         }
 
-        public unsafe void VertexAttributeLPointer(uint index, int dimensions, VertexAttribPointerType type, int offset)
+        public unsafe void VertexAttributeLPointer(uint attributeIndex, int dimensions, VertexAttribPointerType type, int offset)
         {
-            _GL.VertexAttribLPointer(index, dimensions, type, (uint)dimensions * (uint)sizeof(TVertexType), (void*)(offset * sizeof(TVertexType)));
-            _GL.EnableVertexAttribArray(index);
+            Bind();
+            _GL.VertexAttribLPointer(attributeIndex, dimensions, type, (uint)(dimensions * sizeof(TVertexType)), (void*)(offset * sizeof(TVertexType)));
+            _GL.EnableVertexAttribArray(attributeIndex);
         }
 
         public void Bind() => _GL.BindVertexArray(_Handle);

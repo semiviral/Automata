@@ -74,54 +74,35 @@ namespace Automata.Engine.Rendering.OpenGL
         public Guid ID { get; }
         public bool HasAutomataUniforms { get; }
 
-        internal unsafe Shader()
+        internal Shader()
         {
-            ID = Guid.NewGuid();
-
             _GL = GLAPI.Instance.GL;
+            ID = Guid.NewGuid();
 
             uint vertexShaderHandle = CreateGPUShader(ShaderType.VertexShader, _DefaultVertexShaderPacked);
             uint fragmentShaderHandle = CreateGPUShader(ShaderType.FragmentShader, _DefaultFragmentShader);
 
             _Handle = _GL.CreateProgram();
-            CreateShader(vertexShaderHandle, fragmentShaderHandle);
+            CreateShaderProgram(vertexShaderHandle, fragmentShaderHandle);
 
-            int uniformCount;
-            _GL.GetProgram(_Handle, GLEnum.ActiveUniforms, &uniformCount);
             _CachedUniformLocations = new Dictionary<string, int>();
-            CacheUniforms(uniformCount);
+            CacheShaderProgramUniformHandles();
             HasAutomataUniforms = _CachedUniformLocations.Keys.Intersect(_ReservedUniformNames).Any();
         }
 
-        private unsafe Shader(uint vertexShaderHandle, uint fragmentShaderHandle)
+        private Shader(uint vertexShaderHandle, uint fragmentShaderHandle)
         {
             _GL = GLAPI.Instance.GL;
 
             _Handle = _GL.CreateProgram();
+            CreateShaderProgram(vertexShaderHandle, fragmentShaderHandle);
 
-            try
-            {
-                CreateShader(vertexShaderHandle, fragmentShaderHandle);
-            }
-            catch (ShaderLoadException ex)
-            {
-                Log.Error($"Failed to load {ex.Type} shader (will fallback to default): {ex.InfoLog}");
-
-                vertexShaderHandle = CreateGPUShader(ShaderType.VertexShader, _DefaultVertexShaderPacked);
-                fragmentShaderHandle = CreateGPUShader(ShaderType.FragmentShader, _DefaultFragmentShader);
-                CreateShader(vertexShaderHandle, fragmentShaderHandle);
-            }
-            finally
-            {
-                int uniformCount;
-                _GL.GetProgram(_Handle, GLEnum.ActiveUniforms, &uniformCount);
-                _CachedUniformLocations = new Dictionary<string, int>();
-                CacheUniforms(uniformCount);
-                HasAutomataUniforms = _CachedUniformLocations.Keys.Intersect(_ReservedUniformNames).Any();
-            }
+            _CachedUniformLocations = new Dictionary<string, int>();
+            CacheShaderProgramUniformHandles();
+            HasAutomataUniforms = _CachedUniformLocations.Keys.Intersect(_ReservedUniformNames).Any();
         }
 
-        private void CreateShader(uint vertexShaderHandle, uint fragmentShaderHandle)
+        private void CreateShaderProgram(uint vertexShaderHandle, uint fragmentShaderHandle)
         {
             _GL.AttachShader(_Handle, vertexShaderHandle);
             _GL.AttachShader(_Handle, fragmentShaderHandle);
@@ -136,8 +117,10 @@ namespace Automata.Engine.Rendering.OpenGL
             _GL.DeleteShader(fragmentShaderHandle);
         }
 
-        private void CacheUniforms(int uniformCount)
+        private void CacheShaderProgramUniformHandles()
         {
+            _GL.GetProgram(_Handle, GLEnum.ActiveUniforms, out int uniformCount);
+
             for (uint uniformIndex = 0; uniformIndex < uniformCount; uniformIndex++)
             {
                 string name = _GL.GetActiveUniform(_Handle, uniformIndex, out _, out _);
@@ -146,9 +129,8 @@ namespace Automata.Engine.Rendering.OpenGL
             }
         }
 
-        public void Use() { _GL.UseProgram(_Handle); }
-
-        public void Dispose() { _GL.DeleteProgram(_Handle); }
+        public void Use() => _GL.UseProgram(_Handle);
+        public void Dispose() => _GL.DeleteProgram(_Handle);
 
 
         #region Set .. Get .. As Try
@@ -228,8 +210,6 @@ namespace Automata.Engine.Rendering.OpenGL
 
         public static bool TryLoadShader(string vertexShaderPath, string fragmentShaderPath, [NotNullWhen(true)] out Shader? shader)
         {
-            shader = null;
-
             try
             {
                 uint vertexShaderHandle = CreateGPUShader(ShaderType.VertexShader, File.ReadAllText(vertexShaderPath));
@@ -241,6 +221,7 @@ namespace Automata.Engine.Rendering.OpenGL
                 Log.Error(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(Shader),
                     $"Failed to load shader: {exception.Message}\r\n{exception.StackTrace}"));
 
+                shader = null;
                 return false;
             }
 

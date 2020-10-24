@@ -4,7 +4,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Numerics;
 using Automata.Engine;
@@ -24,7 +23,6 @@ using ConcurrentPools;
 using DiagnosticsProviderNS;
 using Serilog;
 using Silk.NET.Input.Common;
-using Silk.NET.OpenGL;
 
 #endregion
 
@@ -71,13 +69,13 @@ namespace Automata.Game.Chunks.Generation
                         Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
                         stopwatch.Restart();
 
-                        Mesh<Vector3> mesh = new Mesh<Vector3>();
+                        if (!entity.TryGetComponent(out RenderMesh? renderMesh)) entityManager.RegisterComponent(entity, renderMesh = new RenderMesh());
+                        if (renderMesh.Mesh is null or not Mesh<Vector3>) renderMesh.Mesh = new Mesh<Vector3>();
+
+                        Mesh<Vector3> mesh = (renderMesh.Mesh as Mesh<Vector3>)!;
                         mesh.ModifyVertexAttributes<float>(0u, 0);
                         mesh.VertexesBuffer.SetBufferData(pendingMesh.Vertexes, BufferDraw.DynamicDraw);
                         mesh.IndexesBuffer.SetBufferData(pendingMesh.Indexes, BufferDraw.DynamicDraw);
-
-                        if (entity.TryGetComponent(out RenderMesh? renderMesh)) renderMesh.Mesh = mesh;
-                        else entityManager.RegisterComponent(entity, new RenderMesh(mesh));
 
                         if (Shader.TryLoadShaderWithCache("Resources/Shaders/DefaultVertex.glsl", "Resources/Shaders/DefaultFragment.glsl", out Shader? shader))
                         {

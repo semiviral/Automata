@@ -48,8 +48,7 @@ namespace Automata.Engine.Rendering
         {
             try
             {
-                _GL.Clear((uint)ClearBufferMask.ColorBufferBit);
-                _GL.Clear((uint)ClearBufferMask.DepthBufferBit);
+                _GL.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
 
                 Vector4 viewport = new Vector4(0f, 0f, AutomataWindow.Instance.Size.X, AutomataWindow.Instance.Size.Y);
 
@@ -79,7 +78,7 @@ namespace Automata.Engine.Rendering
                         if (!renderMesh.ShouldRender || !objectEntity.TryGetComponent(out RenderShader? renderShader)) continue;
 
                         renderShader.Value.Use();
-                        renderMesh.Mesh.BindVertexArrayObject();
+                        renderMesh.Mesh!.BindVertexArrayObject();
 
                         if (renderShader.Value.HasAutomataUniforms)
                         {

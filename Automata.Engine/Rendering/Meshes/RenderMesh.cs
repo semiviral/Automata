@@ -11,12 +11,12 @@ namespace Automata.Engine.Rendering.Meshes
 {
     public class RenderMesh : IComponentChangeable, IDisposable
     {
-        private IMesh _Mesh;
+        private IMesh? _Mesh;
 
         public Guid MeshID { get; } = Guid.NewGuid();
         public Matrix4x4 Model { get; set; } = Matrix4x4.Identity;
 
-        public IMesh Mesh
+        public IMesh? Mesh
         {
             get => _Mesh;
             set
@@ -28,10 +28,8 @@ namespace Automata.Engine.Rendering.Meshes
 
         public bool Changed { get; set; }
 
-        public bool ShouldRender => Mesh.Visible && Mesh.IndexesLength > 0;
+        public bool ShouldRender => Mesh is not null && Mesh.Visible && Mesh.IndexesLength > 0;
 
-        public RenderMesh(IMesh mesh) => Mesh = mesh;
-
-        public void Dispose() => _Mesh.Dispose();
+        public void Dispose() => _Mesh?.Dispose();
     }
 }
