@@ -25,13 +25,13 @@ namespace Automata.Game.Blocks
 
         private readonly Func<Direction, string> _UVsRule;
 
-        public ushort Id { get; }
+        public ushort ID { get; }
 
         static BlockDefinition() { _DefaultUVsRule = direction => string.Empty; }
 
         public BlockDefinition(ushort id, string blockName, Func<Direction, string> uvsRule, params Property[] properties)
         {
-            Id = id;
+            ID = id;
             BlockName = blockName;
 
             foreach (Property property in properties) Properties |= property;

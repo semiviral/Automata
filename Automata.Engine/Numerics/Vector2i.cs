@@ -6,7 +6,6 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
-using System.Runtime.Intrinsics.X86;
 
 #endregion
 
@@ -93,13 +92,13 @@ namespace Automata.Engine.Numerics
 
         #region Conversion Operators
 
+        public static explicit operator Vector128<int>(Vector2i a) => Unsafe.As<Vector2i, Vector128<int>>(ref a);
         public static explicit operator Vector2i(Vector128<int> a) => Unsafe.As<Vector128<int>, Vector2i>(ref a);
+
         public static explicit operator Vector2i(Point a) => Unsafe.As<Point, Vector2i>(ref a);
         public static explicit operator Point(Vector2i a) => Unsafe.As<Vector2i, Point>(ref a);
         public static explicit operator Vector2i(Size a) => Unsafe.As<Size, Vector2i>(ref a);
         public static explicit operator Size(Vector2i a) => Unsafe.As<Vector2i, Size>(ref a);
-
-        public static unsafe explicit operator Vector128<int>(Vector2i a) => Sse2.LoadVector128((int*)&a);
 
         public static explicit operator Vector2(Vector2i a) => new Vector2(a.X, a.Y);
 

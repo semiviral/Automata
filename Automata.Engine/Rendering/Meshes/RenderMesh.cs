@@ -13,7 +13,6 @@ namespace Automata.Engine.Rendering.Meshes
     {
         private IMesh? _Mesh;
 
-        public Guid MeshID { get; } = Guid.NewGuid();
         public Matrix4x4 Model { get; set; } = Matrix4x4.Identity;
 
         public IMesh? Mesh

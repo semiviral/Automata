@@ -9,8 +9,9 @@ using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.Meshes
 {
-    public class Mesh<TDataType> : IMesh, IDisposable where TDataType : unmanaged
+    public class Mesh<TDataType> : IMesh where TDataType : unmanaged
     {
+        public Guid ID { get; }
         public bool Visible { get; }
         public BufferObject<TDataType> VertexesBuffer { get; }
         public BufferObject<uint> IndexesBuffer { get; }
@@ -20,6 +21,7 @@ namespace Automata.Engine.Rendering.Meshes
 
         public Mesh()
         {
+            ID = Guid.NewGuid();
             Visible = true;
             VertexesBuffer = new BufferObject<TDataType>(GLAPI.Instance.GL, BufferTargetARB.ArrayBuffer);
             IndexesBuffer = new BufferObject<uint>(GLAPI.Instance.GL, BufferTargetARB.ElementArrayBuffer);

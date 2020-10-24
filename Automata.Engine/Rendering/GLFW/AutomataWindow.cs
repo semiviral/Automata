@@ -129,7 +129,7 @@ namespace Automata.Engine.Rendering.GLFW
 
         private void WaitForNextMonitorRefresh() => Thread.Sleep(Math.Max((_MinimumFrameTime - _DeltaTimer.Elapsed).Milliseconds, 0));
 
-        private void OnWindowResized(Size size) => Resized?.Invoke(this, Size);
+        private void OnWindowResized(Size size) => Resized?.Invoke(this, (Vector2i)Size);
 
         private void OnWindowFocusedChanged(bool focused)
         {

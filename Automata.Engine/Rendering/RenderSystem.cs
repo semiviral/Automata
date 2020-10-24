@@ -72,7 +72,7 @@ namespace Automata.Engine.Rendering
                     if (_NewAspectRatio > 0f) camera.CalculateProjection(_NewAspectRatio);
 
 
-                    RenderShader currentShader = null;
+                    RenderShader? currentShader = null;
 
                     foreach (IEntity objectEntity in entityManager.GetEntitiesWithComponents<RenderMesh>())
                     {
@@ -82,8 +82,8 @@ namespace Automata.Engine.Rendering
 
                         if (currentShader is null || renderShader.Value.ID != currentShader.Value.ID)
                         {
-                            currentShader = renderShader;
                             renderShader.Value.Use();
+                            currentShader = renderShader;
                         }
 
                         renderMesh.Mesh!.BindVertexArrayObject();
@@ -117,7 +117,7 @@ namespace Automata.Engine.Rendering
                             renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_VIEWPORT, viewport);
                         }
 
-                        _GL.DrawElements(PrimitiveType.Triangles, renderMesh.Mesh.IndexesLength, DrawElementsType.UnsignedInt, null);
+                        _GL.DrawElements(PrimitiveType.TriangleStrip, renderMesh.Mesh.IndexesLength, DrawElementsType.UnsignedInt, null);
 
                         CheckForGLErrorsAndThrow();
                     }

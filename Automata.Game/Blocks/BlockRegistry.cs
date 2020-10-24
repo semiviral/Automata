@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Automata.Engine;
 using Automata.Engine.Extensions;
@@ -18,48 +20,25 @@ namespace Automata.Game.Blocks
     {
         public static ushort NullID;
         public static ushort AirID;
-        public readonly List<IBlockDefinition> BlockDefinitions;
 
-        public readonly Dictionary<string, ushort> BlockIDByName;
+        private readonly Dictionary<BlockDefinition.Property, HashSet<ushort>> _PropertyBuckets;
 
-        private List<BlockDefinition.Property> _BlockPropertiesCache;
-        private Dictionary<BlockDefinition.Property, HashSet<ushort>> _PropertiesBuckets;
+        public List<IBlockDefinition> BlockDefinitions { get; }
+        public Dictionary<string, ushort> BlockNamesByID { get; }
 
         public BlockRegistry()
         {
             AssignSingletonInstance(this);
 
-            _BlockPropertiesCache = new List<BlockDefinition.Property>(EnumExtensions.GetEnumsList<BlockDefinition.Property>());
-            _PropertiesBuckets = new Dictionary<BlockDefinition.Property, HashSet<ushort>>();
-
-            BlockIDByName = new Dictionary<string, ushort>();
-            BlockDefinitions = new List<IBlockDefinition>();
-
-            InitializeBlockPropertiesBuckets();
-
-            RegisterBlockDefinition("null", null);
-            RegisterBlockDefinition("air", null, BlockDefinition.Property.Transparent);
-
-            TryGetBlockId("null", out NullID);
-            TryGetBlockId("air", out AirID);
-        }
-
-        private void InitializeBlockPropertiesBuckets()
-        {
-            _PropertiesBuckets = new Dictionary<BlockDefinition.Property, HashSet<ushort>>();
-
             Log.Information($"({nameof(BlockRegistry)}) Creating property buckets.");
 
-            foreach (BlockDefinition.Property property in EnumExtensions.GetEnumsList<BlockDefinition.Property>())
-                _PropertiesBuckets.Add(property, new HashSet<ushort>());
-        }
+            _PropertyBuckets = EnumExtensions.GetValues<BlockDefinition.Property>().ToDictionary(val => val, _ => new HashSet<ushort>());
 
-        private void SortBlockDefinitionPropertiesToBuckets(BlockDefinition blockDefinition)
-        {
-            foreach (BlockDefinition.Property property in EnumExtensions.GetEnumsList<BlockDefinition.Property>())
-            {
-                if (blockDefinition.HasProperty(property)) _PropertiesBuckets[property].Add(blockDefinition.Id);
-            }
+            BlockDefinitions = new List<IBlockDefinition>();
+            BlockNamesByID = new Dictionary<string, ushort>();
+
+            NullID = RegisterBlockDefinition("null", null);
+            AirID = RegisterBlockDefinition("air", null, BlockDefinition.Property.Transparent);
         }
 
         /// <summary>
@@ -73,22 +52,26 @@ namespace Automata.Game.Blocks
         /// <param name="properties">
         ///     Optional <see cref="BlockDefinition.Property" />s to full qualify the <see cref="BlockDefinition" />.
         /// </param>
-        public void RegisterBlockDefinition(string blockName, Func<Direction, string>? uvsRule, params BlockDefinition.Property[] properties)
+        public ushort RegisterBlockDefinition(string blockName, Func<Direction, string>? uvsRule, params BlockDefinition.Property[] properties)
         {
             if (string.IsNullOrWhiteSpace(blockName)) throw new ArgumentException("Argument cannot be empty.", nameof(blockName));
             else if (BlockDefinitions.Count >= ushort.MaxValue) throw new OverflowException($"{nameof(BlockRegistry)} has run out of valid block IDs.");
 
             ushort blockId = (ushort)BlockDefinitions.Count;
             blockName = blockName.ToLowerInvariant();
-            uvsRule ??= direction => blockName;
+            uvsRule ??= _ => blockName;
 
             BlockDefinition blockDefinition = new BlockDefinition(blockId, blockName, uvsRule, properties);
 
             BlockDefinitions.Add(blockDefinition);
-            BlockIDByName.Add(blockName, blockId);
-            SortBlockDefinitionPropertiesToBuckets(blockDefinition);
+            BlockNamesByID.Add(blockName, blockId);
 
-            Log.Information($"({nameof(BlockRegistry)}) Registered ID {blockId}: '{blockName}'");
+            // sort properties into buckets
+            foreach (BlockDefinition.Property property in blockDefinition.Properties.GetFlags()) _PropertyBuckets[property].Add(blockDefinition.ID);
+
+            Log.Debug($"({nameof(BlockRegistry)}) Registered ID {blockId}: '{blockName}'");
+
+            return blockDefinition.ID;
         }
 
         // public bool GetUVs(ushort blockId, Direction direction, out ushort textureId)
@@ -114,23 +97,11 @@ namespace Automata.Game.Blocks
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool BlockIdExists(ushort blockId) => blockId < BlockDefinitions.Count;
 
-        public ushort GetBlockID(string blockName) => BlockIDByName[blockName];
+        public ushort GetBlockID(string blockName) => BlockNamesByID[blockName];
 
-        public bool TryGetBlockId(string blockName, out ushort blockId)
-        {
-            blockId = 0;
+        public bool TryGetBlockID(string blockName, [MaybeNullWhen(false)] out ushort blockId) => BlockNamesByID.TryGetValue(blockName, out blockId);
 
-            if (!BlockIDByName.TryGetValue(blockName, out blockId))
-            {
-                Log.Warning($"({nameof(BlockRegistry)}) Failed to return block id for '{blockName}': block does not exist.");
-
-                return false;
-            }
-
-            return true;
-        }
-
-        public bool TryGetBlockName(ushort blockId, out string blockName)
+        public bool TryGetBlockName(ushort blockId, [NotNullWhen(true)] out string? blockName)
         {
             blockName = string.Empty;
 
@@ -147,7 +118,7 @@ namespace Automata.Game.Blocks
             return BlockDefinitions[blockId];
         }
 
-        public bool TryGetBlockDefinition(ushort blockId, out IReadOnlyBlockDefinition? blockDefinition)
+        public bool TryGetBlockDefinition(ushort blockId, [NotNullWhen(true)] out IReadOnlyBlockDefinition? blockDefinition)
         {
             if (BlockIdExists(blockId))
             {
@@ -159,7 +130,7 @@ namespace Automata.Game.Blocks
             return false;
         }
 
-        public HashSet<ushort> GetPropertyBucket(BlockDefinition.Property property) => _PropertiesBuckets[property];
+        public HashSet<ushort> GetPropertyBucket(BlockDefinition.Property property) => _PropertyBuckets[property];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool CheckBlockHasProperty(ushort blockId, BlockDefinition.Property property) =>
