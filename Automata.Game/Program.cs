@@ -31,36 +31,6 @@ using Plane = Automata.Engine.Numerics.Shapes.Plane;
 
 namespace Automata.Game
 {
-    [RPlotExporter]
-    public class Benchmark
-    {
-        private Plane[] _PlanesA;
-        private Plane[] _PlanesB;
-        private Cube _Cube;
-
-        [GlobalSetup]
-        public void Setup()
-        {
-            _Cube = new Cube(Vector3.Zero, Vector3.One);
-            _PlanesA = new Plane[ClipFrustum.PLANES_SPAN_LENGTH];
-            _PlanesB = new Plane[ClipFrustum.PLANES_SPAN_LENGTH];
-        }
-
-        [Benchmark]
-        public Frustum.Intersect IntersectBoxUnrolled()
-        {
-            ClipFrustum clipFrustum = new ClipFrustum(new Span<Plane>(_PlanesA), Matrix4x4.Identity);
-            return clipFrustum.BoxWithin(_Cube);
-        }
-
-        [Benchmark]
-        public Frustum.Intersect IntersectBoxForeach()
-        {
-            ClipFrustum clipFrustum = new ClipFrustum(new Span<Plane>(_PlanesB), Matrix4x4.Identity);
-            return clipFrustum.BoxWithinForeach(_Cube);
-        }
-    }
-
     public class Program
     {
         private static readonly string _LocalDataPath =
@@ -68,14 +38,6 @@ namespace Automata.Game
 
         private static void Main()
         {
-            Summary? summary = BenchmarkRunner.Run<Benchmark>();
-
-            Console.ReadKey();
-
-
-
-
-
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .WriteTo.Console()

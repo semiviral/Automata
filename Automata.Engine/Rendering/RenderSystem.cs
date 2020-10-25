@@ -120,16 +120,16 @@ namespace Automata.Engine.Rendering
                         if (objectEntity.TryGetComponent(out Bounds? bounds))
                         {
                             ClipFrustum clipFrustum = new ClipFrustum(planes, modelViewProjection);
-                            //Frustum.Intersect intersection = Frustum.Intersect.Outside;
+                            Frustum.Intersect intersection = Frustum.Intersect.Outside;
 
                             // try to test spherical bounds
-                            // if ((bounds.Spheric != Sphere.Zero)
-                            //     && (intersection = clipFrustum.SphereWithin(bounds.Spheric)) is Frustum.Intersect.Outside) continue;
+                            if ((bounds.Spheric != Sphere.Zero)
+                                && (intersection = clipFrustum.SphereWithin(bounds.Spheric)) is Frustum.Intersect.Outside) continue;
 
                             // if spherical bounds fails (i.e. intersects) try cubic
-                            if (//intersection is not Frustum.Intersect.Inside &&
-                                (bounds.Cubic != Cube.Zero)
-                                                                             && clipFrustum.BoxWithin(bounds.Cubic) is not Frustum.Intersect.Outside) continue;
+                            if (intersection is not Frustum.Intersect.Inside
+                                && (bounds.Cubic != Cube.Zero)
+                                && clipFrustum.BoxWithin(bounds.Cubic) is Frustum.Intersect.Outside) continue;
                         }
 
                         renderMesh.Mesh!.Bind();

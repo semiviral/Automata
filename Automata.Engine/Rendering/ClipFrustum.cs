@@ -1,6 +1,5 @@
 using System;
 using System.Numerics;
-using System.Runtime.CompilerServices;
 using Automata.Engine.Numerics.Shapes;
 using Plane = Automata.Engine.Numerics.Shapes.Plane;
 
@@ -84,92 +83,26 @@ namespace Automata.Engine.Rendering
             _Planes = planes;
         }
 
-        public Frustum.Intersect PointWithin(Vector3 point) =>
-            (_Planes[Frustum.NEAR].Distance(point) < 0f)
-            || (_Planes[Frustum.FAR].Distance(point) < 0f)
-            || (_Planes[Frustum.BOTTOM].Distance(point) < 0f)
-            || (_Planes[Frustum.TOP].Distance(point) < 0f)
-            || (_Planes[Frustum.LEFT].Distance(point) < 0f)
-            || (_Planes[Frustum.RIGHT].Distance(point) < 0f)
-                ? Frustum.Intersect.Outside
-                : Frustum.Intersect.Inside;
+        public Frustum.Intersect PointWithin(Vector3 point)
+        {
+            foreach (Plane plane in _Planes)
+                if (plane.Distance(point) < 0f)
+                    return Frustum.Intersect.Outside;
+
+            return Frustum.Intersect.Inside;
+        }
 
         public Frustum.Intersect SphereWithin(Sphere sphere)
         {
             Frustum.Intersect result = Frustum.Intersect.Inside;
 
-            float distance = _Planes[Frustum.NEAR].Distance(sphere.Center);
+            foreach (Plane plane in _Planes)
+            {
+                float distance = plane.Distance(sphere.Center);
 
-            if (distance < -sphere.Radius) return Frustum.Intersect.Outside;
-            else if (distance < sphere.Radius) result = Frustum.Intersect.Intersect;
-
-            distance = _Planes[Frustum.FAR].Distance(sphere.Center);
-
-            if (distance < -sphere.Radius) return Frustum.Intersect.Outside;
-            else if (distance < sphere.Radius) result = Frustum.Intersect.Intersect;
-
-            distance = _Planes[Frustum.BOTTOM].Distance(sphere.Center);
-
-            if (distance < -sphere.Radius) return Frustum.Intersect.Outside;
-            else if (distance < sphere.Radius) result = Frustum.Intersect.Intersect;
-
-            distance = _Planes[Frustum.TOP].Distance(sphere.Center);
-
-            if (distance < -sphere.Radius) return Frustum.Intersect.Outside;
-            else if (distance < sphere.Radius) result = Frustum.Intersect.Intersect;
-
-            distance = _Planes[Frustum.LEFT].Distance(sphere.Center);
-
-            if (distance < -sphere.Radius) return Frustum.Intersect.Outside;
-            else if (distance < sphere.Radius) result = Frustum.Intersect.Intersect;
-
-            distance = _Planes[Frustum.RIGHT].Distance(sphere.Center);
-
-            if (distance < -sphere.Radius) return Frustum.Intersect.Outside;
-            else if (distance < sphere.Radius) result = Frustum.Intersect.Intersect;
-
-            return result;
-        }
-
-        public Frustum.Intersect BoxWithin(Cube cube)
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static bool BoxOutsidePlane(Plane plane, Cube box) => plane.Distance(box.GreaterSumVertex(plane.Normal)) < 0f;
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static bool BoxIntersectPlane(Plane plane, Cube box) => plane.Distance(box.LesserSumVertex(plane.Normal)) < 0f;
-
-            Frustum.Intersect result = Frustum.Intersect.Inside;
-
-            Plane plane = _Planes[Frustum.NEAR];
-
-            if (BoxOutsidePlane(plane, cube)) return Frustum.Intersect.Outside;
-            else if (BoxIntersectPlane(plane, cube)) result = Frustum.Intersect.Intersect;
-
-            plane = _Planes[Frustum.FAR];
-
-            if (BoxOutsidePlane(plane, cube)) return Frustum.Intersect.Outside;
-            else if (BoxIntersectPlane(plane, cube)) result = Frustum.Intersect.Intersect;
-
-            plane = _Planes[Frustum.BOTTOM];
-
-            if (BoxOutsidePlane(plane, cube)) return Frustum.Intersect.Outside;
-            else if (BoxIntersectPlane(plane, cube)) result = Frustum.Intersect.Intersect;
-
-            plane = _Planes[Frustum.TOP];
-
-            if (BoxOutsidePlane(plane, cube)) return Frustum.Intersect.Outside;
-            else if (BoxIntersectPlane(plane, cube)) result = Frustum.Intersect.Intersect;
-
-            plane = _Planes[Frustum.LEFT];
-
-            if (BoxOutsidePlane(plane, cube)) return Frustum.Intersect.Outside;
-            else if (BoxIntersectPlane(plane, cube)) result = Frustum.Intersect.Intersect;
-
-            plane = _Planes[Frustum.RIGHT];
-
-            if (BoxOutsidePlane(plane, cube)) return Frustum.Intersect.Outside;
-            else if (BoxIntersectPlane(plane, cube)) result = Frustum.Intersect.Intersect;
+                if (distance < -sphere.Radius) return Frustum.Intersect.Outside;
+                else if (distance < sphere.Radius) result = Frustum.Intersect.Intersect;
+            }
 
             return result;
         }
