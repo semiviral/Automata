@@ -3,12 +3,10 @@
 using System;
 using System.Drawing;
 using System.IO;
-using System.Numerics;
 using Automata.Engine;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
 using Automata.Engine.Input;
-using Automata.Engine.Numerics.Shapes;
 using Automata.Engine.Rendering;
 using Automata.Engine.Rendering.GLFW;
 using Automata.Engine.Rendering.OpenGL;
@@ -18,13 +16,9 @@ using Automata.Engine.Worlds;
 using Automata.Game.Blocks;
 using Automata.Game.Chunks;
 using Automata.Game.Chunks.Generation;
-using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Reports;
-using BenchmarkDotNet.Running;
-using ConcurrentPools;
+using ConcurrencyPools;
 using Serilog;
 using Silk.NET.Windowing.Common;
-using Plane = Automata.Engine.Numerics.Shapes.Plane;
 
 #endregion
 
@@ -139,7 +133,8 @@ namespace Automata.Game
 
         private static void Initialize()
         {
-            BoundedThreadPool.DefaultThreadPoolSize();
+            BoundedAsyncPool.SetActivePool();
+            BoundedPool.Active.DefaultThreadPoolSize();
 
             InitializeSingletons();
 
@@ -154,7 +149,7 @@ namespace Automata.Game
         {
             if (VKAPI.TryValidate()) VKAPI.Instance.DestroyVulkanInstance();
 
-            BoundedThreadPool.Stop();
+            BoundedPool.Active.Stop();
         }
     }
 }

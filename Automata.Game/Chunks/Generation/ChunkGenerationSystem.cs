@@ -15,7 +15,7 @@ using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Systems;
 using Automata.Game.Blocks;
-using ConcurrentPools;
+using ConcurrencyPools;
 using DiagnosticsProviderNS;
 using Serilog;
 using Silk.NET.Input.Common;
@@ -53,7 +53,7 @@ namespace Automata.Game.Chunks.Generation
                 switch (chunk.State)
                 {
                     case GenerationState.Ungenerated:
-                        BoundedThreadPool.QueueWork(() => GenerateChunk(chunk.ID,
+                        BoundedPool.Active.QueueWork(() => GenerateChunk(chunk.ID,
                             new BuildStep.Parameters(GenerationConstants.Seed, GenerationConstants.FREQUENCY, GenerationConstants.PERSISTENCE,
                                 Vector3i.FromVector3(translation.Value)), _BuildSteps));
 
