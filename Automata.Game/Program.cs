@@ -3,10 +3,12 @@
 using System;
 using System.Drawing;
 using System.IO;
+using System.Numerics;
 using Automata.Engine;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
 using Automata.Engine.Input;
+using Automata.Engine.Numerics.Shapes;
 using Automata.Engine.Rendering;
 using Automata.Engine.Rendering.GLFW;
 using Automata.Engine.Rendering.OpenGL;
@@ -16,22 +18,64 @@ using Automata.Engine.Worlds;
 using Automata.Game.Blocks;
 using Automata.Game.Chunks;
 using Automata.Game.Chunks.Generation;
+using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Reports;
+using BenchmarkDotNet.Running;
 using ConcurrentPools;
 using Serilog;
 using Silk.NET.Windowing.Common;
+using Plane = Automata.Engine.Numerics.Shapes.Plane;
 
 #endregion
 
 
 namespace Automata.Game
 {
-    internal class Program
+    [RPlotExporter]
+    public class Benchmark
+    {
+        private Plane[] _PlanesA;
+        private Plane[] _PlanesB;
+        private Cube _Cube;
+
+        [GlobalSetup]
+        public void Setup()
+        {
+            _Cube = new Cube(Vector3.Zero, Vector3.One);
+            _PlanesA = new Plane[ClipFrustum.PLANES_SPAN_LENGTH];
+            _PlanesB = new Plane[ClipFrustum.PLANES_SPAN_LENGTH];
+        }
+
+        [Benchmark]
+        public Frustum.Intersect IntersectBoxUnrolled()
+        {
+            ClipFrustum clipFrustum = new ClipFrustum(new Span<Plane>(_PlanesA), Matrix4x4.Identity);
+            return clipFrustum.BoxWithin(_Cube);
+        }
+
+        [Benchmark]
+        public Frustum.Intersect IntersectBoxForeach()
+        {
+            ClipFrustum clipFrustum = new ClipFrustum(new Span<Plane>(_PlanesB), Matrix4x4.Identity);
+            return clipFrustum.BoxWithinForeach(_Cube);
+        }
+    }
+
+    public class Program
     {
         private static readonly string _LocalDataPath =
             $@"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.Create)}\Automata\";
 
         private static void Main()
         {
+            Summary? summary = BenchmarkRunner.Run<Benchmark>();
+
+            Console.ReadKey();
+
+
+
+
+
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .WriteTo.Console()
@@ -127,7 +171,7 @@ namespace Automata.Game
 
             world.EntityManager.RegisterComponent(player, new ChunkLoader
             {
-                Radius = 3
+                Radius = 4
             });
         }
 

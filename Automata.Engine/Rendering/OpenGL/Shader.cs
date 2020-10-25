@@ -16,7 +16,6 @@ namespace Automata.Engine.Rendering.OpenGL
 {
     public class Shader : IDisposable
     {
-        public const string RESERVED_UNIFORM_NAME_MATRIX_MV = "_mv";
         public const string RESERVED_UNIFORM_NAME_MATRIX_MVP = "_mvp";
         public const string RESERVED_UNIFORM_NAME_MATRIX_WORLD = "_world";
         public const string RESERVED_UNIFORM_NAME_MATRIX_OBJECT = "_object";
@@ -26,7 +25,6 @@ namespace Automata.Engine.Rendering.OpenGL
 
         private static readonly string[] _ReservedUniformNames =
         {
-            RESERVED_UNIFORM_NAME_MATRIX_MV,
             RESERVED_UNIFORM_NAME_MATRIX_MVP,
             RESERVED_UNIFORM_NAME_MATRIX_WORLD,
             RESERVED_UNIFORM_NAME_MATRIX_OBJECT,

@@ -53,7 +53,7 @@ namespace Automata.Engine.Rendering
                 _GL.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
 
                 Vector4 viewport = new Vector4(0f, 0f, AutomataWindow.Instance.Size.X, AutomataWindow.Instance.Size.Y);
-                Span<Plane> planes = stackalloc Plane[Frustum.PLANES_SPAN_LENGTH];
+                Span<Plane> planes = stackalloc Plane[ClipFrustum.PLANES_SPAN_LENGTH];
 
                 foreach (IEntity cameraEntity in entityManager.GetEntitiesWithComponents<Camera>())
                 {
@@ -72,8 +72,9 @@ namespace Automata.Engine.Rendering
                         camera.View = inverted;
                     }
 
-                    if (_NewAspectRatio > 0f) camera.CalculateProjection(_NewAspectRatio);
+                    if (_NewAspectRatio > 0f) camera.CalculateProjection(90f, _NewAspectRatio, 0.1f, 1000f);
 
+                    Matrix4x4 viewProjection = camera.View * camera.Projection;
                     RenderShader? currentShader = null;
 
                     foreach (IEntity objectEntity in entityManager.GetEntitiesWithComponents<RenderMesh>())
@@ -99,16 +100,15 @@ namespace Automata.Engine.Rendering
                             renderMesh.Model *= Matrix4x4.CreateScale(modelScale?.Value ?? Scale.DEFAULT);
                         }
 
-                        Matrix4x4.Invert(renderMesh.Model, out Matrix4x4 modelInverted);
-                        Matrix4x4 modelView = renderMesh.Model * camera.View;
-                        Matrix4x4 modelViewProjection = modelView * camera.Projection;
+                        Matrix4x4 modelViewProjection = renderMesh.Model * viewProjection;
 
                         if (renderShader.Value.HasAutomataUniforms)
                         {
+                            if (Matrix4x4.Invert(renderMesh.Model, out Matrix4x4 modelInverted))
+                                renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_OBJECT, modelInverted);
+
                             renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_WORLD, renderMesh.Model);
-                            renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_MV, modelView);
                             renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_MVP, modelViewProjection);
-                            renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_OBJECT, modelInverted);
 
                             renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC3_CAMERA_WORLD_POSITION,
                                 cameraTranslation?.Value ?? Vector3.Zero);
@@ -119,22 +119,22 @@ namespace Automata.Engine.Rendering
 
                         if (objectEntity.TryGetComponent(out Bounds? bounds))
                         {
-                            Frustum frustum = new Frustum(planes, modelViewProjection);
-                            Frustum.Boundary sphericBoundary = Frustum.Boundary.Outside;
+                            ClipFrustum clipFrustum = new ClipFrustum(planes, modelViewProjection);
+                            //Frustum.Intersect intersection = Frustum.Intersect.Outside;
 
                             // try to test spherical bounds
-                            if ((bounds.Spheric != Sphere.Zero)
-                                && (sphericBoundary = frustum.SphereWithin(bounds.Spheric)) is Frustum.Boundary.Outside) continue;
+                            // if ((bounds.Spheric != Sphere.Zero)
+                            //     && (intersection = clipFrustum.SphereWithin(bounds.Spheric)) is Frustum.Intersect.Outside) continue;
 
                             // if spherical bounds fails (i.e. intersects) try cubic
-                            if (sphericBoundary is not Frustum.Boundary.Inside
-                                && (bounds.Cubic != Cube.Zero)
-                                && frustum.BoxWithin(bounds.Cubic) is Frustum.Boundary.Outside) continue;
+                            if (//intersection is not Frustum.Intersect.Inside &&
+                                (bounds.Cubic != Cube.Zero)
+                                                                             && clipFrustum.BoxWithin(bounds.Cubic) is not Frustum.Intersect.Outside) continue;
                         }
 
                         renderMesh.Mesh!.Bind();
 
-                        _GL.DrawElements(PrimitiveType.Triangles, renderMesh.Mesh.IndexesLength, DrawElementsType.UnsignedInt, null);
+                        _GL.DrawElements(PrimitiveType.Triangles, renderMesh.Mesh!.IndexesLength, DrawElementsType.UnsignedInt, null);
 
                         CheckForGLErrorsAndThrow();
                     }
@@ -162,5 +162,20 @@ namespace Automata.Engine.Rendering
         }
 
         private void GameWindowResized(object sender, Vector2i newSize) => _NewAspectRatio = (float)newSize.X / (float)newSize.Y;
+
+#if DEBUG
+        private Matrix4x4 GenerateFakeViewMatrix(IEntity cameraEntity, float distanceAlongForward)
+        {
+            Rotation rotation = cameraEntity.GetComponent<Rotation>();
+            Translation translation = cameraEntity.GetComponent<Translation>();
+            Vector3 forward = Vector3.Transform(Vector3.UnitZ, rotation.Value);
+            Vector3 translationModified = translation.Value + (forward * distanceAlongForward);
+
+            Matrix4x4 fakeView = Matrix4x4.Identity;
+            fakeView *= Matrix4x4.CreateFromQuaternion(rotation.Value);
+            fakeView *= Matrix4x4.CreateTranslation(translationModified);
+            return fakeView;
+        }
+#endif
     }
 }
