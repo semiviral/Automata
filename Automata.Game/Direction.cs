@@ -93,7 +93,7 @@ namespace Automata.Game
 
         public static bool HasAny(this Direction direction) => direction > 0;
         public static bool HasAll(this Direction direction) => (direction & Direction.Mask) is Direction.Mask;
-        public static bool HasDirection(this Direction direction, Direction target) => direction.HasFlag(target);
+        public static bool HasDirection(this Direction direction, Direction target) => (direction & target) == target;
         public static Direction WithDirection(this Direction direction, Direction target) => direction | target;
         public static Direction WithoutDirection(this Direction direction, Direction target) => direction & ~target;
     }

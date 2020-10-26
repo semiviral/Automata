@@ -18,6 +18,7 @@ using ConcurrencyPools;
 using DiagnosticsProviderNS;
 using Serilog;
 using Silk.NET.Input.Common;
+using Silk.NET.OpenGL;
 
 #endregion
 
@@ -132,7 +133,7 @@ namespace Automata.Game.Chunks.Generation
             Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
             stopwatch.Restart();
 
-            PendingMesh<int> pendingMesh = ChunkMesher.GeneratePackedMesh(chunk.Blocks, chunk.NeighborBlocks(), true);
+            PendingMesh<int> pendingMesh = ChunkMesher.GeneratePackedMesh(chunk.Blocks, chunk.NeighborBlocks());
             if (!_PendingMeshes.TryAdd(chunk.ID, pendingMesh)) Log.Error($"Failed to add chunk({origin}) mesh.");
 
             stopwatch.Stop();
@@ -155,6 +156,7 @@ namespace Automata.Game.Chunks.Generation
 
             Mesh<int> mesh = (renderMesh.Mesh as Mesh<int>)!;
             mesh.ModifyVertexAttributes<int>(0u, 0);
+            mesh.ModifyVertexAttributes<int>(1u, 1);
             mesh.VertexesBuffer.SetBufferData(pendingMesh.Vertexes, BufferDraw.DynamicDraw);
             mesh.IndexesBuffer.SetBufferData(pendingMesh.Indexes, BufferDraw.DynamicDraw);
 

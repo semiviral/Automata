@@ -26,6 +26,7 @@ namespace Automata.Engine.Rendering
         private readonly GL _GL;
 
         private float _NewAspectRatio;
+        private Texture2D _Texture;
 
         public RenderSystem()
         {
@@ -43,6 +44,12 @@ namespace Automata.Engine.Rendering
                 _GL.CullFace(CullFaceMode.Back);
                 _GL.Enable(GLEnum.CullFace);
             }
+        }
+
+        public override void Registered()
+        {
+            _Texture = new Texture2D("Resources/Textures/BlockAtlas.png", OpenGL.Texture.WrapMode.Repeat, OpenGL.Texture.FilterMode.Point);
+            CheckForGLErrorsAndThrow();
         }
 
         [HandlesComponents(DistinctionStrategy.Any, typeof(Camera), typeof(RenderMesh))]
@@ -121,6 +128,8 @@ namespace Automata.Engine.Rendering
                         }
 
                         renderMesh.Mesh!.Bind();
+                        _Texture.Bind(TextureUnit.Texture0);
+                        renderShader.Value.TrySetUniform("tex0", 0);
 
                         _GL.DrawElements(PrimitiveType.Triangles, renderMesh.Mesh!.IndexesLength, DrawElementsType.UnsignedInt, null);
 

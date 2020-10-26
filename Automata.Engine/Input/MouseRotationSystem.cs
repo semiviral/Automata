@@ -26,8 +26,6 @@ namespace Automata.Engine.Input
             if (relativeMousePosition == Vector2.Zero) return;
 
             foreach ((Rotation rotation, MouseListener mouseListener) in entityManager.GetComponents<Rotation, MouseListener>())
-
-                // accumulate angles
                 rotation.AccumulateAngles(relativeMousePosition * mouseListener.Sensitivity);
 
             // reset mouse position to center of screen

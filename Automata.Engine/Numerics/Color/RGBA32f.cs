@@ -2,6 +2,7 @@
 
 using System;
 using System.Numerics;
+using System.Runtime.InteropServices;
 
 #endregion
 
@@ -11,6 +12,7 @@ namespace Automata.Engine.Numerics.Color
     /// <summary>
     ///     A color with each component representing a 32-bit signed floating point value.
     /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
     public readonly partial struct RGBA32f
     {
         public static RGBA32f Red => new RGBA32f(1f, 0f, 0f, 1f);

@@ -8,10 +8,6 @@ namespace Automata.Engine.Rendering.Meshes
         public TDataType[] Vertexes { get; }
         public uint[] Indexes { get; }
 
-        public PendingMesh(TDataType[] vertexes, uint[] indexes)
-        {
-            Vertexes = vertexes;
-            Indexes = indexes;
-        }
+        public PendingMesh(TDataType[] vertexes, uint[] indexes) => (Vertexes, Indexes) = (vertexes, indexes);
     }
 }

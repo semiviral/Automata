@@ -2,27 +2,20 @@
 
 using System;
 using Silk.NET.OpenGL;
+using SixLabors.ImageSharp.PixelFormats;
 
 #endregion
 
 
 namespace Automata.Engine.Rendering.OpenGL
 {
-    public abstract class Texture
+    public abstract class Texture : IDisposable
     {
         public enum FilterMode
         {
             Point,
             Bilinear,
             Trilinear
-        }
-
-        public enum TextureFormat
-        {
-            R32,
-            RGB32,
-            RGBA32,
-            Depth32
         }
 
         public enum WrapMode
@@ -43,20 +36,17 @@ namespace Automata.Engine.Rendering.OpenGL
 
         public abstract void Bind(TextureUnit textureSlot);
 
-        public void Dispose() { GL.DeleteTexture(Handle); }
+        public void Dispose() => GL.DeleteTexture(Handle);
 
 
         #region Static Methods
 
-        public static (InternalFormat internalFormat, PixelFormat pixelFormat) GetInternalTextureFormatRepresentation(TextureFormat textureFormat) =>
-            textureFormat switch
-            {
-                TextureFormat.R32 => (InternalFormat.R32f, PixelFormat.Red),
-                TextureFormat.RGB32 => (InternalFormat.Rgb32f, PixelFormat.Rgb),
-                TextureFormat.RGBA32 => (InternalFormat.Rgba32f, PixelFormat.Rgba),
-                TextureFormat.Depth32 => (InternalFormat.DepthComponent32f, PixelFormat.DepthComponent),
-                _ => throw new ArgumentOutOfRangeException(nameof(textureFormat))
-            };
+        protected static (InternalFormat, PixelFormat, PixelType) GetPixelData<TPixel>() where TPixel : unmanaged, IPixel<TPixel>
+        {
+            if (typeof(TPixel) == typeof(Rgba32)) return (InternalFormat.Rgba, PixelFormat.Rgba, PixelType.UnsignedByte);
+            else if (typeof(TPixel) == typeof(RgbaVector)) return (InternalFormat.Rgba32f, PixelFormat.Rgba, PixelType.Float);
+            else throw new ArgumentOutOfRangeException();
+        }
 
         public static GLEnum GetWrapModeAsGLEnum(WrapMode wrapMode) =>
             wrapMode switch
