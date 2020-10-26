@@ -15,19 +15,17 @@ namespace Automata.Game.Chunks.Generation
             public int Seed { get; }
             public float Frequency { get; }
             public float Persistence { get; }
-            public Vector3i Origin { get; }
             public Random SeededRandom { get; }
 
-            public Parameters(int seed, float frequency, float persistence, Vector3i origin)
+            public Parameters(int seed, float frequency, float persistence)
             {
                 Seed = seed;
                 Frequency = frequency;
                 Persistence = persistence;
-                Origin = origin;
                 SeededRandom = new Random(seed);
             }
         }
 
-        public abstract void Generate(Parameters parameters, Span<ushort> blocks);
+        public abstract void Generate(Vector3i origin, Parameters parameters, Span<ushort> blocks);
     }
 }

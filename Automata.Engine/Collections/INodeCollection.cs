@@ -15,9 +15,8 @@ namespace Automata.Engine.Collections
         int Length { get; }
 
         T GetPoint(Vector3i point);
+        T GetPoint(int x, int y, int z);
         void SetPoint(Vector3i point, T value);
-
-        IEnumerable<T> GetAllData();
-        void CopyTo(T[] destinationArray);
+        void SetPoint(int x, int y, int z, T value);
     }
 }

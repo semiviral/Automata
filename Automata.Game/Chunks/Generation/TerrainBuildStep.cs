@@ -13,7 +13,7 @@ namespace Automata.Game.Chunks.Generation
 {
     public class TerrainBuildStep : BuildStep
     {
-        public override void Generate(Parameters parameters, Span<ushort> blocks)
+        public override void Generate(Vector3i origin, Parameters parameters, Span<ushort> blocks)
         {
             Span<int> heightmap = stackalloc int[GenerationConstants.CHUNK_SIZE_SQUARED];
             Span<float> cavemap = stackalloc float[GenerationConstants.CHUNK_SIZE_CUBED];
@@ -25,12 +25,12 @@ namespace Automata.Game.Chunks.Generation
             {
                 int heightmapIndex = Vector2i.Project1D(x, z, GenerationConstants.CHUNK_SIZE);
 
-                heightmap[heightmapIndex] = CalculateHeight(new Vector2i(parameters.Origin.X + x, parameters.Origin.Z + z), parameters.Frequency,
+                heightmap[heightmapIndex] = CalculateHeight(new Vector2i(origin.X + x, origin.Z + z), parameters.Frequency,
                     parameters.Persistence);
 
                 for (int y = 0; y < GenerationConstants.CHUNK_SIZE; y++, index++)
                 {
-                    Vector3i globalPosition = parameters.Origin + new Vector3i(x, y, z);
+                    Vector3i globalPosition = origin + new Vector3i(x, y, z);
                     cavemap[index] = CalculateCaveNoise(globalPosition, parameters.Seed ^ 2, parameters.Seed ^ 3, parameters.Persistence);
                 }
             }
@@ -43,10 +43,10 @@ namespace Automata.Game.Chunks.Generation
                 int noiseHeight = heightmap[heightmapIndex];
 
                 BlockRegistry blockRegistry = BlockRegistry.Instance;
-                int globalPositionY = parameters.Origin.Y + localPosition.Y;
+                int globalPositionY = origin.Y + localPosition.Y;
 
                 if ((globalPositionY < 4) && (globalPositionY <= parameters.SeededRandom.Next(0, 4))) blocks[index] = blockRegistry.GetBlockID("bedrock");
-                else if ((noiseHeight < parameters.Origin.Y) || (cavemap[index] < 0.000225f)) blocks[index] = BlockRegistry.AirID;
+                else if ((noiseHeight < origin.Y) || (cavemap[index] < 0.000225f)) blocks[index] = BlockRegistry.AirID;
                 else if (globalPositionY == noiseHeight) blocks[index] = blockRegistry.GetBlockID("grass");
                 else if ((globalPositionY < noiseHeight) && (globalPositionY >= (noiseHeight - 3))) // lay dirt up to 3 blocks below noise height
                 {

@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using Automata.Engine;
 using Automata.Engine.Collections;
@@ -52,15 +51,19 @@ namespace Automata.Game.Chunks.Generation
 
                 switch (chunk.State)
                 {
-                    case GenerationState.Ungenerated:
-                        BoundedPool.Active.QueueWork(() => GenerateChunk(chunk,
-                            new BuildStep.Parameters(GenerationConstants.Seed, GenerationConstants.FREQUENCY, GenerationConstants.PERSISTENCE,
-                                Vector3i.FromVector3(translation.Value)), _BuildSteps));
+                    case GenerationState.Ungenerated when chunk.MinimalNeighborState() >= GenerationState.Ungenerated:
+                        BoundedPool.Active.QueueWork(() => GenerateBlocks(chunk, Vector3i.FromVector3(translation.Value),
+                            new BuildStep.Parameters(GenerationConstants.Seed, GenerationConstants.FREQUENCY, GenerationConstants.PERSISTENCE)));
 
                         chunk.State += 1;
                         break;
                     case GenerationState.AwaitingBuilding when _PendingBlockCollections.TryRemove(chunk.ID, out INodeCollection<ushort>? blocks):
                         chunk.Blocks = blocks;
+                        chunk.State += 1;
+                        break;
+                    case GenerationState.Unmeshed when chunk.MinimalNeighborState() >= GenerationState.Unmeshed:
+                        BoundedPool.Active.QueueWork(() => GenerateMesh(chunk, Vector3i.FromVector3(translation.Value)));
+
                         chunk.State += 1;
                         break;
                     case GenerationState.AwaitingMeshing when _PendingMeshes.TryRemove(chunk.ID, out PendingMesh<int>? pendingMesh):
@@ -102,28 +105,14 @@ namespace Automata.Game.Chunks.Generation
             DiagnosticsInputCheck();
         }
 
-        private void GenerateChunk(Chunk chunk, BuildStep.Parameters parameters, IEnumerable<BuildStep> buildSteps)
+        private void GenerateBlocks(Chunk chunk, Vector3i origin, BuildStep.Parameters parameters)
         {
-            static INodeCollection<ushort> GenerateNodeCollectionImpl(ref Span<ushort> blocks)
-            {
-                Octree<ushort> blocksCompressed = new Octree<ushort>(GenerationConstants.CHUNK_SIZE, BlockRegistry.AirID);
-
-                int index = 0;
-
-                for (int y = 0; y < GenerationConstants.CHUNK_SIZE; y++)
-                for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
-                for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++, index++)
-                    blocksCompressed.SetPoint(x, y, z, blocks[index]);
-
-                return blocksCompressed;
-            }
-
-            Span<ushort> blocks = stackalloc ushort[GenerationConstants.CHUNK_SIZE_CUBED];
-
             Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
             stopwatch.Restart();
 
-            foreach (BuildStep generationStep in buildSteps) generationStep.Generate(parameters, blocks);
+            Span<ushort> blocks = stackalloc ushort[GenerationConstants.CHUNK_SIZE_CUBED];
+
+            foreach (BuildStep generationStep in _BuildSteps) generationStep.Generate(origin, parameters, blocks);
 
             stopwatch.Stop();
 
@@ -134,8 +123,16 @@ namespace Automata.Game.Chunks.Generation
 
             stopwatch.Restart();
 
-            INodeCollection<ushort> nodeCollection = GenerateNodeCollectionImpl(ref blocks);
-            if (!_PendingBlockCollections.TryAdd(chunk.ID, nodeCollection)) Log.Error($"Failed to add chunk({parameters.Origin}) blocks.");
+            INodeCollection<ushort> nodeCollection = new Octree<ushort>(GenerationConstants.CHUNK_SIZE, BlockRegistry.AirID);
+
+            int index = 0;
+
+            for (int y = 0; y < GenerationConstants.CHUNK_SIZE; y++)
+            for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
+            for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++, index++)
+                nodeCollection.SetPoint(x, y, z, blocks[index]);
+
+            if (!_PendingBlockCollections.TryAdd(chunk.ID, nodeCollection)) Log.Error($"Failed to add chunk({origin}) blocks.");
 
             stopwatch.Stop();
 
@@ -144,10 +141,24 @@ namespace Automata.Game.Chunks.Generation
             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
                 $"Insertion: '{chunk.ID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms)"));
 
+            DiagnosticsSystem.Stopwatches.Return(stopwatch);
+        }
+
+        private void GenerateMesh(Chunk chunk, Vector3i origin)
+        {
+            if (chunk.Blocks is null)
+            {
+                Log.Warning(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
+                    $"Attempted to mesh chunk {origin}, but it has not generated blocks."));
+
+                return;
+            }
+
+            Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
             stopwatch.Restart();
 
-            PendingMesh<int> pendingMesh = ChunkMesher.GeneratePackedMesh(blocks, chunk.GetNeighborBlocks(), true);
-            if (!_PendingMeshes.TryAdd(chunk.ID, pendingMesh)) Log.Error($"Failed to add chunk({parameters.Origin}) mesh.");
+            PendingMesh<int> pendingMesh = ChunkMesher.GeneratePackedMesh(chunk.Blocks, chunk.GetNeighborBlocks(), true);
+            if (!_PendingMeshes.TryAdd(chunk.ID, pendingMesh)) Log.Error($"Failed to add chunk({origin}) mesh.");
 
             stopwatch.Stop();
 
