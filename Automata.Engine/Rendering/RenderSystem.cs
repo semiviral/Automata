@@ -81,10 +81,10 @@ namespace Automata.Engine.Rendering
                     {
                         RenderMesh renderMesh = objectEntity.GetComponent<RenderMesh>();
 
-                        if (renderMesh.Changed
-                            | (objectEntity.TryGetComponent(out Scale? modelScale) && modelScale.Changed)
-                            | (objectEntity.TryGetComponent(out Rotation? modelRotation) && modelRotation.Changed)
-                            | (objectEntity.TryGetComponent(out Translation? modelTranslation) && modelTranslation.Changed))
+                        if (((objectEntity.TryGetComponent(out Scale? modelScale) && modelScale.Changed)
+                             | (objectEntity.TryGetComponent(out Rotation? modelRotation) && modelRotation.Changed)
+                             | (objectEntity.TryGetComponent(out Translation? modelTranslation) && modelTranslation.Changed))
+                            || renderMesh.Changed)
                         {
                             renderMesh.Model = Matrix4x4.Identity;
                             renderMesh.Model *= Matrix4x4.CreateTranslation(modelTranslation?.Value ?? Vector3.Zero);
@@ -92,17 +92,18 @@ namespace Automata.Engine.Rendering
                             renderMesh.Model *= Matrix4x4.CreateScale(modelScale?.Value ?? Scale.DEFAULT);
                         }
 
-                        if (!renderMesh.ShouldRender || !objectEntity.TryGetComponent(out RenderShader? renderShader)) continue;
+                        Matrix4x4 modelViewProjection = renderMesh.Model * viewProjection;
+
+                        if (!renderMesh.ShouldRender // check if should render at all
+                            || !objectEntity.TryGetComponent(out RenderShader? renderShader) // if no RenderShader component, don't try to render
+                            // check if occluded by frustum
+                            || (objectEntity.TryGetComponent(out Bounds? bounds) && CheckClipFrustumOcclude(bounds, planes, modelViewProjection))) continue;
 
                         if (currentShader is null || (renderShader.Value.ID != currentShader.Value.ID))
                         {
                             renderShader.Value.Use();
                             currentShader = renderShader;
                         }
-
-                        Matrix4x4 modelViewProjection = renderMesh.Model * viewProjection;
-
-                        if (objectEntity.TryGetComponent(out Bounds? bounds) && CheckClipFrustumOcclude(bounds, planes, modelViewProjection)) continue;
 
                         if (renderShader.Value.HasAutomataUniforms)
                         {
