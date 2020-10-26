@@ -1,12 +1,13 @@
 #version 330 core
 
-uniform sampler2D tex0;
+uniform sampler2DArray blocks;
 
-in vec2 fPos;
-in vec4 fColor;
+in vec3 texUV;
+in vec4 vertexColor;
+
 out vec4 color;
 
 void main()
 {
-    color = texture(tex0, fPos) + 0.5;
+    color = texture(tex0, texUV);
 }

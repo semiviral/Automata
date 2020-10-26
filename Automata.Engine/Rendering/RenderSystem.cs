@@ -24,9 +24,9 @@ namespace Automata.Engine.Rendering
         private const bool _ENABLE_BACK_FACE_CULLING = true;
 
         private readonly GL _GL;
+        private readonly Texture2D _Texture;
 
         private float _NewAspectRatio;
-        private Texture2D _Texture;
 
         public RenderSystem()
         {
@@ -44,11 +44,8 @@ namespace Automata.Engine.Rendering
                 _GL.CullFace(CullFaceMode.Back);
                 _GL.Enable(GLEnum.CullFace);
             }
-        }
 
-        public override void Registered()
-        {
-            _Texture = new Texture2D("Resources/Textures/BlockAtlas.png", OpenGL.Texture.WrapMode.Repeat, OpenGL.Texture.FilterMode.Point);
+            _Texture = new Texture2D("Resources/Textures/BlockAtlas.png", OpenGL.Texture.WrapMode.Repeat, OpenGL.Texture.FilterMode.Point, false);
             CheckForGLErrorsAndThrow();
         }
 
@@ -175,20 +172,5 @@ namespace Automata.Engine.Rendering
         }
 
         private void GameWindowResized(object sender, Vector2i newSize) => _NewAspectRatio = (float)newSize.X / (float)newSize.Y;
-
-#if DEBUG
-        private Matrix4x4 GenerateFakeViewMatrix(IEntity cameraEntity, float distanceAlongForward)
-        {
-            Rotation rotation = cameraEntity.GetComponent<Rotation>();
-            Translation translation = cameraEntity.GetComponent<Translation>();
-            Vector3 forward = Vector3.Transform(Vector3.UnitZ, rotation.Value);
-            Vector3 translationModified = translation.Value + (forward * distanceAlongForward);
-
-            Matrix4x4 fakeView = Matrix4x4.Identity;
-            fakeView *= Matrix4x4.CreateFromQuaternion(rotation.Value);
-            fakeView *= Matrix4x4.CreateTranslation(translationModified);
-            return fakeView;
-        }
-#endif
     }
 }
