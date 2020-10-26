@@ -24,25 +24,26 @@ namespace Automata.Engine.Rendering.Meshes
             VertexArrayObject = new VertexArrayObject<TDataType, uint>(GLAPI.Instance.GL, VertexesBuffer, IndexesBuffer);
         }
 
-        public unsafe void ModifyVertexAttributes<TAttributePrimitive>(uint index, int offset) where TAttributePrimitive : unmanaged
+        public unsafe void ModifyVertexAttributes<TAttributePrimitive>(uint index, uint stride, int offset) where TAttributePrimitive : unmanaged
         {
             int dimensions = sizeof(TDataType) / sizeof(TAttributePrimitive);
 
-            if (typeof(TAttributePrimitive) == typeof(int)) VertexArrayObject.VertexAttributeIPointer(index, dimensions, VertexAttribPointerType.Int, offset);
+            if (typeof(TAttributePrimitive) == typeof(int))
+                VertexArrayObject.VertexAttributeIPointer(index, dimensions, VertexAttribPointerType.Int, stride, offset);
             else if (typeof(TAttributePrimitive) == typeof(uint))
-                VertexArrayObject.VertexAttributeIPointer(index, dimensions, VertexAttribPointerType.UnsignedInt, offset);
+                VertexArrayObject.VertexAttributeIPointer(index, dimensions, VertexAttribPointerType.UnsignedInt, stride, offset);
             else if (typeof(TAttributePrimitive) == typeof(short))
-                VertexArrayObject.VertexAttributeIPointer(index, dimensions, VertexAttribPointerType.Short, offset);
+                VertexArrayObject.VertexAttributeIPointer(index, dimensions, VertexAttribPointerType.Short, stride, offset);
             else if (typeof(TAttributePrimitive) == typeof(ushort))
-                VertexArrayObject.VertexAttributeIPointer(index, dimensions, VertexAttribPointerType.UnsignedShort, offset);
+                VertexArrayObject.VertexAttributeIPointer(index, dimensions, VertexAttribPointerType.UnsignedShort, stride, offset);
             else if (typeof(TAttributePrimitive) == typeof(sbyte))
-                VertexArrayObject.VertexAttributeIPointer(index, dimensions, VertexAttribPointerType.Byte, offset);
+                VertexArrayObject.VertexAttributeIPointer(index, dimensions, VertexAttribPointerType.Byte, stride, offset);
             else if (typeof(TAttributePrimitive) == typeof(byte))
-                VertexArrayObject.VertexAttributeIPointer(index, dimensions, VertexAttribPointerType.UnsignedByte, offset);
+                VertexArrayObject.VertexAttributeIPointer(index, dimensions, VertexAttribPointerType.UnsignedByte, stride, offset);
             else if (typeof(TAttributePrimitive) == typeof(float))
-                VertexArrayObject.VertexAttributePointer(index, dimensions, VertexAttribPointerType.Float, offset);
+                VertexArrayObject.VertexAttributePointer(index, dimensions, VertexAttribPointerType.Float, stride, offset);
             else if (typeof(TAttributePrimitive) == typeof(double))
-                VertexArrayObject.VertexAttributeLPointer(index, dimensions, VertexAttribPointerType.Double, offset);
+                VertexArrayObject.VertexAttributeLPointer(index, dimensions, VertexAttribPointerType.Double, stride, offset);
         }
 
         public Guid ID { get; }

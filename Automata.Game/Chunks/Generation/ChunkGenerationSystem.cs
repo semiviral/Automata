@@ -18,7 +18,6 @@ using ConcurrencyPools;
 using DiagnosticsProviderNS;
 using Serilog;
 using Silk.NET.Input.Common;
-using Silk.NET.OpenGL;
 
 #endregion
 
@@ -155,8 +154,8 @@ namespace Automata.Game.Chunks.Generation
             if (renderMesh.Mesh is null or not Mesh<int>) renderMesh.Mesh = new Mesh<int>();
 
             Mesh<int> mesh = (renderMesh.Mesh as Mesh<int>)!;
-            mesh.ModifyVertexAttributes<int>(0u, 0);
-            mesh.ModifyVertexAttributes<int>(1u, 1);
+            mesh.ModifyVertexAttributes<int>(0u, sizeof(int) + sizeof(int), 0);
+            mesh.ModifyVertexAttributes<int>(1u, sizeof(int) + sizeof(int), 1);
             mesh.VertexesBuffer.SetBufferData(pendingMesh.Vertexes, BufferDraw.DynamicDraw);
             mesh.IndexesBuffer.SetBufferData(pendingMesh.Indexes, BufferDraw.DynamicDraw);
 

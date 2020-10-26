@@ -26,31 +26,31 @@ namespace Automata.Engine.Rendering.OpenGL
             Unbind();
         }
 
-        public unsafe void VertexAttributePointer(uint attributeIndex, int dimensions, VertexAttribPointerType type, int offset)
+        public unsafe void VertexAttributePointer(uint attributeIndex, int dimensions, VertexAttribPointerType type, uint stride, int offset)
         {
             Bind();
 
-            _GL.VertexAttribPointer(attributeIndex, dimensions, type, false, (uint)(dimensions * sizeof(TVertexType)), (void*)(offset * sizeof(TVertexType)));
+            _GL.VertexAttribPointer(attributeIndex, dimensions, type, false, stride, (void*)(offset * sizeof(TVertexType)));
             _GL.EnableVertexAttribArray(attributeIndex);
 
             Unbind();
         }
 
-        public unsafe void VertexAttributeIPointer(uint attributeIndex, int dimensions, VertexAttribPointerType type, int offset)
+        public unsafe void VertexAttributeIPointer(uint attributeIndex, int dimensions, VertexAttribPointerType type, uint stride, int offset)
         {
             Bind();
 
-            _GL.VertexAttribIPointer(attributeIndex, dimensions, type, (uint)(dimensions * sizeof(TVertexType)), (void*)(offset * sizeof(TVertexType)));
+            _GL.VertexAttribIPointer(attributeIndex, dimensions, type, stride, (void*)(offset * sizeof(TVertexType)));
             _GL.EnableVertexAttribArray(attributeIndex);
 
             Unbind();
         }
 
-        public unsafe void VertexAttributeLPointer(uint attributeIndex, int dimensions, VertexAttribPointerType type, int offset)
+        public unsafe void VertexAttributeLPointer(uint attributeIndex, int dimensions, VertexAttribPointerType type, uint stride, int offset)
         {
             Bind();
 
-            _GL.VertexAttribLPointer(attributeIndex, dimensions, type, (uint)(dimensions * sizeof(TVertexType)), (void*)(offset * sizeof(TVertexType)));
+            _GL.VertexAttribLPointer(attributeIndex, dimensions, type, stride, (void*)(offset * sizeof(TVertexType)));
             _GL.EnableVertexAttribArray(attributeIndex);
 
             Unbind();
