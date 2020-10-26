@@ -8,11 +8,21 @@ using Automata.Engine.Numerics;
 
 namespace Automata.Game.Chunks
 {
-    public class ChunkLoader : IComponent
+    public class ChunkLoader : IComponentChangeable
     {
-        private const int _RADIUS = 4;
+        private int _Radius;
 
-        public int Radius { get; set; } = _RADIUS;
+        public int Radius
+        {
+            get => _Radius;
+            set
+            {
+                _Radius = value;
+                Changed = true;
+            }
+        }
+
         public Vector3i Origin { get; set; } = new Vector3i(int.MaxValue);
+        public bool Changed { get; set; }
     }
 }

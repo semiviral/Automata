@@ -1,6 +1,5 @@
 #region
 
-using System.Collections.Generic;
 using Automata.Engine.Numerics;
 
 #endregion

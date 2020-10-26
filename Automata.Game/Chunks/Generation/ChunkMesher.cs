@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Automata.Engine;
@@ -150,9 +149,7 @@ namespace Automata.Game.Chunks.Generation
             for (int y = 0; y < GenerationConstants.CHUNK_SIZE; y++)
             for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
             for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++, index++)
-            {
                 blocks[index] = blocksCompressed.GetPoint(x, y, z);
-            }
 
             index = 0;
 

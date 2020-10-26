@@ -91,9 +91,8 @@ namespace Automata.Engine.Collections
 
                 // avoiding using linq here for performance sensitivity
                 foreach (OctreeNode<TNode> octreeNode in _Nodes)
-                {
-                    if (!octreeNode.IsUniform || !octreeNode.Value.Equals(firstValue)) return false;
-                }
+                    if (!octreeNode.IsUniform || !octreeNode.Value.Equals(firstValue))
+                        return false;
 
                 return true;
             }
@@ -112,9 +111,6 @@ namespace Automata.Engine.Collections
             Length = (int)Math.Pow(size, 3);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T GetPoint(int x, int y, int z) => GetPointIterative(x, y, z);
-
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         private T GetPointIterative(int x, int y, int z)
         {
@@ -129,14 +125,6 @@ namespace Automata.Engine.Collections
 
             return currentNode.Value;
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetPoint(int x, int y, int z, T value) => _RootNode.SetPoint(_Extent, x, y, z, value);
-
-        public T Value => _RootNode.Value;
-        public bool IsUniform => _RootNode.IsUniform;
-
-        public int Length { get; }
 
         public IEnumerable<T> GetAllData()
         {
@@ -155,6 +143,17 @@ namespace Automata.Engine.Collections
 
             for (int index = 0; index < destinationArray.Length; index++) destinationArray[index] = GetPoint(Vector3i.Project3D(index, size));
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public T GetPoint(int x, int y, int z) => GetPointIterative(x, y, z);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void SetPoint(int x, int y, int z, T value) => _RootNode.SetPoint(_Extent, x, y, z, value);
+
+        public T Value => _RootNode.Value;
+        public bool IsUniform => _RootNode.IsUniform;
+
+        public int Length { get; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T GetPoint(Vector3i point) => GetPointIterative(point.X, point.Y, point.Z);

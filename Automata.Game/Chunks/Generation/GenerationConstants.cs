@@ -1,6 +1,3 @@
-using System.Numerics;
-using Silk.NET.Vulkan;
-
 namespace Automata.Game.Chunks.Generation
 {
     public static class GenerationConstants

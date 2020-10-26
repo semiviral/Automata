@@ -29,15 +29,15 @@ namespace Automata.Engine.Rendering
             Vector3 nearCenter = position + (LocalForward * nearDistance);
             Vector3 farCenter = position + (LocalForward * farDistance);
 
-            Vector3 nearTopLeft = nearCenter - (LocalUp * nearPlane.Y) + (RelativeRight * nearPlane.X);
+            Vector3 nearTopLeft = (nearCenter - (LocalUp * nearPlane.Y)) + (RelativeRight * nearPlane.X);
             Vector3 nearTopRight = nearCenter + (LocalUp * nearPlane.Y) + (RelativeRight * nearPlane.X);
             Vector3 nearBottomLeft = nearCenter - (LocalUp * nearPlane.Y) - (RelativeRight * nearPlane.X);
-            Vector3 nearBottomRight = nearCenter + (LocalUp * nearPlane.Y) - (RelativeRight * nearPlane.X);
+            Vector3 nearBottomRight = (nearCenter + (LocalUp * nearPlane.Y)) - (RelativeRight * nearPlane.X);
 
-            Vector3 farTopLeft = farCenter - (LocalUp * farPlane.Y) + (RelativeRight * farPlane.X);
+            Vector3 farTopLeft = (farCenter - (LocalUp * farPlane.Y)) + (RelativeRight * farPlane.X);
             Vector3 farTopRight = farCenter + (LocalUp * farPlane.Y) + (RelativeRight * farPlane.X);
             Vector3 farBottomLeft = farCenter - (LocalUp * farPlane.Y) - (RelativeRight * farPlane.X);
-            Vector3 farBottomRight = farCenter + (LocalUp * farPlane.Y) - (RelativeRight * farPlane.X);
+            Vector3 farBottomRight = (farCenter + (LocalUp * farPlane.Y)) - (RelativeRight * farPlane.X);
 
             _Planes[Frustum.NEAR] = new Plane(nearCenter, LocalForward);
             _Planes[Frustum.FAR] = new Plane(farCenter, -LocalForward);
