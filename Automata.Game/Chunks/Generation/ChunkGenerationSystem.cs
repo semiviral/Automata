@@ -57,45 +57,20 @@ namespace Automata.Game.Chunks.Generation
 
                         chunk.State += 1;
                         break;
+
                     case GenerationState.AwaitingBuilding when _PendingBlockCollections.TryRemove(chunk.ID, out INodeCollection<ushort>? blocks):
                         chunk.Blocks = blocks;
                         chunk.State += 1;
                         break;
+
                     case GenerationState.Unmeshed when chunk.MinimalNeighborState() >= GenerationState.Unmeshed:
                         BoundedPool.Active.QueueWork(() => GenerateMesh(chunk, Vector3i.FromVector3(translation.Value)));
 
                         chunk.State += 1;
                         break;
+
                     case GenerationState.AwaitingMeshing when _PendingMeshes.TryRemove(chunk.ID, out PendingMesh<int>? pendingMesh):
-                        Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
-                        stopwatch.Restart();
-
-                        if (!entity.TryGetComponent(out RenderMesh? renderMesh)) entityManager.RegisterComponent(entity, renderMesh = new RenderMesh());
-                        if (renderMesh.Mesh is null or not Mesh<int>) renderMesh.Mesh = new Mesh<int>();
-
-                        Mesh<int> mesh = (renderMesh.Mesh as Mesh<int>)!;
-                        mesh.ModifyVertexAttributes<int>(0u, 0);
-                        mesh.VertexesBuffer.SetBufferData(pendingMesh.Vertexes, BufferDraw.DynamicDraw);
-                        mesh.IndexesBuffer.SetBufferData(pendingMesh.Indexes, BufferDraw.DynamicDraw);
-
-                        if (Shader.TryLoadShaderWithCache("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl", out Shader? shader))
-                        {
-                            if (entity.TryGetComponent(out RenderShader? renderShader))
-                            {
-                                if (renderShader.Value.ID != shader.ID) renderShader.Value = shader;
-                            }
-                            else entityManager.RegisterComponent(entity, new RenderShader(shader));
-                        }
-                        else Log.Error($"Failed to load a shader for chunk at {translation.Value}.");
-
-                        stopwatch.Stop();
-
-                        DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new ApplyMeshTime(stopwatch.Elapsed));
-
-                        Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
-                            $"Applied mesh: '{chunk.ID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms)"));
-
-                        DiagnosticsSystem.Stopwatches.Return(stopwatch);
+                        ApplyMesh(entityManager, entity, chunk.ID, pendingMesh);
 
                         chunk.State += 1;
                         break;
@@ -157,7 +132,7 @@ namespace Automata.Game.Chunks.Generation
             Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
             stopwatch.Restart();
 
-            PendingMesh<int> pendingMesh = ChunkMesher.GeneratePackedMesh(chunk.Blocks, chunk.GetNeighborBlocks(), true);
+            PendingMesh<int> pendingMesh = ChunkMesher.GeneratePackedMesh(chunk.Blocks, chunk.NeighborBlocks(), true);
             if (!_PendingMeshes.TryAdd(chunk.ID, pendingMesh)) Log.Error($"Failed to add chunk({origin}) mesh.");
 
             stopwatch.Stop();
@@ -168,6 +143,38 @@ namespace Automata.Game.Chunks.Generation
                 $"Meshed: '{chunk.ID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms, vertexes {pendingMesh.Vertexes.Length}, indexes {pendingMesh.Indexes.Length})"));
 
             DiagnosticsSystem.Stopwatches.Return(stopwatch);
+        }
+
+        private static void ApplyMesh(EntityManager entityManager, IEntity entity, Guid chunkID, PendingMesh<int> pendingMesh)
+        {
+            Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
+            stopwatch.Restart();
+
+            if (!entity.TryGetComponent(out RenderMesh? renderMesh)) entityManager.RegisterComponent(entity, renderMesh = new RenderMesh());
+            if (renderMesh.Mesh is null or not Mesh<int>) renderMesh.Mesh = new Mesh<int>();
+
+            Mesh<int> mesh = (renderMesh.Mesh as Mesh<int>)!;
+            mesh.ModifyVertexAttributes<int>(0u, 0);
+            mesh.VertexesBuffer.SetBufferData(pendingMesh.Vertexes, BufferDraw.DynamicDraw);
+            mesh.IndexesBuffer.SetBufferData(pendingMesh.Indexes, BufferDraw.DynamicDraw);
+
+            if (Shader.TryLoadShaderWithCache("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl", out Shader? shader))
+            {
+                if (entity.TryGetComponent(out RenderShader? renderShader))
+                {
+                    if (renderShader.Value.ID != shader.ID) renderShader.Value = shader;
+                }
+                else entityManager.RegisterComponent(entity, new RenderShader(shader));
+            }
+            else Log.Error($"Failed to load a shader for chunk at {entity.GetComponent<Translation>().Value}.");
+
+            stopwatch.Stop();
+
+            DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new ApplyMeshTime(stopwatch.Elapsed));
+            DiagnosticsSystem.Stopwatches.Return(stopwatch);
+
+            Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
+                $"Applied mesh: '{chunkID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms)"));
         }
 
         private void DiagnosticsInputCheck()

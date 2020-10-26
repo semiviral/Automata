@@ -19,7 +19,7 @@ namespace Automata.Game.Chunks
         public INodeCollection<ushort>? Blocks { get; set; }
         public Chunk?[]? Neighbors { get; set; }
 
-        public INodeCollection<ushort>?[] GetNeighborBlocks() => Neighbors?.Select(neighbor => neighbor?.Blocks).ToArray() ?? _NoNeighborBlocks;
+        public INodeCollection<ushort>?[] NeighborBlocks() => Neighbors?.Select(neighbor => neighbor?.Blocks).ToArray() ?? _NoNeighborBlocks;
 
         public GenerationState MinimalNeighborState() => Neighbors?.Min(neighbor => neighbor?.State ?? GenerationState.Finished)
                                                          ?? GenerationState.Ungenerated;
