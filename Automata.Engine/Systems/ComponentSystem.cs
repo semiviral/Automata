@@ -22,10 +22,6 @@ namespace Automata.Engine.Systems
         /// <summary>
         ///     Method called once per frame.
         /// </summary>
-        /// <remarks>
-        ///     If none of the types in <see cref="HandledComponents" /> are active in the <see cref="EntityManager" />, this
-        ///     method is skipped.
-        /// </remarks>
         public virtual void Update(EntityManager entityManager, TimeSpan delta) { }
 
 

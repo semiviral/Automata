@@ -70,8 +70,8 @@ namespace Automata.Game.Chunks
                 chunk.GetComponent<Chunk>().State = GenerationState.Ungenerated;
 
                 Bounds bounds = chunk.GetComponent<Bounds>();
-                bounds.Spheric = new Sphere(origin + GenerationConstants.CHUNK_RADIUS, GenerationConstants.CHUNK_RADIUS);
-                bounds.Cubic = new Cube(origin, new Vector3(GenerationConstants.CHUNK_SIZE));
+                bounds.Spheric = new Sphere(new Vector3(GenerationConstants.CHUNK_RADIUS), GenerationConstants.CHUNK_RADIUS);
+                bounds.Cubic = new Cube(Vector3.Zero, new Vector3(GenerationConstants.CHUNK_SIZE));
                 _ChunkEntities.Add(origin, chunk);
 
                 totalActivations += 1;
