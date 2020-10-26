@@ -42,7 +42,7 @@ namespace Automata.Engine.Numerics
         public override bool Equals(object? obj) => obj is Vector3i other && Equals(other);
         public bool Equals(Vector3i other) => Vector3b.All(this == other);
 
-        public override int GetHashCode() => X.GetHashCode() ^ Y.GetHashCode() ^ Z.GetHashCode();
+        public override int GetHashCode() => HashCode.Combine(X, Y, Z);
 
         public override string ToString() => string.Format(FormatHelper.VECTOR_3_COMPONENT, nameof(Vector3i), X, Y, Z);
 
@@ -80,6 +80,10 @@ namespace Automata.Engine.Numerics
         public static Vector3i operator /(Vector3i a, Vector3i b) => DivideImpl(a, b);
         public static Vector3i operator /(Vector3i a, int b) => DivideImpl(a, b);
         public static Vector3i operator /(int a, Vector3i b) => DivideImpl(a, b);
+
+        public static Vector3i operator %(Vector3i a, Vector3i b) => RemainderImpl(a, b);
+        public static Vector3i operator %(Vector3i a, int b) => RemainderImpl(a, b);
+        public static Vector3i operator %(int a, Vector3i b) => RemainderImpl(a, b);
 
         public static Vector3b operator >(Vector3i a, Vector3i b) => GreaterThanImpl(a, b);
         public static Vector3b operator >(Vector3i a, int b) => GreaterThanImpl(a, b);

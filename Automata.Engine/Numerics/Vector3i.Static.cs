@@ -36,6 +36,10 @@ namespace Automata.Engine.Numerics
 
         public static Vector3i Abs(Vector3i a) => AbsImpl(a);
 
+        public static Vector3i Mod(Vector3i a, Vector3i mod) => ModImpl(a, mod);
+        public static Vector3i Mod(Vector3i a, int mod) => ModImpl(a, mod);
+        public static Vector3i Mod(int a, Vector3i mod) => ModImpl(a, mod);
+
 
         #region Intrinsics
 
@@ -46,7 +50,7 @@ namespace Automata.Engine.Numerics
             if (Sse2.IsSupported) return (Vector3b)Sse2.CompareEqual((Vector128<int>)a, (Vector128<int>)b);
             else
             {
-                static Vector3b SoftwareFallback(Vector3i a0, Vector3i b0) => new Vector3b(a0.X == b0.X, a0.Y == b0.Y, a0.Z == b0.Z);
+                static Vector3b SoftwareFallback(Vector3i a, Vector3i b) => new Vector3b(a.X == b.X, a.Y == b.Y, a.Z == b.Z);
 
                 return SoftwareFallback(a, b);
             }
@@ -57,7 +61,7 @@ namespace Automata.Engine.Numerics
             if (Sse2.IsSupported) return (Vector3b)Sse2.CompareEqual((Vector128<int>)a, Vector128.Create(b));
             else
             {
-                static Vector3b SoftwareFallback(Vector3i a0, int b0) => new Vector3b(a0.X == b0, a0.Y == b0, a0.Z == b0);
+                static Vector3b SoftwareFallback(Vector3i a, int b) => new Vector3b(a.X == b, a.Y == b, a.Z == b);
 
                 return SoftwareFallback(a, b);
             }
@@ -68,7 +72,7 @@ namespace Automata.Engine.Numerics
             if (Sse2.IsSupported) return (Vector3b)Sse2.CompareEqual(Vector128.Create(a), (Vector128<int>)b);
             else
             {
-                static Vector3b SoftwareFallback(int a0, Vector3i b0) => new Vector3b(a0 == b0.X, a0 == b0.Y, a0 == b0.Z);
+                static Vector3b SoftwareFallback(int a, Vector3i b) => new Vector3b(a == b.X, a == b.Y, a == b.Z);
 
                 return SoftwareFallback(a, b);
             }
@@ -84,7 +88,7 @@ namespace Automata.Engine.Numerics
             if (Sse2.IsSupported) return (Vector3i)Sse2.And((Vector128<int>)a, (Vector128<int>)b);
             else
             {
-                static Vector3i SoftwareFallback(Vector3i a0, Vector3i b0) => new Vector3i(a0.X & b0.X, a0.Y & b0.Y, a0.Z & b0.Z);
+                static Vector3i SoftwareFallback(Vector3i a, Vector3i b) => new Vector3i(a.X & b.X, a.Y & b.Y, a.Z & b.Z);
 
                 return SoftwareFallback(a, b);
             }
@@ -95,7 +99,7 @@ namespace Automata.Engine.Numerics
             if (Sse2.IsSupported) return (Vector3i)Sse2.And((Vector128<int>)a, Vector128.Create(b));
             else
             {
-                static Vector3i SoftwareFallback(Vector3i a0, int b0) => new Vector3i(a0.X & b0, a0.Y & b0, a0.Z & b0);
+                static Vector3i SoftwareFallback(Vector3i a, int b) => new Vector3i(a.X & b, a.Y & b, a.Z & b);
 
                 return SoftwareFallback(a, b);
             }
@@ -106,7 +110,7 @@ namespace Automata.Engine.Numerics
             if (Sse2.IsSupported) return (Vector3i)Sse2.And(Vector128.Create(a), (Vector128<int>)b);
             else
             {
-                static Vector3i SoftwareFallback(int a0, Vector3i b0) => new Vector3i(a0 & b0.X, a0 & b0.Y, a0 & b0.Z);
+                static Vector3i SoftwareFallback(int a, Vector3i b) => new Vector3i(a & b.X, a & b.Y, a & b.Z);
 
                 return SoftwareFallback(a, b);
             }
@@ -122,7 +126,7 @@ namespace Automata.Engine.Numerics
             if (Sse2.IsSupported) return (Vector3i)Sse2.Or((Vector128<int>)a, (Vector128<int>)b);
             else
             {
-                static Vector3i SoftwareFallback(Vector3i a0, Vector3i b0) => new Vector3i(a0.X | b0.X, a0.Y | b0.Y, a0.Z | b0.Z);
+                static Vector3i SoftwareFallback(Vector3i a, Vector3i b) => new Vector3i(a.X | b.X, a.Y | b.Y, a.Z | b.Z);
 
                 return SoftwareFallback(a, b);
             }
@@ -133,7 +137,7 @@ namespace Automata.Engine.Numerics
             if (Sse2.IsSupported) return (Vector3i)Sse2.Or((Vector128<int>)a, Vector128.Create(b));
             else
             {
-                static Vector3i SoftwareFallback(Vector3i a0, int b0) => new Vector3i(a0.X | b0, a0.Y | b0, a0.Z | b0);
+                static Vector3i SoftwareFallback(Vector3i a, int b) => new Vector3i(a.X | b, a.Y | b, a.Z | b);
 
                 return SoftwareFallback(a, b);
             }
@@ -144,7 +148,7 @@ namespace Automata.Engine.Numerics
             if (Sse2.IsSupported) return (Vector3i)Sse2.Or(Vector128.Create(a), (Vector128<int>)b);
             else
             {
-                static Vector3i SoftwareFallback(int a0, Vector3i b0) => new Vector3i(a0 | b0.X, a0 | b0.Y, a0 | b0.Z);
+                static Vector3i SoftwareFallback(int a, Vector3i b) => new Vector3i(a | b.X, a | b.Y, a | b.Z);
 
                 return SoftwareFallback(a, b);
             }
@@ -160,7 +164,7 @@ namespace Automata.Engine.Numerics
             if (Sse2.IsSupported) return (Vector3i)Sse2.Add((Vector128<int>)a, (Vector128<int>)b);
             else
             {
-                static Vector3i SoftwareFallback(Vector3i a0, Vector3i b0) => new Vector3i(a0.X + b0.X, a0.Y + b0.Y, a0.Z + b0.Z);
+                static Vector3i SoftwareFallback(Vector3i a, Vector3i b) => new Vector3i(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
 
                 return SoftwareFallback(a, b);
             }
@@ -171,7 +175,7 @@ namespace Automata.Engine.Numerics
             if (Sse2.IsSupported) return (Vector3i)Sse2.Add((Vector128<int>)a, Vector128.Create(b));
             else
             {
-                static Vector3i SoftwareFallback(Vector3i a0, int b0) => new Vector3i(a0.X + b0, a0.Y + b0, a0.Z + b0);
+                static Vector3i SoftwareFallback(Vector3i a, int b) => new Vector3i(a.X + b, a.Y + b, a.Z + b);
 
                 return SoftwareFallback(a, b);
             }
@@ -182,7 +186,7 @@ namespace Automata.Engine.Numerics
             if (Sse2.IsSupported) return (Vector3i)Sse2.Add(Vector128.Create(a), (Vector128<int>)b);
             else
             {
-                static Vector3i SoftwareFallback(int a0, Vector3i b0) => new Vector3i(a0 + b0.X, a0 + b0.Y, a0 + b0.Z);
+                static Vector3i SoftwareFallback(int a, Vector3i b) => new Vector3i(a + b.X, a + b.Y, a + b.Z);
 
                 return SoftwareFallback(a, b);
             }
@@ -198,7 +202,7 @@ namespace Automata.Engine.Numerics
             if (Sse2.IsSupported) return (Vector3i)Sse2.Subtract((Vector128<int>)a, (Vector128<int>)b);
             else
             {
-                static Vector3i SoftwareFallback(Vector3i a0, Vector3i b0) => new Vector3i(a0.X - b0.X, a0.Y - b0.Y, a0.Z - b0.Z);
+                static Vector3i SoftwareFallback(Vector3i a, Vector3i b) => new Vector3i(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
 
                 return SoftwareFallback(a, b);
             }
@@ -209,7 +213,7 @@ namespace Automata.Engine.Numerics
             if (Sse2.IsSupported) return (Vector3i)Sse2.Subtract((Vector128<int>)a, Vector128.Create(b));
             else
             {
-                static Vector3i SoftwareFallback(Vector3i a0, int b0) => new Vector3i(a0.X - b0, a0.Y - b0, a0.Z - b0);
+                static Vector3i SoftwareFallback(Vector3i a, int b) => new Vector3i(a.X - b, a.Y - b, a.Z - b);
 
                 return SoftwareFallback(a, b);
             }
@@ -220,7 +224,7 @@ namespace Automata.Engine.Numerics
             if (Sse2.IsSupported) return (Vector3i)Sse2.Subtract(Vector128.Create(a), (Vector128<int>)b);
             else
             {
-                static Vector3i SoftwareFallback(int a0, Vector3i b0) => new Vector3i(a0 - b0.X, a0 - b0.Y, a0 - b0.Z);
+                static Vector3i SoftwareFallback(int a, Vector3i b) => new Vector3i(a - b.X, a - b.Y, a - b.Z);
 
                 return SoftwareFallback(a, b);
             }
@@ -233,7 +237,7 @@ namespace Automata.Engine.Numerics
 
         private static Vector3i MultiplyImpl(Vector3i a, Vector3i b)
         {
-            static Vector3i SoftwareFallback(Vector3i a0, Vector3i b0) => new Vector3i(a0.X * b0.X, a0.Y * b0.Y, a0.Z * b0.Z);
+            static Vector3i SoftwareFallback(Vector3i a, Vector3i b) => new Vector3i(a.X * b.X, a.Y * b.Y, a.Z * b.Z);
 
             if (Sse41.IsSupported) return (Vector3i)Sse41.MultiplyLow((Vector128<int>)a, (Vector128<int>)b);
             else return SoftwareFallback(a, b);
@@ -241,7 +245,7 @@ namespace Automata.Engine.Numerics
 
         private static Vector3i MultiplyImpl(Vector3i a, int b)
         {
-            static Vector3i SoftwareFallback(Vector3i a0, int b0) => new Vector3i(a0.X * b0, a0.Y * b0, a0.Z * b0);
+            static Vector3i SoftwareFallback(Vector3i a, int b) => new Vector3i(a.X * b, a.Y * b, a.Z * b);
 
             if (Sse41.IsSupported) return (Vector3i)Sse41.MultiplyLow((Vector128<int>)a, Vector128.Create(b));
             else return SoftwareFallback(a, b);
@@ -249,7 +253,7 @@ namespace Automata.Engine.Numerics
 
         private static Vector3i MultiplyImpl(int a, Vector3i b)
         {
-            static Vector3i SoftwareFallback(int a0, Vector3i b0) => new Vector3i(a0 * b0.X, a0 * b0.Y, a0 * b0.Z);
+            static Vector3i SoftwareFallback(int a, Vector3i b) => new Vector3i(a * b.X, a * b.Y, a * b.Z);
 
             if (Sse41.IsSupported) return (Vector3i)Sse41.MultiplyLow(Vector128.Create(a), (Vector128<int>)b);
             else return SoftwareFallback(a, b);
@@ -262,36 +266,23 @@ namespace Automata.Engine.Numerics
 
         private static Vector3i DivideImpl(Vector3i a, Vector3i b)
         {
-            static Vector3i SoftwareFallback(Vector3i a0, Vector3i b0) => new Vector3i(a0.X / b0.X, a0.Y / b0.Y, a0.Z / b0.Z);
+            static Vector3i SoftwareFallback(Vector3i a, Vector3i b) => new Vector3i(a.X / b.X, a.Y / b.Y, a.Z / b.Z);
 
             return SoftwareFallback(a, b);
         }
 
         private static Vector3i DivideImpl(Vector3i a, int b)
         {
-            static Vector3i SoftwareFallback(Vector3i a0, int b0) => new Vector3i(a0.X / b0, a0.Y / b0, a0.Z / b0);
+            static Vector3i SoftwareFallback(Vector3i a, int b) => new Vector3i(a.X / b, a.Y / b, a.Z / b);
 
             return SoftwareFallback(a, b);
         }
 
         private static Vector3i DivideImpl(int a, Vector3i b)
         {
-            static Vector3i SoftwareFallback(int a0, Vector3i b0) => new Vector3i(a0 / b0.X, a0 / b0.Y, a0 / b0.Z);
+            static Vector3i SoftwareFallback(int a, Vector3i b) => new Vector3i(a / b.X, a / b.Y, a / b.Z);
 
             return SoftwareFallback(a, b);
-        }
-
-        #endregion
-
-
-        #region AbsImpl
-
-        private static Vector3i AbsImpl(Vector3i a)
-        {
-            static Vector3i SoftwareFallback(Vector3i a0) => new Vector3i(Math.Abs(a0.X), Math.Abs(a0.Y), Math.Abs(a0.Z));
-
-            if (Ssse3.IsSupported) return (Vector3i)Ssse3.Abs((Vector128<int>)a);
-            else return SoftwareFallback(a);
         }
 
         #endregion
@@ -304,7 +295,7 @@ namespace Automata.Engine.Numerics
             if (Sse2.IsSupported) return (Vector3b)Sse2.CompareGreaterThan((Vector128<int>)a, (Vector128<int>)b);
             else
             {
-                static Vector3b SoftwareFallback(Vector3i a0, Vector3i b0) => new Vector3b(a0.X > b0.X, a0.Y > b0.Y, a0.Z > b0.Z);
+                static Vector3b SoftwareFallback(Vector3i a, Vector3i b) => new Vector3b(a.X > b.X, a.Y > b.Y, a.Z > b.Z);
 
                 return SoftwareFallback(a, b);
             }
@@ -315,7 +306,7 @@ namespace Automata.Engine.Numerics
             if (Sse2.IsSupported) return (Vector3b)Sse2.CompareGreaterThan((Vector128<int>)a, Vector128.Create(b));
             else
             {
-                static Vector3b SoftwareFallback(Vector3i a0, int b0) => new Vector3b(a0.X > b0, a0.Y > b0, a0.Z > b0);
+                static Vector3b SoftwareFallback(Vector3i a, int b) => new Vector3b(a.X > b, a.Y > b, a.Z > b);
 
                 return SoftwareFallback(a, b);
             }
@@ -326,7 +317,7 @@ namespace Automata.Engine.Numerics
             if (Sse2.IsSupported) return (Vector3b)Sse2.CompareGreaterThan(Vector128.Create(a), (Vector128<int>)b);
             else
             {
-                static Vector3b SoftwareFallback(int a0, Vector3i b0) => new Vector3b(a0 > b0.X, a0 > b0.Y, a0 > b0.Z);
+                static Vector3b SoftwareFallback(int a, Vector3i b) => new Vector3b(a > b.X, a > b.Y, a > b.Z);
 
                 return SoftwareFallback(a, b);
             }
@@ -342,7 +333,7 @@ namespace Automata.Engine.Numerics
             if (Sse2.IsSupported) return (Vector3b)Sse2.CompareLessThan((Vector128<int>)a, (Vector128<int>)b);
             else
             {
-                static Vector3b SoftwareFallback(Vector3i a0, Vector3i b0) => new Vector3b(a0.X < b0.X, a0.Y < b0.Y, a0.Z < b0.Z);
+                static Vector3b SoftwareFallback(Vector3i a, Vector3i b) => new Vector3b(a.X < b.X, a.Y < b.Y, a.Z < b.Z);
 
                 return SoftwareFallback(a, b);
             }
@@ -353,7 +344,7 @@ namespace Automata.Engine.Numerics
             if (Sse2.IsSupported) return (Vector3b)Sse2.CompareLessThan((Vector128<int>)a, Vector128.Create(b));
             else
             {
-                static Vector3b SoftwareFallback(Vector3i a0, int b0) => new Vector3b(a0.X < b0, a0.Y < b0, a0.Z < b0);
+                static Vector3b SoftwareFallback(Vector3i a, int b) => new Vector3b(a.X < b, a.Y < b, a.Z < b);
 
                 return SoftwareFallback(a, b);
             }
@@ -364,10 +355,75 @@ namespace Automata.Engine.Numerics
             if (Sse2.IsSupported) return (Vector3b)Sse2.CompareLessThan(Vector128.Create(a), (Vector128<int>)b);
             else
             {
-                static Vector3b SoftwareFallback(int a0, Vector3i b0) => new Vector3b(a0 < b0.X, a0 < b0.Y, a0 < b0.Z);
+                static Vector3b SoftwareFallback(int a, Vector3i b) => new Vector3b(a < b.X, a < b.Y, a < b.Z);
 
                 return SoftwareFallback(a, b);
             }
+        }
+
+        #endregion
+
+
+        #region AbsImpl
+
+        private static Vector3i AbsImpl(Vector3i a)
+        {
+            static Vector3i SoftwareFallback(Vector3i a) => new Vector3i(Math.Abs(a.X), Math.Abs(a.Y), Math.Abs(a.Z));
+
+            if (Ssse3.IsSupported) return (Vector3i)Ssse3.Abs((Vector128<int>)a);
+            else return SoftwareFallback(a);
+        }
+
+        #endregion
+
+
+        #region RemainderImpl
+
+        private static Vector3i RemainderImpl(Vector3i a, Vector3i b)
+        {
+            static Vector3i SoftwareFallback(Vector3i a, Vector3i b) => new Vector3i(a.X % b.X, a.Y % b.Y, a.Z % b.Z);
+
+            return SoftwareFallback(a, b);
+        }
+
+        private static Vector3i RemainderImpl(Vector3i a, int b)
+        {
+            static Vector3i SoftwareFallback(Vector3i a, int b) => new Vector3i(a.X % b, a.Y % b, a.Z % b);
+
+            return SoftwareFallback(a, b);
+        }
+
+        private static Vector3i RemainderImpl(int a, Vector3i b)
+        {
+            static Vector3i SoftwareFallback(int a, Vector3i b) => new Vector3i(a % b.X, a % b.Y, a % b.Z);
+
+            return SoftwareFallback(a, b);
+        }
+
+        #endregion
+
+
+        #region ModImpl
+
+        private static Vector3i ModImpl(Vector3i a, Vector3i mod)
+        {
+            static Vector3i SoftwareFallback(Vector3i a, Vector3i mod) => (Abs(a * mod) + a) % mod;
+
+            return SoftwareFallback(a, mod);
+        }
+
+        private static Vector3i ModImpl(Vector3i a, int mod)
+        {
+            static Vector3i SoftwareFallback(Vector3i a, int mod) => (Abs(a * mod) + a) % mod;
+
+            return SoftwareFallback(a, mod);
+        }
+
+        private static Vector3i ModImpl(int a, Vector3i mod)
+        {
+            static Vector3i SoftwareFallback(int a, Vector3i mod) => (Abs(a * mod) + a) % mod;
+
+            return SoftwareFallback(a, mod);
         }
 
         #endregion

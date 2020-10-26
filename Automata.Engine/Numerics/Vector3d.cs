@@ -42,7 +42,7 @@ namespace Automata.Engine.Numerics
         public override bool Equals(object? obj) => obj is Vector3d other && Equals(other);
         public bool Equals(Vector3d other) => Vector3b.All(this == other);
 
-        public override int GetHashCode() => X.GetHashCode() ^ Y.GetHashCode() ^ Z.GetHashCode();
+        public override int GetHashCode() => HashCode.Combine(X, Y, Z);
 
         public override string ToString() => string.Format(FormatHelper.VECTOR_3_COMPONENT, nameof(Vector3d), X, Y, Z);
 

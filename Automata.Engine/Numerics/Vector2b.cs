@@ -47,7 +47,7 @@ namespace Automata.Engine.Numerics
         public override bool Equals(object? obj) => obj is Vector2b other && Equals(other);
         public bool Equals(Vector2b other) => All(this == other);
 
-        public override int GetHashCode() => _X.GetHashCode() ^ _Y.GetHashCode();
+        public override int GetHashCode() => HashCode.Combine(_X, _Y);
 
         public override string ToString() => string.Format(FormatHelper.VECTOR_2_COMPONENT, nameof(Vector2b), X, Y);
 
