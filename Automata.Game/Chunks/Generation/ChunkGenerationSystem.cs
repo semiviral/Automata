@@ -53,7 +53,7 @@ namespace Automata.Game.Chunks.Generation
                 switch (chunk.State)
                 {
                     case GenerationState.Ungenerated:
-                        BoundedPool.Active.QueueWork(() => GenerateChunk(chunk.ID,
+                        BoundedPool.Active.QueueWork(() => GenerateChunk(chunk,
                             new BuildStep.Parameters(GenerationConstants.Seed, GenerationConstants.FREQUENCY, GenerationConstants.PERSISTENCE,
                                 Vector3i.FromVector3(translation.Value)), _BuildSteps));
 
@@ -102,7 +102,7 @@ namespace Automata.Game.Chunks.Generation
             DiagnosticsInputCheck();
         }
 
-        private void GenerateChunk(Guid chunkID, BuildStep.Parameters parameters, IEnumerable<BuildStep> buildSteps)
+        private void GenerateChunk(Chunk chunk, BuildStep.Parameters parameters, IEnumerable<BuildStep> buildSteps)
         {
             static INodeCollection<ushort> GenerateNodeCollectionImpl(ref Span<ushort> blocks)
             {
@@ -130,31 +130,31 @@ namespace Automata.Game.Chunks.Generation
             DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new BuildingTime(stopwatch.Elapsed));
 
             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
-                $"Built: '{chunkID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms)"));
+                $"Built: '{chunk.ID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms)"));
 
             stopwatch.Restart();
 
             INodeCollection<ushort> nodeCollection = GenerateNodeCollectionImpl(ref blocks);
-            if (!_PendingBlockCollections.TryAdd(chunkID, nodeCollection)) Log.Error($"Failed to add chunk({parameters.Origin}) blocks.");
+            if (!_PendingBlockCollections.TryAdd(chunk.ID, nodeCollection)) Log.Error($"Failed to add chunk({parameters.Origin}) blocks.");
 
             stopwatch.Stop();
 
             DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new InsertionTime(stopwatch.Elapsed));
 
             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
-                $"Insertion: '{chunkID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms)"));
+                $"Insertion: '{chunk.ID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms)"));
 
             stopwatch.Restart();
 
-            PendingMesh<int> pendingMesh = ChunkMesher.GeneratePackedMesh(blocks, new INodeCollection<ushort>[6], true);
-            if (!_PendingMeshes.TryAdd(chunkID, pendingMesh)) Log.Error($"Failed to add chunk({parameters.Origin}) mesh.");
+            PendingMesh<int> pendingMesh = ChunkMesher.GeneratePackedMesh(blocks, chunk.GetNeighborBlocks(), true);
+            if (!_PendingMeshes.TryAdd(chunk.ID, pendingMesh)) Log.Error($"Failed to add chunk({parameters.Origin}) mesh.");
 
             stopwatch.Stop();
 
             DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new MeshingTime(stopwatch.Elapsed));
 
             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
-                $"Meshed: '{chunkID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms, vertexes {pendingMesh.Vertexes.Length}, indexes {pendingMesh.Indexes.Length})"));
+                $"Meshed: '{chunk.ID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms, vertexes {pendingMesh.Vertexes.Length}, indexes {pendingMesh.Indexes.Length})"));
 
             DiagnosticsSystem.Stopwatches.Return(stopwatch);
         }

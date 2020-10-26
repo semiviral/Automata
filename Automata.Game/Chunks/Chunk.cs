@@ -1,10 +1,9 @@
 #region
 
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using Automata.Engine.Collections;
 using Automata.Engine.Components;
-using Automata.Engine.Entities;
 
 #endregion
 
@@ -13,10 +12,14 @@ namespace Automata.Game.Chunks
 {
     public class Chunk : IComponent
     {
+        private static readonly INodeCollection<ushort>?[] _NoNeighborBlocks = new INodeCollection<ushort>?[6];
+
         public Guid ID { get; } = Guid.NewGuid();
         public GenerationState State { get; set; }
         public INodeCollection<ushort>? Blocks { get; set; }
-        public IEnumerable<IEntity>? NeighborEntities { get; set; }
+        public Chunk?[]? Neighbors { get; set; }
+
+        public INodeCollection<ushort>?[] GetNeighborBlocks() => Neighbors?.Select(neighbor => neighbor?.Blocks).ToArray() ?? _NoNeighborBlocks;
     }
 
     public enum GenerationState

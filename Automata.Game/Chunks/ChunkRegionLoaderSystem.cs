@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Automata.Engine;
+using Automata.Engine.Collections;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
 using Automata.Engine.Numerics;
@@ -78,8 +79,7 @@ namespace Automata.Game.Chunks
             }
 
             // assign neighbors
-            foreach ((Vector3i origin, IEntity entity) in _ChunkEntities)
-                entity.GetComponent<Chunk>().NeighborEntities = GetNeighboringChunkEntities(origin);
+            foreach ((Vector3i origin, IEntity entity) in _ChunkEntities) entity.GetComponent<Chunk>().Neighbors = GetNeighborChunks(origin).ToArray();
 
             Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkRegionLoaderSystem),
                 $"Region loading: {totalActivations} activations, {totalDeactivations} deactivations"));
@@ -98,15 +98,33 @@ namespace Automata.Game.Chunks
             }
         }
 
-        private IEnumerable<IEntity> GetNeighboringChunkEntities(Vector3i origin)
+        private IEnumerable<Chunk?> GetNeighborChunks(Vector3i origin)
         {
             IEntity? entity;
-            if (_ChunkEntities.TryGetValue(origin + (Vector3i.UnitX * GenerationConstants.CHUNK_SIZE), out entity)) yield return entity;
-            if (_ChunkEntities.TryGetValue(origin + (Vector3i.UnitY * GenerationConstants.CHUNK_SIZE), out entity)) yield return entity;
-            if (_ChunkEntities.TryGetValue(origin + (Vector3i.UnitZ * GenerationConstants.CHUNK_SIZE), out entity)) yield return entity;
-            if (_ChunkEntities.TryGetValue(origin - (Vector3i.UnitX * GenerationConstants.CHUNK_SIZE), out entity)) yield return entity;
-            if (_ChunkEntities.TryGetValue(origin - (Vector3i.UnitY * GenerationConstants.CHUNK_SIZE), out entity)) yield return entity;
-            if (_ChunkEntities.TryGetValue(origin - (Vector3i.UnitZ * GenerationConstants.CHUNK_SIZE), out entity)) yield return entity;
+
+            if (_ChunkEntities.TryGetValue(origin + (Vector3i.UnitX * GenerationConstants.CHUNK_SIZE), out entity))
+                yield return entity.GetComponent<Chunk>();
+            else yield return null;
+
+            if (_ChunkEntities.TryGetValue(origin + (Vector3i.UnitY * GenerationConstants.CHUNK_SIZE), out entity))
+                yield return entity.GetComponent<Chunk>();
+            else yield return null;
+
+            if (_ChunkEntities.TryGetValue(origin + (Vector3i.UnitZ * GenerationConstants.CHUNK_SIZE), out entity))
+                yield return entity.GetComponent<Chunk>();
+            else yield return null;
+
+            if (_ChunkEntities.TryGetValue(origin - (Vector3i.UnitX * GenerationConstants.CHUNK_SIZE), out entity))
+                yield return entity.GetComponent<Chunk>();
+            else yield return null;
+
+            if (_ChunkEntities.TryGetValue(origin - (Vector3i.UnitY * GenerationConstants.CHUNK_SIZE), out entity))
+                yield return entity.GetComponent<Chunk>();
+            else yield return null;
+
+            if (_ChunkEntities.TryGetValue(origin - (Vector3i.UnitZ * GenerationConstants.CHUNK_SIZE), out entity))
+                yield return entity.GetComponent<Chunk>();
+            else yield return null;
         }
     }
 }

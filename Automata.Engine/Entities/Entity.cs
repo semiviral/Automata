@@ -46,13 +46,13 @@ namespace Automata.Engine.Entities
             return component;
         }
 
-        public T GetComponent<T>() where T : class, IComponent => (T)_Components[typeof(T)];
+        public TComponent GetComponent<TComponent>() where TComponent : class, IComponent => (TComponent)_Components[typeof(TComponent)];
 
-        public bool TryGetComponent<T>([NotNullWhen(true)] out T? component) where T : class, IComponent
+        public bool TryGetComponent<TComponent>([NotNullWhen(true)] out TComponent? component) where TComponent : class, IComponent
         {
-            if (_Components.TryGetValue(typeof(T), out IComponent? componentBase))
+            if (_Components.TryGetValue(typeof(TComponent), out IComponent? componentBase))
             {
-                component = (T)componentBase;
+                component = (TComponent)componentBase;
                 return true;
             }
             else
@@ -72,7 +72,7 @@ namespace Automata.Engine.Entities
             return _Components[componentType];
         }
 
-        public bool HasComponent<T>() where T : class, IComponent => _Components.ContainsKey(typeof(T));
+        public bool HasComponent<TComponent>() where TComponent : class, IComponent => _Components.ContainsKey(typeof(TComponent));
 
         public bool Equals(IEntity? other) => other is not null && ID.Equals(other.ID);
 

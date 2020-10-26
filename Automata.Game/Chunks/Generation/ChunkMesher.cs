@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Automata.Engine;
@@ -136,7 +137,7 @@ namespace Automata.Game.Chunks.Generation
             -GenerationConstants.CHUNK_SIZE
         };
 
-        public static PendingMesh<int> GeneratePackedMesh(Span<ushort> blocks, INodeCollection<ushort>[] neighbors, bool traversalMeshing)
+        public static PendingMesh<int> GeneratePackedMesh(Span<ushort> blocks, INodeCollection<ushort>?[] neighbors, bool traversalMeshing)
         {
             Span<Direction> faces = stackalloc Direction[blocks.Length];
             faces.Clear();
@@ -172,7 +173,7 @@ namespace Automata.Game.Chunks.Generation
         }
 
         private static void PackedTraverseIndex(Span<ushort> blocks, Span<Direction> faces, ICollection<int> vertexes, ICollection<uint> indexes,
-            IReadOnlyList<INodeCollection<ushort>> neighbors, int index, int localPosition, ushort currentBlockId, bool isCurrentBlockTransparent)
+            IReadOnlyList<INodeCollection<ushort>?> neighbors, int index, int localPosition, ushort currentBlockId, bool isCurrentBlockTransparent)
         {
             // iterate once over all 6 faces of given cubic space
             for (int normalIndex = 0; normalIndex < 6; normalIndex++)
@@ -244,8 +245,7 @@ namespace Automata.Game.Chunks.Generation
                             // index into neighbor blocks collections, call .GetPoint() with adjusted local position
                             // remark: if there's no neighbor at the index given, then no chunk exists there (for instance,
                             //     chunks at the edge of render distance). In this case, return NullID so no face is rendered on edges.
-                            ushort facedBlockId = neighbors[normalIndex]?.GetPoint(DecompressVertex(neighborLocalPosition))
-                                                  ?? BlockRegistry.NullID;
+                            ushort facedBlockId = neighbors[normalIndex]?.GetPoint(DecompressVertex(neighborLocalPosition)) ?? BlockRegistry.NullID;
 
                             if (isCurrentBlockTransparent)
                             {
@@ -338,7 +338,7 @@ namespace Automata.Game.Chunks.Generation
         }
 
         private static void PackedNaiveMeshIndex(Span<ushort> blocks, Span<Direction> faces, ICollection<int> vertexes, ICollection<uint> indexes,
-            IReadOnlyList<INodeCollection<ushort>> neighbors, int index, int localPosition, ushort currentBlockId, bool isCurrentBlockTransparent)
+            IReadOnlyList<INodeCollection<ushort>?> neighbors, int index, int localPosition, ushort currentBlockId, bool isCurrentBlockTransparent)
         {
             // iterate once over all 6 faces of given cubic space
             for (int normalIndex = 0; normalIndex < 6; normalIndex++)
