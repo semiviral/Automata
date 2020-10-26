@@ -53,7 +53,7 @@ namespace Automata.Engine.Rendering
                 _GL.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
 
                 Vector4 viewport = new Vector4(0f, 0f, AutomataWindow.Instance.Size.X, AutomataWindow.Instance.Size.Y);
-                Span<Plane> planes = stackalloc Plane[ClipFrustum.PLANES_SPAN_LENGTH];
+                Span<Plane> planes = stackalloc Plane[Frustum.TOTAL_PLANES];
 
                 foreach (IEntity cameraEntity in entityManager.GetEntitiesWithComponents<Camera>())
                 {
@@ -81,14 +81,6 @@ namespace Automata.Engine.Rendering
                     {
                         RenderMesh renderMesh = objectEntity.GetComponent<RenderMesh>();
 
-                        if (!renderMesh.ShouldRender || !objectEntity.TryGetComponent(out RenderShader? renderShader)) continue;
-
-                        if (currentShader is null || (renderShader.Value.ID != currentShader.Value.ID))
-                        {
-                            renderShader.Value.Use();
-                            currentShader = renderShader;
-                        }
-
                         if (renderMesh.Changed
                             | (objectEntity.TryGetComponent(out Scale? modelScale) && modelScale.Changed)
                             | (objectEntity.TryGetComponent(out Rotation? modelRotation) && modelRotation.Changed)
@@ -100,7 +92,17 @@ namespace Automata.Engine.Rendering
                             renderMesh.Model *= Matrix4x4.CreateScale(modelScale?.Value ?? Scale.DEFAULT);
                         }
 
+                        if (!renderMesh.ShouldRender || !objectEntity.TryGetComponent(out RenderShader? renderShader)) continue;
+
+                        if (currentShader is null || (renderShader.Value.ID != currentShader.Value.ID))
+                        {
+                            renderShader.Value.Use();
+                            currentShader = renderShader;
+                        }
+
                         Matrix4x4 modelViewProjection = renderMesh.Model * viewProjection;
+
+                        if (objectEntity.TryGetComponent(out Bounds? bounds) && CheckClipFrustumOcclude(bounds, planes, modelViewProjection)) continue;
 
                         if (renderShader.Value.HasAutomataUniforms)
                         {
@@ -115,21 +117,6 @@ namespace Automata.Engine.Rendering
 
                             renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_CAMERA_PROJECTION_PARAMS, camera.ProjectionParameters);
                             renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_VIEWPORT, viewport);
-                        }
-
-                        if (objectEntity.TryGetComponent(out Bounds? bounds))
-                        {
-                            ClipFrustum clipFrustum = new ClipFrustum(planes, modelViewProjection);
-                            Frustum.Intersect intersection = Frustum.Intersect.Outside;
-
-                            // try to test spherical bounds
-                            if ((bounds.Spheric != Sphere.Zero)
-                                && (intersection = clipFrustum.SphereWithin(bounds.Spheric)) is Frustum.Intersect.Outside) continue;
-
-                            // if spherical bounds fails (i.e. intersects) try cubic
-                            if (intersection is not Frustum.Intersect.Inside
-                                && (bounds.Cubic != Cube.Zero)
-                                && clipFrustum.BoxWithin(bounds.Cubic) is Frustum.Intersect.Outside) continue;
                         }
 
                         renderMesh.Mesh!.Bind();
@@ -148,6 +135,22 @@ namespace Automata.Engine.Rendering
             {
                 Log.Error($"({nameof(RenderSystem)}) Error: {ex}\r\n{ex.StackTrace}");
             }
+        }
+
+        private static bool CheckClipFrustumOcclude(Bounds bounds, Span<Plane> planes, Matrix4x4 mvp)
+        {
+            ClipFrustum frustum = new ClipFrustum(planes, mvp);
+            Frustum.Intersect intersection = Frustum.Intersect.Outside;
+
+            return
+
+                // try to test spherical bounds
+                ((bounds.Spheric != Sphere.Zero) && (intersection = frustum.Intersects(bounds.Spheric)) is Frustum.Intersect.Outside)
+
+                // if spherical bounds fails (i.e. intersects) try cubic
+                || (intersection is not Frustum.Intersect.Inside
+                    && (bounds.Cubic != Cube.Zero)
+                    && frustum.Intersects(bounds.Cubic) is Frustum.Intersect.Outside);
         }
 
         private void CheckForGLErrorsAndThrow()

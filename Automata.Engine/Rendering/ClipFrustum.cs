@@ -20,17 +20,16 @@ namespace Automata.Engine.Rendering
         public const int TOP = 3;
         public const int LEFT = 4;
         public const int RIGHT = 5;
+        public const int TOTAL_PLANES = 6;
     }
 
     public readonly ref struct ClipFrustum
     {
-        public const int PLANES_SPAN_LENGTH = 6;
-
         private readonly ReadOnlySpan<Plane> _Planes;
 
         public ClipFrustum(Span<Plane> planes, Matrix4x4 mvp)
         {
-            if (planes.Length != PLANES_SPAN_LENGTH) throw new ArgumentOutOfRangeException(nameof(planes), "Length must be 6.");
+            if (planes.Length != Frustum.TOTAL_PLANES) throw new ArgumentOutOfRangeException(nameof(planes), "Length must be 6.");
 
             planes[Frustum.NEAR] = new Plane
             (
@@ -83,7 +82,7 @@ namespace Automata.Engine.Rendering
             _Planes = planes;
         }
 
-        public Frustum.Intersect PointWithin(Vector3 point)
+        public Frustum.Intersect Intersects(Vector3 point)
         {
             foreach (Plane plane in _Planes)
                 if (plane.Distance(point) < 0f)
@@ -92,7 +91,7 @@ namespace Automata.Engine.Rendering
             return Frustum.Intersect.Inside;
         }
 
-        public Frustum.Intersect SphereWithin(Sphere sphere)
+        public Frustum.Intersect Intersects(Sphere sphere)
         {
             Frustum.Intersect result = Frustum.Intersect.Inside;
 
@@ -107,7 +106,7 @@ namespace Automata.Engine.Rendering
             return result;
         }
 
-        public Frustum.Intersect BoxWithin(Cube cube)
+        public Frustum.Intersect Intersects(Cube cube)
         {
             Frustum.Intersect result = Frustum.Intersect.Inside;
 
