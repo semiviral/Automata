@@ -77,6 +77,10 @@ namespace Automata.Game.Chunks
                 totalActivations += 1;
             }
 
+            // assign neighbors
+            foreach ((Vector3i origin, IEntity entity) in _ChunkEntities)
+                entity.GetComponent<Chunk>().NeighborEntities = GetNeighboringChunkEntities(origin);
+
             Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkRegionLoaderSystem),
                 $"Region loading: {totalActivations} activations, {totalDeactivations} deactivations"));
         }
@@ -92,6 +96,17 @@ namespace Automata.Game.Chunks
                 Vector3i localOrigin = new Vector3i(x, y, z) * GenerationConstants.CHUNK_SIZE;
                 yield return localOrigin + chunkLoaderOriginYAdjusted;
             }
+        }
+
+        private IEnumerable<IEntity> GetNeighboringChunkEntities(Vector3i origin)
+        {
+            IEntity? entity;
+            if (_ChunkEntities.TryGetValue(origin + (Vector3i.UnitX * GenerationConstants.CHUNK_SIZE), out entity)) yield return entity;
+            if (_ChunkEntities.TryGetValue(origin + (Vector3i.UnitY * GenerationConstants.CHUNK_SIZE), out entity)) yield return entity;
+            if (_ChunkEntities.TryGetValue(origin + (Vector3i.UnitZ * GenerationConstants.CHUNK_SIZE), out entity)) yield return entity;
+            if (_ChunkEntities.TryGetValue(origin - (Vector3i.UnitX * GenerationConstants.CHUNK_SIZE), out entity)) yield return entity;
+            if (_ChunkEntities.TryGetValue(origin - (Vector3i.UnitY * GenerationConstants.CHUNK_SIZE), out entity)) yield return entity;
+            if (_ChunkEntities.TryGetValue(origin - (Vector3i.UnitZ * GenerationConstants.CHUNK_SIZE), out entity)) yield return entity;
         }
     }
 }
