@@ -28,17 +28,14 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
         protected readonly GL GL;
         protected readonly uint Handle;
 
+        protected InternalFormat _InternalFormat;
+        protected PixelFormat _PixelFormat;
+        protected PixelType _PixelType;
+
         protected Texture()
         {
             GL = GLAPI.Instance.GL;
             Handle = GL.GenTexture();
-        }
-
-        protected static (InternalFormat, PixelFormat, PixelType) GetPixelData<TPixel>() where TPixel : unmanaged, IPixel<TPixel>
-        {
-            if (typeof(TPixel) == typeof(Rgba32)) return (InternalFormat.Rgba8, PixelFormat.Rgba, PixelType.UnsignedByte);
-            else if (typeof(TPixel) == typeof(RgbaVector)) return (InternalFormat.Rgba32f, PixelFormat.Rgba, PixelType.Float);
-            else throw new ArgumentOutOfRangeException();
         }
 
         protected void AssignTextureParameters(TextureTarget textureTarget, GLEnum wrapMode, GLEnum filterMode)
@@ -67,11 +64,17 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
                 _ => throw new ArgumentOutOfRangeException(nameof(filterMode))
             };
 
-        public void Bind(TextureTarget textureTarget, TextureUnit textureSlot)
+        protected void AssignPixelFormats<TPixel>() where TPixel : unmanaged, IPixel<TPixel> =>
+            (_InternalFormat, _PixelFormat, _PixelType) = GetPixelFormats<TPixel>();
+
+        private static (InternalFormat, PixelFormat, PixelType) GetPixelFormats<TPixel>() where TPixel : unmanaged, IPixel<TPixel>
         {
-            GL.BindTexture(textureTarget, Handle);
-            GL.ActiveTexture(textureSlot);
+            if (typeof(TPixel) == typeof(Rgba32)) return (InternalFormat.Rgba8, PixelFormat.Rgba, PixelType.UnsignedByte);
+            else if (typeof(TPixel) == typeof(RgbaVector)) return (InternalFormat.Rgba32f, PixelFormat.Rgba, PixelType.Float);
+            else throw new ArgumentOutOfRangeException();
         }
+
+        public abstract void Bind(TextureUnit textureSlot);
 
         public void Dispose() => GL.DeleteTexture(Handle);
     }

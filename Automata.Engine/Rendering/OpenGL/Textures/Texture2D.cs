@@ -1,6 +1,5 @@
 #region
 
-using Automata.Engine.Extensions;
 using Silk.NET.OpenGL;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -18,21 +17,16 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             Image<TPixel> image = Image.Load<TPixel>(path);
             image.Mutate(img => img.Flip(FlipMode.Vertical));
 
-            UploadImageToGPU((uint)image.Width, (uint)image.Height, ref image.GetPixelRowSpan(0)[0]);
+            AssignPixelFormats<TPixel>();
+
+            Bind(TextureUnit.Texture0);
+
+            GL.TexImage2D(TextureTarget.Texture2D, 0, (int)_InternalFormat, (uint)image.Width, (uint)image.Height, 0, _PixelFormat, _PixelType,
+                ref image.GetPixelRowSpan(0)[0]);
 
             ConfigureTexture(wrapMode, filterMode, mipmap);
 
             image.Dispose();
-        }
-
-        private void UploadImageToGPU(uint width, uint height, ref TPixel data)
-        {
-            Bind(TextureUnit.Texture0);
-
-            (InternalFormat internalFormat, PixelFormat pixelFormat, PixelType pixelType) = GetPixelData<TPixel>();
-
-            byte firstPixelByte = data.GetValue<TPixel, byte>(0);
-            GL.TexImage2D(TextureTarget.Texture2D, 0, (int)internalFormat, width, height, 0, pixelFormat, pixelType, ref data);
         }
 
         private void ConfigureTexture(WrapMode wrapMode, FilterMode filterMode, bool mipmap)
@@ -42,6 +36,10 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             if (mipmap) GL.GenerateMipmap(TextureTarget.Texture2D);
         }
 
-        public void Bind(TextureUnit textureSlot) => base.Bind(TextureTarget.Texture2D, textureSlot);
+        public sealed override void Bind(TextureUnit textureSlot)
+        {
+            GL.BindTexture(TextureTarget.Texture2D, Handle);
+            GL.ActiveTexture(textureSlot);
+        }
     }
 }

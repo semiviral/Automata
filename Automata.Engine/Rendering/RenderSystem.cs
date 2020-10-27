@@ -128,7 +128,7 @@ namespace Automata.Engine.Rendering
                         }
 
                         renderMesh.Mesh!.Bind();
-                        _Texture.Bind(TextureTarget.Texture2D, TextureUnit.Texture0);
+                        _Texture.Bind(TextureUnit.Texture0);
                         renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFROM_NAME_SAMPLER2DARRAY_BLOCKS, 0);
 
                         _GL.DrawElements(PrimitiveType.Triangles, renderMesh.Mesh!.IndexesLength, DrawElementsType.UnsignedInt, null);
@@ -140,9 +140,9 @@ namespace Automata.Engine.Rendering
 
                 GLAPI.Instance.CheckForErrorsAndThrow(true);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Log.Error($"({nameof(RenderSystem)}) Error: {ex}\r\n{ex.StackTrace}");
+                Log.Error($"({nameof(RenderSystem)}) Error: {exception}\r\n{exception.StackTrace}");
             }
         }
 
@@ -153,10 +153,10 @@ namespace Automata.Engine.Rendering
 
             return
 
-                // try to test spherical bounds
+                // test spherical bounds
                 ((bounds.Spheric != Sphere.Zero) && (intersection = frustum.Intersects(bounds.Spheric)) is Frustum.Intersect.Outside)
 
-                // if spherical bounds fails (i.e. intersects) try cubic
+                // if spherical bounds occlusion fails (i.e. intersects) try cubic
                 || (intersection is not Frustum.Intersect.Inside
                     && (bounds.Cubic != Cube.Zero)
                     && frustum.Intersects(bounds.Cubic) is Frustum.Intersect.Outside);

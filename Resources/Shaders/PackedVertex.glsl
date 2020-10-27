@@ -16,5 +16,5 @@ void main()
 
     gl_Position = _mvp * uncompressedPosition;
     texUV = uncompressedUV;
-    vertexColor = vec4(0.2);
+    vertexColor = vec4(1.2);
 }

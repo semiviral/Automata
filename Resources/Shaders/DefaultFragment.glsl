@@ -9,5 +9,5 @@ out vec4 color;
 
 void main()
 {
-    color = texture(_blocks, texUV);
+    color = texture(_blocks, texUV) * vertexColor;
 }

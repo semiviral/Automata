@@ -7,10 +7,6 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
 {
     public class Texture2DArray<TPixel> : Texture where TPixel : unmanaged, IPixel<TPixel>
     {
-        private readonly InternalFormat _InternalFormat;
-        private readonly PixelFormat _PixelFormat;
-        private readonly PixelType _PixelType;
-
         public Vector3i Size { get; }
 
         public Texture2DArray(Vector3i size, WrapMode wrapMode, FilterMode filterMode)
@@ -18,10 +14,9 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             if (Vector3b.Any(size < 0)) throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
 
             Size = size;
+            AssignPixelFormats<TPixel>();
 
             Bind(TextureUnit.Texture0);
-
-            (_InternalFormat, _PixelFormat, _PixelType) = GetPixelData<TPixel>();
 
             GL.TexStorage3D(TextureTarget.Texture2DArray, 1, _InternalFormat, (uint)size.X, (uint)size.Y, (uint)size.Z);
             GLAPI.Instance.CheckForErrorsAndThrow(true);
@@ -37,6 +32,10 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
                 _PixelType, pixels);
         }
 
-        public void Bind(TextureUnit textureSlot) => base.Bind(TextureTarget.Texture2DArray, textureSlot);
+        public sealed override void Bind(TextureUnit textureSlot)
+        {
+            GL.BindTexture(TextureTarget.Texture2DArray, Handle);
+            GL.ActiveTexture(textureSlot);
+        }
     }
 }
