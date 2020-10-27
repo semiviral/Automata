@@ -26,7 +26,7 @@ namespace Automata.Engine.Rendering
         private const bool _ENABLE_BACK_FACE_CULLING = true;
 
         private readonly GL _GL;
-        private readonly Texture2D<Rgba32> _Texture;
+        private readonly Texture2DArray<Rgba32> _Texture;
 
         private float _NewAspectRatio;
 
@@ -47,8 +47,7 @@ namespace Automata.Engine.Rendering
                 _GL.Enable(GLEnum.CullFace);
             }
 
-            _Texture = new Texture2D<Rgba32>("Resources/Textures/BlockAtlas.png", OpenGL.Textures.Texture.WrapMode.Repeat,
-                OpenGL.Textures.Texture.FilterMode.Point, false);
+            _Texture = TextureRegistry.Instance.GetTexture<Texture2DArray<Rgba32>>("blocks") ?? throw new NullReferenceException();
 
             CheckForGLErrorsAndThrow();
         }

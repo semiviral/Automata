@@ -1,16 +1,16 @@
 ﻿#region
 
 using System;
-using System.Drawing;
 using System.IO;
 using Automata.Engine;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
 using Automata.Engine.Input;
+using Automata.Engine.Numerics;
 using Automata.Engine.Rendering;
 using Automata.Engine.Rendering.GLFW;
 using Automata.Engine.Rendering.OpenGL;
-using Automata.Engine.Rendering.Vulkan;
+using Automata.Engine.Rendering.OpenGL.Textures;
 using Automata.Engine.Systems;
 using Automata.Engine.Worlds;
 using Automata.Game.Blocks;
@@ -19,6 +19,11 @@ using Automata.Game.Chunks.Generation;
 using ConcurrencyPools;
 using Serilog;
 using Silk.NET.Windowing.Common;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using Point = System.Drawing.Point;
+using Size = System.Drawing.Size;
+using Texture = Automata.Engine.Rendering.OpenGL.Textures.Texture;
 
 #endregion
 
@@ -67,6 +72,7 @@ namespace Automata.Game
 
             Singleton.CreateSingleton<GLAPI>();
             Singleton.CreateSingleton<BlockRegistry>();
+            Singleton.CreateSingleton<TextureRegistry>();
         }
 
         private static void InitializeBlocks()
@@ -138,6 +144,17 @@ namespace Automata.Game
 
             InitializeSingletons();
 
+            Image<Rgba32> image = Image.Load<Rgba32>("Resources/Textures/BlockAtlas.png");
+            Image<Rgba32> slice = new Image<Rgba32>(16, 16);
+
+            for (int x = 0; x < slice.Width; x++)
+            for (int y = 0; y < slice.Width; y++)
+                slice[x, y] = image[x, y];
+
+            Texture2DArray<Rgba32> texture = new Texture2DArray<Rgba32>(new Vector3i(16, 16, BlockRegistry.Instance.BlockDefinitions.Count),
+                Texture.WrapMode.Repeat, Texture.FilterMode.Point);
+            TextureRegistry.Instance.AddTexture("blocks", texture);
+
             InitializeBlocks();
 
             InitializeDefaultWorld(out World world);
@@ -147,9 +164,8 @@ namespace Automata.Game
 
         private static void ApplicationCloseCallback(object sender)
         {
-            if (VKAPI.TryValidate()) VKAPI.Instance.DestroyVulkanInstance();
-
             BoundedPool.Active.Stop();
+            GLAPI.Instance.GL.Dispose();
         }
     }
 }
