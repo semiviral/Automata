@@ -9,9 +9,11 @@ using Automata.Engine.Numerics.Shapes;
 using Automata.Engine.Rendering.GLFW;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
+using Automata.Engine.Rendering.OpenGL.Textures;
 using Automata.Engine.Systems;
 using Serilog;
 using Silk.NET.OpenGL;
+using SixLabors.ImageSharp.PixelFormats;
 using Plane = Automata.Engine.Numerics.Shapes.Plane;
 
 #endregion
@@ -24,7 +26,7 @@ namespace Automata.Engine.Rendering
         private const bool _ENABLE_BACK_FACE_CULLING = true;
 
         private readonly GL _GL;
-        private readonly Texture2D _Texture;
+        private readonly Texture2D<Rgba32> _Texture;
 
         private float _NewAspectRatio;
 
@@ -45,7 +47,7 @@ namespace Automata.Engine.Rendering
                 _GL.Enable(GLEnum.CullFace);
             }
 
-            _Texture = new Texture2D("Resources/Textures/BlockAtlas.png", OpenGL.Texture.WrapMode.Repeat, OpenGL.Texture.FilterMode.Point, false);
+            _Texture = new Texture2D<Rgba32>("Resources/Textures/BlockAtlas.png", OpenGL.Textures.Texture.WrapMode.Repeat, OpenGL.Textures.Texture.FilterMode.Point, false);
             CheckForGLErrorsAndThrow();
         }
 

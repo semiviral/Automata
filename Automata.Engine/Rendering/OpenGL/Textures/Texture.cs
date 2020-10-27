@@ -7,7 +7,7 @@ using SixLabors.ImageSharp.PixelFormats;
 #endregion
 
 
-namespace Automata.Engine.Rendering.OpenGL
+namespace Automata.Engine.Rendering.OpenGL.Textures
 {
     public abstract class Texture : IDisposable
     {
@@ -36,11 +36,6 @@ namespace Automata.Engine.Rendering.OpenGL
 
         public abstract void Bind(TextureUnit textureSlot);
 
-        public void Dispose() => GL.DeleteTexture(Handle);
-
-
-        #region Static Methods
-
         protected static (InternalFormat, PixelFormat, PixelType) GetPixelData<TPixel>() where TPixel : unmanaged, IPixel<TPixel>
         {
             if (typeof(TPixel) == typeof(Rgba32)) return (InternalFormat.Rgba, PixelFormat.Rgba, PixelType.UnsignedByte);
@@ -48,7 +43,15 @@ namespace Automata.Engine.Rendering.OpenGL
             else throw new ArgumentOutOfRangeException();
         }
 
-        public static GLEnum GetWrapModeAsGLEnum(WrapMode wrapMode) =>
+        protected void AssignTextureParameters(TextureTarget textureTarget, GLEnum wrapMode, GLEnum filterMode)
+        {
+            GL.TexParameter(textureTarget, TextureParameterName.TextureWrapS, (int)wrapMode);
+            GL.TexParameter(textureTarget, TextureParameterName.TextureWrapT, (int)wrapMode);
+            GL.TexParameter(textureTarget, TextureParameterName.TextureMinFilter, (int)filterMode);
+            GL.TexParameter(textureTarget, TextureParameterName.TextureMagFilter, (int)filterMode);
+        }
+
+        protected static GLEnum GetWrapModeAsGLEnum(WrapMode wrapMode) =>
             wrapMode switch
             {
                 WrapMode.Repeat => GLEnum.Repeat,
@@ -57,7 +60,7 @@ namespace Automata.Engine.Rendering.OpenGL
                 _ => throw new ArgumentOutOfRangeException(nameof(wrapMode))
             };
 
-        public static GLEnum GetFilterModeAsGLEnum(FilterMode filterMode) =>
+        protected static GLEnum GetFilterModeAsGLEnum(FilterMode filterMode) =>
             filterMode switch
             {
                 FilterMode.Point => GLEnum.Nearest,
@@ -66,6 +69,6 @@ namespace Automata.Engine.Rendering.OpenGL
                 _ => throw new ArgumentOutOfRangeException(nameof(filterMode))
             };
 
-        #endregion
+        public void Dispose() => GL.DeleteTexture(Handle);
     }
 }
