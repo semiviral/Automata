@@ -7,24 +7,33 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
 {
     public class Texture2DArray<TPixel> : Texture where TPixel : unmanaged, IPixel<TPixel>
     {
-        public Texture2DArray(Vector3i size)
+        private readonly InternalFormat _InternalFormat;
+        private readonly PixelFormat _PixelFormat;
+        private readonly PixelType _PixelType;
+
+        public Vector3i Size { get; }
+
+        public Texture2DArray(Vector3i size, WrapMode wrapMode, FilterMode filterMode)
         {
             if (Vector3b.Any(size < 0)) throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
 
+            Size = size;
+
             Bind(TextureUnit.Texture0);
 
-            (InternalFormat internalFormat, PixelFormat _, PixelType _) = GetPixelData<TPixel>();
+            (_InternalFormat, _PixelFormat, _PixelType) = GetPixelData<TPixel>();
 
-            GL.TextureStorage3D((uint)TextureTarget.Texture2DArray, 0, internalFormat, (uint)size.X, (uint)size.Y, (uint)size.Z);
+            GL.TextureStorage3D((uint)TextureTarget.Texture2DArray, 0, _InternalFormat, (uint)size.X, (uint)size.Y, (uint)size.Z);
+            AssignTextureParameters(TextureTarget.Texture2DArray, GetWrapModeAsGLEnum(wrapMode), GetFilterModeAsGLEnum(filterMode));
         }
 
-
-        public void SetPixel(Vector3i offset, Vector2i size)
+        public void SetPixels(Vector3i offset, Vector3i size, Span<TPixel> pixels)
         {
             if (Vector3b.Any(offset < 0)) throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
-            if (Vector2b.Any(size < 0)) throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
+            if (Vector3b.Any(size < 0)) throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
 
-            GL.TextureSubImage3D(TextureTarget.Texture2DArray, 0, offset.X, offset.Y, offset.Z);
+            GL.TextureSubImage3D((uint)TextureTarget.Texture2DArray, 0, offset.X, offset.Y, offset.Z, (uint)size.X, (uint)size.Y, (uint)size.Z, _PixelFormat,
+                _PixelType, pixels);
         }
 
         public sealed override void Bind(TextureUnit textureSlot)
