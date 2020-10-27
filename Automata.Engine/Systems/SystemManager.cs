@@ -8,6 +8,7 @@ using System.Reflection;
 using Automata.Engine.Collections;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
+using Automata.Engine.Rendering;
 using Serilog;
 
 #endregion
@@ -27,8 +28,6 @@ namespace Automata.Engine.Systems
 
     public class DefaultOrderSystem : ComponentSystem { }
 
-    public class RenderOrderSystem : ComponentSystem { }
-
     public class LastOrderSystem : ComponentSystem { }
 
     public sealed class SystemManager : IDisposable
@@ -43,7 +42,6 @@ namespace Automata.Engine.Systems
 
             RegisterSystem<FirstOrderSystem>(SystemRegistrationOrder.Last);
             RegisterSystem<DefaultOrderSystem>(SystemRegistrationOrder.Last);
-            RegisterSystem<RenderOrderSystem>(SystemRegistrationOrder.Last);
             RegisterSystem<LastOrderSystem>(SystemRegistrationOrder.Last);
         }
 

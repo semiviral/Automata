@@ -21,7 +21,7 @@ namespace Automata.Engine.Collections
         {
             for (int index = 0; index < _InternalList.Count; index++)
             {
-                if (_InternalList[index] is TBefore) continue;
+                if (_InternalList[index] is not TBefore) continue;
 
                 _InternalList.Insert(index, item);
                 return true;

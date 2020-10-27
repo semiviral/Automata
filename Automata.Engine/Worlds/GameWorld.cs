@@ -15,7 +15,7 @@ namespace Automata.Engine.Worlds
         {
             SystemManager.RegisterSystem<KeyboardMovementSystem, FirstOrderSystem>(SystemRegistrationOrder.Before);
             SystemManager.RegisterSystem<MouseRotationSystem, FirstOrderSystem>(SystemRegistrationOrder.Before);
-            SystemManager.RegisterSystem<RenderSystem, RenderOrderSystem>(SystemRegistrationOrder.Before);
+            SystemManager.RegisterSystem<RenderSystem, LastOrderSystem>(SystemRegistrationOrder.Before);
         }
     }
 }

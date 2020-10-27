@@ -69,8 +69,8 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
 
         public void Bind(TextureTarget textureTarget, TextureUnit textureSlot)
         {
-            GL.ActiveTexture(textureSlot);
             GL.BindTexture(textureTarget, Handle);
+            GL.ActiveTexture(textureSlot);
         }
 
         public void Dispose() => GL.DeleteTexture(Handle);

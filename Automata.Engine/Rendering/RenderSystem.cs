@@ -129,7 +129,7 @@ namespace Automata.Engine.Rendering
 
                         renderMesh.Mesh!.Bind();
                         _Texture.Bind(TextureTarget.Texture2D, TextureUnit.Texture0);
-                        renderShader.Value.TrySetUniform("tex0", 0);
+                        renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFROM_NAME_SAMPLER2DARRAY_BLOCKS, 0);
 
                         _GL.DrawElements(PrimitiveType.Triangles, renderMesh.Mesh!.IndexesLength, DrawElementsType.UnsignedInt, null);
                     }
@@ -137,9 +137,10 @@ namespace Automata.Engine.Rendering
 
                 _GL.BindVertexArray(0);
                 _NewAspectRatio = 0f;
+
+                GLAPI.Instance.CheckForErrorsAndThrow(true);
             }
             catch (Exception ex)
-
             {
                 Log.Error($"({nameof(RenderSystem)}) Error: {ex}\r\n{ex.StackTrace}");
             }
