@@ -81,6 +81,8 @@ namespace Automata.Engine.Numerics
             a.GetElement(1).FirstByte(),
             a.GetElement(2).FirstByte());
 
+        public static implicit operator Vector3b((bool X, bool Y, bool Z) a) => new Vector3b(a.X, a.Y, a.Z);
+
         #endregion
     }
 }

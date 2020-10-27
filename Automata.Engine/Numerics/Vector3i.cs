@@ -109,7 +109,9 @@ namespace Automata.Engine.Numerics
         public static explicit operator Vector3i(Vector128<int> a) => Unsafe.As<Vector128<int>, Vector3i>(ref a);
         public static explicit operator Vector3i(Vector128<uint> a) => Unsafe.As<Vector128<uint>, Vector3i>(ref a);
         public static explicit operator Vector128<int>(Vector3i a) => Unsafe.As<Vector3i, Vector128<int>>(ref a);
+
         public static implicit operator Vector3(Vector3i a) => new Vector3(a.X, a.Y, a.Z);
+        public static implicit operator Vector3i((int, int, int) valueTuple) => Unsafe.As<(int, int, int), Vector3i>(ref valueTuple);
 
         #endregion
     }

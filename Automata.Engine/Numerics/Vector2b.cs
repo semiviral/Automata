@@ -70,6 +70,13 @@ namespace Automata.Engine.Numerics
             (byte)a.GetElement(0),
             (byte)a.GetElement(1));
 
+        public static explicit operator Vector2b(Vector128<uint> a) => new Vector2b(
+            (byte)a.GetElement(0),
+            (byte)a.GetElement(1));
+
+
+        public static implicit operator Vector2b((bool X, bool Y) valueTuple) => Unsafe.As<(bool, bool), Vector2b>(ref valueTuple);
+
         #endregion
     }
 }

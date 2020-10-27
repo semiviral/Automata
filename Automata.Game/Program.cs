@@ -7,6 +7,7 @@ using Automata.Engine;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
 using Automata.Engine.Input;
+using Automata.Engine.Numerics;
 using Automata.Engine.Rendering;
 using Automata.Engine.Rendering.GLFW;
 using Automata.Engine.Rendering.OpenGL;
@@ -32,6 +33,11 @@ namespace Automata.Game
 
         private static void Main()
         {
+            (bool, bool, bool) valueTuple = (true, true, false);
+
+            Console.WriteLine((Vector3b)valueTuple);
+
+
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .WriteTo.Console()

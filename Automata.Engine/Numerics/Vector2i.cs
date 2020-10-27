@@ -102,6 +102,8 @@ namespace Automata.Engine.Numerics
 
         public static explicit operator Vector2(Vector2i a) => new Vector2(a.X, a.Y);
 
+        public static implicit operator Vector2i((int, int) valueTuple) => Unsafe.As<(int, int), Vector2i>(ref valueTuple);
+
         #endregion
     }
 }

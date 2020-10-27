@@ -1,6 +1,7 @@
 #region
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
@@ -88,6 +89,8 @@ namespace Automata.Engine.Numerics
 
         public static unsafe explicit operator Vector3d(Vector256<double> a) => *(Vector3d*)&a;
         public static unsafe explicit operator Vector256<double>(Vector3d a) => Avx.LoadVector256((double*)&a);
+
+        public static implicit operator Vector3d((double, double, double) valueTuple) => Unsafe.As<(double, double, double), Vector3d>(ref valueTuple);
 
         #endregion
     }
