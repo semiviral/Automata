@@ -201,9 +201,10 @@ namespace Automata.Engine.Entities
             where T2 : class, IComponent
         {
             foreach (IEntity entity in _Entities)
+            {
                 if (entity.TryGetComponent(out T1? component)
-                    && entity.TryGetComponent(out T2? component2))
-                    yield return (component, component2);
+                    && entity.TryGetComponent(out T2? component2)) yield return (component, component2);
+            }
         }
 
         public IEnumerable<(T1, T2, T3)> GetComponents<T1, T2, T3>()
@@ -212,10 +213,11 @@ namespace Automata.Engine.Entities
             where T3 : class, IComponent
         {
             foreach (IEntity entity in _Entities)
+            {
                 if (entity.TryGetComponent(out T1? component)
                     && entity.TryGetComponent(out T2? component2)
-                    && entity.TryGetComponent(out T3? component3))
-                    yield return (component, component2, component3);
+                    && entity.TryGetComponent(out T3? component3)) yield return (component, component2, component3);
+            }
         }
 
         public IEnumerable<(T1, T2, T3, T4)> GetComponents<T1, T2, T3, T4>()
@@ -225,11 +227,12 @@ namespace Automata.Engine.Entities
             where T4 : class, IComponent
         {
             foreach (IEntity entity in _Entities)
+            {
                 if (entity.TryGetComponent(out T1? component)
                     && entity.TryGetComponent(out T2? component2)
                     && entity.TryGetComponent(out T3? component3)
-                    && entity.TryGetComponent(out T4? component4))
-                    yield return (component, component2, component3, component4);
+                    && entity.TryGetComponent(out T4? component4)) yield return (component, component2, component3, component4);
+            }
         }
 
         public int GetComponentCount<TComponent>() where TComponent : class, IComponent =>
