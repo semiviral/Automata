@@ -12,7 +12,9 @@ using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Worlds;
 using Serilog;
 using Silk.NET.Core.Contexts;
+using Silk.NET.GLFW;
 using Silk.NET.Input.Common;
+using Silk.NET.OpenGL;
 using Silk.NET.Windowing.Common;
 
 #endregion
@@ -70,6 +72,8 @@ namespace Automata.Engine.Rendering.GLFW
 
         public void CreateWindow(WindowOptions windowOptions)
         {
+            GLFWAPI.Instance.GLFW.WindowHint(WindowHintBool.OpenGLDebugContext, true);
+
             _Window = Silk.NET.Windowing.Window.Create(windowOptions);
             _Window.Resize += OnWindowResized;
             _Window.FocusChanged += OnWindowFocusedChanged;

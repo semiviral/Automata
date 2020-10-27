@@ -24,6 +24,8 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             (_InternalFormat, _PixelFormat, _PixelType) = GetPixelData<TPixel>();
 
             GL.TextureStorage3D((uint)TextureTarget.Texture2DArray, 0, _InternalFormat, (uint)size.X, (uint)size.Y, (uint)size.Z);
+            GLAPI.Instance.CheckForErrorsAndThrow();
+
             AssignTextureParameters(TextureTarget.Texture2DArray, GetWrapModeAsGLEnum(wrapMode), GetFilterModeAsGLEnum(filterMode));
         }
 
@@ -36,10 +38,6 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
                 _PixelType, pixels);
         }
 
-        public sealed override void Bind(TextureUnit textureSlot)
-        {
-            GL.ActiveTexture(textureSlot);
-            GL.BindTexture(TextureTarget.Texture2DArray, Handle);
-        }
+        public void Bind(TextureUnit textureSlot) => base.Bind(TextureTarget.Texture2DArray, textureSlot);
     }
 }

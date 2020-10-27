@@ -20,9 +20,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Reference Include="ConcurrentAsyncScheduler, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-        <HintPath>..\References\ConcurrentAsyncScheduler.dll</HintPath>
-      </Reference>
       <Reference Include="DiagnosticsProviderNS, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
         <HintPath>..\References\DiagnosticsProviderNS.dll</HintPath>
       </Reference>

@@ -49,7 +49,7 @@ namespace Automata.Engine.Rendering
 
             _Texture = TextureRegistry.Instance.GetTexture<Texture2DArray<Rgba32>>("blocks") ?? throw new NullReferenceException();
 
-            CheckForGLErrorsAndThrow();
+            GLAPI.Instance.CheckForErrorsAndThrow();
         }
 
         [HandlesComponents(DistinctionStrategy.Any, typeof(Camera), typeof(RenderMesh))]
@@ -133,7 +133,7 @@ namespace Automata.Engine.Rendering
 
                         _GL.DrawElements(PrimitiveType.Triangles, renderMesh.Mesh!.IndexesLength, DrawElementsType.UnsignedInt, null);
 
-                        CheckForGLErrorsAndThrow();
+                        GLAPI.Instance.CheckForErrorsAndThrow();
                     }
                 }
 
@@ -161,17 +161,6 @@ namespace Automata.Engine.Rendering
                 || (intersection is not Frustum.Intersect.Inside
                     && (bounds.Cubic != Cube.Zero)
                     && frustum.Intersects(bounds.Cubic) is Frustum.Intersect.Outside);
-        }
-
-        private void CheckForGLErrorsAndThrow()
-        {
-            GLEnum glError = _GL.GetError();
-
-            switch (glError)
-            {
-                case GLEnum.NoError: break;
-                default: throw new OpenGLException(glError);
-            }
         }
 
         private void GameWindowResized(object sender, Vector2i newSize) => _NewAspectRatio = (float)newSize.X / (float)newSize.Y;

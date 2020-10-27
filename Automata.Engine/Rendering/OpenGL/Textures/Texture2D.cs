@@ -33,6 +33,8 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
 
             byte firstPixelByte = data.GetValue<TPixel, byte>(0);
             GL.TexImage2D(TextureTarget.Texture2D, 0, (int)internalFormat, width, height, 0, pixelFormat, pixelType, ref firstPixelByte);
+
+            GLAPI.Instance.CheckForErrorsAndThrow();
         }
 
         private void ConfigureTexture(WrapMode wrapMode, FilterMode filterMode, bool mipmap)
@@ -42,10 +44,7 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             if (mipmap) GL.GenerateMipmap(TextureTarget.Texture2D);
         }
 
-        public override void Bind(TextureUnit textureSlot)
-        {
-            GL.ActiveTexture(textureSlot);
-            GL.BindTexture(TextureTarget.Texture2D, Handle);
-        }
+        public void Bind(TextureUnit textureSlot) => base.Bind(TextureTarget.Texture2D, textureSlot);
+
     }
 }

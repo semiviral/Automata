@@ -1,6 +1,8 @@
 #region
 
+using System;
 using Automata.Engine.Rendering.GLFW;
+using Silk.NET.Core.Native;
 using Silk.NET.OpenGL;
 
 #endregion
@@ -10,74 +12,36 @@ namespace Automata.Engine.Rendering.OpenGL
 {
     public class GLAPI : Singleton<GLAPI>
     {
-        public static class StaticCube
-        {
-        // @formatter:off
-
-        public static float[] Vertexes =
-        {
-            0f, 1f, 1f,
-            0f, 0f, 1f,
-            1f, 0f, 1f,
-            1f, 1f, 1f,
-
-            1f, 1f, 1f,
-            1f, 0f, 1f,
-            1f, 0f, 0f,
-            1f, 1f, 0f,
-
-            1f, 1f, 0f,
-            1f, 0f, 0f,
-            0f, 0f, 0f,
-            0f, 1f, 0f,
-
-            0f, 1f, 0f,
-            0f, 0f, 0f,
-            0f, 0f, 1f,
-            0f, 1f, 1f,
-
-            0f, 1f, 1f,
-            1f, 1f, 1f,
-            1f, 1f, 0f,
-            0f, 1f, 0f,
-
-            1f, 0f, 1f,
-            0f, 0f, 1f,
-            0f, 0f, 0f,
-            1f, 0f, 0f
-        };
-
-        public static uint[] Indexes =
-        {
-            00, 01, 03,
-            01, 02, 03,
-
-            04, 05, 07,
-            05, 06, 07,
-
-            08, 09, 11,
-            09, 10, 11,
-
-            12, 13, 15,
-            13, 14, 15,
-
-            16, 17, 19,
-            17, 18, 19,
-
-            20, 21, 23,
-            21, 22, 23
-        };
-
-            // @formatter:on
-        }
-
         public GL GL { get; }
 
-        public GLAPI()
+        public unsafe GLAPI()
         {
             AssignSingletonInstance(this);
 
             GL = GL.GetApi(AutomataWindow.Instance.GLContext);
+
+            GL.Enable(EnableCap.DebugOutput);
+            GL.Enable(EnableCap.DebugOutputSynchronous);
+            GL.DebugMessageCallback(DebugOutputCallback, null);
+            GL.DebugMessageControl(DebugSource.DontCare, DebugType.DontCare, DebugSeverity.DontCare, 0, (uint*)null!, true);
+        }
+
+        public void CheckForErrorsAndThrow()
+        {
+            //GLEnum glError = GL.GetError();
+
+            //switch (glError)
+            //{
+            //    case GLEnum.NoError: break;
+            //    default: throw new OpenGLException(glError);
+            //}
+        }
+
+        public static void DebugOutputCallback(GLEnum source, GLEnum type, int id, GLEnum severity, int length, IntPtr messagePtr, IntPtr userParamPtr)
+        {
+            string message = SilkMarshal.MarshalPtrToString(messagePtr);
+
+            Console.WriteLine($"Output {source} {type} {message}");
         }
     }
 }

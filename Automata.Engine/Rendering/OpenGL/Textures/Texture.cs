@@ -34,11 +34,9 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             Handle = GL.GenTexture();
         }
 
-        public abstract void Bind(TextureUnit textureSlot);
-
         protected static (InternalFormat, PixelFormat, PixelType) GetPixelData<TPixel>() where TPixel : unmanaged, IPixel<TPixel>
         {
-            if (typeof(TPixel) == typeof(Rgba32)) return (InternalFormat.Rgba, PixelFormat.Rgba, PixelType.UnsignedByte);
+            if (typeof(TPixel) == typeof(Rgba32)) return (InternalFormat.Rgba8, PixelFormat.Rgba, PixelType.UnsignedByte);
             else if (typeof(TPixel) == typeof(RgbaVector)) return (InternalFormat.Rgba32f, PixelFormat.Rgba, PixelType.Float);
             else throw new ArgumentOutOfRangeException();
         }
@@ -49,6 +47,8 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             GL.TexParameter(textureTarget, TextureParameterName.TextureWrapT, (int)wrapMode);
             GL.TexParameter(textureTarget, TextureParameterName.TextureMinFilter, (int)filterMode);
             GL.TexParameter(textureTarget, TextureParameterName.TextureMagFilter, (int)filterMode);
+
+            GLAPI.Instance.CheckForErrorsAndThrow();
         }
 
         protected static GLEnum GetWrapModeAsGLEnum(WrapMode wrapMode) =>
@@ -68,6 +68,14 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
                 FilterMode.Trilinear => GLEnum.LinearMipmapLinear,
                 _ => throw new ArgumentOutOfRangeException(nameof(filterMode))
             };
+
+        protected void Bind(TextureTarget textureTarget, TextureUnit textureSlot)
+        {
+            GL.ActiveTexture(textureSlot);
+            GL.BindTexture(textureTarget, Handle);
+
+            GLAPI.Instance.CheckForErrorsAndThrow();
+        }
 
         public void Dispose() => GL.DeleteTexture(Handle);
     }
