@@ -33,11 +33,6 @@ namespace Automata.Game
 
         private static void Main()
         {
-            (bool, bool, bool) valueTuple = (true, true, false);
-
-            Console.WriteLine((Vector3b)valueTuple);
-
-
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .WriteTo.Console()
