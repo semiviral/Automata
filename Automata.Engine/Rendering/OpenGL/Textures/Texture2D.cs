@@ -1,9 +1,6 @@
 #region
 
-using System;
-using System.Runtime.InteropServices;
 using Automata.Engine.Extensions;
-using Silk.NET.Core.Native;
 using Silk.NET.OpenGL;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;

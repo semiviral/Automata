@@ -47,7 +47,9 @@ namespace Automata.Engine.Rendering
                 _GL.Enable(GLEnum.CullFace);
             }
 
-            _Texture = new Texture2D<Rgba32>("Resources/Textures/BlockAtlas.png", OpenGL.Textures.Texture.WrapMode.Repeat, OpenGL.Textures.Texture.FilterMode.Point, false);
+            _Texture = new Texture2D<Rgba32>("Resources/Textures/BlockAtlas.png", OpenGL.Textures.Texture.WrapMode.Repeat,
+                OpenGL.Textures.Texture.FilterMode.Point, false);
+
             CheckForGLErrorsAndThrow();
         }
 

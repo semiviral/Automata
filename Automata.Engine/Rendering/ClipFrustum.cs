@@ -85,9 +85,8 @@ namespace Automata.Engine.Rendering
         public Frustum.Intersect Intersects(Vector3 point)
         {
             foreach (Plane plane in _Planes)
-            {
-                if (plane.Distance(point) < 0f) return Frustum.Intersect.Outside;
-            }
+                if (plane.Distance(point) < 0f)
+                    return Frustum.Intersect.Outside;
 
             return Frustum.Intersect.Inside;
         }
