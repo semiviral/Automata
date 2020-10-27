@@ -36,7 +36,7 @@ vec4 raymarchColor(gsampler3D raymarchTexture, float epsilon, vec3 rayOrigin, ve
     cubeRayIntersection(rayOrigin, rayDirection, -0.5, 0.5, nearIntersectionDistance, farIntersectionDistance);
 
     // if near intersection is less than zero (we're inside cube), then raycast from zero distance
-    nearIntersectionDistance *= (nearIntersectionDistance >= 0.0);
+    // todo nearIntersectionDistance *= (nearIntersectionDistance >= 0.0);
 
     float accumulatedDistance = nearIntersectionDistance;
     float maximumAccumulatedDistance = farIntersectionDistance;
@@ -54,7 +54,7 @@ vec4 raymarchColor(gsampler3D raymarchTexture, float epsilon, vec3 rayOrigin, ve
         accumulatedDistance += max(epsilon, color.a);
     }
 
-    return 0.0;
+    return vec4(0.0);
 }
 
 void main()

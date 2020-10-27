@@ -8,7 +8,6 @@ using System.Reflection;
 using Automata.Engine.Collections;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
-using Automata.Engine.Rendering;
 using Serilog;
 
 #endregion

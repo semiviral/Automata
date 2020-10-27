@@ -11,7 +11,6 @@ using Automata.Engine.Numerics;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Worlds;
 using Serilog;
-using Silk.NET.Core.Contexts;
 using Silk.NET.GLFW;
 using Silk.NET.Input.Common;
 using Silk.NET.OpenGL;
