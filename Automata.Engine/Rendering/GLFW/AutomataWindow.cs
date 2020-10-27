@@ -28,23 +28,11 @@ namespace Automata.Engine.Rendering.GLFW
 
         private IWindow? _Window;
 
-        public IGLContext? GLContext => Window.GLContext;
-
-        public IVkSurface Surface
-        {
-            get
-            {
-                if (Window.VkSurface == null) throw new NotSupportedException("Vulkan is not supported by windowing.");
-
-                return Window.VkSurface;
-            }
-        }
-
         private IWindow Window
         {
             get
             {
-                if (_Window is null) throw new NullReferenceException(nameof(Window));
+                if (_Window is null) throw new InvalidOperationException("Window has not been created.");
                 else return _Window;
             }
         }
@@ -72,7 +60,12 @@ namespace Automata.Engine.Rendering.GLFW
 
         public void CreateWindow(WindowOptions windowOptions)
         {
-            GLFWAPI.Instance.GLFW.WindowHint(WindowHintBool.OpenGLDebugContext, true);
+            Glfw glfw = GLFWAPI.Instance.GLFW;
+            glfw.WindowHint(WindowHintInt.ContextVersionMajor, 4);
+            glfw.WindowHint(WindowHintInt.ContextVersionMinor, 3);
+            glfw.WindowHint(WindowHintBool.OpenGLForwardCompat, true);
+            glfw.WindowHint(WindowHintOpenGlProfile.OpenGlProfile, OpenGlProfile.Core);
+            glfw.WindowHint(WindowHintBool.OpenGLDebugContext, true);
 
             _Window = Silk.NET.Windowing.Window.Create(windowOptions);
             _Window.Resize += OnWindowResized;
@@ -138,6 +131,8 @@ namespace Automata.Engine.Rendering.GLFW
         private bool CheckWaitForNextMonitorRefresh() => Window.VSync == VSyncMode.On;
 
         private void WaitForNextMonitorRefresh(Stopwatch deltaTimer) => Thread.Sleep(Math.Max((_MinimumFrameTime - deltaTimer.Elapsed).Milliseconds, 0));
+
+        public GL GetGL() => GL.GetApi(Window.GLContext);
 
         private void OnWindowResized(Size size)
         {

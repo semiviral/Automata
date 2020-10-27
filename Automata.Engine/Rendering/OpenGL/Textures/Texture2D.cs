@@ -43,6 +43,5 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
         }
 
         public void Bind(TextureUnit textureSlot) => base.Bind(TextureTarget.Texture2D, textureSlot);
-
     }
 }

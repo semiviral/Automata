@@ -24,7 +24,7 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             (_InternalFormat, _PixelFormat, _PixelType) = GetPixelData<TPixel>();
 
             GL.TextureStorage3D(Handle, 0, _InternalFormat, (uint)size.X, (uint)size.Y, (uint)size.Z);
-            GLAPI.Instance.CheckForErrorsAndThrow(true);
+            //GLAPI.Instance.CheckForErrorsAndThrow(true);
             AssignTextureParameters(TextureTarget.Texture2DArray, GetWrapModeAsGLEnum(wrapMode), GetFilterModeAsGLEnum(filterMode));
         }
 

@@ -23,7 +23,6 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using Point = System.Drawing.Point;
 using Size = System.Drawing.Size;
-using Texture = Automata.Engine.Rendering.OpenGL.Textures.Texture;
 
 #endregion
 
@@ -153,6 +152,7 @@ namespace Automata.Game
 
             Texture2DArray<Rgba32> texture = new Texture2DArray<Rgba32>(new Vector3i(16, 16, BlockRegistry.Instance.BlockDefinitions.Count),
                 Texture.WrapMode.Repeat, Texture.FilterMode.Point);
+
             TextureRegistry.Instance.AddTexture("blocks", texture);
 
             InitializeBlocks();

@@ -18,10 +18,11 @@ namespace Automata.Engine.Rendering.OpenGL
         public unsafe GLAPI()
         {
             AutomataWindow.Validate(); // validate dependency or throw
-            GL = GL.GetApi(AutomataWindow.Instance.GLContext);
+            GL = AutomataWindow.Instance.GetGL();
 
             // configure debug callback
             GL.GetInteger(GetPName.ContextFlags, out int flags);
+
             if (((ContextFlags)flags).HasFlag(ContextFlags.Debug))
             {
                 GL.Enable(EnableCap.DebugOutput);
