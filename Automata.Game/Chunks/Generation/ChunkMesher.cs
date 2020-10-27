@@ -8,6 +8,7 @@ using Automata.Engine.Collections;
 using Automata.Engine.Numerics;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Game.Blocks;
+using Generic_Octree;
 
 #endregion
 
@@ -190,7 +191,14 @@ namespace Automata.Game.Chunks.Generation
                             // index into neighbor blocks collections, call .GetPoint() with adjusted local position
                             // remark: if there's no neighbor at the index given, then no chunk exists there (for instance,
                             //     chunks at the edge of render distance). In this case, return NullID so no face is rendered on edges.
-                            ushort facedBlockID = neighbors[normalIndex]?.GetPoint(DecompressVertex(neighborLocalPosition)) ?? BlockRegistry.NullID;
+                            ushort facedBlockID = neighbors[normalIndex]?.GetPoint(
+                                                      neighborLocalPosition & GenerationConstants.CHUNK_SIZE_BIT_MASK,
+                                                      neighborLocalPosition
+                                                      & (GenerationConstants.CHUNK_SIZE_BIT_MASK << GenerationConstants.CHUNK_SIZE_BIT_SHIFT),
+                                                      neighborLocalPosition
+                                                      & (GenerationConstants.CHUNK_SIZE_BIT_MASK << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2))
+                                                  )
+                                                  ?? BlockRegistry.NullID;
 
                             if (isTransparent)
                             {
@@ -309,15 +317,20 @@ namespace Automata.Game.Chunks.Generation
                     int sign = isNegativeFace ? -1 : 1;
                     int iModuloComponentMask = GenerationConstants.CHUNK_SIZE_BIT_MASK << iModulo3Shift;
 
-                    int finalLocalPosition = (~iModuloComponentMask & localPosition)
-                                             | (AutomataMath.Wrap(((localPosition & iModuloComponentMask) >> iModulo3Shift) + sign,
-                                                    GenerationConstants.CHUNK_SIZE, 0, GenerationConstants.CHUNK_SIZE - 1)
-                                                << iModulo3Shift);
+                    int neighborLocalPosition = (~iModuloComponentMask & localPosition)
+                                                | (AutomataMath.Wrap(((localPosition & iModuloComponentMask) >> iModulo3Shift) + sign,
+                                                       GenerationConstants.CHUNK_SIZE, 0, GenerationConstants.CHUNK_SIZE - 1)
+                                                   << iModulo3Shift);
 
                     // index into neighbor blocks collections, call .GetPoint() with adjusted local position
                     // remark: if there's no neighbor at the index given, then no chunk exists there (for instance,
                     //     chunks at the edge of render distance). In this case, return NullID so no face is rendered on edges.
-                    ushort facedBlockId = neighbors[normalIndex]?.GetPoint(DecompressVertex(finalLocalPosition))
+                    ushort facedBlockId = neighbors[normalIndex]?.GetPoint(
+                                              neighborLocalPosition & GenerationConstants.CHUNK_SIZE_BIT_MASK,
+                                              neighborLocalPosition & (GenerationConstants.CHUNK_SIZE_BIT_MASK << GenerationConstants.CHUNK_SIZE_BIT_SHIFT),
+                                              neighborLocalPosition
+                                              & (GenerationConstants.CHUNK_SIZE_BIT_MASK << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2))
+                                          )
                                           ?? BlockRegistry.NullID;
 
                     if (isCurrentBlockTransparent)
