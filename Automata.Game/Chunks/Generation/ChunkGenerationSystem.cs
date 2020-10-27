@@ -26,7 +26,7 @@ namespace Automata.Game.Chunks.Generation
 {
     public class ChunkGenerationSystem : ComponentSystem
     {
-        private readonly OrderedList<BuildStep> _BuildSteps;
+        private readonly OrderedLinkedList<BuildStep> _BuildSteps;
         private readonly ConcurrentDictionary<Guid, INodeCollection<ushort>> _PendingBlockCollections;
         private readonly ConcurrentDictionary<Guid, PendingMesh<int>> _PendingMeshes;
 
@@ -34,7 +34,7 @@ namespace Automata.Game.Chunks.Generation
 
         public ChunkGenerationSystem()
         {
-            _BuildSteps = new OrderedList<BuildStep>();
+            _BuildSteps = new OrderedLinkedList<BuildStep>();
             _BuildSteps.AddLast(new TerrainBuildStep());
             _PendingBlockCollections = new ConcurrentDictionary<Guid, INodeCollection<ushort>>();
             _PendingMeshes = new ConcurrentDictionary<Guid, PendingMesh<int>>();

@@ -1,49 +1,41 @@
-#region
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
-
-#endregion
-
+using System.Linq;
 
 namespace Automata.Engine.Collections
 {
-    public class OrderedList<T> : IReadOnlyCollection<T> where T : notnull
+    public class OrderedList<T> : IOrderedCollection<T> where T : notnull
     {
-        private readonly LinkedList<T> _LinkedList;
-        private readonly Dictionary<Type, LinkedListNode<T>> _Nodes;
+        private readonly List<T> _InternalList;
 
-        public T this[Type type] => _Nodes[type].Value;
+        public OrderedList() => _InternalList = new List<T>();
 
-        public OrderedList()
+        public T this[Type type] => _InternalList.First(item => type.IsInstanceOfType(item));
+        public int Count => _InternalList.Count;
+
+        public void AddFirst(T item) => _InternalList.Insert(0, item);
+        public void AddLast(T item) => _InternalList.Add(item);
+
+        public void AddBefore<TBefore>(T item)
         {
-            _LinkedList = new LinkedList<T>();
-            _Nodes = new Dictionary<Type, LinkedListNode<T>>();
+            for (int index = 0; index < _InternalList.Count; index++)
+                if (_InternalList[index].GetType().IsInstanceOfType(typeof(TBefore)))
+                    _InternalList.Insert(index, item);
         }
 
-        public bool Contains<TItem>() => _Nodes.ContainsKey(typeof(TItem));
-
-        public void AddFirst(T item) => _Nodes.Add(item.GetType(), _LinkedList.AddFirst(item));
-        public void AddLast(T item) => _Nodes.Add(item.GetType(), _LinkedList.AddLast(item));
-        public void AddBefore<TBefore>(T item) => _Nodes.Add(item.GetType(), _LinkedList.AddBefore(_Nodes[typeof(TBefore)], item));
-        public void AddAfter<TAfter>(T item) => _Nodes.Add(item.GetType(), _LinkedList.AddAfter(_Nodes[typeof(TAfter)], item));
-
-        public bool Remove<TItem>()
+        public void AddAfter<TAfter>(T item)
         {
-            _LinkedList.Remove(_Nodes[typeof(TItem)]);
-            return _Nodes.Remove(typeof(TItem));
+            for (int index = 0; index < _InternalList.Count; index++)
+                if (_InternalList[index].GetType().IsInstanceOfType(typeof(TAfter)))
+                    _InternalList.Insert(index + 1, item);
         }
 
-        public void Clear()
-        {
-            _LinkedList.Clear();
-            _Nodes.Clear();
-        }
+        public void Remove<TItem>() => _InternalList.RemoveAll(item => item.GetType().IsInstanceOfType(typeof(TItem)));
+        public bool Contains<TItem>() => _InternalList.Any(item => item.GetType().IsAssignableFrom(typeof(TItem)));
+        public void Clear() => _InternalList.Clear();
 
-        public int Count => _Nodes.Count;
-
-        IEnumerator<T> IEnumerable<T>.GetEnumerator() => _LinkedList.GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<T>)this).GetEnumerator();
+        public IEnumerator<T> GetEnumerator() => _InternalList.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

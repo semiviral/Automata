@@ -40,6 +40,7 @@ namespace Automata.Engine.Systems
         {
             _ComponentSystems = new OrderedList<ComponentSystem>();
             _HandledTypes = new Dictionary<Type, ComponentTypes>();
+
             RegisterSystem<FirstOrderSystem>(SystemRegistrationOrder.Last);
             RegisterSystem<DefaultOrderSystem>(SystemRegistrationOrder.Last);
             RegisterSystem<RenderOrderSystem>(SystemRegistrationOrder.Last);
