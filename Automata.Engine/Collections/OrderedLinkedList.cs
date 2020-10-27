@@ -32,8 +32,26 @@ namespace Automata.Engine.Collections
 
         public void AddFirst(T item) => _Nodes.Add(item.GetType(), _LinkedList.AddFirst(item));
         public void AddLast(T item) => _Nodes.Add(item.GetType(), _LinkedList.AddLast(item));
-        public void AddBefore<TBefore>(T item) => _Nodes.Add(item.GetType(), _LinkedList.AddBefore(_Nodes[typeof(TBefore)], item));
-        public void AddAfter<TAfter>(T item) => _Nodes.Add(item.GetType(), _LinkedList.AddAfter(_Nodes[typeof(TAfter)], item));
+
+        public bool AddBefore<TBefore>(T item)
+        {
+            if (_Nodes.ContainsKey(typeof(TBefore)))
+            {
+                _Nodes.Add(item.GetType(), _LinkedList.AddBefore(_Nodes[typeof(TBefore)], item));
+                return true;
+            }
+            else return false;
+        }
+
+        public bool AddAfter<TAfter>(T item)
+        {
+            if (_Nodes.ContainsKey(typeof(TAfter)))
+            {
+                _Nodes.Add(item.GetType(), _LinkedList.AddAfter(_Nodes[typeof(TAfter)], item));
+                return true;
+            }
+            else return false;
+        }
 
         public void Clear()
         {

@@ -47,8 +47,6 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             GL.TexParameter(textureTarget, TextureParameterName.TextureWrapT, (int)wrapMode);
             GL.TexParameter(textureTarget, TextureParameterName.TextureMinFilter, (int)filterMode);
             GL.TexParameter(textureTarget, TextureParameterName.TextureMagFilter, (int)filterMode);
-
-            GLAPI.Instance.CheckForErrorsAndThrow();
         }
 
         protected static GLEnum GetWrapModeAsGLEnum(WrapMode wrapMode) =>
@@ -69,12 +67,10 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
                 _ => throw new ArgumentOutOfRangeException(nameof(filterMode))
             };
 
-        protected void Bind(TextureTarget textureTarget, TextureUnit textureSlot)
+        public void Bind(TextureTarget textureTarget, TextureUnit textureSlot)
         {
             GL.ActiveTexture(textureSlot);
             GL.BindTexture(textureTarget, Handle);
-
-            GLAPI.Instance.CheckForErrorsAndThrow();
         }
 
         public void Dispose() => GL.DeleteTexture(Handle);

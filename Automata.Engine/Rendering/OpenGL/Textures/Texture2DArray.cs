@@ -23,9 +23,8 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
 
             (_InternalFormat, _PixelFormat, _PixelType) = GetPixelData<TPixel>();
 
-            GL.TextureStorage3D((uint)TextureTarget.Texture2DArray, 0, _InternalFormat, (uint)size.X, (uint)size.Y, (uint)size.Z);
-            GLAPI.Instance.CheckForErrorsAndThrow();
-
+            GL.TextureStorage3D(Handle, 0, _InternalFormat, (uint)size.X, (uint)size.Y, (uint)size.Z);
+            GLAPI.Instance.CheckForErrorsAndThrow(true);
             AssignTextureParameters(TextureTarget.Texture2DArray, GetWrapModeAsGLEnum(wrapMode), GetFilterModeAsGLEnum(filterMode));
         }
 
@@ -34,7 +33,7 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             if (Vector3b.Any(offset < 0)) throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
             if (Vector3b.Any(size < 0)) throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
 
-            GL.TextureSubImage3D((uint)TextureTarget.Texture2DArray, 0, offset.X, offset.Y, offset.Z, (uint)size.X, (uint)size.Y, (uint)size.Z, _PixelFormat,
+            GL.TextureSubImage3D(Handle, 0, offset.X, offset.Y, offset.Z, (uint)size.X, (uint)size.Y, (uint)size.Z, _PixelFormat,
                 _PixelType, pixels);
         }
 

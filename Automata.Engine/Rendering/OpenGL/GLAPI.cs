@@ -4,6 +4,7 @@ using System;
 using Automata.Engine.Rendering.GLFW;
 using Silk.NET.Core.Native;
 using Silk.NET.OpenGL;
+using Silk.NET.Windowing.Common;
 
 #endregion
 
@@ -16,28 +17,50 @@ namespace Automata.Engine.Rendering.OpenGL
 
         public unsafe GLAPI()
         {
-            AssignSingletonInstance(this);
-
+            AutomataWindow.Validate(); // validate dependency or throw
             GL = GL.GetApi(AutomataWindow.Instance.GLContext);
 
-            GL.Enable(EnableCap.DebugOutput);
-            GL.Enable(EnableCap.DebugOutputSynchronous);
-            GL.DebugMessageCallback(DebugOutputCallback, null);
-            GL.DebugMessageControl(DebugSource.DontCare, DebugType.DontCare, DebugSeverity.DontCare, 0, (uint*)null!, true);
+            // configure debug callback
+            GL.GetInteger(GetPName.ContextFlags, out int flags);
+            if (((ContextFlags)flags).HasFlag(ContextFlags.Debug))
+            {
+                GL.Enable(EnableCap.DebugOutput);
+                GL.Enable(EnableCap.DebugOutputSynchronous);
+                GL.DebugMessageCallback(DebugOutputCallback, (void*)null!);
+                GL.DebugMessageControl(DebugSource.DontCare, DebugType.DontCare, DebugSeverity.DontCare, 0, (uint*)null!, true);
+            }
+
+            AssignSingletonInstance(this);
         }
 
-        public void CheckForErrorsAndThrow()
+        /// <summary>
+        ///     Manually query OpenGL for errors.
+        /// </summary>
+        /// <remarks>
+        ///     <p>
+        ///         This function is very simple, and offers little-to-no debug information.
+        ///     </p>
+        ///     <p>
+        ///         Thus, try to rely on the default debug context exception handling. This should
+        ///         only be used when that functionality is failing.
+        ///     </p>
+        /// </remarks>
+        /// <param name="checkForErrors"></param>
+        /// <exception cref="OpenGLException"></exception>
+        public void CheckForErrorsAndThrow(bool checkForErrors)
         {
-            //GLEnum glError = GL.GetError();
+            if (!checkForErrors) return;
 
-            //switch (glError)
-            //{
-            //    case GLEnum.NoError: break;
-            //    default: throw new OpenGLException(glError);
-            //}
+            GLEnum glError = GL.GetError();
+
+            switch (glError)
+            {
+                case GLEnum.NoError: break;
+                default: throw new OpenGLException(glError);
+            }
         }
 
-        public static void DebugOutputCallback(GLEnum source, GLEnum type, int id, GLEnum severity, int length, IntPtr messagePtr, IntPtr userParamPtr)
+        private static void DebugOutputCallback(GLEnum source, GLEnum type, int id, GLEnum severity, int length, IntPtr messagePtr, IntPtr userParamPtr)
         {
             string message = SilkMarshal.MarshalPtrToString(messagePtr);
 

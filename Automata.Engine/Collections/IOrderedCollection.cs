@@ -9,8 +9,8 @@ namespace Automata.Engine.Collections
 
         public void AddFirst(T item);
         public void AddLast(T item);
-        public void AddBefore<TBefore>(T item);
-        public void AddAfter<TAfter>(T item);
+        public bool AddBefore<TBefore>(T item);
+        public bool AddAfter<TAfter>(T item);
         public void Remove<TItem>();
         public bool Contains<TItem>();
         public void Clear();

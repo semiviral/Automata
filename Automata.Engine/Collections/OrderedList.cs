@@ -17,18 +17,30 @@ namespace Automata.Engine.Collections
         public void AddFirst(T item) => _InternalList.Insert(0, item);
         public void AddLast(T item) => _InternalList.Add(item);
 
-        public void AddBefore<TBefore>(T item)
+        public bool AddBefore<TBefore>(T item)
         {
             for (int index = 0; index < _InternalList.Count; index++)
-                if (_InternalList[index].GetType().IsInstanceOfType(typeof(TBefore)))
-                    _InternalList.Insert(index, item);
+            {
+                if (_InternalList[index] is TBefore) continue;
+
+                _InternalList.Insert(index, item);
+                return true;
+            }
+
+            return false;
         }
 
-        public void AddAfter<TAfter>(T item)
+        public bool AddAfter<TAfter>(T item)
         {
             for (int index = 0; index < _InternalList.Count; index++)
-                if (_InternalList[index].GetType().IsInstanceOfType(typeof(TAfter)))
-                    _InternalList.Insert(index + 1, item);
+            {
+                if (_InternalList[index] is not TAfter) continue;
+
+                _InternalList.Insert(index + 1, item);
+                return true;
+            }
+
+            return false;
         }
 
         public void Remove<TItem>() => _InternalList.RemoveAll(item => item.GetType().IsInstanceOfType(typeof(TItem)));

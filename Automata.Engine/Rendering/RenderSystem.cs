@@ -26,7 +26,7 @@ namespace Automata.Engine.Rendering
         private const bool _ENABLE_BACK_FACE_CULLING = true;
 
         private readonly GL _GL;
-        private readonly Texture2DArray<Rgba32> _Texture;
+        private readonly Texture _Texture;
 
         private float _NewAspectRatio;
 
@@ -47,9 +47,9 @@ namespace Automata.Engine.Rendering
                 _GL.Enable(GLEnum.CullFace);
             }
 
-            _Texture = TextureRegistry.Instance.GetTexture<Texture2DArray<Rgba32>>("blocks") ?? throw new NullReferenceException();
+            _Texture = new Texture2D<Rgba32>("Resources/Textures/BlockAtlas.png", Texture.WrapMode.Repeat, Texture.FilterMode.Point, false);
 
-            GLAPI.Instance.CheckForErrorsAndThrow();
+            // TextureRegistry.Instance.GetTexture<Texture2DArray<Rgba32>>("blocks") ?? throw new NullReferenceException();
         }
 
         [HandlesComponents(DistinctionStrategy.Any, typeof(Camera), typeof(RenderMesh))]
@@ -128,12 +128,10 @@ namespace Automata.Engine.Rendering
                         }
 
                         renderMesh.Mesh!.Bind();
-                        _Texture.Bind(TextureUnit.Texture0);
+                        _Texture.Bind(TextureTarget.Texture2D, TextureUnit.Texture0);
                         renderShader.Value.TrySetUniform("tex0", 0);
 
                         _GL.DrawElements(PrimitiveType.Triangles, renderMesh.Mesh!.IndexesLength, DrawElementsType.UnsignedInt, null);
-
-                        GLAPI.Instance.CheckForErrorsAndThrow();
                     }
                 }
 
@@ -164,5 +162,11 @@ namespace Automata.Engine.Rendering
         }
 
         private void GameWindowResized(object sender, Vector2i newSize) => _NewAspectRatio = (float)newSize.X / (float)newSize.Y;
+
+        protected override void DisposeInternal()
+        {
+            base.DisposeInternal();
+            _Texture.Dispose();
+        }
     }
 }

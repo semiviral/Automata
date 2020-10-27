@@ -18,23 +18,21 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             Image<TPixel> image = Image.Load<TPixel>(path);
             image.Mutate(img => img.Flip(FlipMode.Vertical));
 
-            UploadImage((uint)image.Width, (uint)image.Height, ref image.GetPixelRowSpan(0)[0]);
+            UploadImageToGPU((uint)image.Width, (uint)image.Height, ref image.GetPixelRowSpan(0)[0]);
 
             ConfigureTexture(wrapMode, filterMode, mipmap);
 
             image.Dispose();
         }
 
-        private void UploadImage(uint width, uint height, ref TPixel data)
+        private void UploadImageToGPU(uint width, uint height, ref TPixel data)
         {
             Bind(TextureUnit.Texture0);
 
             (InternalFormat internalFormat, PixelFormat pixelFormat, PixelType pixelType) = GetPixelData<TPixel>();
 
             byte firstPixelByte = data.GetValue<TPixel, byte>(0);
-            GL.TexImage2D(TextureTarget.Texture2D, 0, (int)internalFormat, width, height, 0, pixelFormat, pixelType, ref firstPixelByte);
-
-            GLAPI.Instance.CheckForErrorsAndThrow();
+            GL.TexImage2D(TextureTarget.Texture2D, 0, (int)internalFormat, width, height, 0, pixelFormat, pixelType, ref data);
         }
 
         private void ConfigureTexture(WrapMode wrapMode, FilterMode filterMode, bool mipmap)
