@@ -32,6 +32,8 @@ namespace Automata.Game
 
         private static void Main()
         {
+            Atlas atlas = Atlas.Load("Resources/Textures/Core.json");
+
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .WriteTo.Console()

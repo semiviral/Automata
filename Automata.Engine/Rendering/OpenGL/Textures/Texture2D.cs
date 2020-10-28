@@ -54,7 +54,7 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
 
         public sealed override void Unbind(TextureUnit textureSlot) { GL.BindTexture(TextureTarget.Texture2D, 0); }
 
-        public static Texture2D<TPixel> LoadFromFile(string path, WrapMode wrapMode, FilterMode filterMode, bool mipmap)
+        public static Texture2D<TPixel> Load(string path, WrapMode wrapMode, FilterMode filterMode, bool mipmap)
         {
             using Image<TPixel> image = Image.Load<TPixel>(path);
             image.Mutate(img => img.Flip(FlipMode.Vertical));

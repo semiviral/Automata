@@ -1,0 +1,20 @@
+{
+  "RelativeImagePath": "BlockAtlas.png",
+  "AtlasTiles":
+    [{
+        "Name": "null",
+        "Offset": { "X": 0, "Y": 0 }
+    },
+    {
+      "Name": "grass",
+      "Offset": { "X": 1, "Y": 0 }
+    },
+    {
+      "Name": "grass_side",
+      "Offset": { "X": 1, "Y": 1 }
+    },
+    {
+      "Name": "dirt",
+      "Offset": { "X": 2, "Y": 0 }
+    }]
+}
