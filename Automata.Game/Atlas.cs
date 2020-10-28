@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
 using Automata.Engine.Numerics;
 
@@ -15,7 +13,7 @@ namespace Automata.Game
             public Vector2i Offset { get; set; }
         }
 
-        public string RelativeImagePath { get; }
+        public string RelativeImagePath { get; set; }
         public AtlasTile[] AtlasTiles { get; set; }
 
         public static Atlas Load(string path)
