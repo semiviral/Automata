@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Automata.Engine.Extensions;
 using Automata.Engine.Numerics;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Game.Blocks;
@@ -138,11 +139,11 @@ namespace Automata.Game.Chunks.Generation
 
                 // axis value of the current face check direction
                 // example: for iteration normalIndex == 0—which is positive X—it'd be equal to localPosition.x
-                int faceCheckAxisValue = (localPosition >> componentShift) & GenerationConstants.CHUNK_SIZE_BIT_MASK;
+                int facedAxisValue = (localPosition >> componentShift) & GenerationConstants.CHUNK_SIZE_BIT_MASK;
 
                 // indicates whether or not the face check is within the current chunk bounds
-                bool isFaceCheckOutOfBounds = (!isNegativeNormal && (faceCheckAxisValue == (GenerationConstants.CHUNK_SIZE - 1)))
-                                              || (isNegativeNormal && (faceCheckAxisValue == 0));
+                bool facingNeighbor = (!isNegativeNormal && (facedAxisValue == (GenerationConstants.CHUNK_SIZE - 1)))
+                                              || (isNegativeNormal && (facedAxisValue == 0));
 
                 // total number of successful traversals
                 // remark: this is outside the for loop so that the if statement after can determine if any traversals have happened
@@ -175,7 +176,7 @@ namespace Automata.Game.Chunks.Generation
                         traversalIndex += traversalIndexStep) // increment traversal index by index step to adjust local working position
                     {
                         // check if current facing block axis value is within the local chunk
-                        if (isFaceCheckOutOfBounds)
+                        if (facingNeighbor)
                         {
                             // this block of code translates the integer local position to the local position of the neighbor at [normalIndex]
                             int sign = isNegativeNormal ? -1 : 1;
@@ -245,38 +246,45 @@ namespace Automata.Game.Chunks.Generation
                     indexes.Add(indexesStart + 2u);
                     indexes.Add(indexesStart + 3u);
 
-                    int traversalShiftedMask = GenerationConstants.CHUNK_SIZE_BIT_MASK << traversalNormalShift;
-                    int unaryTraversalShiftedMask = ~traversalShiftedMask;
-
                     Span<int> compressedVertices = _PackedVertexesByIteration[normalIndex];
+                    int traversalComponentMask = GenerationConstants.CHUNK_SIZE_BIT_MASK << traversalNormalShift;
+                    int unaryTraversalComponentMask = ~traversalComponentMask;
+                    int uvShift = (componentIndex + traversalNormalIndex) % 2;
+                    int compressedUV = (0 << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2)) // z
+                                       | traversals << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * uvShift) // traversal component
+                                       | (1 << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * ((uvShift + 1) % 2))); // opposite component to traversal
 
                     vertexes.Add(localPosition
-                                 + ((unaryTraversalShiftedMask & compressedVertices[0])
+                                 + ((unaryTraversalComponentMask & compressedVertices[0])
                                     | ((((compressedVertices[0] >> traversalNormalShift) * traversals) << traversalNormalShift)
-                                       & traversalShiftedMask)));
+                                       & traversalComponentMask)));
 
-                    vertexes.Add(CompressVertex(Vector3i.Zero));
+                    // capture z
+                    vertexes.Add(compressedUV & (int.MaxValue << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2)));
 
                     vertexes.Add(localPosition
-                                 + ((unaryTraversalShiftedMask & compressedVertices[1])
+                                 + ((unaryTraversalComponentMask & compressedVertices[1])
                                     | ((((compressedVertices[1] >> traversalNormalShift) * traversals) << traversalNormalShift)
-                                       & traversalShiftedMask)));
+                                       & traversalComponentMask)));
 
-                    vertexes.Add(CompressVertex(Vector3i.UnitY));
+                    // capture y,z
+                    vertexes.Add(compressedUV & (int.MaxValue << GenerationConstants.CHUNK_SIZE_BIT_SHIFT));
 
                     vertexes.Add(localPosition
-                                 + ((unaryTraversalShiftedMask & compressedVertices[2])
+                                 + ((unaryTraversalComponentMask & compressedVertices[2])
                                     | ((((compressedVertices[2] >> traversalNormalShift) * traversals) << traversalNormalShift)
-                                       & traversalShiftedMask)));
+                                       & traversalComponentMask)));
 
-                    vertexes.Add(CompressVertex(new Vector3i(1, 1, 0)));
+                    // capture xyz
+                    vertexes.Add(compressedUV & int.MaxValue);
 
                     vertexes.Add(localPosition
-                                 + ((unaryTraversalShiftedMask & compressedVertices[3])
+                                 + ((unaryTraversalComponentMask & compressedVertices[3])
                                     | ((((compressedVertices[3] >> traversalNormalShift) * traversals) << traversalNormalShift)
-                                       & traversalShiftedMask)));
+                                       & traversalComponentMask)));
 
-                    vertexes.Add(CompressVertex(Vector3i.UnitX));
+                    // capture x,z
+                    vertexes.Add(compressedUV & ~(GenerationConstants.CHUNK_SIZE_BIT_MASK << GenerationConstants.CHUNK_SIZE_BIT_SHIFT));
 
                     indexesStart += 4u;
 

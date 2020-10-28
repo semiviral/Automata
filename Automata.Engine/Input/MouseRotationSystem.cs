@@ -4,6 +4,7 @@ using System;
 using System.Numerics;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
+using Automata.Engine.Numerics;
 using Automata.Engine.Rendering.GLFW;
 using Automata.Engine.Systems;
 
@@ -26,7 +27,12 @@ namespace Automata.Engine.Input
             if (relativeMousePosition == Vector2.Zero) return;
 
             foreach ((Rotation rotation, MouseListener mouseListener) in entityManager.GetComponents<Rotation, MouseListener>())
+            {
                 rotation.AccumulateAngles(relativeMousePosition * mouseListener.Sensitivity);
+
+                const string format = "{0} {1}";
+                AutomataWindow.Instance.Title = string.Format(format, AutomataWindow.Instance.Title, Vector3.Transform(Vector3.UnitZ, rotation.Value));
+            }
 
             // reset mouse position to center of screen
             InputManager.Instance.SetMousePositionRelative(0, Vector2.Zero);
