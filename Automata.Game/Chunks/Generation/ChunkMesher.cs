@@ -184,7 +184,7 @@ namespace Automata.Game.Chunks.Generation
                             int translatedLocalPosition = localPosition + (traversals << traversalNormalShift);
 
                             int neighborLocalPosition = (~iModuloComponentMask & translatedLocalPosition)
-                                                        | (AutomataMath.Wrap(((translatedLocalPosition & iModuloComponentMask) >> iModulo3Shift) + sign,
+                                                        | (Wrap(((translatedLocalPosition & iModuloComponentMask) >> iModulo3Shift) + sign,
                                                                GenerationConstants.CHUNK_SIZE, 0, GenerationConstants.CHUNK_SIZE - 1)
                                                            << iModulo3Shift);
 
@@ -301,12 +301,12 @@ namespace Automata.Game.Chunks.Generation
                 bool isNegativeFace = (normalIndex - 3) >= 0;
 
                 // normalIndex constrained to represent the 3 axes
-                int iModulo3 = normalIndex % 3;
-                int iModulo3Shift = GenerationConstants.CHUNK_SIZE_BIT_SHIFT * iModulo3;
+                int componentIndex = normalIndex % 3;
+                int componentShift = GenerationConstants.CHUNK_SIZE_BIT_SHIFT * componentIndex;
 
                 // axis value of the current face check direction
                 // example: for iteration normalIndex == 0—which is positive X—it'd be equal to localPosition.x
-                int faceCheckAxisValue = (localPosition >> iModulo3Shift) & GenerationConstants.CHUNK_SIZE_BIT_MASK;
+                int faceCheckAxisValue = (localPosition >> componentShift) & GenerationConstants.CHUNK_SIZE_BIT_MASK;
 
                 // indicates whether or not the face check is within the current chunk bounds
                 bool isFaceCheckOutOfBounds = (!isNegativeFace && (faceCheckAxisValue == (GenerationConstants.CHUNK_SIZE - 1)))
@@ -316,12 +316,12 @@ namespace Automata.Game.Chunks.Generation
                 {
                     // this block of code translates the integer local position to the local position of the neighbor at [normalIndex]
                     int sign = isNegativeFace ? -1 : 1;
-                    int iModuloComponentMask = GenerationConstants.CHUNK_SIZE_BIT_MASK << iModulo3Shift;
+                    int componentMask = GenerationConstants.CHUNK_SIZE_BIT_MASK << componentShift;
 
-                    int neighborLocalPosition = (~iModuloComponentMask & localPosition)
-                                                | (AutomataMath.Wrap(((localPosition & iModuloComponentMask) >> iModulo3Shift) + sign,
+                    int neighborLocalPosition = (~componentMask & localPosition)
+                                                | (Wrap(((localPosition & componentMask) >> componentShift) + sign,
                                                        GenerationConstants.CHUNK_SIZE, 0, GenerationConstants.CHUNK_SIZE - 1)
-                                                   << iModulo3Shift);
+                                                   << componentShift);
 
                     // index into neighbor blocks collections, call .GetPoint() with adjusted local position
                     // remark: if there's no neighbor at the index given, then no chunk exists there (for instance,
@@ -398,6 +398,15 @@ namespace Automata.Game.Chunks.Generation
 
                 //_MeshData.AddVertex(compressedUv & int.MaxValue);
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int Wrap(int v, int delta, int minVal, int maxVal)
+        {
+            int mod = (maxVal + 1) - minVal;
+            v += delta - minVal;
+            v += (1 - (v / mod)) * mod;
+            return (v % mod) + minVal;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

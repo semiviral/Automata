@@ -1,12 +1,12 @@
 ﻿#region
 
 using System;
+using System.Drawing;
 using System.IO;
 using Automata.Engine;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
 using Automata.Engine.Input;
-using Automata.Engine.Numerics;
 using Automata.Engine.Rendering;
 using Automata.Engine.Rendering.GLFW;
 using Automata.Engine.Rendering.OpenGL;
@@ -19,11 +19,6 @@ using Automata.Game.Chunks.Generation;
 using ConcurrencyPools;
 using Serilog;
 using Silk.NET.Windowing.Common;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
-using Point = System.Drawing.Point;
-using Size = System.Drawing.Size;
 
 #endregion
 
@@ -133,7 +128,7 @@ namespace Automata.Game
 
             world.EntityManager.RegisterComponent(player, new ChunkLoader
             {
-                Radius = 1
+                Radius = 32
             });
         }
 
@@ -143,8 +138,6 @@ namespace Automata.Game
             BoundedPool.Active.DefaultThreadPoolSize();
 
             InitializeSingletons();
-
-
 
             //TextureRegistry.Instance.AddTexture("blocks", texture);
 

@@ -52,14 +52,6 @@ namespace Automata.Engine
             yield return matrix.M44;
         }
 
-        public static int Wrap(int v, int delta, int minVal, int maxVal)
-        {
-            int mod = (maxVal + 1) - minVal;
-            v += delta - minVal;
-            v += (1 - (v / mod)) * mod;
-            return (v % mod) + minVal;
-        }
-
         public static byte AsByte(this bool a) => (byte)(Unsafe.As<bool, byte>(ref a) * byte.MaxValue);
         public static bool AsBool(this byte a) => Unsafe.As<byte, bool>(ref a);
         public static byte FirstByte(this double a) => Unsafe.As<double, byte>(ref a);

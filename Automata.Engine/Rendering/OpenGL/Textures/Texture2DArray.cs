@@ -28,8 +28,7 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
         public void SetPixels(Vector3i offset, Vector2i size, ref TPixel firstPixel)
         {
             if (Vector3b.Any(offset < 0)) throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
-            else if (Vector2b.Any(size < 0))
-                throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0 and <TexSize");
+            else if (Vector2b.Any(size < 0)) throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0 and <TexSize");
 
             Bind(TextureUnit.Texture0);
 
