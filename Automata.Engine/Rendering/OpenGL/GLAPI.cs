@@ -2,6 +2,7 @@
 
 using System;
 using Automata.Engine.Rendering.GLFW;
+using Serilog;
 using Silk.NET.Core.Native;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing.Common;
@@ -19,6 +20,9 @@ namespace Automata.Engine.Rendering.OpenGL
         {
             AutomataWindow.Validate(); // validate dependency or throw
             GL = AutomataWindow.Instance.GetGL();
+
+            string version = GL.GetString(StringName.Version);
+            Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(GLAPI), $"OpenGL version {version}"));
 
             // configure debug callback
             GL.GetInteger(GetPName.ContextFlags, out int flags);

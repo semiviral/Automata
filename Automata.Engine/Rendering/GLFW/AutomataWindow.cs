@@ -62,7 +62,7 @@ namespace Automata.Engine.Rendering.GLFW
             Glfw glfw = GLFWAPI.Instance.GLFW;
             glfw.WindowHint(WindowHintInt.ContextVersionMajor, 4);
             glfw.WindowHint(WindowHintInt.ContextVersionMinor, 3);
-            glfw.WindowHint(WindowHintBool.OpenGLForwardCompat, true);
+            glfw.WindowHint(WindowHintBool.OpenGLForwardCompat, false);
             glfw.WindowHint(WindowHintOpenGlProfile.OpenGlProfile, OpenGlProfile.Core);
             glfw.WindowHint(WindowHintBool.OpenGLDebugContext, true);
 
