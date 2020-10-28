@@ -53,13 +53,13 @@ namespace Automata.Engine.Rendering
         public override void Registered()
         {
             Image<Rgba32> image = Image.Load<Rgba32>("Resources/Textures/BlockAtlas.png");
-            Image<Rgba32> slice = new Image<Rgba32>(16, 16);
+            Image<Rgba32> slice = new Image<Rgba32>(8, 8);
 
-            for (int x = 0; x < slice.Width; x++)
             for (int y = 0; y < slice.Height; y++)
+            for (int x = 0; x < slice.Width; x++)
                 slice[y, x] = image[y, x];
 
-            Texture2DArray<Rgba32> texture = new Texture2DArray<Rgba32>(new Vector3i(16, 16, 1), Texture.WrapMode.Repeat, Texture.FilterMode.Point);
+            Texture2DArray<Rgba32> texture = new Texture2DArray<Rgba32>(new Vector3i(8, 8, 1), Texture.WrapMode.Repeat, Texture.FilterMode.Point);
             texture.SetPixels(Vector3i.Zero, new Vector2i(slice.Width, slice.Height), ref slice.GetPixelRowSpan(0)[0]);
 
             _Texture = texture;
