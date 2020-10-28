@@ -26,8 +26,8 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
 
             AssignPixelFormats<TPixel>();
 
-            GL.TexStorage2D(TextureTarget.Texture2D, 1, _InternalFormat, (uint)size.X, (uint)size.Y);
             AssignTextureParameters(TextureTarget.Texture2D, GetWrapModeAsGLEnum(wrapMode), GetFilterModeAsGLEnum(filterMode));
+            GL.TexStorage2D(TextureTarget.Texture2D, 1, _InternalFormat, (uint)size.X, (uint)size.Y);
 
             if (mipmap) GL.GenerateMipmap(TextureTarget.Texture2D);
 
@@ -50,6 +50,13 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
         {
             GL.ActiveTexture(textureSlot);
             GL.BindTexture(TextureTarget.Texture2D, Handle);
+        }
+
+
+
+        public sealed override void Unbind(TextureUnit textureSlot)
+        {
+            GL.BindTexture(TextureTarget.Texture2D, 0);
         }
 
         public static Texture2D<TPixel> LoadFromFile(string path, WrapMode wrapMode, FilterMode filterMode, bool mipmap)

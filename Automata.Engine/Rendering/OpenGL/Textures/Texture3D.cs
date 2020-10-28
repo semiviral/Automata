@@ -26,8 +26,8 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
 
             AssignPixelFormats<TPixel>();
 
-            GL.TexStorage3D(TextureTarget.Texture3D, 1, _InternalFormat, (uint)size.X, (uint)size.Y, (uint)size.Z);
             AssignTextureParameters(TextureTarget.Texture3D, GetWrapModeAsGLEnum(wrapMode), GetFilterModeAsGLEnum(filterMode));
+            GL.TexStorage3D(TextureTarget.Texture3D, 1, _InternalFormat, (uint)size.X, (uint)size.Y, (uint)size.Z);
 
             if (mipmap) GL.GenerateMipmap(TextureTarget.Texture3D);
 
@@ -51,6 +51,11 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
         {
             GL.ActiveTexture(textureSlot);
             GL.BindTexture(TextureTarget.Texture3D, Handle);
+        }
+
+        public sealed override void Unbind(TextureUnit textureSlot)
+        {
+            GL.BindTexture(TextureTarget.Texture3D, 0);
         }
     }
 }

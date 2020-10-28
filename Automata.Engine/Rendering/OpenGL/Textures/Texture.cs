@@ -75,6 +75,7 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
         }
 
         public abstract void Bind(TextureUnit textureSlot);
+        public abstract void Unbind(TextureUnit textureSlot);
 
         public void Dispose() => GL.DeleteTexture(Handle);
     }
