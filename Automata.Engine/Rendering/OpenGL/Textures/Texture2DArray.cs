@@ -14,12 +14,15 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             if (Vector3b.Any(size < 0)) throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
 
             Size = size;
+
             AssignPixelFormats<TPixel>();
 
             Bind(TextureUnit.Texture0);
 
             GL.TexStorage3D(TextureTarget.Texture2DArray, 1, _InternalFormat, (uint)size.X, (uint)size.Y, (uint)size.Z);
             AssignTextureParameters(TextureTarget.Texture2DArray, GetWrapModeAsGLEnum(wrapMode), GetFilterModeAsGLEnum(filterMode));
+
+            GLAPI.CheckForErrorsAndThrow(true);
         }
 
         public void SetPixels(Vector3i offset, Vector2i size, ref TPixel firstPixel)

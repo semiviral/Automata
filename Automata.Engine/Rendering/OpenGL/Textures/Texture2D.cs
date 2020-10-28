@@ -18,6 +18,8 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
 
         public Texture2D(Vector2i size, WrapMode wrapMode, FilterMode filterMode, bool mipmap)
         {
+            if (Vector2b.Any(size < 0)) throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
+
             Size = size;
 
             Bind(TextureUnit.Texture0);
@@ -25,23 +27,11 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             AssignPixelFormats<TPixel>();
 
             GL.TexStorage2D(TextureTarget.Texture2D, 1, _InternalFormat, (uint)size.X, (uint)size.Y);
-
-            ConfigureTexture(wrapMode, filterMode, mipmap);
-
-            GLAPI.CheckForErrorsAndThrow(true);
-        }
-
-        private void ConfigureTexture(WrapMode wrapMode, FilterMode filterMode, bool mipmap)
-        {
             AssignTextureParameters(TextureTarget.Texture2D, GetWrapModeAsGLEnum(wrapMode), GetFilterModeAsGLEnum(filterMode));
 
             if (mipmap) GL.GenerateMipmap(TextureTarget.Texture2D);
-        }
 
-        public sealed override void Bind(TextureUnit textureSlot)
-        {
-            GL.ActiveTexture(textureSlot);
-            GL.BindTexture(TextureTarget.Texture2D, Handle);
+            GLAPI.CheckForErrorsAndThrow(true);
         }
 
         public void SetPixels(Vector3i offset, Vector2i size, ref TPixel firstPixel)
@@ -54,6 +44,12 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             GL.TexSubImage2D(TextureTarget.Texture2D, 0, offset.X, offset.Y, (uint)size.X, (uint)size.Y, _PixelFormat, _PixelType, ref firstPixel);
 
             GLAPI.CheckForErrorsAndThrow(true);
+        }
+
+        public sealed override void Bind(TextureUnit textureSlot)
+        {
+            GL.ActiveTexture(textureSlot);
+            GL.BindTexture(TextureTarget.Texture2D, Handle);
         }
 
         public static Texture2D<TPixel> LoadFromFile(string path, WrapMode wrapMode, FilterMode filterMode, bool mipmap)

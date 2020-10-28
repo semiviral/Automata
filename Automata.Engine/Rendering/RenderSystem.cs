@@ -13,7 +13,9 @@ using Automata.Engine.Rendering.OpenGL.Textures;
 using Automata.Engine.Systems;
 using Serilog;
 using Silk.NET.OpenGL;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 using Plane = Automata.Engine.Numerics.Shapes.Plane;
 
 #endregion
@@ -47,8 +49,15 @@ namespace Automata.Engine.Rendering
                 _GL.Enable(GLEnum.CullFace);
             }
 
-            _Texture = Texture2D<Rgba32>.LoadFromFile("Resources/Textures/BlankMagenta.png", Texture.WrapMode.Repeat, Texture.FilterMode.Point,
-                false); //TextureRegistry.Instance.GetTexture<Texture2DArray<Rgba32>>("blocks") ?? throw new NullReferenceException();
+            Image<Rgba32> image = Image.Load<Rgba32>("Resources/Textures/BlankMagenta.png");
+            image.Mutate(img => img.Flip(FlipMode.Vertical));
+
+            Texture2DArray<Rgba32> texture = new Texture2DArray<Rgba32>(new Vector3i(16, 16, 1), Texture.WrapMode.Repeat, Texture.FilterMode.Point);
+            texture.SetPixels(Vector3i.Zero, new Vector2i(image.Width, image.Height), ref image.GetPixelRowSpan(0)[0]);
+
+            _Texture = texture;
+                        // Texture2D<Rgba32>.LoadFromFile("Resources/Textures/BlankMagenta.png", Texture.WrapMode.Repeat, Texture.FilterMode.Point, false);
+                        // TextureRegistry.Instance.GetTexture<Texture2DArray<Rgba32>>("blocks") ?? throw new NullReferenceException();
         }
 
         [HandlesComponents(DistinctionStrategy.Any, typeof(Camera), typeof(RenderMesh))]

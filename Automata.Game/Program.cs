@@ -144,13 +144,9 @@ namespace Automata.Game
 
             InitializeSingletons();
 
-            Image<Rgba32> image = Image.Load<Rgba32>("Resources/Textures/BlankMagenta.png");
-            image.Mutate(img => img.Flip(FlipMode.Vertical));
 
-            Texture2DArray<Rgba32> texture = new Texture2DArray<Rgba32>(new Vector3i(16, 16, 1), Texture.WrapMode.Repeat, Texture.FilterMode.Point);
-            texture.SetPixels(Vector3i.Zero, new Vector2i(image.Width, image.Height), ref image.GetPixelRowSpan(0)[0]);
 
-            TextureRegistry.Instance.AddTexture("blocks", texture);
+            //TextureRegistry.Instance.AddTexture("blocks", texture);
 
             InitializeBlocks();
 

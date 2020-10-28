@@ -1,4 +1,4 @@
-#version 430 core
+#version 330 core
 
 layout (location = 0) in int vert;
 layout (location = 1) in int uv;
