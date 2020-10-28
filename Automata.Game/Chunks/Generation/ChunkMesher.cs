@@ -223,8 +223,9 @@ namespace Automata.Game.Chunks.Generation
                             }
                             else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockID, BlockDefinition.Property.Transparent))
                             {
-                                // we've culled this face, and faced block is opaque as well, so cull it's face adjacent to current.
-                                if (!isNegativeNormal) faces[facedBlockIndex] |= (Direction)(1 << ((normalIndex + 3) % 6));
+                                if (!isNegativeNormal)
+                                    // we've culled the current face, and faced block is opaque as well, so cull it's face to current.
+                                    faces[facedBlockIndex] |= (Direction)(1 << ((normalIndex + 3) % 6));
 
                                 break;
                             }
@@ -233,11 +234,11 @@ namespace Automata.Game.Chunks.Generation
                         faces[traversalIndex] |= faceDirection;
                     }
 
-                    // if it's the first traversal and we've only made a 1x1x1 face, continue to test next axis
-                    if ((traversals == 1) && (perpendicularNormalIndex == 1)) continue;
-
                     // face is occluded
                     if (traversals == 0) break;
+
+                    // if it's the first traversal and we've only made a 1x1x1 face, continue to test next axis
+                    else if ((traversals == 1) && (perpendicularNormalIndex == 1)) continue;
 
                     indexes.Add(indexesStart + 0u);
                     indexes.Add(indexesStart + 1u);
@@ -249,7 +250,7 @@ namespace Automata.Game.Chunks.Generation
                     Span<int> compressedVertices = _PackedVertexesByIteration[normalIndex];
                     int traversalComponentMask = GenerationConstants.CHUNK_SIZE_BIT_MASK << traversalNormalShift;
                     int unaryTraversalComponentMask = ~traversalComponentMask;
-                    int uvShift = (componentIndex + traversalNormalIndex) % 2;
+                    int uvShift = (componentIndex + traversalNormalIndex + (componentIndex == 1 && traversalNormalIndex == 2 ? 1 : 0)) % 2;
                     int compressedUV = (0 << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2)) // z
                                        | traversals << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * uvShift) // traversal component
                                        | (1 << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * ((uvShift + 1) % 2))); // opposite component to traversal
