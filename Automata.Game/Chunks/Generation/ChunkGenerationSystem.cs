@@ -133,7 +133,15 @@ namespace Automata.Game.Chunks.Generation
             Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
             stopwatch.Restart();
 
-            PendingMesh<int> pendingMesh = ChunkMesher.GeneratePackedMesh(chunk.Blocks, chunk.NeighborBlocks());
+            int index = 0;
+            Span<ushort> blocks = stackalloc ushort[GenerationConstants.CHUNK_SIZE_CUBED];
+
+            for (int y = 0; y < GenerationConstants.CHUNK_SIZE; y++)
+            for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
+            for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++, index++)
+                blocks[index] = chunk.Blocks.GetPoint(x, y, z);
+
+            PendingMesh<int> pendingMesh = ChunkMesher.GeneratePackedMesh(blocks, chunk.NeighborBlocks());
             if (!_PendingMeshes.TryAdd(chunk.ID, pendingMesh)) Log.Error($"Failed to add chunk({origin}) mesh.");
 
             stopwatch.Stop();

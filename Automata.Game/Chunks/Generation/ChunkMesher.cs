@@ -83,22 +83,14 @@ namespace Automata.Game.Chunks.Generation
             -GenerationConstants.CHUNK_SIZE
         };
 
-        public static PendingMesh<int> GeneratePackedMesh(INodeCollection<ushort> blocksCompressed, INodeCollection<ushort>?[] neighbors)
+        public static PendingMesh<int> GeneratePackedMesh(Span<ushort> blocks, INodeCollection<ushort>?[] neighbors)
         {
             List<int> vertexes = new List<int>();
             List<uint> indexes = new List<uint>();
-            Span<ushort> blocks = stackalloc ushort[GenerationConstants.CHUNK_SIZE_CUBED];
             Span<Direction> faces = stackalloc Direction[blocks.Length];
             faces.Clear();
 
             int index = 0;
-
-            for (int y = 0; y < GenerationConstants.CHUNK_SIZE; y++)
-            for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
-            for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++, index++)
-                blocks[index] = blocksCompressed.GetPoint(x, y, z);
-
-            index = 0;
             uint vertexCount = 0;
 
             for (int y = 0; y < GenerationConstants.CHUNK_SIZE; y++)
@@ -250,6 +242,8 @@ namespace Automata.Game.Chunks.Generation
                     Span<int> compressedVertices = _PackedVertexesByIteration[normalIndex];
                     int traversalComponentMask = GenerationConstants.CHUNK_SIZE_BIT_MASK << traversalNormalShift;
                     int unaryTraversalComponentMask = ~traversalComponentMask;
+
+                    // this ternary solution should probably be temporary. not sure if there's a better way, though.
                     int uvShift = (componentIndex + traversalNormalIndex + (componentIndex == 1 && traversalNormalIndex == 2 ? 1 : 0)) % 2;
                     int compressedUV = (0 << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2)) // z
                                        | traversals << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * uvShift) // traversal component
