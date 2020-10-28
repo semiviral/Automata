@@ -1,6 +1,6 @@
 #version 330 core
 
-uniform sampler2D _blocks;
+uniform sampler2DArray _blocks;
 
 in flat int texIndex;
 in vec2 texUV;
@@ -10,5 +10,5 @@ out vec4 color;
 
 void main()
 {
-    color = texture(_blocks, texUV) * vec4(vertexColor, 1.0);
+    color = texture(_blocks, vec3(texUV, 0)) * vec4(vertexColor, 1.0);
 }

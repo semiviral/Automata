@@ -55,9 +55,9 @@ namespace Automata.Engine.Rendering
             Texture2DArray<Rgba32> texture = new Texture2DArray<Rgba32>(new Vector3i(16, 16, 1), Texture.WrapMode.Repeat, Texture.FilterMode.Point);
             texture.SetPixels(Vector3i.Zero, new Vector2i(image.Width, image.Height), ref image.GetPixelRowSpan(0)[0]);
 
-            _Texture = // texture;
+            _Texture = texture;
 
-            Texture2D<Rgba32>.LoadFromFile("Resources/Textures/BlankMagenta.png", Texture.WrapMode.Repeat, Texture.FilterMode.Point, false);
+            // Texture2D<Rgba32>.LoadFromFile("Resources/Textures/BlankMagenta.png", Texture.WrapMode.Repeat, Texture.FilterMode.Point, false);
             // TextureRegistry.Instance.GetTexture<Texture2DArray<Rgba32>>("blocks") ?? throw new NullReferenceException();
         }
 
