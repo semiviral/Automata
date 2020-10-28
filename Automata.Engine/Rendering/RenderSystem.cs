@@ -47,9 +47,8 @@ namespace Automata.Engine.Rendering
                 _GL.Enable(GLEnum.CullFace);
             }
 
-            _Texture = new Texture2D<Rgba32>("Resources/Textures/BlockAtlas.png", Texture.WrapMode.Repeat, Texture.FilterMode.Point, false);
-
-            // TextureRegistry.Instance.GetTexture<Texture2DArray<Rgba32>>("blocks") ?? throw new NullReferenceException();
+            _Texture = Texture2D<Rgba32>.LoadFromFile("Resources/Textures/BlankMagenta.png", Texture.WrapMode.Repeat, Texture.FilterMode.Point,
+                false); //TextureRegistry.Instance.GetTexture<Texture2DArray<Rgba32>>("blocks") ?? throw new NullReferenceException();
         }
 
         [HandlesComponents(DistinctionStrategy.Any, typeof(Camera), typeof(RenderMesh))]
@@ -138,7 +137,7 @@ namespace Automata.Engine.Rendering
                 _GL.BindVertexArray(0);
                 _NewAspectRatio = 0f;
 
-                GLAPI.Instance.CheckForErrorsAndThrow(true);
+                GLAPI.CheckForErrorsAndThrow(true);
             }
             catch (Exception exception)
             {

@@ -1,5 +1,7 @@
 #region
 
+using System;
+using Automata.Engine.Numerics;
 using Silk.NET.OpenGL;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -12,21 +14,21 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
 {
     public class Texture2D<TPixel> : Texture where TPixel : unmanaged, IPixel<TPixel>
     {
-        public Texture2D(string path, WrapMode wrapMode, FilterMode filterMode, bool mipmap)
-        {
-            Image<TPixel> image = Image.Load<TPixel>(path);
-            image.Mutate(img => img.Flip(FlipMode.Vertical));
+        public Vector2i Size { get; }
 
-            AssignPixelFormats<TPixel>();
+        public Texture2D(Vector2i size, WrapMode wrapMode, FilterMode filterMode, bool mipmap)
+        {
+            Size = size;
 
             Bind(TextureUnit.Texture0);
 
-            GL.TexImage2D(TextureTarget.Texture2D, 0, (int)_InternalFormat, (uint)image.Width, (uint)image.Height, 0, _PixelFormat, _PixelType,
-                ref image.GetPixelRowSpan(0)[0]);
+            AssignPixelFormats<TPixel>();
+
+            GL.TexStorage2D(TextureTarget.Texture2D, 1, _InternalFormat, (uint)size.X, (uint)size.Y);
 
             ConfigureTexture(wrapMode, filterMode, mipmap);
 
-            image.Dispose();
+            GLAPI.CheckForErrorsAndThrow(true);
         }
 
         private void ConfigureTexture(WrapMode wrapMode, FilterMode filterMode, bool mipmap)
@@ -38,8 +40,33 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
 
         public sealed override void Bind(TextureUnit textureSlot)
         {
-            GL.BindTexture(TextureTarget.Texture2D, Handle);
             GL.ActiveTexture(textureSlot);
+            GL.BindTexture(TextureTarget.Texture2D, Handle);
+        }
+
+        public void SetPixels(Vector3i offset, Vector2i size, ref TPixel firstPixel)
+        {
+            if (Vector3b.Any(offset < 0)) throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
+            else if (Vector2b.Any(size < 0)) throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0 and <TexSize");
+
+            Bind(TextureUnit.Texture0);
+
+            GL.TexSubImage2D(TextureTarget.Texture2D, 0, offset.X, offset.Y, (uint)size.X, (uint)size.Y, _PixelFormat, _PixelType, ref firstPixel);
+
+            GLAPI.CheckForErrorsAndThrow(true);
+        }
+
+        public static Texture2D<TPixel> LoadFromFile(string path, WrapMode wrapMode, FilterMode filterMode, bool mipmap)
+        {
+            using Image<TPixel> image = Image.Load<TPixel>(path);
+            image.Mutate(img => img.Flip(FlipMode.Vertical));
+
+            Texture2D<TPixel> texture = new Texture2D<TPixel>(new Vector2i(image.Width, image.Height), wrapMode, filterMode, mipmap);
+            texture.SetPixels(Vector3i.Zero, new Vector2i(image.Width, image.Height), ref image.GetPixelRowSpan(0)[0]);
+
+            image.Dispose();
+
+            return texture;
         }
     }
 }

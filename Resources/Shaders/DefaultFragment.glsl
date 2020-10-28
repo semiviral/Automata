@@ -1,13 +1,14 @@
-#version 330 core
+#version 430 core
 
 uniform sampler2D _blocks;
 
-in vec3 texUV;
-in vec4 vertexColor;
+in flat int texIndex;
+in vec2 texUV;
+in vec3 vertexColor;
 
 out vec4 color;
 
 void main()
 {
-    color =  vertexColor;// texture(_blocks, vec2(0) / textureSize(_blocks, 0));
+    color = texture(_blocks, texUV) * vec4(vertexColor, 1.0);
 }

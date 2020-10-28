@@ -256,28 +256,28 @@ namespace Automata.Game.Chunks.Generation
                                     | ((((compressedVertices[0] >> traversalNormalShift) * traversals) << traversalNormalShift)
                                        & traversalShiftedMask)));
 
-                    vertexes.Add(compressedVertices[0]);
+                    vertexes.Add(CompressVertex(Vector3i.Zero));
 
                     vertexes.Add(localPosition
                                  + ((unaryTraversalShiftedMask & compressedVertices[1])
                                     | ((((compressedVertices[1] >> traversalNormalShift) * traversals) << traversalNormalShift)
                                        & traversalShiftedMask)));
 
-                    vertexes.Add(compressedVertices[1]);
+                    vertexes.Add(CompressVertex(Vector3i.UnitY));
 
                     vertexes.Add(localPosition
                                  + ((unaryTraversalShiftedMask & compressedVertices[2])
                                     | ((((compressedVertices[2] >> traversalNormalShift) * traversals) << traversalNormalShift)
                                        & traversalShiftedMask)));
 
-                    vertexes.Add(compressedVertices[2]);
+                    vertexes.Add(CompressVertex(new Vector3i(1, 1, 0)));
 
                     vertexes.Add(localPosition
                                  + ((unaryTraversalShiftedMask & compressedVertices[3])
                                     | ((((compressedVertices[3] >> traversalNormalShift) * traversals) << traversalNormalShift)
                                        & traversalShiftedMask)));
 
-                    vertexes.Add(compressedVertices[3]);
+                    vertexes.Add(CompressVertex(Vector3i.UnitX));
 
                     indexesStart += 4u;
 

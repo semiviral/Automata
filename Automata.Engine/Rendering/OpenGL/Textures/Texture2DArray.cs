@@ -19,23 +19,27 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             Bind(TextureUnit.Texture0);
 
             GL.TexStorage3D(TextureTarget.Texture2DArray, 1, _InternalFormat, (uint)size.X, (uint)size.Y, (uint)size.Z);
-            GLAPI.Instance.CheckForErrorsAndThrow(true);
             AssignTextureParameters(TextureTarget.Texture2DArray, GetWrapModeAsGLEnum(wrapMode), GetFilterModeAsGLEnum(filterMode));
         }
 
-        public void SetPixels(Vector3i offset, Vector3i size, Span<TPixel> pixels)
+        public void SetPixels(Vector3i offset, Vector2i size, ref TPixel firstPixel)
         {
             if (Vector3b.Any(offset < 0)) throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
-            if (Vector3b.Any(size < 0)) throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
+            else if (Vector2b.Any(size < 0))
+                throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0 and <TexSize");
 
-            GL.TextureSubImage3D(Handle, 0, offset.X, offset.Y, offset.Z, (uint)size.X, (uint)size.Y, (uint)size.Z, _PixelFormat,
-                _PixelType, pixels);
+            Bind(TextureUnit.Texture0);
+
+            GL.TexSubImage3D(TextureTarget.Texture2DArray, 0, offset.X, offset.Y, offset.Z, (uint)size.X, (uint)size.Y, 0u, _PixelFormat, _PixelType,
+                ref firstPixel);
+
+            GLAPI.CheckForErrorsAndThrow(true);
         }
 
         public sealed override void Bind(TextureUnit textureSlot)
         {
-            GL.BindTexture(TextureTarget.Texture2DArray, Handle);
             GL.ActiveTexture(textureSlot);
+            GL.BindTexture(TextureTarget.Texture2DArray, Handle);
         }
     }
 }
