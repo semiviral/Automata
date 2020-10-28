@@ -33,8 +33,6 @@ namespace Automata.Engine.Input
 
         public InputManager()
         {
-            AssignSingletonInstance(this);
-
             _Keyboards = new List<IKeyboard>();
             _Mice = new List<IMouse>();
         }

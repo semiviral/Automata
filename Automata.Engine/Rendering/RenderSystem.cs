@@ -28,9 +28,9 @@ namespace Automata.Engine.Rendering
         private const bool _ENABLE_BACK_FACE_CULLING = true;
 
         private readonly GL _GL;
-        private readonly Texture _Texture;
-
         private float _NewAspectRatio;
+
+        private Texture _Texture;
 
         public RenderSystem()
         {
@@ -48,12 +48,19 @@ namespace Automata.Engine.Rendering
                 _GL.CullFace(CullFaceMode.Back);
                 _GL.Enable(GLEnum.CullFace);
             }
+        }
 
-            Image<Rgba32> image = Image.Load<Rgba32>("Resources/Textures/BlankMagenta.png");
-            image.Mutate(img => img.Flip(FlipMode.Vertical));
+        public override void Registered()
+        {
+            Image<Rgba32> image = Image.Load<Rgba32>("Resources/Textures/BlockAtlas.png");
+            Image<Rgba32> slice = new Image<Rgba32>(16, 16);
+
+            for (int x = 0; x < slice.Width; x++)
+            for (int y = 0; y < slice.Height; y++)
+                slice[y, x] = image[y, x];
 
             Texture2DArray<Rgba32> texture = new Texture2DArray<Rgba32>(new Vector3i(16, 16, 1), Texture.WrapMode.Repeat, Texture.FilterMode.Point);
-            texture.SetPixels(Vector3i.Zero, new Vector2i(image.Width, image.Height), ref image.GetPixelRowSpan(0)[0]);
+            texture.SetPixels(Vector3i.Zero, new Vector2i(slice.Width, slice.Height), ref slice.GetPixelRowSpan(0)[0]);
 
             _Texture = texture;
 

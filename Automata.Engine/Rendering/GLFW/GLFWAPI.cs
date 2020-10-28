@@ -13,8 +13,6 @@ namespace Automata.Engine.Rendering.GLFW
 
         public GLFWAPI()
         {
-            AssignSingletonInstance(this);
-
             GLFW = Glfw.GetApi();
         }
     }

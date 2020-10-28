@@ -8,8 +8,6 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
 
         public TextureRegistry()
         {
-            AssignSingletonInstance(this);
-
             _Textures = new Dictionary<string, Texture>();
         }
 

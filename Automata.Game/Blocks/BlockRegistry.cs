@@ -28,8 +28,6 @@ namespace Automata.Game.Blocks
 
         public BlockRegistry()
         {
-            AssignSingletonInstance(this);
-
             Log.Information($"({nameof(BlockRegistry)}) Creating property buckets.");
 
             _PropertyBuckets = EnumExtensions.GetValues<BlockDefinition.Property>().ToDictionary(val => val, _ => new HashSet<ushort>());

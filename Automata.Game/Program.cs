@@ -59,15 +59,8 @@ namespace Automata.Game
             options.VSync = VSyncMode.Off;
             options.PreferredDepthBufferBits = 24;
 
-            Singleton.CreateSingleton<GLFWAPI>();
-            Singleton.CreateSingleton<InputManager>();
-            Singleton.CreateSingleton<AutomataWindow>();
             AutomataWindow.Instance.CreateWindow(options);
             AutomataWindow.Instance.Closing += ApplicationCloseCallback;
-
-            Singleton.CreateSingleton<GLAPI>();
-            Singleton.CreateSingleton<BlockRegistry>();
-            Singleton.CreateSingleton<TextureRegistry>();
         }
 
         private static void InitializeBlocks()

@@ -54,8 +54,6 @@ namespace Automata.Engine.Rendering.GLFW
 
         public AutomataWindow()
         {
-            AssignSingletonInstance(this);
-
             Focused = true;
         }
 

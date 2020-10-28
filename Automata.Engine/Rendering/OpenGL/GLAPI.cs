@@ -18,7 +18,7 @@ namespace Automata.Engine.Rendering.OpenGL
 
         public unsafe GLAPI()
         {
-            AutomataWindow.Validate(); // validate dependency or throw
+            // validate dependency or throw
             GL = AutomataWindow.Instance.GetGL();
 
             string version = GL.GetString(StringName.Version);
@@ -35,7 +35,6 @@ namespace Automata.Engine.Rendering.OpenGL
                 GL.DebugMessageControl(DebugSource.DontCare, DebugType.DontCare, DebugSeverity.DontCare, 0, (uint*)null!, true);
             }
 
-            AssignSingletonInstance(this);
         }
 
         /// <summary>

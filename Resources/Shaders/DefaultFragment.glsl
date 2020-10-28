@@ -10,5 +10,5 @@ out vec4 color;
 
 void main()
 {
-    color = texture(_blocks, vec3(0)) * vec4(vertexColor, 1.0);
+    color = texture(_blocks, vec3(texUV, texIndex)) * vec4(vertexColor, 1.0);
 }

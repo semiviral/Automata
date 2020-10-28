@@ -80,8 +80,6 @@ namespace Automata.Engine.Rendering.DirectX
 
         public GLSLXPLR()
         {
-            AssignSingletonInstance(this);
-
             ValidateTranspiler();
             TranspileDefaultShaders();
         }
