@@ -15,6 +15,6 @@ void main()
     vec3 uncompressedUV = vec3((uv >> 0) & 63, (uv >> 6) & 63, (uv >> 12) & 63);
 
     gl_Position = _mvp * uncompressedPosition;
-    texUV = vec3(0);
+    texUV = uncompressedUV;
     vertexColor = vec4(1.2);
 }

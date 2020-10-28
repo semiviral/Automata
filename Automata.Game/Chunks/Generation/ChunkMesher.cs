@@ -191,11 +191,12 @@ namespace Automata.Game.Chunks.Generation
                             // remark: if there's no neighbor at the index given, then no chunk exists there (for instance,
                             //     chunks at the edge of render distance). In this case, return NullID so no face is rendered on edges.
                             ushort facedBlockID = neighbors[normalIndex]?.GetPoint(
-                                                      neighborLocalPosition & GenerationConstants.CHUNK_SIZE_BIT_MASK,
-                                                      neighborLocalPosition
-                                                      & (GenerationConstants.CHUNK_SIZE_BIT_MASK << GenerationConstants.CHUNK_SIZE_BIT_SHIFT),
-                                                      neighborLocalPosition
-                                                      & (GenerationConstants.CHUNK_SIZE_BIT_MASK << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2))
+                                                      (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 0))
+                                                      & GenerationConstants.CHUNK_SIZE_BIT_MASK,
+                                                      (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 1))
+                                                      & GenerationConstants.CHUNK_SIZE_BIT_MASK,
+                                                      (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2))
+                                                      & GenerationConstants.CHUNK_SIZE_BIT_MASK
                                                   )
                                                   ?? BlockRegistry.NullID;
 
@@ -325,10 +326,12 @@ namespace Automata.Game.Chunks.Generation
                     // remark: if there's no neighbor at the index given, then no chunk exists there (for instance,
                     //     chunks at the edge of render distance). In this case, return NullID so no face is rendered on edges.
                     ushort facedBlockId = neighbors[normalIndex]?.GetPoint(
-                                              neighborLocalPosition & GenerationConstants.CHUNK_SIZE_BIT_MASK,
-                                              neighborLocalPosition & (GenerationConstants.CHUNK_SIZE_BIT_MASK << GenerationConstants.CHUNK_SIZE_BIT_SHIFT),
-                                              neighborLocalPosition
-                                              & (GenerationConstants.CHUNK_SIZE_BIT_MASK << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2))
+                                              (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 0))
+                                              & GenerationConstants.CHUNK_SIZE_BIT_MASK,
+                                              (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 1))
+                                              & GenerationConstants.CHUNK_SIZE_BIT_MASK,
+                                              (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2))
+                                              & GenerationConstants.CHUNK_SIZE_BIT_MASK
                                           )
                                           ?? BlockRegistry.NullID;
 
