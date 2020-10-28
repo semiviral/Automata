@@ -99,6 +99,7 @@ namespace Automata.Game.Chunks.Generation
                 blocks[index] = blocksCompressed.GetPoint(x, y, z);
 
             index = 0;
+            uint vertexCount = 0;
 
             for (int y = 0; y < GenerationConstants.CHUNK_SIZE; y++)
             for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
@@ -111,14 +112,14 @@ namespace Automata.Game.Chunks.Generation
                 int localPosition = x | (y << GenerationConstants.CHUNK_SIZE_BIT_SHIFT) | (z << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2));
 
                 PackedTraverseIndex(blocks, faces, vertexes, indexes, neighbors, index, localPosition, currentBlockId,
-                    BlockRegistry.Instance.CheckBlockHasProperty(currentBlockId, BlockDefinition.Property.Transparent));
+                    BlockRegistry.Instance.CheckBlockHasProperty(currentBlockId, BlockDefinition.Property.Transparent), ref vertexCount);
             }
 
             return new PendingMesh<int>(vertexes.ToArray(), indexes.ToArray());
         }
 
         private static void PackedTraverseIndex(Span<ushort> blocks, Span<Direction> faces, ICollection<int> vertexes, ICollection<uint> indexes,
-            IReadOnlyList<INodeCollection<ushort>?> neighbors, int index, int localPosition, ushort blockID, bool isTransparent)
+            IReadOnlyList<INodeCollection<ushort>?> neighbors, int index, int localPosition, ushort blockID, bool isTransparent, ref uint indexesStart)
         {
             // iterate once over all 6 faces of given cubic space
             for (int normalIndex = 0; normalIndex < 6; normalIndex++)
@@ -238,14 +239,12 @@ namespace Automata.Game.Chunks.Generation
                     // face is occluded
                     if (traversals == 0) break;
 
-                    uint indexStart = (uint)vertexes.Count;
-
-                    indexes.Add(indexStart + 0u);
-                    indexes.Add(indexStart + 1u);
-                    indexes.Add(indexStart + 3u);
-                    indexes.Add(indexStart + 1u);
-                    indexes.Add(indexStart + 2u);
-                    indexes.Add(indexStart + 3u);
+                    indexes.Add(indexesStart + 0u);
+                    indexes.Add(indexesStart + 1u);
+                    indexes.Add(indexesStart + 3u);
+                    indexes.Add(indexesStart + 1u);
+                    indexes.Add(indexesStart + 2u);
+                    indexes.Add(indexesStart + 3u);
 
                     int traversalShiftedMask = GenerationConstants.CHUNK_SIZE_BIT_MASK << traversalNormalShift;
                     int unaryTraversalShiftedMask = ~traversalShiftedMask;
@@ -279,6 +278,8 @@ namespace Automata.Game.Chunks.Generation
                                        & traversalShiftedMask)));
 
                     vertexes.Add(compressedVertices[3]);
+
+                    indexesStart += 4u;
 
                     break;
                 }
