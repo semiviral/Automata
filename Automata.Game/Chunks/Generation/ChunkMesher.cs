@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using Automata.Engine;
 using Automata.Engine.Numerics;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Game.Blocks;
@@ -131,19 +130,19 @@ namespace Automata.Game.Chunks.Generation
                 if (faces[index].HasDirection(faceDirection)) continue;
 
                 // indicates whether the current face checking direction is negative or positive
-                bool isNegativeFace = (normalIndex - 3) >= 0;
+                bool isNegativeNormal = (normalIndex - 3) >= 0;
 
                 // normalIndex constrained to represent the 3 axes
-                int iModulo3 = normalIndex % 3;
-                int iModulo3Shift = GenerationConstants.CHUNK_SIZE_BIT_SHIFT * iModulo3;
+                int componentIndex = normalIndex % 3;
+                int componentShift = GenerationConstants.CHUNK_SIZE_BIT_SHIFT * componentIndex;
 
                 // axis value of the current face check direction
                 // example: for iteration normalIndex == 0—which is positive X—it'd be equal to localPosition.x
-                int faceCheckAxisValue = (localPosition >> iModulo3Shift) & GenerationConstants.CHUNK_SIZE_BIT_MASK;
+                int faceCheckAxisValue = (localPosition >> componentShift) & GenerationConstants.CHUNK_SIZE_BIT_MASK;
 
                 // indicates whether or not the face check is within the current chunk bounds
-                bool isFaceCheckOutOfBounds = (!isNegativeFace && (faceCheckAxisValue == (GenerationConstants.CHUNK_SIZE - 1)))
-                                              || (isNegativeFace && (faceCheckAxisValue == 0));
+                bool isFaceCheckOutOfBounds = (!isNegativeNormal && (faceCheckAxisValue == (GenerationConstants.CHUNK_SIZE - 1)))
+                                              || (isNegativeNormal && (faceCheckAxisValue == 0));
 
                 // total number of successful traversals
                 // remark: this is outside the for loop so that the if statement after can determine if any traversals have happened
@@ -152,7 +151,7 @@ namespace Automata.Game.Chunks.Generation
                 for (int perpendicularNormalIndex = 1; perpendicularNormalIndex < 3; perpendicularNormalIndex++)
                 {
                     // the index of the int3 traversalNormal to traverse on
-                    int traversalNormalIndex = (iModulo3 + perpendicularNormalIndex) % 3;
+                    int traversalNormalIndex = (componentIndex + perpendicularNormalIndex) % 3;
                     int traversalNormalShift = GenerationConstants.CHUNK_SIZE_BIT_SHIFT * traversalNormalIndex;
 
                     // current value of the local position by traversal direction
@@ -179,14 +178,14 @@ namespace Automata.Game.Chunks.Generation
                         if (isFaceCheckOutOfBounds)
                         {
                             // this block of code translates the integer local position to the local position of the neighbor at [normalIndex]
-                            int sign = isNegativeFace ? -1 : 1;
-                            int iModuloComponentMask = GenerationConstants.CHUNK_SIZE_BIT_MASK << iModulo3Shift;
-                            int translatedLocalPosition = localPosition + (traversals << traversalNormalShift);
+                            int sign = isNegativeNormal ? -1 : 1;
+                            int componentMask = GenerationConstants.CHUNK_SIZE_BIT_MASK << componentShift;
+                            int traversalLocalPosition = localPosition + (traversals << traversalNormalShift);
 
-                            int neighborLocalPosition = (~iModuloComponentMask & translatedLocalPosition)
-                                                        | (Wrap(((translatedLocalPosition & iModuloComponentMask) >> iModulo3Shift) + sign,
+                            int neighborLocalPosition = (~componentMask & traversalLocalPosition)
+                                                        | (Wrap(((traversalLocalPosition & componentMask) >> componentShift) + sign,
                                                                GenerationConstants.CHUNK_SIZE, 0, GenerationConstants.CHUNK_SIZE - 1)
-                                                           << iModulo3Shift);
+                                                           << componentShift);
 
                             // index into neighbor blocks collections, call .GetPoint() with adjusted local position
                             // remark: if there's no neighbor at the index given, then no chunk exists there (for instance,
@@ -224,7 +223,7 @@ namespace Automata.Game.Chunks.Generation
                             else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockID, BlockDefinition.Property.Transparent))
                             {
                                 // we've culled this face, and faced block is opaque as well, so cull it's face adjacent to current.
-                                if (!isNegativeFace) faces[facedBlockIndex] |= (Direction)(1 << ((normalIndex + 3) % 6));
+                                if (!isNegativeNormal) faces[facedBlockIndex] |= (Direction)(1 << ((normalIndex + 3) % 6));
 
                                 break;
                             }
@@ -401,12 +400,12 @@ namespace Automata.Game.Chunks.Generation
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int Wrap(int v, int delta, int minVal, int maxVal)
+        private static int Wrap(int value, int delta, int minVal, int maxVal)
         {
             int mod = (maxVal + 1) - minVal;
-            v += delta - minVal;
-            v += (1 - (v / mod)) * mod;
-            return (v % mod) + minVal;
+            value += delta - minVal;
+            value += (1 - (value / mod)) * mod;
+            return (value % mod) + minVal;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

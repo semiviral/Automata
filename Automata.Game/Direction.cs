@@ -1,6 +1,7 @@
 #region
 
 using System;
+using System.Runtime.CompilerServices;
 using Automata.Engine.Numerics;
 
 // ReSharper disable UnusedMember.Global
@@ -91,10 +92,19 @@ namespace Automata.Game
             };
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool HasAny(this Direction direction) => direction > 0;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool HasAll(this Direction direction) => (direction & Direction.Mask) is Direction.Mask;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool HasDirection(this Direction direction, Direction target) => (direction & target) == target;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Direction WithDirection(this Direction direction, Direction target) => direction | target;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Direction WithoutDirection(this Direction direction, Direction target) => direction & ~target;
     }
 }

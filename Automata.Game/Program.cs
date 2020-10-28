@@ -128,7 +128,7 @@ namespace Automata.Game
 
             world.EntityManager.RegisterComponent(player, new ChunkLoader
             {
-                Radius = 32
+                Radius = 10
             });
         }
 
@@ -138,8 +138,6 @@ namespace Automata.Game
             BoundedPool.Active.DefaultThreadPoolSize();
 
             InitializeSingletons();
-
-            //TextureRegistry.Instance.AddTexture("blocks", texture);
 
             InitializeBlocks();
 
