@@ -3,9 +3,7 @@
 using System;
 using Automata.Engine.Numerics;
 using Silk.NET.OpenGL;
-using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
 
 #endregion
 
@@ -53,9 +51,6 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             GL.BindTexture(TextureTarget.Texture3D, Handle);
         }
 
-        public sealed override void Unbind(TextureUnit textureSlot)
-        {
-            GL.BindTexture(TextureTarget.Texture3D, 0);
-        }
+        public sealed override void Unbind(TextureUnit textureSlot) { GL.BindTexture(TextureTarget.Texture3D, 0); }
     }
 }

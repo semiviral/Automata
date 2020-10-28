@@ -44,9 +44,6 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             GL.BindTexture(TextureTarget.Texture2DArray, Handle);
         }
 
-        public sealed override void Unbind(TextureUnit textureSlot)
-        {
-            GL.BindTexture(TextureTarget.Texture2DArray, 0);
-        }
+        public sealed override void Unbind(TextureUnit textureSlot) { GL.BindTexture(TextureTarget.Texture2DArray, 0); }
     }
 }
