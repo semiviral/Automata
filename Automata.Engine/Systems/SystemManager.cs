@@ -86,7 +86,7 @@ namespace Automata.Engine.Systems
 
             RegisterHandledTypes<TSystem>();
             componentSystem.Registered();
-            Log.Information($"({nameof(SystemManager)}) Registered {nameof(ComponentSystem)}: {typeof(TSystem)}");
+            Log.Debug($"({nameof(SystemManager)}) Registered {nameof(ComponentSystem)}: {typeof(TSystem)}");
         }
 
         private void RegisterSystem<TSystem>(SystemRegistrationOrder order) where TSystem : ComponentSystem, new()

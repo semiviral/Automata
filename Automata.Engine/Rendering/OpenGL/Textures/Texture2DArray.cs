@@ -20,7 +20,7 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             Bind(TextureUnit.Texture0);
 
             AssignTextureParameters(TextureTarget.Texture2DArray, GetWrapModeAsGLEnum(wrapMode), GetFilterModeAsGLEnum(filterMode));
-            GL.TexStorage3D(TextureTarget.Texture2DArray, 0, _InternalFormat, (uint)size.X, (uint)size.Y, (uint)size.Z);
+            GL.TexStorage3D(TextureTarget.Texture2DArray, 1, _InternalFormat, (uint)size.X, (uint)size.Y, (uint)size.Z);
         }
 
         public void SetPixels(Vector3i offset, Vector2i size, ref TPixel firstPixel)

@@ -22,7 +22,7 @@ namespace Automata.Engine.Rendering.OpenGL
             GL = AutomataWindow.Instance.GetGL();
 
             string version = GL.GetString(StringName.Version);
-            Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(GLAPI), $"OpenGL version {version}"));
+            Log.Information(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(GLAPI), $"OpenGL version {version}"));
 
             // configure debug callback
             GL.GetInteger(GetPName.ContextFlags, out int flags);
