@@ -15,6 +15,7 @@ using Silk.NET.GLFW;
 using Silk.NET.Input.Common;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing.Common;
+using ErrorCode = Silk.NET.GLFW.ErrorCode;
 
 #endregion
 
@@ -29,6 +30,9 @@ namespace Automata.Engine.Rendering.GLFW
 
     public class AutomataWindow : Singleton<AutomataWindow>
     {
+        private readonly APIVersion _FallbackOGLVersion = new APIVersion(3, 3);
+        private readonly APIVersion _PreferredOGLVersion = new APIVersion(4, 3);
+
         private TimeSpan _MinimumFrameTime;
 
         private IWindow? _Window;
@@ -52,10 +56,7 @@ namespace Automata.Engine.Rendering.GLFW
 
         public bool Focused { get; private set; }
 
-        public AutomataWindow()
-        {
-            Focused = true;
-        }
+        public AutomataWindow() => Focused = true;
 
         public event WindowResizedEventHandler? Resized;
         public event WindowFocusChangedEventHandler? FocusChanged;
@@ -63,19 +64,29 @@ namespace Automata.Engine.Rendering.GLFW
 
         public void CreateWindow(WindowOptions windowOptions)
         {
-            Glfw glfw = GLFWAPI.Instance.GLFW;
-            glfw.WindowHint(WindowHintInt.ContextVersionMajor, 4);
-            glfw.WindowHint(WindowHintInt.ContextVersionMinor, 3);
-            glfw.WindowHint(WindowHintBool.OpenGLForwardCompat, false);
-            glfw.WindowHint(WindowHintOpenGlProfile.OpenGlProfile, OpenGlProfile.Core);
-            glfw.WindowHint(WindowHintBool.OpenGLDebugContext, true);
+            IWindow ConstructWindow(WindowOptions options, bool useOGLFallbackVersion)
+            {
+                options.API = new GraphicsAPI(ContextAPI.OpenGL, ContextProfile.Core, ContextFlags.ForwardCompatible | ContextFlags.Debug,
+                    useOGLFallbackVersion ? _FallbackOGLVersion : _PreferredOGLVersion);
 
-            _Window = Silk.NET.Windowing.Window.Create(windowOptions);
-            _Window.Resize += OnWindowResized;
-            _Window.FocusChanged += OnWindowFocusedChanged;
-            _Window.Closing += OnWindowClosing;
+                IWindow window = Silk.NET.Windowing.Window.Create(options);
+                window.Resize += OnWindowResized;
+                window.FocusChanged += OnWindowFocusedChanged;
+                window.Closing += OnWindowClosing;
 
-            Window.Initialize();
+                return window;
+            }
+
+            try
+            {
+                _Window = ConstructWindow(windowOptions, false);
+                _Window.Initialize();
+            }
+            catch (GlfwException glfwException) when (glfwException.ErrorCode is ErrorCode.VersionUnavailable)
+            {
+                throw new OpenGLVersionNotSupportedException(_PreferredOGLVersion);
+            }
+
             InputManager.Instance.RegisterView(Window);
 
             DetermineVSyncRefreshRate();

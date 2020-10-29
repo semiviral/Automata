@@ -52,7 +52,7 @@ namespace Automata.Engine.Rendering
 
         public override void Registered()
         {
-            Image<Rgba32> image = Image.Load<Rgba32>("Resources/Textures/BlockAtlas.png");
+            Image<Rgba32> image = Image.Load<Rgba32>("Resources/Textures/Core/Core.png");
             Image<Rgba32> slice = new Image<Rgba32>(8, 8);
 
             for (int y = 0; y < slice.Height; y++)
@@ -153,8 +153,6 @@ namespace Automata.Engine.Rendering
 
                 _GL.BindVertexArray(0);
                 _NewAspectRatio = 0f;
-
-                GLAPI.CheckForErrorsAndThrow(true);
             }
             catch (Exception exception)
             {

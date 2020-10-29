@@ -30,8 +30,6 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             GL.TexStorage2D(TextureTarget.Texture2D, 1, _InternalFormat, (uint)size.X, (uint)size.Y);
 
             if (mipmap) GL.GenerateMipmap(TextureTarget.Texture2D);
-
-            GLAPI.CheckForErrorsAndThrow(true);
         }
 
         public void SetPixels(Vector3i offset, Vector2i size, ref TPixel firstPixel)
@@ -42,8 +40,6 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             Bind(TextureUnit.Texture0);
 
             GL.TexSubImage2D(TextureTarget.Texture2D, 0, offset.X, offset.Y, (uint)size.X, (uint)size.Y, _PixelFormat, _PixelType, ref firstPixel);
-
-            GLAPI.CheckForErrorsAndThrow(true);
         }
 
         public sealed override void Bind(TextureUnit textureSlot)

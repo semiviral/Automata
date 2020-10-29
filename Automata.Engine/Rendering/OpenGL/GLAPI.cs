@@ -34,7 +34,6 @@ namespace Automata.Engine.Rendering.OpenGL
                 GL.DebugMessageCallback(DebugOutputCallback, (void*)null!);
                 GL.DebugMessageControl(DebugSource.DontCare, DebugType.DontCare, DebugSeverity.DontCare, 0, (uint*)null!, true);
             }
-
         }
 
         /// <summary>
@@ -51,7 +50,7 @@ namespace Automata.Engine.Rendering.OpenGL
         /// </remarks>
         /// <param name="checkForErrors"></param>
         /// <exception cref="OpenGLException"></exception>
-        public static void CheckForErrorsAndThrow(bool checkForErrors)
+        private static void CheckForErrorsAndThrow(bool checkForErrors)
         {
             if (!checkForErrors) return;
 
@@ -66,9 +65,35 @@ namespace Automata.Engine.Rendering.OpenGL
 
         private static void DebugOutputCallback(GLEnum source, GLEnum type, int id, GLEnum severity, int length, IntPtr messagePtr, IntPtr userParamPtr)
         {
-            string message = SilkMarshal.MarshalPtrToString(messagePtr);
+            static void LogOGLDebugMessage(DebugSource debugSource, DebugType debugType, DebugSeverity debugSeverity, string message)
+            {
+                const string ogl_log_format = "[DEBUG {0}] {1}: {2}";
 
-            Console.WriteLine($"Output {source} {type} {message}");
+                string logString = string.Format(ogl_log_format, debugSource, debugType, message);
+
+                switch (debugSeverity)
+                {
+                    case DebugSeverity.DontCare:
+                        Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(GLAPI), logString));
+                        break;
+                    case DebugSeverity.DebugSeverityNotification:
+                        Log.Information(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(GLAPI), logString));
+
+                        break;
+                    case DebugSeverity.DebugSeverityLow:
+                        Log.Warning(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(GLAPI), logString));
+                        break;
+                    case DebugSeverity.DebugSeverityMedium:
+                        Log.Error(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(GLAPI), logString));
+                        break;
+                    case DebugSeverity.DebugSeverityHigh:
+                        Log.Fatal(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(GLAPI), logString));
+                        break;
+                    default: throw new ArgumentOutOfRangeException(nameof(debugSeverity), debugSeverity, null);
+                }
+            }
+
+            LogOGLDebugMessage((DebugSource)source, (DebugType)type, (DebugSeverity)severity, SilkMarshal.MarshalPtrToString(messagePtr));
         }
     }
 }

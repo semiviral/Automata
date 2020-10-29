@@ -20,9 +20,7 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             Bind(TextureUnit.Texture0);
 
             AssignTextureParameters(TextureTarget.Texture2DArray, GetWrapModeAsGLEnum(wrapMode), GetFilterModeAsGLEnum(filterMode));
-            GL.TexStorage3D(TextureTarget.Texture2DArray, 1, _InternalFormat, (uint)size.X, (uint)size.Y, (uint)size.Z);
-
-            GLAPI.CheckForErrorsAndThrow(true);
+            GL.TexStorage3D(TextureTarget.Texture2DArray, 0, _InternalFormat, (uint)size.X, (uint)size.Y, (uint)size.Z);
         }
 
         public void SetPixels(Vector3i offset, Vector2i size, ref TPixel firstPixel)
@@ -34,8 +32,6 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
 
             GL.TexSubImage3D(TextureTarget.Texture2DArray, 0, offset.X, offset.Y, offset.Z, (uint)size.X, (uint)size.Y, 1u, _PixelFormat, _PixelType,
                 ref firstPixel);
-
-            GLAPI.CheckForErrorsAndThrow(true);
         }
 
         public sealed override void Bind(TextureUnit textureSlot)
