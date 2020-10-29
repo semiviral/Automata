@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using Automata.Engine.Extensions;
 using Automata.Engine.Numerics;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Game.Blocks;
@@ -135,7 +134,7 @@ namespace Automata.Game.Chunks.Generation
 
                 // indicates whether or not the face check is within the current chunk bounds
                 bool facingNeighbor = (!isNegativeNormal && (facedAxisValue == (GenerationConstants.CHUNK_SIZE - 1)))
-                                              || (isNegativeNormal && (facedAxisValue == 0));
+                                      || (isNegativeNormal && (facedAxisValue == 0));
 
                 // total number of successful traversals
                 // remark: this is outside the for loop so that the if statement after can determine if any traversals have happened
@@ -216,6 +215,7 @@ namespace Automata.Game.Chunks.Generation
                             else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockID, BlockDefinition.Property.Transparent))
                             {
                                 if (!isNegativeNormal)
+
                                     // we've culled the current face, and faced block is opaque as well, so cull it's face to current.
                                     faces[facedBlockIndex] |= (Direction)(1 << ((normalIndex + 3) % 6));
 
@@ -244,9 +244,10 @@ namespace Automata.Game.Chunks.Generation
                     int unaryTraversalComponentMask = ~traversalComponentMask;
 
                     // this ternary solution should probably be temporary. not sure if there's a better way, though.
-                    int uvShift = (componentIndex + traversalNormalIndex + (componentIndex == 1 && traversalNormalIndex == 2 ? 1 : 0)) % 2;
+                    int uvShift = (componentIndex + traversalNormalIndex + ((componentIndex == 1) && (traversalNormalIndex == 2) ? 1 : 0)) % 2;
+
                     int compressedUV = (0 << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2)) // z
-                                       | traversals << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * uvShift) // traversal component
+                                       | (traversals << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * uvShift)) // traversal component
                                        | (1 << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * ((uvShift + 1) % 2))); // opposite component to traversal
 
                     vertexes.Add(localPosition

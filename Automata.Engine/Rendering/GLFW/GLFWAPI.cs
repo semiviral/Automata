@@ -11,9 +11,6 @@ namespace Automata.Engine.Rendering.GLFW
     {
         public Glfw GLFW { get; }
 
-        public GLFWAPI()
-        {
-            GLFW = Glfw.GetApi();
-        }
+        public GLFWAPI() => GLFW = Glfw.GetApi();
     }
 }

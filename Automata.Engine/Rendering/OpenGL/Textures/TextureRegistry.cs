@@ -6,10 +6,7 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
     {
         private readonly Dictionary<string, Texture> _Textures;
 
-        public TextureRegistry()
-        {
-            _Textures = new Dictionary<string, Texture>();
-        }
+        public TextureRegistry() => _Textures = new Dictionary<string, Texture>();
 
         public void AddTexture(string textureName, Texture texture) => _Textures.Add(textureName, texture);
         public void RemoveTexture(string textureName) => _Textures.Remove(textureName);
