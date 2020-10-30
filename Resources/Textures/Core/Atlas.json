@@ -1,20 +1,58 @@
 {
   "RelativeImagePath": "Core.png",
   "Tiles":
-    [{
+    [
+      {
         "Name": "null",
         "Offset": { "X": 0, "Y": 0 }
-    },
-    {
-      "Name": "grass",
-      "Offset": { "X": 1, "Y": 0 }
-    },
-    {
-      "Name": "grass_side",
-      "Offset": { "X": 1, "Y": 1 }
-    },
-    {
-      "Name": "dirt",
-      "Offset": { "X": 2, "Y": 0 }
-    }]
+      },
+      {
+        "Name": "grass",
+        "Offset": { "X": 1, "Y": 0 }
+      },
+      {
+        "Name": "grass_side",
+        "Offset": { "X": 1, "Y": 1 }
+      },
+      {
+        "Name": "snow",
+        "Offset": { "X": 2, "Y": 0 }
+      },
+      {
+        "Name": "snow_side",
+        "Offset": { "X": 2, "Y": 1 }
+      },
+      {
+        "Name": "dirt",
+        "Offset": { "X": 3, "Y": 0 }
+      },
+      {
+        "Name": "bedrock",
+        "Offset": { "X": 5, "Y": 1 }
+      },
+      {
+        "Name": "stone",
+        "Offset": { "X": 2, "Y": 2 }
+      },
+      {
+        "Name": "sand",
+        "Offset": { "X": 4, "Y": 0 }
+      },
+      {
+        "Name": "glass",
+        "Offset": { "X": 5, "Y": 0 }
+      },
+      {
+        "Name": "dirt_coarse",
+        "Offset": { "X": 3, "Y": 2 }
+      },
+      {
+        "Name": "gravel",
+        "Offset": { "X": 4, "Y": 1 }
+      },
+      {
+        "Name": "coal_ore",
+        "Offset": { "X": 3, "Y": 3 }
+      }
+    ]
 }

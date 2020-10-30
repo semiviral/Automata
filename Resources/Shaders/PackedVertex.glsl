@@ -5,8 +5,7 @@ layout (location = 1) in int uv;
 
 uniform mat4 _mvp;
 
-out vec2 texUV;
-out int texIndex;
+out vec3 texUV;
 out vec3 vertexColor;
 
 void main()
@@ -17,7 +16,6 @@ void main()
     vec3 smoothNormals = vec3(smoothstep(-1, 1, uncompressedNormal.x), smoothstep(-1, 1, uncompressedNormal.y), smoothstep(-1, 1, uncompressedNormal.z));
 
     gl_Position = _mvp * uncompressedPosition;
-    texUV = uncompressedUV.xy;
-    texIndex = uncompressedUV.z;
-    vertexColor = smoothNormals;
+    texUV = uncompressedUV;
+    vertexColor = vec3(1.0);//smoothNormals;
 }

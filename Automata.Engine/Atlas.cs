@@ -7,14 +7,21 @@ namespace Automata.Engine
 {
     public class Atlas
     {
-        public class AtlasTile
+        public class Tile
         {
-            public string? Name { get; set; }
-            public Vector2i Offset { get; set; }
+            public class Coordinates
+            {
+                public int X { get; set; }
+                public int Y { get; set; }
+            }
+
+            private string? _Name;
+            public string? Name { get => _Name; set => _Name = value?.ToLowerInvariant(); }
+            public Coordinates? Offset { get; set; }
         }
 
         public string? RelativeImagePath { get; set; }
-        public AtlasTile?[]? Tiles { get; set; }
+        public Tile?[]? Tiles { get; set; }
 
         public static Atlas Load(string path)
         {
