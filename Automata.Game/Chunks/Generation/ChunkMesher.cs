@@ -103,7 +103,7 @@ namespace Automata.Game.Chunks.Generation
                 int localPosition = x | (y << GenerationConstants.CHUNK_SIZE_BIT_SHIFT) | (z << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2));
 
                 PackedTraverseIndex(blocks, faces, vertexes, indexes, neighbors, index, localPosition, currentBlockId,
-                    BlockRegistry.Instance.CheckBlockHasProperty(currentBlockId, BlockDefinition.Property.Transparent), ref vertexCount);
+                    BlockRegistry.Instance.CheckBlockHasProperty(currentBlockId, Block.Attribute.Transparent), ref vertexCount);
             }
 
             return new PendingMesh<int>(vertexes.ToArray(), indexes.ToArray());
@@ -196,7 +196,7 @@ namespace Automata.Game.Chunks.Generation
                             {
                                 if (blockID != facedBlockID) break;
                             }
-                            else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockID, BlockDefinition.Property.Transparent)) break;
+                            else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockID, Block.Attribute.Transparent)) break;
                         }
                         else
                         {
@@ -212,7 +212,7 @@ namespace Automata.Game.Chunks.Generation
                             {
                                 if (blockID != facedBlockID) break;
                             }
-                            else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockID, BlockDefinition.Property.Transparent))
+                            else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockID, Block.Attribute.Transparent))
                             {
                                 if (!isNegativeNormal)
 
@@ -345,7 +345,7 @@ namespace Automata.Game.Chunks.Generation
                     {
                         if (currentBlockId == facedBlockId) continue;
                     }
-                    else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockId, BlockDefinition.Property.Transparent)) continue;
+                    else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockId, Block.Attribute.Transparent)) continue;
                 }
                 else
                 {
@@ -361,7 +361,7 @@ namespace Automata.Game.Chunks.Generation
                     {
                         if (currentBlockId == facedBlockId) continue;
                     }
-                    else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockId, BlockDefinition.Property.Transparent))
+                    else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockId, Block.Attribute.Transparent))
                     {
                         // we've culled this face, and faced block is opaque as well, so cull it's face adjacent to current.
                         if (!isNegativeFace) faces[facedBlockIndex] |= (Direction)(1 << ((normalIndex + 3) % 6));

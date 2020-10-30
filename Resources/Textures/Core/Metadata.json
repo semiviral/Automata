@@ -1,0 +1,69 @@
+{
+  "InterfaceIdentity": "Core",
+  "RelativeTexturesPath": "Textures/",
+  "BlockDefinitions": [
+    {
+      "Name": "Null",
+      "Attributes": [],
+      "Textures": [
+        "Self"
+      ]
+    },
+    {
+      "Name": "Grass",
+      "Attributes": [
+        "Alias Default"
+      ],
+      "Textures": [
+        "Self",
+        "Grass_Side",
+        "Dirt"
+      ]
+    },
+    {
+      "Name": "Dirt",
+      "Attributes": [
+        "Alias Default"
+      ],
+      "Textures": [
+        "Self"
+      ]
+    },
+    {
+      "Name": "Dirt_Coarse",
+      "Attributes": [
+        "Alias Default"
+      ],
+      "Textures": [
+        "Self"
+      ]
+    },
+    {
+      "Name": "Stone",
+      "Attributes": [
+        "Alias Default"
+      ],
+      "Textures": [
+        "Self"
+      ]
+    },
+    {
+      "Name": "Coal_Ore",
+      "Attributes": [
+        "Alias Default"
+      ],
+      "Textures": [
+        "Self"
+      ]
+    },
+    {
+      "Name": "Bedrock",
+      "Attributes": [
+        "Collideable"
+      ],
+      "Textures": [
+        "Self"
+      ]
+    }
+  ]
+}

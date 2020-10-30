@@ -22,47 +22,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="..\Resources\DefaultFragment.glsl">
-        <Link>Shaders\DefaultFragment.glsl</Link>
-      </Content>
-      <Content Include="..\Resources\PackedVertexes.glsl">
-        <Link>Shaders\PackedVertexes.glsl</Link>
-      </Content>
-      <Content Include="..\Resources\Shaders\DefaultFragment.glsl">
-        <Link>Resources\Shaders\DefaultFragment.glsl</Link>
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
-      <Content Include="..\Resources\Shaders\DefaultVertex.glsl">
-        <Link>Resources\Shaders\DefaultVertex.glsl</Link>
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
-      <Content Include="..\Resources\Shaders\PackedVertex.glsl">
-        <Link>Resources\Shaders\PackedVertex.glsl</Link>
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
-      <Content Include="..\Resources\Shaders\RaymarchFragment.glsl">
-        <Link>Resources\Shaders\RaymarchFragment.glsl</Link>
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
-      <Content Include="..\Resources\Shaders\RaymarchVertex.glsl">
-        <Link>Resources\Shaders\RaymarchVertex.glsl</Link>
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
-      <Content Include="..\Resources\Textures\BlankMagenta.png">
-        <Link>Resources\Textures\BlankMagenta.png</Link>
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
-      <Content Include="..\Resources\Textures\Core\Atlas.json">
-        <Link>Resources\Textures\Core\Atlas.json</Link>
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
-      <Content Include="..\Resources\Textures\Core\Core.png">
-        <Link>Resources\Textures\Core\Core.png</Link>
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
-    </ItemGroup>
-
-    <ItemGroup>
       <Reference Include="ConcurrencyPools, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
         <HintPath>..\References\ConcurrencyPools.dll</HintPath>
       </Reference>
@@ -76,6 +35,16 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Automata.Engine\Automata.Engine.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Resources\Core" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="Resources\Core\Metadata.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>

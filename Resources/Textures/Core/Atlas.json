@@ -44,7 +44,7 @@
       },
       {
         "Name": "dirt_coarse",
-        "Offset": { "X": 3, "Y": 2 }
+        "Offset": { "X": 3, "Y": 1 }
       },
       {
         "Name": "gravel",

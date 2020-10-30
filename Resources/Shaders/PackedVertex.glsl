@@ -17,5 +17,5 @@ void main()
 
     gl_Position = _mvp * uncompressedPosition;
     texUV = uncompressedUV;
-    vertexColor = vec3(1.0);//smoothNormals;
+    vertexColor = vec3(1.0); //* smoothNormals;
 }

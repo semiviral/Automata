@@ -55,57 +55,6 @@ namespace Automata.Game
             AutomataWindow.Instance.Run();
         }
 
-        private static void InitializeSingletons()
-        {
-            WindowOptions options = WindowOptions.Default;
-            options.Title = "Automata";
-            options.Size = new Size(800, 600);
-            options.Position = new Point(500, 400);
-            options.VSync = VSyncMode.Off;
-            options.PreferredDepthBufferBits = 24;
-
-            AutomataWindow.Instance.CreateWindow(options);
-            AutomataWindow.Instance.Closing += ApplicationCloseCallback;
-        }
-
-        private static void InitializeBlocks()
-        {
-            BlockRegistry.Instance.RegisterBlockDefinition("bedrock", null,
-                BlockDefinition.Property.Collideable);
-
-            BlockRegistry.Instance.RegisterBlockDefinition("grass", null,
-                BlockDefinition.Property.Collectible, BlockDefinition.Property.Collideable,
-                BlockDefinition.Property.Destroyable);
-
-            BlockRegistry.Instance.RegisterBlockDefinition("dirt", null,
-                BlockDefinition.Property.Collectible, BlockDefinition.Property.Collideable,
-                BlockDefinition.Property.Destroyable);
-
-            BlockRegistry.Instance.RegisterBlockDefinition("dirt_coarse", null,
-                BlockDefinition.Property.Collectible, BlockDefinition.Property.Collideable,
-                BlockDefinition.Property.Destroyable);
-
-            BlockRegistry.Instance.RegisterBlockDefinition("stone", null,
-                BlockDefinition.Property.Collectible, BlockDefinition.Property.Collideable,
-                BlockDefinition.Property.Destroyable);
-
-            BlockRegistry.Instance.RegisterBlockDefinition("glass", null,
-                BlockDefinition.Property.Transparent, BlockDefinition.Property.Collectible,
-                BlockDefinition.Property.Collideable, BlockDefinition.Property.Destroyable);
-
-            BlockRegistry.Instance.RegisterBlockDefinition("coal_ore", null,
-                BlockDefinition.Property.Collectible, BlockDefinition.Property.Collideable,
-                BlockDefinition.Property.Destroyable);
-        }
-
-        private static void InitializeDefaultWorld(out World world)
-        {
-            world = new GameWorld(true);
-            world.SystemManager.RegisterSystem<ChunkRegionLoaderSystem, DefaultOrderSystem>(SystemRegistrationOrder.After);
-            world.SystemManager.RegisterSystem<ChunkGenerationSystem, ChunkRegionLoaderSystem>(SystemRegistrationOrder.After);
-            World.RegisterWorld("core", world);
-        }
-
         private static void InitializePlayerEntity(World world)
         {
             IEntity player = new Entity();
@@ -126,7 +75,7 @@ namespace Automata.Game
 
             world.EntityManager.RegisterComponent(player, new ChunkLoader
             {
-                Radius = 2
+                Radius = 1
             });
         }
 
@@ -135,15 +84,24 @@ namespace Automata.Game
             BoundedAsyncPool.SetActivePool();
             BoundedPool.Active.DefaultThreadPoolSize();
 
-            InitializeSingletons();
+            WindowOptions options = WindowOptions.Default;
+            options.Title = "Automata";
+            options.Size = new Size(800, 600);
+            options.Position = new Point(500, 400);
+            options.VSync = VSyncMode.Off;
+            options.PreferredDepthBufferBits = 24;
 
-            InitializeBlocks();
+            AutomataWindow.Instance.CreateWindow(options);
+            AutomataWindow.Instance.Closing += ApplicationCloseCallback;
 
-            InitializeDefaultWorld(out World world);
+            BlockRegistry.Instance.Initialize();
+
+            World world = new GameWorld(true);
+            world.SystemManager.RegisterSystem<ChunkRegionLoaderSystem, DefaultOrderSystem>(SystemRegistrationOrder.After);
+            world.SystemManager.RegisterSystem<ChunkGenerationSystem, ChunkRegionLoaderSystem>(SystemRegistrationOrder.After);
+            World.RegisterWorld("core", world);
 
             InitializePlayerEntity(world);
-
-            TextureAtlas.Instance.EarlyInitialize();
         }
 
         private static void ApplicationCloseCallback(object sender)
