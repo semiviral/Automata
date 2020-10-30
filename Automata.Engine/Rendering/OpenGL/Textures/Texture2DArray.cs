@@ -9,6 +9,9 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
     {
         public Vector3i Size { get; }
 
+        public Texture2DArray(uint width, uint height, uint depth, WrapMode wrapMode, FilterMode filterMode)
+            : this(new Vector3i((int)width, (int)height, (int)depth), wrapMode, filterMode) {}
+
         public Texture2DArray(Vector3i size, WrapMode wrapMode, FilterMode filterMode)
         {
             if (Vector3b.Any(size < 0)) throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");

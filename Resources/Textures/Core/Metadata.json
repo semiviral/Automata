@@ -1,6 +1,6 @@
 {
   "RelativeImagePath": "Core.png",
-  "AtlasTiles":
+  "Tiles":
     [{
         "Name": "null",
         "Offset": { "X": 0, "Y": 0 }
