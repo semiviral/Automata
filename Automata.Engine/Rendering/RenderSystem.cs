@@ -9,12 +9,9 @@ using Automata.Engine.Numerics.Shapes;
 using Automata.Engine.Rendering.GLFW;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
-using Automata.Engine.Rendering.OpenGL.Textures;
 using Automata.Engine.Systems;
 using Serilog;
 using Silk.NET.OpenGL;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 using Plane = Automata.Engine.Numerics.Shapes.Plane;
 
 #endregion
@@ -28,8 +25,6 @@ namespace Automata.Engine.Rendering
 
         private readonly GL _GL;
         private float _NewAspectRatio;
-
-        private Texture _Texture;
 
         public RenderSystem()
         {
@@ -47,24 +42,6 @@ namespace Automata.Engine.Rendering
                 _GL.CullFace(CullFaceMode.Back);
                 _GL.Enable(GLEnum.CullFace);
             }
-        }
-
-        public override void Registered()
-        {
-            Image<Rgba32> image = Image.Load<Rgba32>("Resources/Textures/Core/Core.png");
-            Image<Rgba32> slice = new Image<Rgba32>(8, 8);
-
-            for (int y = 0; y < slice.Height; y++)
-            for (int x = 0; x < slice.Width; x++)
-                slice[y, x] = image[y, x];
-
-            Texture2DArray<Rgba32> texture = new Texture2DArray<Rgba32>(new Vector3i(8, 8, 1), Texture.WrapMode.Repeat, Texture.FilterMode.Point);
-            texture.SetPixels(Vector3i.Zero, new Vector2i(slice.Width, slice.Height), ref slice.GetPixelRowSpan(0)[0]);
-
-            _Texture = texture;
-
-            // Texture2D<Rgba32>.LoadFromFile("Resources/Textures/BlankMagenta.png", Texture.WrapMode.Repeat, Texture.FilterMode.Point, false);
-            // TextureRegistry.Instance.GetTexture<Texture2DArray<Rgba32>>("blocks") ?? throw new NullReferenceException();
         }
 
         [HandlesComponents(DistinctionStrategy.Any, typeof(Camera), typeof(RenderMesh))]
@@ -97,7 +74,7 @@ namespace Automata.Engine.Rendering
                     if (_NewAspectRatio > 0f) camera.CalculateProjection(90f, _NewAspectRatio, 0.1f, 1000f);
 
                     Matrix4x4 viewProjection = camera.View * camera.Projection;
-                    RenderShader? currentShader = null;
+                    Material? currentMaterial = null;
 
                     foreach (IEntity objectEntity in entityManager.GetEntitiesWithComponents<RenderMesh>())
                     {
@@ -117,34 +94,39 @@ namespace Automata.Engine.Rendering
                         Matrix4x4 modelViewProjection = renderMesh.Model * viewProjection;
 
                         if (!renderMesh.ShouldRender // check if should render at all
-                            || !objectEntity.TryGetComponent(out RenderShader? renderShader) // if no RenderShader component, don't try to render
+                            || !objectEntity.TryGetComponent(out Material? material) // if no RenderShader component, don't try to render
                             // check if occluded by frustum
                             || (objectEntity.TryGetComponent(out Bounds? bounds) && CheckClipFrustumOcclude(bounds, planes, modelViewProjection))) continue;
 
-                        if (currentShader is null || (renderShader.Value.ID != currentShader.Value.ID))
+                        if (currentMaterial is null || (material.Shader.ID != currentMaterial.Shader.ID))
                         {
-                            renderShader.Value.Use();
-                            currentShader = renderShader;
+                            material.Shader.Use();
+
+                            for (int index = 0; index < material.Textures.Length; index++)
+                            {
+                                material.Textures[index]?.Bind(TextureUnit.Texture0 + index);
+                                material.Shader.TrySetUniform($"_tex{index}", index);
+                            }
+
+                            currentMaterial = material;
                         }
 
-                        if (renderShader.Value.HasAutomataUniforms)
+                        if (material.Shader.HasAutomataUniforms)
                         {
                             if (Matrix4x4.Invert(renderMesh.Model, out Matrix4x4 modelInverted))
-                                renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_OBJECT, modelInverted);
+                                material.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_OBJECT, modelInverted);
 
-                            renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_WORLD, renderMesh.Model);
-                            renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_MVP, modelViewProjection);
+                            material.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_WORLD, renderMesh.Model);
+                            material.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_MVP, modelViewProjection);
 
-                            renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC3_CAMERA_WORLD_POSITION,
+                            material.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC3_CAMERA_WORLD_POSITION,
                                 cameraTranslation?.Value ?? Vector3.Zero);
 
-                            renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_CAMERA_PROJECTION_PARAMS, camera.ProjectionParameters);
-                            renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_VIEWPORT, viewport);
+                            material.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_CAMERA_PROJECTION_PARAMS, camera.ProjectionParameters);
+                            material.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_VIEWPORT, viewport);
                         }
 
                         renderMesh.Mesh!.Bind();
-                        _Texture.Bind(TextureUnit.Texture0);
-                        renderShader.Value.TrySetUniform(Shader.RESERVED_UNIFROM_NAME_SAMPLER2DARRAY_BLOCKS, 0);
 
                         _GL.DrawElements(PrimitiveType.Triangles, renderMesh.Mesh!.IndexesLength, DrawElementsType.UnsignedInt, null);
                     }
@@ -176,11 +158,5 @@ namespace Automata.Engine.Rendering
         }
 
         private void GameWindowResized(object sender, Vector2i newSize) => _NewAspectRatio = (float)newSize.X / (float)newSize.Y;
-
-        protected override void DisposeInternal()
-        {
-            base.DisposeInternal();
-            _Texture.Dispose();
-        }
     }
 }

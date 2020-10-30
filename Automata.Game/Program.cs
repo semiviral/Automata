@@ -143,34 +143,7 @@ namespace Automata.Game
 
             InitializePlayerEntity(world);
 
-            Atlas atlas = Atlas.Load(@".\Resources\Textures\Core\Metadata.json");
-            Texture2DArray<Rgba32> blocks = new Texture2DArray<Rgba32>(8u, 8u, (uint)(atlas.Tiles?.Length ?? 0), Texture.WrapMode.Repeat,
-                Texture.FilterMode.Point);
-
-           string path = Path.Combine(@".\Resources\Textures\Core\", atlas.RelativeImagePath);
-            using Image<Rgba32> image = Image.Load<Rgba32>(path);
-
-            if (atlas.Tiles is null) return;
-
-            int depth = 0;
-            foreach (Atlas.AtlasTile tile in atlas.Tiles.Where(tile => tile is not null))
-            {
-                Image<Rgba32> slice = new Image<Rgba32>(8, 8);
-
-                for (int y = 0; y < slice.Height; y++)
-                for (int x = 0; x < slice.Width; x++)
-                {
-                    int yOffset = (tile.Offset.Y * 8) + y;
-                    int xOffset = (tile.Offset.X * 8) + x;
-                    slice[y, x] = image[yOffset, xOffset];
-                }
-
-                blocks.SetPixels(new Vector3i(0, 0, depth), new Vector2i(8, 8), ref slice.GetPixelRowSpan(0)[0]);
-
-                depth += 1;
-
-                Log.Debug($"Processed texture {tile.Name}");
-            }
+            TextureAtlas.Instance.EarlyInitialize();
         }
 
         private static void ApplicationCloseCallback(object sender)

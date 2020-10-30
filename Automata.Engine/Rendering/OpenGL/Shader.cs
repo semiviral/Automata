@@ -22,7 +22,6 @@ namespace Automata.Engine.Rendering.OpenGL
         public const string RESERVED_UNIFORM_NAME_VEC3_CAMERA_WORLD_POSITION = "_camera";
         public const string RESERVED_UNIFORM_NAME_VEC4_CAMERA_PROJECTION_PARAMS = "_projectionParams";
         public const string RESERVED_UNIFORM_NAME_VEC4_VIEWPORT = "_viewport";
-        public const string RESERVED_UNIFROM_NAME_SAMPLER2DARRAY_BLOCKS = "_blocks";
 
         private static readonly string[] _ReservedUniformNames =
         {

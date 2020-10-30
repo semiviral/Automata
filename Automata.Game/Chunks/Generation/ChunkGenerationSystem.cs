@@ -12,6 +12,7 @@ using Automata.Engine.Input;
 using Automata.Engine.Numerics;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
+using Automata.Engine.Rendering.OpenGL.Textures;
 using Automata.Engine.Systems;
 using Automata.Game.Blocks;
 using ConcurrencyPools;
@@ -170,11 +171,13 @@ namespace Automata.Game.Chunks.Generation
 
             if (Shader.TryLoadShaderWithCache("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl", out Shader? shader))
             {
-                if (entity.TryGetComponent(out RenderShader? renderShader))
+                if (entity.TryGetComponent(out Material? material))
                 {
-                    if (renderShader.Value.ID != shader.ID) renderShader.Value = shader;
+                    if (material.Shader.ID != shader.ID) material.Shader = shader;
                 }
-                else entityManager.RegisterComponent(entity, new RenderShader(shader));
+                else entityManager.RegisterComponent(entity, material = new Material(shader));
+
+                material.Textures[0] = TextureAtlas.Instance.Blocks;
             }
             else Log.Error($"Failed to load a shader for chunk at {entity.GetComponent<Translation>().Value}.");
 
