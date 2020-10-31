@@ -86,7 +86,7 @@ namespace Automata.Game.Chunks.Generation
             -GenerationConstants.CHUNK_SIZE
         };
 
-        public static PendingMesh<int> GeneratePackedMesh(INodeCollection<ushort> blocksCollection, INodeCollection<ushort>?[] neighbors, bool naive)
+        public static PendingMesh<int> GeneratePackedMesh(INodeCollection<ushort> blocksCollection, INodeCollection<ushort>?[] neighbors)
         {
             if (blocksCollection.IsUniform && (blocksCollection.Value == BlockRegistry.AirID))
             {
@@ -122,16 +122,8 @@ namespace Automata.Game.Chunks.Generation
 
                 int localPosition = x | (y << GenerationConstants.CHUNK_SIZE_BIT_SHIFT) | (z << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2));
 
-                if (naive)
-                {
-                    PackedNaiveMeshIndex(blocks, faces, vertexes, indexes, neighbors, index, localPosition, currentBlockId,
-                        BlockRegistry.Instance.CheckBlockHasProperty(currentBlockId, Block.Attribute.Transparent));
-                }
-                else
-                {
-                    PackedTraverseIndex(blocks, faces, vertexes, indexes, neighbors, index, localPosition, currentBlockId,
-                        BlockRegistry.Instance.CheckBlockHasProperty(currentBlockId, Block.Attribute.Transparent));
-                }
+                PackedTraverseIndex(blocks, faces, vertexes, indexes, neighbors, index, localPosition, currentBlockId,
+                    BlockRegistry.Instance.CheckBlockHasProperty(currentBlockId, Block.Attribute.Transparent));
             }
 
             return vertexes.Count == 0 ? PendingMesh<int>.Empty : new PendingMesh<int>(vertexes.Segment, indexes.Segment);

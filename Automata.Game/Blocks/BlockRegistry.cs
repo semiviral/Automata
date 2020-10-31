@@ -149,8 +149,13 @@ namespace Automata.Game.Blocks
             return block.ID;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool BlockIdExists(ushort blockID) => blockID < Blocks.Count;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ushort GetBlockID(string blockName) => BlockNames[blockName];
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string GetBlockName(ushort blockID) => Blocks[blockID].BlockName;
 
         public IBlock GetBlockDefinition(ushort blockId)

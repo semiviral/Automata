@@ -1,32 +1,42 @@
-using System;
-using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 
 namespace Automata.Engine.Extensions
 {
     public static class StructExtensions
     {
-        public static unsafe T1 SetValue<T1, T2>(this T1 a, int index, T2 newValue)
-            where T1 : unmanaged
-            where T2 : unmanaged
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe T SetValue<T, TComponent>(this T a, int index, TComponent newValue)
+            where T : unmanaged
+            where TComponent : unmanaged
         {
-            Span<T2> val = MemoryMarshal.Cast<T1, T2>(stackalloc T1[]
-            {
-                a
-            });
+            byte* ptr = (byte*)&a;
 
-            val[index] = newValue;
+            int byteIndex = index * sizeof(TComponent);
+            Unsafe.Write(&ptr[byteIndex], Unsafe.Read<TComponent>(&ptr[byteIndex]));
 
-            return MemoryMarshal.Cast<T2, T1>(val)[0];
+            return Unsafe.Read<T>(ptr);
         }
 
-        public static T2 GetValue<T1, T2>(this T1 a, int index)
-            where T1 : unmanaged
-            where T2 : unmanaged
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe T WithValue<T, TComponent>(this T a, int index)
+            where T : unmanaged
+            where TComponent : unmanaged
+
         {
-            return MemoryMarshal.Cast<T1, T2>(stackalloc T1[]
-            {
-                a
-            })[index];
+            byte* ptr = (byte*)&a;
+            T result = new T();
+            byte* resultPtr = (byte*)&result;
+
+            int byteIndex = index * sizeof(TComponent);
+            Unsafe.Write(&resultPtr[byteIndex], Unsafe.Read<TComponent>(&ptr[byteIndex]));
+
+            return Unsafe.Read<T>(resultPtr);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe TComponent GetValue<T, TComponent>(this T a, int index)
+            where T : unmanaged
+            where TComponent : unmanaged =>
+            Unsafe.Read<TComponent>(&((byte*)&a)[index * sizeof(TComponent)]);
     }
 }

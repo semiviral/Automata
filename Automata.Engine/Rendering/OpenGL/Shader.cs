@@ -133,7 +133,7 @@ namespace Automata.Engine.Rendering.OpenGL
 
         public void Use() => _GL.UseProgram(_Handle);
 
-        public static bool TryLoadShaderWithCache(string vertexShaderPath, string fragmentShaderPath, [NotNullWhen(true)] out Shader? shader)
+        public static bool TryLoadFromCache(string vertexShaderPath, string fragmentShaderPath, [NotNullWhen(true)] out Shader? shader)
         {
             const string compound_shader_key_format = "{0}:{1}";
             string compoundShaderKey = string.Format(compound_shader_key_format, vertexShaderPath, fragmentShaderPath);

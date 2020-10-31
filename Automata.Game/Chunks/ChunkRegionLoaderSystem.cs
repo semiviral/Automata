@@ -7,6 +7,7 @@ using System.Numerics;
 using Automata.Engine;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
+using Automata.Engine.Extensions;
 using Automata.Engine.Numerics;
 using Automata.Engine.Numerics.Shapes;
 using Automata.Engine.Systems;
@@ -111,49 +112,17 @@ namespace Automata.Game.Chunks
 
         private void SetNeighborChunks(Vector3i origin, Chunk chunk)
         {
-            IEntity? entity;
-            Chunk? neighbor;
-
-            if (_ChunkEntities.TryGetValue(origin + (Vector3i.UnitX * GenerationConstants.CHUNK_SIZE), out entity)
-                && entity.TryGetComponent(out neighbor))
+            for (int normalIndex = 0; normalIndex < chunk.Neighbors.Length; normalIndex++)
             {
-                chunk.Neighbors[0] = neighbor;
-                chunk.NeighborBlocks[0] = neighbor.Blocks;
-            }
+                int sign = (normalIndex - 3) >= 0 ? -1 : 1;
+                int componentIndex = normalIndex % 3;
+                Vector3i component = Vector3i.One.WithValue<Vector3i, int>(componentIndex) * sign;
+                Vector3i neighborOrigin = origin + (component * GenerationConstants.CHUNK_SIZE);
 
-            if (_ChunkEntities.TryGetValue(origin + (Vector3i.UnitY * GenerationConstants.CHUNK_SIZE), out entity)
-                && entity.TryGetComponent(out neighbor))
-            {
-                chunk.Neighbors[1] = neighbor;
-                chunk.NeighborBlocks[1] = neighbor.Blocks;
-            }
-
-            if (_ChunkEntities.TryGetValue(origin + (Vector3i.UnitZ * GenerationConstants.CHUNK_SIZE), out entity)
-                && entity.TryGetComponent(out neighbor))
-            {
-                chunk.Neighbors[2] = neighbor;
-                chunk.NeighborBlocks[2] = neighbor.Blocks;
-            }
-
-            if (_ChunkEntities.TryGetValue(origin - (Vector3i.UnitX * GenerationConstants.CHUNK_SIZE), out entity)
-                && entity.TryGetComponent(out neighbor))
-            {
-                chunk.Neighbors[3] = neighbor;
-                chunk.NeighborBlocks[3] = neighbor.Blocks;
-            }
-
-            if (_ChunkEntities.TryGetValue(origin - (Vector3i.UnitY * GenerationConstants.CHUNK_SIZE), out entity)
-                && entity.TryGetComponent(out neighbor))
-            {
-                chunk.Neighbors[4] = neighbor;
-                chunk.NeighborBlocks[4] = neighbor.Blocks;
-            }
-
-            if (_ChunkEntities.TryGetValue(origin - (Vector3i.UnitZ * GenerationConstants.CHUNK_SIZE), out entity)
-                && entity.TryGetComponent(out neighbor))
-            {
-                chunk.Neighbors[5] = neighbor;
-                chunk.NeighborBlocks[5] = neighbor.Blocks;
+                if (_ChunkEntities.TryGetValue(neighborOrigin, out IEntity? entity) && entity.TryGetComponent(out Chunk? neighbor))
+                {
+                    chunk.Neighbors[normalIndex] = neighbor;
+                }
             }
         }
     }

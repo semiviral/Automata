@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Linq;
 using Automata.Engine;
 using Automata.Engine.Collections;
 using Automata.Engine.Components;
@@ -144,7 +145,7 @@ namespace Automata.Game.Chunks.Generation
             Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
             stopwatch.Restart();
 
-            PendingMesh<int> pendingMesh = ChunkMesher.GeneratePackedMesh(chunk.Blocks, chunk.NeighborBlocks, false);
+            PendingMesh<int> pendingMesh = ChunkMesher.GeneratePackedMesh(chunk.Blocks, chunk.NeighborBlocks().ToArray());
 
             if (!_PendingMeshes.TryAdd(chunk.ID, pendingMesh))
             {
@@ -187,7 +188,7 @@ namespace Automata.Game.Chunks.Generation
             mesh.VertexesBuffer.SetBufferData(pendingMesh.Vertexes, BufferDraw.DynamicDraw);
             mesh.IndexesBuffer.SetBufferData(pendingMesh.Indexes, BufferDraw.DynamicDraw);
 
-            if (Shader.TryLoadShaderWithCache("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl", out Shader? shader))
+            if (Shader.TryLoadFromCache("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl", out Shader? shader))
             {
                 if (entity.TryGetComponent(out Material? material))
                 {

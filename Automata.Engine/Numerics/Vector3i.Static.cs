@@ -31,6 +31,7 @@ namespace Automata.Engine.Numerics
         }
 
         public static int Project1D(Vector3i a, int size) => a.X + (size * (a.Z + (size * a.Y)));
+        public static int Project1D(int x, int y, int z, int size) => x + (size * (z + (size * y)));
 
         public static long Sum(Vector3i a) => a.X + a.Y + a.Z;
 

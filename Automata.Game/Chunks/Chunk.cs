@@ -1,6 +1,7 @@
 #region
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Automata.Engine.Components;
 using Generic_Octree;
@@ -15,8 +16,9 @@ namespace Automata.Game.Chunks
         public Guid ID { get; } = Guid.NewGuid();
         public GenerationState State { get; set; }
         public INodeCollection<ushort>? Blocks { get; set; }
-        public Chunk?[] Neighbors { get; set; } = new Chunk?[6];
-        public INodeCollection<ushort>?[] NeighborBlocks { get; set; } = new INodeCollection<ushort>?[6];
+        public Chunk?[] Neighbors { get; } = new Chunk?[6];
+
+        public IEnumerable<INodeCollection<ushort>?> NeighborBlocks() => Neighbors.Select(chunk => chunk?.Blocks);
 
         public GenerationState MinimalNeighborState() => Neighbors?.Min(neighbor => neighbor?.State ?? GenerationState.Finished)
                                                          ?? GenerationState.Ungenerated;

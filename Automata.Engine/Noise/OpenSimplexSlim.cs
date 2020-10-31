@@ -16,9 +16,10 @@ namespace Automata.Engine.Noise
         private const int _Y_PRIME = 31337;
         private const int _Z_PRIME = 6971;
 
+        public static float GetSimplex(int seed, float frequency, int x, int y) => Simplex2D(seed, frequency, x, y);
         public static float GetSimplex(int seed, float frequency, Vector2i coords) => Simplex2D(seed, frequency, coords.X, coords.Y);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float GetSimplex(int seed, float frequency, int x, int y, int z) => Simplex3D(seed, frequency, x, y, z);
         public static float GetSimplex(int seed, float frequency, Vector3i coords) => Simplex3D(seed, frequency, coords.X, coords.Y, coords.Z);
 
 
