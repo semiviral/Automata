@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Automata.Engine.Collections;
 using Automata.Engine.Numerics;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Game.Blocks;
@@ -84,8 +85,8 @@ namespace Automata.Game.Chunks.Generation
 
         public static PendingMesh<int> GeneratePackedMesh(Span<ushort> blocks, INodeCollection<ushort>?[] neighbors)
         {
-            List<int> vertexes = new List<int>();
-            List<uint> indexes = new List<uint>();
+            TransparentList<int> vertexes = new TransparentList<int>();
+            TransparentList<uint> indexes = new TransparentList<uint>();
             Span<Direction> faces = stackalloc Direction[blocks.Length];
             faces.Clear();
 
@@ -109,7 +110,7 @@ namespace Automata.Game.Chunks.Generation
                     BlockRegistry.Instance.CheckBlockHasProperty(currentBlockId, Block.Attribute.Transparent), ref vertexCount);
             }
 
-            return new PendingMesh<int>(vertexes.ToArray(), indexes.ToArray());
+            return new PendingMesh<int>(vertexes.Segment, indexes.Segment);
         }
 
         private static void PackedTraverseIndex(Span<ushort> blocks, Span<Direction> faces, ICollection<int> vertexes, ICollection<uint> indexes,
@@ -230,9 +231,8 @@ namespace Automata.Game.Chunks.Generation
                             else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockID, Block.Attribute.Transparent))
                             {
                                 if (!isNegativeNormal)
-
-                                    // we've culled the current face, and faced block is opaque as well, so cull it's face to current.
                                 {
+                                    // we've culled the current face, and faced block is opaque as well, so cull it's face to current.
                                     faces[facedBlockIndex] |= (Direction)(1 << ((normalIndex + 3) % 6));
                                 }
 

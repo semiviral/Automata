@@ -1,6 +1,4 @@
-﻿#region
-
-using System;
+﻿using System;
 using System.Drawing;
 using System.IO;
 using Automata.Engine.Components;
@@ -17,9 +15,6 @@ using Automata.Game.Chunks.Generation;
 using ConcurrencyPools;
 using Serilog;
 using Silk.NET.Windowing.Common;
-
-#endregion
-
 
 namespace Automata.Game
 {
@@ -68,7 +63,7 @@ namespace Automata.Game
 
             world.EntityManager.RegisterComponent(player, new ChunkLoader
             {
-                Radius = 1
+                Radius = 12
             });
         }
 
@@ -81,7 +76,7 @@ namespace Automata.Game
             WindowOptions options = WindowOptions.Default;
             options.Title = "Automata";
             options.Size = new Size(800, 600);
-            options.Position = new Point(500, 400);
+            options.Position = new Point(500, 100);
             options.VSync = VSyncMode.Off;
             options.PreferredDepthBufferBits = 24;
 
