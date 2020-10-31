@@ -12,7 +12,7 @@ namespace Automata.Engine.Rendering.Meshes
         public TDataType[] Vertexes { get; }
         public uint[] Indexes { get; }
 
-        public bool IsEmpty => Vertexes.Length == 0 && Indexes.Length == 0;
+        public bool IsEmpty => (Vertexes.Length == 0) && (Indexes.Length == 0);
 
         public PendingMesh(TDataType[] vertexes, uint[] indexes) => (Vertexes, Indexes) = (vertexes, indexes);
     }
