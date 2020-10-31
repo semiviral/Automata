@@ -136,7 +136,7 @@ namespace Automata.Engine.Rendering
 
                         renderMesh.Mesh!.Bind();
 
-                        _GL.DrawElements(PrimitiveType.Lines, renderMesh.Mesh!.IndexesLength, DrawElementsType.UnsignedInt, null);
+                        _GL.DrawElements(PrimitiveType.Triangles, renderMesh.Mesh!.IndexesLength, DrawElementsType.UnsignedInt, null);
                     }
                 }
 
@@ -151,6 +151,7 @@ namespace Automata.Engine.Rendering
 
         private static bool CheckClipFrustumOcclude(Bounds bounds, Span<Plane> planes, Matrix4x4 mvp)
         {
+            return false;
             ClipFrustum frustum = new ClipFrustum(planes, mvp);
             Frustum.Intersect intersection = Frustum.Intersect.Outside;
 

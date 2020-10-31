@@ -17,7 +17,7 @@ namespace Automata.Game.Chunks.Generation
     public static class ChunkMesher
     {
         private const int _DEFAULT_VERTEXES_CAPACITY = 2048;
-        private const int _DEFAULT_INDEXES_CAPACITY = _DEFAULT_VERTEXES_CAPACITY * 3 / 2;
+        private const int _DEFAULT_INDEXES_CAPACITY = (_DEFAULT_VERTEXES_CAPACITY * 3) / 2;
 
         private static readonly int[][] _PackedVertexesByIteration =
         {
@@ -247,7 +247,7 @@ namespace Automata.Game.Chunks.Generation
                     }
 
                     // face is occluded
-                    if ((traversals == 0))
+                    if (traversals == 0)
                     {
                         break;
                     }
@@ -273,6 +273,7 @@ namespace Automata.Game.Chunks.Generation
                     int uvShift = (componentIndex + traversalNormalIndex + ((componentIndex == 1) && (traversalNormalIndex == 2) ? 1 : 0)) % 2;
 
                     int depth = TextureAtlas.Instance.GetTileDepth(BlockRegistry.Instance.GetBlockName(blockID));
+
                     int compressedUV = (depth << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2)) // z
                                        | (traversals << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * uvShift)) // traversal component
                                        | (1 << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * ((uvShift + 1) % 2))); // opposite component to traversal
