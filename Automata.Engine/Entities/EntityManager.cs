@@ -30,12 +30,18 @@ namespace Automata.Engine.Entities
             {
                 IComponent? component = (IComponent?)Activator.CreateInstance(type);
 
-                if (component is null) throw new InvalidOperationException("Types used for composition must implement a parameterless constructor.");
+                if (component is null)
+                {
+                    throw new InvalidOperationException("Types used for composition must implement a parameterless constructor.");
+                }
 
                 entity.AddComponent(component);
             }
 
-            if (autoRegister) RegisterEntity(entity);
+            if (autoRegister)
+            {
+                RegisterEntity(entity);
+            }
 
             return entity;
         }
@@ -44,14 +50,20 @@ namespace Automata.Engine.Entities
         {
             _Entities.Add(entity);
 
-            foreach (Type type in entity.Components.Keys) RegisterComponent(entity, entity.GetComponent(type));
+            foreach (Type type in entity.Components.Keys)
+            {
+                RegisterComponent(entity, entity.GetComponent(type));
+            }
         }
 
         private void RemoveEntityInternal(IEntity entity)
         {
             _Entities.Remove(entity);
 
-            foreach (Type type in entity.Components.Keys) RemoveComponent(entity, type);
+            foreach (Type type in entity.Components.Keys)
+            {
+                RemoveComponent(entity, type);
+            }
         }
 
 
@@ -73,12 +85,18 @@ namespace Automata.Engine.Entities
 
         private void RemoveComponentInternal(IEntity entity, Type type)
         {
-            if (!typeof(IComponent).IsAssignableFrom(type)) throw new TypeLoadException($"Component types must be assignable from {nameof(IComponent)}.");
+            if (!typeof(IComponent).IsAssignableFrom(type))
+            {
+                throw new TypeLoadException($"Component types must be assignable from {nameof(IComponent)}.");
+            }
 
             IComponent component = entity.RemoveComponent(type);
             _ComponentCountByType[type] -= 1;
 
-            if (component is IDisposable disposable) disposable.Dispose();
+            if (component is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
         }
 
         #endregion
@@ -122,14 +140,26 @@ namespace Automata.Engine.Entities
 
         private void RegisterComponentInternal(IEntity entity, Type type, IComponent? component)
         {
-            if (!typeof(IComponent).IsAssignableFrom(type)) throw new TypeLoadException($"Component types must be assignable from {nameof(IComponent)}.");
+            if (!typeof(IComponent).IsAssignableFrom(type))
+            {
+                throw new TypeLoadException($"Component types must be assignable from {nameof(IComponent)}.");
+            }
 
             IComponent? instance = component ?? (IComponent?)Activator.CreateInstance(type);
 
-            if (instance is null) throw new TypeLoadException($"Failed to initialize {nameof(IComponent)} of type '{type.FullName}'.");
-            else if (!entity.TryGetComponent(type, out _)) entity.AddComponent(instance);
+            if (instance is null)
+            {
+                throw new TypeLoadException($"Failed to initialize {nameof(IComponent)} of type '{type.FullName}'.");
+            }
+            else if (!entity.TryGetComponent(type, out _))
+            {
+                entity.AddComponent(instance);
+            }
 
-            if (!_ComponentCountByType.ContainsKey(type)) _ComponentCountByType.Add(type, 0);
+            if (!_ComponentCountByType.ContainsKey(type))
+            {
+                _ComponentCountByType.Add(type, 0);
+            }
 
             _ComponentCountByType[type] += 1;
         }
@@ -142,8 +172,12 @@ namespace Automata.Engine.Entities
         public IEnumerable<TComponent> GetComponentsAssignableFrom<TComponent>() where TComponent : class, IComponent
         {
             foreach (IComponent component in _Entities.SelectMany(entity => entity.Components.Values))
+            {
                 if (component is TComponent componentT)
+                {
                     yield return componentT;
+                }
+            }
         }
 
         /// <summary>
@@ -192,8 +226,12 @@ namespace Automata.Engine.Entities
             where T1 : class, IComponent
         {
             foreach (IEntity entity in _Entities)
+            {
                 if (entity.TryGetComponent(out T1? component))
+                {
                     yield return component;
+                }
+            }
         }
 
         public IEnumerable<(T1, T2)> GetComponents<T1, T2>()
@@ -203,7 +241,10 @@ namespace Automata.Engine.Entities
             foreach (IEntity entity in _Entities)
             {
                 if (entity.TryGetComponent(out T1? component)
-                    && entity.TryGetComponent(out T2? component2)) yield return (component, component2);
+                    && entity.TryGetComponent(out T2? component2))
+                {
+                    yield return (component, component2);
+                }
             }
         }
 
@@ -216,7 +257,10 @@ namespace Automata.Engine.Entities
             {
                 if (entity.TryGetComponent(out T1? component)
                     && entity.TryGetComponent(out T2? component2)
-                    && entity.TryGetComponent(out T3? component3)) yield return (component, component2, component3);
+                    && entity.TryGetComponent(out T3? component3))
+                {
+                    yield return (component, component2, component3);
+                }
             }
         }
 
@@ -231,7 +275,10 @@ namespace Automata.Engine.Entities
                 if (entity.TryGetComponent(out T1? component)
                     && entity.TryGetComponent(out T2? component2)
                     && entity.TryGetComponent(out T3? component3)
-                    && entity.TryGetComponent(out T4? component4)) yield return (component, component2, component3, component4);
+                    && entity.TryGetComponent(out T4? component4))
+                {
+                    yield return (component, component2, component3, component4);
+                }
             }
         }
 

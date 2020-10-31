@@ -98,7 +98,10 @@ namespace Automata.Game.Chunks.Generation
             {
                 ushort currentBlockId = blocks[index];
 
-                if (currentBlockId == BlockRegistry.AirID) continue;
+                if (currentBlockId == BlockRegistry.AirID)
+                {
+                    continue;
+                }
 
                 int localPosition = x | (y << GenerationConstants.CHUNK_SIZE_BIT_SHIFT) | (z << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2));
 
@@ -119,7 +122,10 @@ namespace Automata.Game.Chunks.Generation
                 Direction faceDirection = (Direction)(1 << normalIndex);
 
                 // check if current index has face already
-                if (faces[index].HasDirection(faceDirection)) continue;
+                if (faces[index].HasDirection(faceDirection))
+                {
+                    continue;
+                }
 
                 // indicates whether the current face checking direction is negative or positive
                 bool isNegativeNormal = (normalIndex - 3) >= 0;
@@ -194,9 +200,15 @@ namespace Automata.Game.Chunks.Generation
 
                             if (isTransparent)
                             {
-                                if (blockID != facedBlockID) break;
+                                if (blockID != facedBlockID)
+                                {
+                                    break;
+                                }
                             }
-                            else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockID, Block.Attribute.Transparent)) break;
+                            else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockID, Block.Attribute.Transparent))
+                            {
+                                break;
+                            }
                         }
                         else
                         {
@@ -210,14 +222,19 @@ namespace Automata.Game.Chunks.Generation
                             // if opaque, traverse so long as facing block is transparent
                             if (isTransparent)
                             {
-                                if (blockID != facedBlockID) break;
+                                if (blockID != facedBlockID)
+                                {
+                                    break;
+                                }
                             }
                             else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockID, Block.Attribute.Transparent))
                             {
                                 if (!isNegativeNormal)
 
                                     // we've culled the current face, and faced block is opaque as well, so cull it's face to current.
+                                {
                                     faces[facedBlockIndex] |= (Direction)(1 << ((normalIndex + 3) % 6));
+                                }
 
                                 break;
                             }
@@ -229,10 +246,16 @@ namespace Automata.Game.Chunks.Generation
                     // face is occluded
                     if ((traversals == 0)
                         || !BlockRegistry.Instance.TryGetBlockName(blockID, out string? blockName)
-                        || !TextureAtlas.Instance.TryGetTileDepth(blockName, out int depth)) break;
+                        || !TextureAtlas.Instance.TryGetTileDepth(blockName, out int depth))
+                    {
+                        break;
+                    }
 
                     // if it's the first traversal and we've only made a 1x1x1 face, continue to test next axis
-                    else if ((traversals == 1) && (perpendicularNormalIndex == 1)) continue;
+                    else if ((traversals == 1) && (perpendicularNormalIndex == 1))
+                    {
+                        continue;
+                    }
 
                     indexes.Add(indexesStart + 0u);
                     indexes.Add(indexesStart + 1u);
@@ -300,7 +323,10 @@ namespace Automata.Game.Chunks.Generation
                 // face direction always exists on a single bit, so shift 1 by the current normalIndex (0-5)
                 Direction faceDirection = (Direction)(1 << normalIndex);
 
-                if (faces[index].HasDirection(faceDirection)) continue;
+                if (faces[index].HasDirection(faceDirection))
+                {
+                    continue;
+                }
 
                 // indicates whether the current face checking direction is negative or positive
                 bool isNegativeFace = (normalIndex - 3) >= 0;
@@ -343,9 +369,15 @@ namespace Automata.Game.Chunks.Generation
 
                     if (isCurrentBlockTransparent)
                     {
-                        if (currentBlockId == facedBlockId) continue;
+                        if (currentBlockId == facedBlockId)
+                        {
+                            continue;
+                        }
                     }
-                    else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockId, Block.Attribute.Transparent)) continue;
+                    else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockId, Block.Attribute.Transparent))
+                    {
+                        continue;
+                    }
                 }
                 else
                 {
@@ -359,12 +391,18 @@ namespace Automata.Game.Chunks.Generation
                     // if opaque, traverse so long as facing block is transparent
                     if (isCurrentBlockTransparent)
                     {
-                        if (currentBlockId == facedBlockId) continue;
+                        if (currentBlockId == facedBlockId)
+                        {
+                            continue;
+                        }
                     }
                     else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockId, Block.Attribute.Transparent))
                     {
                         // we've culled this face, and faced block is opaque as well, so cull it's face adjacent to current.
-                        if (!isNegativeFace) faces[facedBlockIndex] |= (Direction)(1 << ((normalIndex + 3) % 6));
+                        if (!isNegativeFace)
+                        {
+                            faces[facedBlockIndex] |= (Direction)(1 << ((normalIndex + 3) % 6));
+                        }
 
                         continue;
                     }

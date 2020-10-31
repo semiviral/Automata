@@ -52,7 +52,10 @@ namespace Automata.Engine.Rendering.OpenGL
         /// <exception cref="OpenGLException"></exception>
         private static void CheckForErrorsAndThrow(bool checkForErrors)
         {
-            if (!checkForErrors) return;
+            if (!checkForErrors)
+            {
+                return;
+            }
 
             GLEnum glError = Instance.GL.GetError();
 

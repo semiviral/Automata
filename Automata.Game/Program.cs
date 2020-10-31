@@ -1,17 +1,14 @@
 ﻿#region
 
 using System;
+using System.Drawing;
 using System.IO;
-using System.Linq;
-using Automata.Engine;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
 using Automata.Engine.Input;
-using Automata.Engine.Numerics;
 using Automata.Engine.Rendering;
 using Automata.Engine.Rendering.GLFW;
 using Automata.Engine.Rendering.OpenGL;
-using Automata.Engine.Rendering.OpenGL.Textures;
 using Automata.Engine.Systems;
 using Automata.Engine.Worlds;
 using Automata.Game.Blocks;
@@ -20,10 +17,6 @@ using Automata.Game.Chunks.Generation;
 using ConcurrencyPools;
 using Serilog;
 using Silk.NET.Windowing.Common;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using Point = System.Drawing.Point;
-using Size = System.Drawing.Size;
 
 #endregion
 

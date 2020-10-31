@@ -25,10 +25,6 @@ namespace Automata.Game.Blocks
 
         private readonly Func<Direction, string> _UVsRule;
 
-        public ushort ID { get; }
-        public string BlockName { get; }
-        public Attribute Attributes { get; }
-
         static Block() => _DefaultUVsRule = _ => string.Empty;
 
         public Block(ushort id, string blockName, Func<Direction, string>? uvsRule, params Attribute[] properties)
@@ -36,10 +32,17 @@ namespace Automata.Game.Blocks
             ID = id;
             BlockName = blockName;
 
-            foreach (Attribute property in properties) Attributes |= property;
+            foreach (Attribute property in properties)
+            {
+                Attributes |= property;
+            }
 
             _UVsRule = uvsRule ?? _DefaultUVsRule;
         }
+
+        public ushort ID { get; }
+        public string BlockName { get; }
+        public Attribute Attributes { get; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool HasAttribute(Attribute flag) => (Attributes & flag) == flag;

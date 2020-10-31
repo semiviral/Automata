@@ -40,7 +40,10 @@ namespace Automata.Engine.Collections
                 _Nodes.Add(item.GetType(), _LinkedList.AddBefore(_Nodes[typeof(TBefore)], item));
                 return true;
             }
-            else return false;
+            else
+            {
+                return false;
+            }
         }
 
         public bool AddAfter<TAfter>(T item)
@@ -50,7 +53,10 @@ namespace Automata.Engine.Collections
                 _Nodes.Add(item.GetType(), _LinkedList.AddAfter(_Nodes[typeof(TAfter)], item));
                 return true;
             }
-            else return false;
+            else
+            {
+                return false;
+            }
         }
 
         public void Clear()

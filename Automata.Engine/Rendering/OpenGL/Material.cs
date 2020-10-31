@@ -3,7 +3,6 @@
 using System;
 using Automata.Engine.Components;
 using Automata.Engine.Rendering.OpenGL.Textures;
-using Silk.NET.OpenGL;
 
 #endregion
 

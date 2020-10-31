@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
 using Automata.Engine;
 using Automata.Engine.Numerics;
 using Automata.Engine.Rendering.OpenGL.Textures;
@@ -28,6 +27,7 @@ namespace Automata.Game
             Blocks = new Texture2DArray<Rgba32>(8u, 8u, (uint)texturePaths.Count, Texture.WrapMode.Repeat, Texture.FilterMode.Point);
 
             int depth = 0;
+
             foreach ((string group, string path) in texturePaths)
             {
                 Image<Rgba32> sprite = Image.Load<Rgba32>(path);
@@ -37,12 +37,20 @@ namespace Automata.Game
 
                 // it shouldn't be too uncommon for multiple identical paths to be parsed out
                 // as it just means multiple blocks are using the same texture
-                if (_TextureDepths.ContainsKey(formattedName)) continue;
+                if (_TextureDepths.ContainsKey(formattedName))
+                {
+                    continue;
+                }
 
                 if (_TextureDepths.TryAdd(formattedName, depth))
+                {
                     Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(TextureAtlas), $"Registered texture: \"{formattedName}\" depth {depth}"));
-                else Log.Warning(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(TextureAtlas),
-                    $"Failed to register texture: \"{formattedName}\" depth {depth}"));
+                }
+                else
+                {
+                    Log.Warning(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(TextureAtlas),
+                        $"Failed to register texture: \"{formattedName}\" depth {depth}"));
+                }
 
                 depth += 1;
             }
@@ -54,12 +62,9 @@ namespace Automata.Game
 
         public bool TryGetTileDepth(string tileName, [MaybeNullWhen(false)] out int depth)
         {
-            bool success= _TextureDepths.TryGetValue(tileName, out depth);
+            bool success = _TextureDepths.TryGetValue(tileName, out depth);
 
-            if (!success)
-            {
-
-            }
+            if (!success) { }
 
             return success;
         }
@@ -73,7 +78,10 @@ namespace Automata.Game
                 Atlas atlas = Atlas.Load(metadataFilePath);
                 string? directoryPath = Path.GetDirectoryName(metadataFilePath);
 
-                if (atlas.RelativeImagePath is null || atlas.Tiles is null || directoryPath is null) continue;
+                if (atlas.RelativeImagePath is null || atlas.Tiles is null || directoryPath is null)
+                {
+                    continue;
+                }
 
                 yield return (directoryPath, atlas);
             }

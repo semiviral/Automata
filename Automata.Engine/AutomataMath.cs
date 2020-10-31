@@ -20,8 +20,14 @@ namespace Automata.Engine
 
         public static unsafe float GetValue(this Matrix4x4 matrix, uint row, uint column)
         {
-            if (row >= 4u) throw new ArgumentOutOfRangeException(nameof(row));
-            else if (column >= 4u) throw new ArgumentOutOfRangeException(nameof(row));
+            if (row >= 4u)
+            {
+                throw new ArgumentOutOfRangeException(nameof(row));
+            }
+            else if (column >= 4u)
+            {
+                throw new ArgumentOutOfRangeException(nameof(row));
+            }
 
             return (&matrix.M11)[(row * 4u) + column];
         }

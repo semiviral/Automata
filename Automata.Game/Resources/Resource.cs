@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
-using Automata.Game.Blocks;
 
 namespace Automata.Game.Resources
 {

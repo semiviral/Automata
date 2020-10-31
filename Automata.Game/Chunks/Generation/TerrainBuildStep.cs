@@ -45,9 +45,18 @@ namespace Automata.Game.Chunks.Generation
                 BlockRegistry blockRegistry = BlockRegistry.Instance;
                 int globalPositionY = origin.Y + localPosition.Y;
 
-                if ((globalPositionY < 4) && (globalPositionY <= parameters.SeededRandom.Next(0, 4))) blocks[index] = blockRegistry.GetBlockID("Core:Bedrock");
-                else if ((noiseHeight < origin.Y) || (cavemap[index] < 0.000225f)) blocks[index] = BlockRegistry.AirID;
-                else if (globalPositionY == noiseHeight) blocks[index] = blockRegistry.GetBlockID("Core:Grass");
+                if ((globalPositionY < 4) && (globalPositionY <= parameters.SeededRandom.Next(0, 4)))
+                {
+                    blocks[index] = blockRegistry.GetBlockID("Core:Bedrock");
+                }
+                else if ((noiseHeight < origin.Y) || (cavemap[index] < 0.000225f))
+                {
+                    blocks[index] = BlockRegistry.AirID;
+                }
+                else if (globalPositionY == noiseHeight)
+                {
+                    blocks[index] = blockRegistry.GetBlockID("Core:Grass");
+                }
                 else if ((globalPositionY < noiseHeight) && (globalPositionY >= (noiseHeight - 3))) // lay dirt up to 3 blocks below noise height
                 {
                     blocks[index] = parameters.SeededRandom.Next(0, 8) == 0
@@ -60,7 +69,10 @@ namespace Automata.Game.Chunks.Generation
                         ? blockRegistry.GetBlockID("Core:Ore_Coal")
                         : blockRegistry.GetBlockID("Core:Stone");
                 }
-                else blocks[index] = BlockRegistry.AirID;
+                else
+                {
+                    blocks[index] = BlockRegistry.AirID;
+                }
             }
         }
 

@@ -41,8 +41,14 @@ namespace Automata.Engine.Rendering.GLFW
         {
             get
             {
-                if (_Window is null) throw new InvalidOperationException("Window has not been created.");
-                else return _Window;
+                if (_Window is null)
+                {
+                    throw new InvalidOperationException("Window has not been created.");
+                }
+                else
+                {
+                    return _Window;
+                }
             }
         }
 
@@ -98,7 +104,10 @@ namespace Automata.Engine.Rendering.GLFW
 
             double refreshRate;
 
-            if (Window.Monitor.VideoMode.RefreshRate.HasValue) refreshRate = Window.Monitor.VideoMode.RefreshRate.Value;
+            if (Window.Monitor.VideoMode.RefreshRate.HasValue)
+            {
+                refreshRate = Window.Monitor.VideoMode.RefreshRate.Value;
+            }
             else
             {
                 refreshRate = default_refresh_rate;
@@ -122,14 +131,23 @@ namespace Automata.Engine.Rendering.GLFW
 
                     Window.DoEvents();
 
-                    if (InputManager.Instance.IsKeyPressed(Key.Escape)) Window.Close();
+                    if (InputManager.Instance.IsKeyPressed(Key.Escape))
+                    {
+                        Window.Close();
+                    }
 
-                    if (!Window.IsClosing) World.GlobalUpdate(deltaTimer);
+                    if (!Window.IsClosing)
+                    {
+                        World.GlobalUpdate(deltaTimer);
+                    }
 
                     Window.DoEvents();
                     Window.SwapBuffers();
 
-                    if (CheckWaitForNextMonitorRefresh()) WaitForNextMonitorRefresh(deltaTimer);
+                    if (CheckWaitForNextMonitorRefresh())
+                    {
+                        WaitForNextMonitorRefresh(deltaTimer);
+                    }
 
                     fps.Enqueue(1d / deltaTimer.Elapsed.TotalSeconds);
                     Title = $"Automata {fps.Average():0.00} FPS";

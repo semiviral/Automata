@@ -117,7 +117,10 @@ namespace Automata.Engine.Rendering.DirectX
             string temporaryShader = Path.GetTempFileName();
             File.WriteAllText(temporaryShader, _DEFAULT_VERTEX);
 
-            if (TryTranspileShader(temporaryShader, out _DefaultVertexShader)) Log.Information(string.Format(_LogFormat, "Transpiled default vertex shader."));
+            if (TryTranspileShader(temporaryShader, out _DefaultVertexShader))
+            {
+                Log.Information(string.Format(_LogFormat, "Transpiled default vertex shader."));
+            }
             else
             {
                 Log.Error(string.Format(_LogFormat, "Failed to transpile vertex shader."));
@@ -127,7 +130,9 @@ namespace Automata.Engine.Rendering.DirectX
             File.WriteAllText(temporaryShader, _DEFAULT_FRAGMENT);
 
             if (TryTranspileShader(temporaryShader, out _DefaultFragmentShader))
+            {
                 Log.Information(string.Format(_LogFormat, "Transpiled default fragment shader."));
+            }
             else
             {
                 Log.Error(string.Format(_LogFormat, "Failed to transpile fragment shader."));
@@ -166,7 +171,10 @@ namespace Automata.Engine.Rendering.DirectX
                 error = true;
             }
 
-            if (error) return false;
+            if (error)
+            {
+                return false;
+            }
 
             shaderBytes = File.ReadAllBytes(tempOutputFile);
             File.Delete(tempOutputFile);

@@ -69,9 +69,18 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
 
         private static (InternalFormat, PixelFormat, PixelType) GetPixelFormats<TPixel>() where TPixel : unmanaged, IPixel<TPixel>
         {
-            if (typeof(TPixel) == typeof(Rgba32)) return (InternalFormat.Rgba8, PixelFormat.Rgba, PixelType.UnsignedByte);
-            else if (typeof(TPixel) == typeof(RgbaVector)) return (InternalFormat.Rgba32f, PixelFormat.Rgba, PixelType.Float);
-            else throw new ArgumentOutOfRangeException();
+            if (typeof(TPixel) == typeof(Rgba32))
+            {
+                return (InternalFormat.Rgba8, PixelFormat.Rgba, PixelType.UnsignedByte);
+            }
+            else if (typeof(TPixel) == typeof(RgbaVector))
+            {
+                return (InternalFormat.Rgba32f, PixelFormat.Rgba, PixelType.Float);
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException();
+            }
         }
 
         public abstract void Bind(TextureUnit textureSlot);

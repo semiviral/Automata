@@ -10,11 +10,14 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
         public Vector3i Size { get; }
 
         public Texture2DArray(uint width, uint height, uint depth, WrapMode wrapMode, FilterMode filterMode)
-            : this(new Vector3i((int)width, (int)height, (int)depth), wrapMode, filterMode) {}
+            : this(new Vector3i((int)width, (int)height, (int)depth), wrapMode, filterMode) { }
 
         public Texture2DArray(Vector3i size, WrapMode wrapMode, FilterMode filterMode)
         {
-            if (Vector3b.Any(size < 0)) throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
+            if (Vector3b.Any(size < 0))
+            {
+                throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
+            }
 
             Size = size;
 
@@ -28,8 +31,14 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
 
         public void SetPixels(Vector3i offset, Vector2i size, ref TPixel firstPixel)
         {
-            if (Vector3b.Any(offset < 0)) throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
-            else if (Vector2b.Any(size < 0)) throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0 and <TexSize");
+            if (Vector3b.Any(offset < 0))
+            {
+                throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
+            }
+            else if (Vector2b.Any(size < 0))
+            {
+                throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0 and <TexSize");
+            }
 
             Bind(TextureUnit.Texture0);
 

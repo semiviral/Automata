@@ -17,13 +17,19 @@ namespace Automata.Engine.Input
         [HandlesComponents(DistinctionStrategy.All, typeof(Rotation), typeof(MouseListener))]
         public override void Update(EntityManager entityManager, TimeSpan delta)
         {
-            if (!AutomataWindow.Instance.Focused) return;
+            if (!AutomataWindow.Instance.Focused)
+            {
+                return;
+            }
 
             Vector2 relativeMousePosition = InputManager.Instance.GetMousePositionCenterRelative(0) * (float)delta.TotalSeconds;
             relativeMousePosition.X = -relativeMousePosition.X; // invert y axis for proper rotation
 
             // if offset is zero, the mouse has not moved, so return
-            if (relativeMousePosition == Vector2.Zero) return;
+            if (relativeMousePosition == Vector2.Zero)
+            {
+                return;
+            }
 
             foreach ((Rotation rotation, MouseListener mouseListener) in entityManager.GetComponents<Rotation, MouseListener>())
             {

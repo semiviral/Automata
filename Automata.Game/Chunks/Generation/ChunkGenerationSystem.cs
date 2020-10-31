@@ -12,7 +12,6 @@ using Automata.Engine.Input;
 using Automata.Engine.Numerics;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
-using Automata.Engine.Rendering.OpenGL.Textures;
 using Automata.Engine.Systems;
 using Automata.Game.Blocks;
 using ConcurrencyPools;
@@ -49,7 +48,10 @@ namespace Automata.Game.Chunks.Generation
         {
             foreach (IEntity entity in entityManager.GetEntitiesWithComponents<Chunk, Translation>())
             {
-                if (!entity.TryGetComponent(out Chunk? chunk) || !entity.TryGetComponent(out Translation? translation)) continue;
+                if (!entity.TryGetComponent(out Chunk? chunk) || !entity.TryGetComponent(out Translation? translation))
+                {
+                    continue;
+                }
 
                 switch (chunk.State)
                 {
@@ -89,7 +91,10 @@ namespace Automata.Game.Chunks.Generation
 
             Span<ushort> blocks = stackalloc ushort[GenerationConstants.CHUNK_SIZE_CUBED];
 
-            foreach (BuildStep generationStep in _BuildSteps) generationStep.Generate(origin, parameters, blocks);
+            foreach (BuildStep generationStep in _BuildSteps)
+            {
+                generationStep.Generate(origin, parameters, blocks);
+            }
 
             stopwatch.Stop();
 
@@ -107,9 +112,14 @@ namespace Automata.Game.Chunks.Generation
             for (int y = 0; y < GenerationConstants.CHUNK_SIZE; y++)
             for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
             for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++, index++)
+            {
                 nodeCollection.SetPoint(x, y, z, blocks[index]);
+            }
 
-            if (!_PendingBlockCollections.TryAdd(chunk.ID, nodeCollection)) Log.Error($"Failed to add chunk({origin}) blocks.");
+            if (!_PendingBlockCollections.TryAdd(chunk.ID, nodeCollection))
+            {
+                Log.Error($"Failed to add chunk({origin}) blocks.");
+            }
 
             stopwatch.Stop();
 
@@ -140,10 +150,16 @@ namespace Automata.Game.Chunks.Generation
             for (int y = 0; y < GenerationConstants.CHUNK_SIZE; y++)
             for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
             for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++, index++)
+            {
                 blocks[index] = chunk.Blocks.GetPoint(x, y, z);
+            }
 
             PendingMesh<int> pendingMesh = ChunkMesher.GeneratePackedMesh(blocks, chunk.NeighborBlocks());
-            if (!_PendingMeshes.TryAdd(chunk.ID, pendingMesh)) Log.Error($"Failed to add chunk({origin}) mesh.");
+
+            if (!_PendingMeshes.TryAdd(chunk.ID, pendingMesh))
+            {
+                Log.Error($"Failed to add chunk({origin}) mesh.");
+            }
 
             stopwatch.Stop();
 
@@ -160,8 +176,15 @@ namespace Automata.Game.Chunks.Generation
             Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
             stopwatch.Restart();
 
-            if (!entity.TryGetComponent(out RenderMesh? renderMesh)) entityManager.RegisterComponent(entity, renderMesh = new RenderMesh());
-            if (renderMesh.Mesh is null or not Mesh<int>) renderMesh.Mesh = new Mesh<int>(sizeof(int) + sizeof(int));
+            if (!entity.TryGetComponent(out RenderMesh? renderMesh))
+            {
+                entityManager.RegisterComponent(entity, renderMesh = new RenderMesh());
+            }
+
+            if (renderMesh.Mesh is null or not Mesh<int>)
+            {
+                renderMesh.Mesh = new Mesh<int>(sizeof(int) + sizeof(int));
+            }
 
             Mesh<int> mesh = (renderMesh.Mesh as Mesh<int>)!;
             mesh.ModifyVertexAttributes<int>(0u, 0);
@@ -173,13 +196,22 @@ namespace Automata.Game.Chunks.Generation
             {
                 if (entity.TryGetComponent(out Material? material))
                 {
-                    if (material.Shader.ID != shader.ID) material.Shader = shader;
+                    if (material.Shader.ID != shader.ID)
+                    {
+                        material.Shader = shader;
+                    }
                 }
-                else entityManager.RegisterComponent(entity, material = new Material(shader));
+                else
+                {
+                    entityManager.RegisterComponent(entity, material = new Material(shader));
+                }
 
                 material.Textures[0] = TextureAtlas.Instance.Blocks;
             }
-            else Log.Error($"Failed to load a shader for chunk at {entity.GetComponent<Translation>().Value}.");
+            else
+            {
+                Log.Error($"Failed to load a shader for chunk at {entity.GetComponent<Translation>().Value}.");
+            }
 
             stopwatch.Stop();
 
@@ -197,7 +229,10 @@ namespace Automata.Game.Chunks.Generation
                 _KeysPressed = false;
                 return;
             }
-            else if (_KeysPressed) return;
+            else if (_KeysPressed)
+            {
+                return;
+            }
 
             _KeysPressed = true;
 
