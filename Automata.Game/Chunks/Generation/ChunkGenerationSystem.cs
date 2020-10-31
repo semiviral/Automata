@@ -48,8 +48,6 @@ namespace Automata.Game.Chunks.Generation
         [HandlesComponents(DistinctionStrategy.All, typeof(Translation), typeof(Chunk))]
         public override void Update(EntityManager entityManager, TimeSpan delta)
         {
-            double averageVertices = avgVertices.DefaultIfEmpty().Average();
-
             foreach (IEntity entity in entityManager.GetEntitiesWithComponents<Chunk, Translation>())
             {
                 if (!entity.TryGetComponent(out Chunk? chunk) || !entity.TryGetComponent(out Translation? translation))
@@ -175,8 +173,6 @@ namespace Automata.Game.Chunks.Generation
             DiagnosticsSystem.Stopwatches.Return(stopwatch);
         }
 
-        private static ConcurrentBag<int> avgVertices = new ConcurrentBag<int>();
-
         private static void ApplyMesh(EntityManager entityManager, IEntity entity, Guid chunkID, PendingMesh<int> pendingMesh)
         {
             Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
@@ -197,8 +193,6 @@ namespace Automata.Game.Chunks.Generation
             mesh.ModifyVertexAttributes<int>(1u, 1);
             mesh.VertexesBuffer.SetBufferData(pendingMesh.Vertexes, BufferDraw.DynamicDraw);
             mesh.IndexesBuffer.SetBufferData(pendingMesh.Indexes, BufferDraw.DynamicDraw);
-
-            avgVertices.Add(pendingMesh.Vertexes.Length);
 
             if (Shader.TryLoadShaderWithCache("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl", out Shader? shader))
             {

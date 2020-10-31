@@ -136,7 +136,7 @@ namespace Automata.Engine.Rendering
 
                         renderMesh.Mesh!.Bind();
 
-                        _GL.DrawElements(PrimitiveType.Triangles, renderMesh.Mesh!.IndexesLength, DrawElementsType.UnsignedInt, null);
+                        _GL.DrawElements(PrimitiveType.Lines, renderMesh.Mesh!.IndexesLength, DrawElementsType.UnsignedInt, null);
                     }
                 }
 
