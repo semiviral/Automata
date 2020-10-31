@@ -12,14 +12,11 @@ namespace Automata.Game.Chunks
 {
     public class Chunk : IComponent
     {
-        private static readonly INodeCollection<ushort>?[] _NoNeighborBlocks = new INodeCollection<ushort>?[6];
-
         public Guid ID { get; } = Guid.NewGuid();
         public GenerationState State { get; set; }
         public INodeCollection<ushort>? Blocks { get; set; }
-        public Chunk?[]? Neighbors { get; set; }
-
-        public INodeCollection<ushort>?[] NeighborBlocks() => Neighbors?.Select(neighbor => neighbor?.Blocks).ToArray() ?? _NoNeighborBlocks;
+        public Chunk?[] Neighbors { get; set; } = new Chunk?[6];
+        public INodeCollection<ushort>?[] NeighborBlocks { get; set; } = new INodeCollection<ushort>?[6];
 
         public GenerationState MinimalNeighborState() => Neighbors?.Min(neighbor => neighbor?.State ?? GenerationState.Finished)
                                                          ?? GenerationState.Ungenerated;
