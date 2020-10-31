@@ -83,6 +83,7 @@ namespace Automata.Game
         {
             BoundedAsyncPool.SetActivePool();
             BoundedPool.Active.DefaultThreadPoolSize();
+            BoundedPool.Active.ExceptionOccurred += (_, exception) => Log.Error($"{exception.Message}\r\n{exception.StackTrace}");
 
             WindowOptions options = WindowOptions.Default;
             options.Title = "Automata";
@@ -94,7 +95,7 @@ namespace Automata.Game
             AutomataWindow.Instance.CreateWindow(options);
             AutomataWindow.Instance.Closing += ApplicationCloseCallback;
 
-            BlockRegistry.Instance.Initialize();
+            BlockRegistry.Instance.LazyInitialize();
 
             World world = new GameWorld(true);
             world.SystemManager.RegisterSystem<ChunkRegionLoaderSystem, DefaultOrderSystem>(SystemRegistrationOrder.After);

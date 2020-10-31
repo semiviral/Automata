@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.IO.Enumeration;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Automata.Engine;
@@ -22,7 +21,7 @@ namespace Automata.Game.Blocks
     {
         private static readonly IReadOnlyDictionary<string, Block.Attribute> _AttributeAliases = new Dictionary<string, Block.Attribute>
         {
-            { "default", Block.Attribute.Collectible | Block.Attribute.Collideable | Block.Attribute.Destructible }
+            { "Default", Block.Attribute.Collectible | Block.Attribute.Collideable | Block.Attribute.Destructible }
         };
 
         public static ushort AirID;
@@ -37,10 +36,8 @@ namespace Automata.Game.Blocks
             BlockNames = new Dictionary<string, ushort>();
 
             List<(string group, string path)> paths = LoadMetadata().ToList();
-            
+            TextureAtlas.Instance.Initialize(paths);
         }
-
-        public void Initialize() { }
 
         private IEnumerable<(string group, string path)> LoadMetadata()
         {
@@ -56,19 +53,18 @@ namespace Automata.Game.Blocks
                     if (blockDefinition.Name is null) continue;
 
                     Block.Attribute attributes = 0;
-
-                    if (blockDefinition.Attributes is not null) attributes = ParseAttributes(blockDefinition.Attributes);
+                    if (blockDefinition.Attributes is not null && !TryParseAttributes(blockDefinition.Attributes, out attributes)) continue;
 
                     ushort id = RegisterBlock(resource.Group, blockDefinition.Name, null, attributes);
 
-                    if (resource.Group.Equals("core"))
+                    if (resource.Group.Equals("Core"))
                     {
                         switch (blockDefinition.Name)
                         {
-                            case "null":
+                            case "Null":
                                 NullID = id;
                                 break;
-                            case "air":
+                            case "Air":
                                 AirID = id;
                                 break;
                         }
@@ -79,43 +75,57 @@ namespace Automata.Game.Blocks
                         string fileName = $"{(textureName.Equals("Self") ? blockDefinition.Name : textureName)}.png";
                         yield return (resource.Group, Path.Combine(directoryPath, resource.RelativeTexturesPath ?? string.Empty, fileName));
                     }
-
-
                 }
             }
         }
 
-        private static Block.Attribute ParseAttributes(IEnumerable<string> attributes)
+        private static bool TryParseAttributes(IEnumerable<string> attributes, [MaybeNullWhen(false)] out Block.Attribute result)
         {
-            Block.Attribute result = (Block.Attribute)0;
+            result = (Block.Attribute)0;
 
-            foreach (string attribute in attributes.Select(attribute => attribute.ToLowerInvariant()))
+            foreach (string attribute in attributes)
             {
-                result |= attribute.StartsWith("alias")
-                    ? _AttributeAliases[attribute.Substring(attribute.IndexOf(' ') + 1)]
-                    : Enum.Parse<Block.Attribute>(attribute, true);
+                if (attribute.StartsWith("Alias"))
+                {
+                    string aliasName = attribute.Substring(attribute.IndexOf(' ') + 1);
+
+                    if (_AttributeAliases.TryGetValue(aliasName, out Block.Attribute aliasAttribute)) result |= aliasAttribute;
+                    else
+                    {
+                        Log.Error(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(BlockRegistry),
+                            $"Failed to parse {nameof(Block.Attribute)}: alias \"{aliasName}\" does not exist."));
+
+                        return false;
+                    }
+                }
+                else if (Enum.TryParse(typeof(Block.Attribute), attribute, true, out object? parsed)) result |= (Block.Attribute)parsed!;
+                else
+                {
+                    Log.Error(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(BlockRegistry),
+                        $"Failed to parse {nameof(Block.Attribute)}: attribute \"{attribute}\" does not exist."));
+
+                    return false;
+                }
             }
 
-            return result;
+            return true;
         }
 
         public ushort RegisterBlock(string group, string blockName, Func<Direction, string>? uvsRule, Block.Attribute attributes)
         {
-            const string block_name_with_group_format = "{0}:{1}";
+            const string group_with_block_name_format = "{0}:{1}";
 
             if (Blocks.Count >= ushort.MaxValue) throw new OverflowException($"{nameof(BlockRegistry)} has run out of valid block IDs.");
 
-            ushort blockId = (ushort)Blocks.Count;
-            group = group.ToLowerInvariant();
-            blockName = blockName.ToLowerInvariant();
-            uvsRule ??= _ => blockName;
+            ushort blockID = (ushort)Blocks.Count;
+            string groupedName = string.Format(group_with_block_name_format, group, blockName);
 
-            IBlock block = new Block(blockId, blockName, uvsRule, attributes);
+            IBlock block = new Block(blockID, groupedName, uvsRule, attributes);
 
             Blocks.Add(block);
-            BlockNames.Add(string.Format(block_name_with_group_format, group, blockName), blockId);
+            BlockNames.Add(groupedName, blockID);
 
-            Log.Debug($"({nameof(BlockRegistry)}) Registered ID {blockId}: '{blockName}'");
+            Log.Debug($"({nameof(BlockRegistry)}) Registered ID {blockID}: \"{groupedName}\"");
 
             return block.ID;
         }

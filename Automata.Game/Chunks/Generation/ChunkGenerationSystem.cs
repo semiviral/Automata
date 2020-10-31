@@ -100,7 +100,7 @@ namespace Automata.Game.Chunks.Generation
 
             stopwatch.Restart();
 
-            INodeCollection<ushort> nodeCollection = new Octree<ushort>(GenerationConstants.CHUNK_SIZE, BlockRegistry.Instance.GetBlockID("core:air"));
+            INodeCollection<ushort> nodeCollection = new Octree<ushort>(GenerationConstants.CHUNK_SIZE, BlockRegistry.AirID);
 
             int index = 0;
 

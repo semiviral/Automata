@@ -9,18 +9,13 @@ namespace Automata.Game.Resources
     {
         public class BlockDefinition
         {
-            private string? _Name;
-
-            public string? Name { get => _Name; set => _Name = value?.ToLowerInvariant(); }
+            public string? Name { get; set; }
             public List<string>? Attributes { get; set; }
             public List<string>? Textures { get; set; }
         }
 
-        private string? _Group;
-        private string? _RelativeTexturesPath;
-
-        public string? Group { get => _Group; set => _Group = value?.ToLowerInvariant(); }
-        public string? RelativeTexturesPath { get => _RelativeTexturesPath; set => _RelativeTexturesPath = value?.ToLowerInvariant(); }
+        public string? Group { get; set; }
+        public string? RelativeTexturesPath { get; set; }
         public List<BlockDefinition>? BlockDefinitions { get; set; }
 
         public static Resource Load(string path) => JsonSerializer.Deserialize<Resource>(File.ReadAllText(path));
