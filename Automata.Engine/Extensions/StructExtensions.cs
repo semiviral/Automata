@@ -34,6 +34,21 @@ namespace Automata.Engine.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe T WithValue<T, TComponent>(this T a, int index, TComponent value)
+            where T : unmanaged
+            where TComponent : unmanaged
+
+        {
+            T result = a;
+            byte* ptr = (byte*)&result;
+
+            int byteIndex = index * sizeof(TComponent);
+            Unsafe.Write(&ptr[byteIndex], value);
+
+            return Unsafe.Read<T>(ptr);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe TComponent GetValue<T, TComponent>(this T a, int index)
             where T : unmanaged
             where TComponent : unmanaged =>

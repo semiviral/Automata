@@ -120,7 +120,7 @@ namespace Automata.Game.Chunks.Generation
                     continue;
                 }
 
-                int localPosition = x | (y << GenerationConstants.CHUNK_SIZE_BIT_SHIFT) | (z << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2));
+                int localPosition = x | (y << GenerationConstants.CHUNK_SIZE_SHIFT) | (z << (GenerationConstants.CHUNK_SIZE_SHIFT * 2));
 
                 PackedTraverseIndex(blocks, faces, vertexes, indexes, neighbors, index, localPosition, currentBlockId,
                     BlockRegistry.Instance.CheckBlockHasProperty(currentBlockId, Block.Attribute.Transparent));
@@ -149,11 +149,11 @@ namespace Automata.Game.Chunks.Generation
 
                 // normalIndex constrained to represent the 3 axes
                 int componentIndex = normalIndex % 3;
-                int componentShift = GenerationConstants.CHUNK_SIZE_BIT_SHIFT * componentIndex;
+                int componentShift = GenerationConstants.CHUNK_SIZE_SHIFT * componentIndex;
 
                 // axis value of the current face check direction
                 // example: for iteration normalIndex == 0—which is positive X—it'd be equal to localPosition.x
-                int facedAxisValue = (localPosition >> componentShift) & GenerationConstants.CHUNK_SIZE_BIT_MASK;
+                int facedAxisValue = (localPosition >> componentShift) & GenerationConstants.CHUNK_SIZE_MASK;
 
                 // indicates whether or not the face check is within the current chunk bounds
                 bool facingNeighbor = (!isNegativeNormal && (facedAxisValue == (GenerationConstants.CHUNK_SIZE - 1)))
@@ -167,10 +167,10 @@ namespace Automata.Game.Chunks.Generation
                 {
                     // the index of the int3 traversalNormal to traverse on
                     int traversalNormalIndex = (componentIndex + perpendicularNormalIndex) % 3;
-                    int traversalNormalShift = GenerationConstants.CHUNK_SIZE_BIT_SHIFT * traversalNormalIndex;
+                    int traversalNormalShift = GenerationConstants.CHUNK_SIZE_SHIFT * traversalNormalIndex;
 
                     // current value of the local position by traversal direction
-                    int traversalNormalAxisValue = (localPosition >> traversalNormalShift) & GenerationConstants.CHUNK_SIZE_BIT_MASK;
+                    int traversalNormalAxisValue = (localPosition >> traversalNormalShift) & GenerationConstants.CHUNK_SIZE_MASK;
 
                     // amount by integer to add to current index to get 3D->1D position of traversal position
                     int traversalIndexStep = _IndexStepByNormalIndex[traversalNormalIndex];
@@ -194,7 +194,7 @@ namespace Automata.Game.Chunks.Generation
                         {
                             // this block of code translates the integer local position to the local position of the neighbor at [normalIndex]
                             int sign = isNegativeNormal ? -1 : 1;
-                            int componentMask = GenerationConstants.CHUNK_SIZE_BIT_MASK << componentShift;
+                            int componentMask = GenerationConstants.CHUNK_SIZE_MASK << componentShift;
                             int traversalLocalPosition = localPosition + (traversals << traversalNormalShift);
 
                             int neighborLocalPosition = (~componentMask & traversalLocalPosition)
@@ -206,12 +206,11 @@ namespace Automata.Game.Chunks.Generation
                             // remark: if there's no neighbor at the index given, then no chunk exists there (for instance,
                             //     chunks at the edge of render distance). In this case, return NullID so no face is rendered on edges.
                             ushort facedBlockID = neighbors[normalIndex]?.GetPoint(
-                                                      (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 0))
-                                                      & GenerationConstants.CHUNK_SIZE_BIT_MASK,
-                                                      (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 1))
-                                                      & GenerationConstants.CHUNK_SIZE_BIT_MASK,
-                                                      (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2))
-                                                      & GenerationConstants.CHUNK_SIZE_BIT_MASK
+                                                      neighborLocalPosition & GenerationConstants.CHUNK_SIZE_MASK,
+                                                      (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_SHIFT * 1))
+                                                      & GenerationConstants.CHUNK_SIZE_MASK,
+                                                      (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_SHIFT * 2))
+                                                      & GenerationConstants.CHUNK_SIZE_MASK
                                                   )
                                                   ?? BlockRegistry.NullID;
 
@@ -280,17 +279,16 @@ namespace Automata.Game.Chunks.Generation
                     indexes.Add(indexesStart + 3u);
 
                     Span<int> compressedVertices = _PackedVertexesByIteration[normalIndex];
-                    int traversalComponentMask = GenerationConstants.CHUNK_SIZE_BIT_MASK << traversalNormalShift;
+                    int traversalComponentMask = GenerationConstants.CHUNK_SIZE_MASK << traversalNormalShift;
                     int unaryTraversalComponentMask = ~traversalComponentMask;
 
                     // this ternary solution should probably be temporary. not sure if there's a better way, though.
                     int uvShift = (componentIndex + traversalNormalIndex + ((componentIndex == 1) && (traversalNormalIndex == 2) ? 1 : 0)) % 2;
 
-                    int depth = TextureAtlas.Instance.GetTileDepth(BlockRegistry.Instance.GetBlockName(blockID));
-
-                    int compressedUV = (depth << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2)) // z
-                                       | (traversals << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * uvShift)) // traversal component
-                                       | (1 << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * ((uvShift + 1) % 2))); // opposite component to traversal
+                    int compressedUV = (TextureAtlas.Instance.GetTileDepth(BlockRegistry.Instance.GetBlockName(blockID))
+                                        << (GenerationConstants.CHUNK_SIZE_SHIFT * 2)) // z
+                                       | (traversals << (GenerationConstants.CHUNK_SIZE_SHIFT * uvShift)) // traversal component
+                                       | (1 << (GenerationConstants.CHUNK_SIZE_SHIFT * ((uvShift + 1) % 2))); // opposite component to traversal
 
                     vertexes.Add(localPosition
                                  + ((unaryTraversalComponentMask & compressedVertices[0])
@@ -298,7 +296,7 @@ namespace Automata.Game.Chunks.Generation
                                        & traversalComponentMask)));
 
                     // capture z
-                    vertexes.Add(compressedUV & (int.MaxValue << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2)));
+                    vertexes.Add(compressedUV & (int.MaxValue << (GenerationConstants.CHUNK_SIZE_SHIFT * 2)));
 
                     vertexes.Add(localPosition
                                  + ((unaryTraversalComponentMask & compressedVertices[1])
@@ -306,7 +304,7 @@ namespace Automata.Game.Chunks.Generation
                                        & traversalComponentMask)));
 
                     // capture y,z
-                    vertexes.Add(compressedUV & (int.MaxValue << GenerationConstants.CHUNK_SIZE_BIT_SHIFT));
+                    vertexes.Add(compressedUV & (int.MaxValue << GenerationConstants.CHUNK_SIZE_SHIFT));
 
                     vertexes.Add(localPosition
                                  + ((unaryTraversalComponentMask & compressedVertices[2])
@@ -322,7 +320,7 @@ namespace Automata.Game.Chunks.Generation
                                        & traversalComponentMask)));
 
                     // capture x,z
-                    vertexes.Add(compressedUV & ~(GenerationConstants.CHUNK_SIZE_BIT_MASK << GenerationConstants.CHUNK_SIZE_BIT_SHIFT));
+                    vertexes.Add(compressedUV & ~(GenerationConstants.CHUNK_SIZE_MASK << GenerationConstants.CHUNK_SIZE_SHIFT));
 
                     break;
                 }
@@ -348,11 +346,11 @@ namespace Automata.Game.Chunks.Generation
 
                 // normalIndex constrained to represent the 3 axes
                 int componentIndex = normalIndex % 3;
-                int componentShift = GenerationConstants.CHUNK_SIZE_BIT_SHIFT * componentIndex;
+                int componentShift = GenerationConstants.CHUNK_SIZE_SHIFT * componentIndex;
 
                 // axis value of the current face check direction
                 // example: for iteration normalIndex == 0—which is positive X—it'd be equal to localPosition.x
-                int facedAxisValue = (localPosition >> componentShift) & GenerationConstants.CHUNK_SIZE_BIT_MASK;
+                int facedAxisValue = (localPosition >> componentShift) & GenerationConstants.CHUNK_SIZE_MASK;
 
                 // indicates whether or not the face check is within the current chunk bounds
                 bool isFaceCheckOutOfBounds = (!isNegativeFace && (facedAxisValue == (GenerationConstants.CHUNK_SIZE - 1)))
@@ -362,7 +360,7 @@ namespace Automata.Game.Chunks.Generation
                 {
                     // this block of code translates the integer local position to the local position of the neighbor at [normalIndex]
                     int sign = isNegativeFace ? -1 : 1;
-                    int componentMask = GenerationConstants.CHUNK_SIZE_BIT_MASK << componentShift;
+                    int componentMask = GenerationConstants.CHUNK_SIZE_MASK << componentShift;
 
                     int neighborLocalPosition = (~componentMask & localPosition)
                                                 | (Wrap(((localPosition & componentMask) >> componentShift) + sign,
@@ -373,12 +371,12 @@ namespace Automata.Game.Chunks.Generation
                     // remark: if there's no neighbor at the index given, then no chunk exists there (for instance,
                     //     chunks at the edge of render distance). In this case, return NullID so no face is rendered on edges.
                     ushort facedBlockId = neighbors[normalIndex]?.GetPoint(
-                                              (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 0))
-                                              & GenerationConstants.CHUNK_SIZE_BIT_MASK,
-                                              (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 1))
-                                              & GenerationConstants.CHUNK_SIZE_BIT_MASK,
-                                              (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2))
-                                              & GenerationConstants.CHUNK_SIZE_BIT_MASK
+                                              (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_SHIFT * 0))
+                                              & GenerationConstants.CHUNK_SIZE_MASK,
+                                              (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_SHIFT * 1))
+                                              & GenerationConstants.CHUNK_SIZE_MASK,
+                                              (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_SHIFT * 2))
+                                              & GenerationConstants.CHUNK_SIZE_MASK
                                           )
                                           ?? BlockRegistry.NullID;
 
@@ -425,8 +423,8 @@ namespace Automata.Game.Chunks.Generation
 
                 int depth = TextureAtlas.Instance.GetTileDepth(BlockRegistry.Instance.GetBlockName(blockID));
 
-                int compressedUv = (depth << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2))
-                                   | (1 << GenerationConstants.CHUNK_SIZE_BIT_SHIFT)
+                int compressedUv = (depth << (GenerationConstants.CHUNK_SIZE_SHIFT * 2))
+                                   | (1 << GenerationConstants.CHUNK_SIZE_SHIFT)
                                    | 1;
 
                 faces[index] |= faceDirection;
@@ -444,15 +442,15 @@ namespace Automata.Game.Chunks.Generation
 
                 vertexes.Add(localPosition + compressedVertexes[0]);
 
-                vertexes.Add(compressedUv & (int.MaxValue << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2)));
+                vertexes.Add(compressedUv & (int.MaxValue << (GenerationConstants.CHUNK_SIZE_SHIFT * 2)));
 
                 vertexes.Add(localPosition + compressedVertexes[1]);
 
-                vertexes.Add(compressedUv & (int.MaxValue << GenerationConstants.CHUNK_SIZE_BIT_SHIFT));
+                vertexes.Add(compressedUv & (int.MaxValue << GenerationConstants.CHUNK_SIZE_SHIFT));
 
                 vertexes.Add(localPosition + compressedVertexes[2]);
 
-                vertexes.Add(compressedUv & ~(GenerationConstants.CHUNK_SIZE_BIT_MASK << GenerationConstants.CHUNK_SIZE_BIT_SHIFT));
+                vertexes.Add(compressedUv & ~(GenerationConstants.CHUNK_SIZE_MASK << GenerationConstants.CHUNK_SIZE_SHIFT));
 
                 vertexes.Add(localPosition + compressedVertexes[3]);
 
@@ -471,14 +469,14 @@ namespace Automata.Game.Chunks.Generation
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int CompressVertex(Vector3i vertex) =>
-            (vertex.X & GenerationConstants.CHUNK_SIZE_BIT_MASK)
-            | ((vertex.Y & GenerationConstants.CHUNK_SIZE_BIT_MASK) << GenerationConstants.CHUNK_SIZE_BIT_SHIFT)
-            | ((vertex.Z & GenerationConstants.CHUNK_SIZE_BIT_MASK) << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2));
+            (vertex.X & GenerationConstants.CHUNK_SIZE_MASK)
+            | ((vertex.Y & GenerationConstants.CHUNK_SIZE_MASK) << GenerationConstants.CHUNK_SIZE_SHIFT)
+            | ((vertex.Z & GenerationConstants.CHUNK_SIZE_MASK) << (GenerationConstants.CHUNK_SIZE_SHIFT * 2));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Vector3i DecompressVertex(int vertex) =>
-            new Vector3i(vertex & GenerationConstants.CHUNK_SIZE_BIT_MASK,
-                (vertex >> GenerationConstants.CHUNK_SIZE_BIT_SHIFT) & GenerationConstants.CHUNK_SIZE_BIT_MASK,
-                (vertex >> (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2)) & GenerationConstants.CHUNK_SIZE_BIT_MASK);
+            new Vector3i(vertex & GenerationConstants.CHUNK_SIZE_MASK,
+                (vertex >> GenerationConstants.CHUNK_SIZE_SHIFT) & GenerationConstants.CHUNK_SIZE_MASK,
+                (vertex >> (GenerationConstants.CHUNK_SIZE_SHIFT * 2)) & GenerationConstants.CHUNK_SIZE_MASK);
     }
 }

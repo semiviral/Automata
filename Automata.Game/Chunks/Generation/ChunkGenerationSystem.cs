@@ -188,7 +188,7 @@ namespace Automata.Game.Chunks.Generation
             mesh.VertexesBuffer.SetBufferData(pendingMesh.Vertexes, BufferDraw.DynamicDraw);
             mesh.IndexesBuffer.SetBufferData(pendingMesh.Indexes, BufferDraw.DynamicDraw);
 
-            if (Shader.TryLoadFromCache("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl", out Shader? shader))
+            if (Shader.TryLoadWithCache("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl", out Shader? shader))
             {
                 if (entity.TryGetComponent(out Material? material))
                 {
@@ -203,6 +203,10 @@ namespace Automata.Game.Chunks.Generation
                 }
 
                 material.Textures[0] = TextureAtlas.Instance.Blocks;
+
+                shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_INT_COMPONENT_SHIFT, GenerationConstants.CHUNK_SIZE_SHIFT);
+                shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_INT_COMPONENT_MASK, GenerationConstants.CHUNK_SIZE_MASK);
+                shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_INT_NORMAL_SHIFT, 2);
             }
             else
             {

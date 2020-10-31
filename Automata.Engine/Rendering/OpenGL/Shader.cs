@@ -16,6 +16,9 @@ namespace Automata.Engine.Rendering.OpenGL
 {
     public class Shader : IDisposable
     {
+        public const string RESERVED_UNIFORM_NAME_INT_COMPONENT_SHIFT = "_componentShift";
+        public const string RESERVED_UNIFORM_NAME_INT_COMPONENT_MASK = "_componentMask";
+        public const string RESERVED_UNIFORM_NAME_INT_NORMAL_SHIFT = "_normalShift";
         public const string RESERVED_UNIFORM_NAME_MATRIX_MVP = "_mvp";
         public const string RESERVED_UNIFORM_NAME_MATRIX_WORLD = "_world";
         public const string RESERVED_UNIFORM_NAME_MATRIX_OBJECT = "_object";
@@ -25,6 +28,9 @@ namespace Automata.Engine.Rendering.OpenGL
 
         private static readonly string[] _ReservedUniformNames =
         {
+            RESERVED_UNIFORM_NAME_INT_COMPONENT_SHIFT,
+            RESERVED_UNIFORM_NAME_INT_COMPONENT_MASK,
+            RESERVED_UNIFORM_NAME_INT_NORMAL_SHIFT,
             RESERVED_UNIFORM_NAME_MATRIX_MVP,
             RESERVED_UNIFORM_NAME_MATRIX_WORLD,
             RESERVED_UNIFORM_NAME_MATRIX_OBJECT,
@@ -133,7 +139,7 @@ namespace Automata.Engine.Rendering.OpenGL
 
         public void Use() => _GL.UseProgram(_Handle);
 
-        public static bool TryLoadFromCache(string vertexShaderPath, string fragmentShaderPath, [NotNullWhen(true)] out Shader? shader)
+        public static bool TryLoadWithCache(string vertexShaderPath, string fragmentShaderPath, [NotNullWhen(true)] out Shader? shader)
         {
             const string compound_shader_key_format = "{0}:{1}";
             string compoundShaderKey = string.Format(compound_shader_key_format, vertexShaderPath, fragmentShaderPath);
