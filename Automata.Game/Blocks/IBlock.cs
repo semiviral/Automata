@@ -7,6 +7,5 @@ namespace Automata.Game.Blocks
         Block.Attribute Attributes { get; }
 
         public bool HasAttribute(Block.Attribute attribute);
-        bool GetTextureName(Direction direction, out string spriteName);
     }
 }

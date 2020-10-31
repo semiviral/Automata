@@ -8,7 +8,7 @@ using Automata.Engine.Numerics;
 
 namespace Automata.Game.Chunks.Generation
 {
-    public abstract class BuildStep
+    public abstract class GenerationStep
     {
         public class Parameters
         {

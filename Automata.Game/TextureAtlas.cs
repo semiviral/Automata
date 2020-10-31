@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Automata.Engine;
 using Automata.Engine.Numerics;
@@ -12,8 +11,6 @@ namespace Automata.Game
 {
     public class TextureAtlas : Singleton<TextureAtlas>
     {
-        private const string _ATLAS_METADATA_MASK = "Atlas";
-
         private readonly Dictionary<string, int> _TextureDepths;
 
         public Texture2DArray<Rgba32>? Blocks { get; private set; }
@@ -44,7 +41,8 @@ namespace Automata.Game
 
                 if (_TextureDepths.TryAdd(formattedName, depth))
                 {
-                    Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(TextureAtlas), $"Registered texture: \"{formattedName}\" depth {depth}"));
+                    Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(TextureAtlas),
+                        $"Registered texture: \"{formattedName}\" depth {depth}"));
                 }
                 else
                 {
@@ -59,32 +57,5 @@ namespace Automata.Game
         }
 
         public int GetTileDepth(string tileName) => _TextureDepths[tileName];
-
-        public bool TryGetTileDepth(string tileName, [MaybeNullWhen(false)] out int depth)
-        {
-            bool success = _TextureDepths.TryGetValue(tileName, out depth);
-
-            if (!success) { }
-
-            return success;
-        }
-
-        private static IEnumerable<(string DirectoryPath, Atlas Atlas)> GetAtlases()
-        {
-            string[] metadataFiles = Directory.GetFiles(@".\Resources\Textures\", $"{_ATLAS_METADATA_MASK}.json", SearchOption.AllDirectories);
-
-            foreach (string metadataFilePath in metadataFiles)
-            {
-                Atlas atlas = Atlas.Load(metadataFilePath);
-                string? directoryPath = Path.GetDirectoryName(metadataFilePath);
-
-                if (atlas.RelativeImagePath is null || atlas.Tiles is null || directoryPath is null)
-                {
-                    continue;
-                }
-
-                yield return (directoryPath, atlas);
-            }
-        }
     }
 }

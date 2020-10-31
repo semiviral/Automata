@@ -27,7 +27,7 @@ namespace Automata.Game.Chunks.Generation
 {
     public class ChunkGenerationSystem : ComponentSystem
     {
-        private readonly OrderedLinkedList<BuildStep> _BuildSteps;
+        private readonly OrderedLinkedList<GenerationStep> _BuildSteps;
         private readonly ConcurrentDictionary<Guid, INodeCollection<ushort>> _PendingBlockCollections;
         private readonly ConcurrentDictionary<Guid, PendingMesh<int>> _PendingMeshes;
 
@@ -35,8 +35,8 @@ namespace Automata.Game.Chunks.Generation
 
         public ChunkGenerationSystem()
         {
-            _BuildSteps = new OrderedLinkedList<BuildStep>();
-            _BuildSteps.AddLast(new TerrainBuildStep());
+            _BuildSteps = new OrderedLinkedList<GenerationStep>();
+            _BuildSteps.AddLast(new TerrainGenerationStep());
             _PendingBlockCollections = new ConcurrentDictionary<Guid, INodeCollection<ushort>>();
             _PendingMeshes = new ConcurrentDictionary<Guid, PendingMesh<int>>();
 
@@ -57,7 +57,7 @@ namespace Automata.Game.Chunks.Generation
                 {
                     case GenerationState.Ungenerated when chunk.MinimalNeighborState() >= GenerationState.Ungenerated:
                         BoundedPool.Active.QueueWork(() => GenerateBlocks(chunk, Vector3i.FromVector3(translation.Value),
-                            new BuildStep.Parameters(GenerationConstants.Seed, GenerationConstants.FREQUENCY, GenerationConstants.PERSISTENCE)));
+                            new GenerationStep.Parameters(GenerationConstants.Seed, GenerationConstants.FREQUENCY, GenerationConstants.PERSISTENCE)));
 
                         chunk.State += 1;
                         break;
@@ -84,14 +84,14 @@ namespace Automata.Game.Chunks.Generation
             DiagnosticsInputCheck();
         }
 
-        private void GenerateBlocks(Chunk chunk, Vector3i origin, BuildStep.Parameters parameters)
+        private void GenerateBlocks(Chunk chunk, Vector3i origin, GenerationStep.Parameters parameters)
         {
             Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
             stopwatch.Restart();
 
             Span<ushort> blocks = stackalloc ushort[GenerationConstants.CHUNK_SIZE_CUBED];
 
-            foreach (BuildStep generationStep in _BuildSteps)
+            foreach (GenerationStep generationStep in _BuildSteps)
             {
                 generationStep.Generate(origin, parameters, blocks);
             }

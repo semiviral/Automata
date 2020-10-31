@@ -149,24 +149,9 @@ namespace Automata.Game.Blocks
             return block.ID;
         }
 
-        public bool BlockIdExists(ushort blockId) => blockId < Blocks.Count;
-
+        public bool BlockIdExists(ushort blockID) => blockID < Blocks.Count;
         public ushort GetBlockID(string blockName) => BlockNames[blockName];
-
-        public bool TryGetBlockID(string blockName, [MaybeNullWhen(false)] out ushort blockId) => BlockNames.TryGetValue(blockName, out blockId);
-
-        public bool TryGetBlockName(ushort blockId, [NotNullWhen(true)] out string? blockName)
-        {
-            blockName = string.Empty;
-
-            if (!BlockIdExists(blockId))
-            {
-                return false;
-            }
-
-            blockName = Blocks[blockId].BlockName;
-            return true;
-        }
+        public string GetBlockName(ushort blockID) => Blocks[blockID].BlockName;
 
         public IBlock GetBlockDefinition(ushort blockId)
         {

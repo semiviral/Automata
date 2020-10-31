@@ -11,7 +11,7 @@ using Automata.Game.Blocks;
 
 namespace Automata.Game.Chunks.Generation
 {
-    public class TerrainBuildStep : BuildStep
+    public class TerrainGenerationStep : GenerationStep
     {
         public override void Generate(Vector3i origin, Parameters parameters, Span<ushort> blocks)
         {

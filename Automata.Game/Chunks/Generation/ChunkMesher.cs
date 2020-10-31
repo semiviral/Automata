@@ -244,9 +244,7 @@ namespace Automata.Game.Chunks.Generation
                     }
 
                     // face is occluded
-                    if ((traversals == 0)
-                        || !BlockRegistry.Instance.TryGetBlockName(blockID, out string? blockName)
-                        || !TextureAtlas.Instance.TryGetTileDepth(blockName, out int depth))
+                    if ((traversals == 0))
                     {
                         break;
                     }
@@ -271,6 +269,7 @@ namespace Automata.Game.Chunks.Generation
                     // this ternary solution should probably be temporary. not sure if there's a better way, though.
                     int uvShift = (componentIndex + traversalNormalIndex + ((componentIndex == 1) && (traversalNormalIndex == 2) ? 1 : 0)) % 2;
 
+                    int depth = TextureAtlas.Instance.GetTileDepth(BlockRegistry.Instance.GetBlockName(blockID));
                     int compressedUV = (depth << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2)) // z
                                        | (traversals << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * uvShift)) // traversal component
                                        | (1 << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * ((uvShift + 1) % 2))); // opposite component to traversal
