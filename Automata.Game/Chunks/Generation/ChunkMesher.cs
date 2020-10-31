@@ -86,15 +86,29 @@ namespace Automata.Game.Chunks.Generation
             -GenerationConstants.CHUNK_SIZE
         };
 
-        public static PendingMesh<int> GeneratePackedMesh(Span<ushort> blocks, INodeCollection<ushort>?[] neighbors)
+        public static PendingMesh<int> GeneratePackedMesh(INodeCollection<ushort> blocksCollection, INodeCollection<ushort>?[] neighbors)
         {
-            TransparentList<int> vertexes = new TransparentList<int>(_DEFAULT_VERTEXES_CAPACITY);
-            TransparentList<uint> indexes = new TransparentList<uint>(_DEFAULT_INDEXES_CAPACITY);
-            Span<Direction> faces = stackalloc Direction[blocks.Length];
-            faces.Clear();
+            if (blocksCollection.IsUniform && blocksCollection.Value == BlockRegistry.AirID)
+            {
+                return PendingMesh<int>.Empty;
+            }
 
             int index = 0;
             uint vertexCount = 0;
+            TransparentList<int> vertexes = new TransparentList<int>(_DEFAULT_VERTEXES_CAPACITY);
+            TransparentList<uint> indexes = new TransparentList<uint>(_DEFAULT_INDEXES_CAPACITY);
+            Span<ushort> blocks = stackalloc ushort[GenerationConstants.CHUNK_SIZE_CUBED];
+            Span<Direction> faces = stackalloc Direction[GenerationConstants.CHUNK_SIZE_CUBED];
+            faces.Clear();
+
+            for (int y = 0; y < GenerationConstants.CHUNK_SIZE; y++)
+            for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
+            for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++, index++)
+            {
+                blocks[index] = blocksCollection.GetPoint(x, y, z);
+            }
+
+            index = 0;
 
             for (int y = 0; y < GenerationConstants.CHUNK_SIZE; y++)
             for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)

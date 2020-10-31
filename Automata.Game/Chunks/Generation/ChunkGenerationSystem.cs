@@ -144,17 +144,7 @@ namespace Automata.Game.Chunks.Generation
             Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
             stopwatch.Restart();
 
-            int index = 0;
-            Span<ushort> blocks = stackalloc ushort[GenerationConstants.CHUNK_SIZE_CUBED];
-
-            for (int y = 0; y < GenerationConstants.CHUNK_SIZE; y++)
-            for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
-            for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++, index++)
-            {
-                blocks[index] = chunk.Blocks.GetPoint(x, y, z);
-            }
-
-            PendingMesh<int> pendingMesh = ChunkMesher.GeneratePackedMesh(blocks, chunk.NeighborBlocks());
+            PendingMesh<int> pendingMesh = ChunkMesher.GeneratePackedMesh(chunk.Blocks, chunk.NeighborBlocks());
 
             if (!_PendingMeshes.TryAdd(chunk.ID, pendingMesh))
             {
@@ -175,6 +165,11 @@ namespace Automata.Game.Chunks.Generation
         {
             Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
             stopwatch.Restart();
+
+            if (pendingMesh.IsEmpty)
+            {
+                return;
+            }
 
             if (!entity.TryGetComponent(out RenderMesh? renderMesh))
             {
