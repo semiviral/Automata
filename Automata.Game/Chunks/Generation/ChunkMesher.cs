@@ -86,15 +86,14 @@ namespace Automata.Game.Chunks.Generation
             -GenerationConstants.CHUNK_SIZE
         };
 
-        public static PendingMesh<int> GeneratePackedMesh(INodeCollection<ushort> blocksCollection, INodeCollection<ushort>?[] neighbors)
+        public static PendingMesh<int> GeneratePackedMesh(INodeCollection<ushort> blocksCollection, INodeCollection<ushort>?[] neighbors, bool naive)
         {
-            if (blocksCollection.IsUniform && blocksCollection.Value == BlockRegistry.AirID)
+            if (blocksCollection.IsUniform && (blocksCollection.Value == BlockRegistry.AirID))
             {
                 return PendingMesh<int>.Empty;
             }
 
             int index = 0;
-            uint vertexCount = 0;
             TransparentList<int> vertexes = new TransparentList<int>(_DEFAULT_VERTEXES_CAPACITY);
             TransparentList<uint> indexes = new TransparentList<uint>(_DEFAULT_INDEXES_CAPACITY);
             Span<ushort> blocks = stackalloc ushort[GenerationConstants.CHUNK_SIZE_CUBED];
@@ -123,15 +122,23 @@ namespace Automata.Game.Chunks.Generation
 
                 int localPosition = x | (y << GenerationConstants.CHUNK_SIZE_BIT_SHIFT) | (z << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2));
 
-                PackedTraverseIndex(blocks, faces, vertexes, indexes, neighbors, index, localPosition, currentBlockId,
-                    BlockRegistry.Instance.CheckBlockHasProperty(currentBlockId, Block.Attribute.Transparent), ref vertexCount);
+                if (naive)
+                {
+                    PackedNaiveMeshIndex(blocks, faces, vertexes, indexes, neighbors, index, localPosition, currentBlockId,
+                        BlockRegistry.Instance.CheckBlockHasProperty(currentBlockId, Block.Attribute.Transparent));
+                }
+                else
+                {
+                    PackedTraverseIndex(blocks, faces, vertexes, indexes, neighbors, index, localPosition, currentBlockId,
+                        BlockRegistry.Instance.CheckBlockHasProperty(currentBlockId, Block.Attribute.Transparent));
+                }
             }
 
-            return new PendingMesh<int>(vertexes.Segment, indexes.Segment);
+            return vertexes.Count == 0 ? PendingMesh<int>.Empty : new PendingMesh<int>(vertexes.Segment, indexes.Segment);
         }
 
         private static void PackedTraverseIndex(Span<ushort> blocks, Span<Direction> faces, ICollection<int> vertexes, ICollection<uint> indexes,
-            IReadOnlyList<INodeCollection<ushort>?> neighbors, int index, int localPosition, ushort blockID, bool isTransparent, ref uint indexesStart)
+            IReadOnlyList<INodeCollection<ushort>?> neighbors, int index, int localPosition, ushort blockID, bool isTransparent)
         {
             // iterate once over all 6 faces of given cubic space
             for (int normalIndex = 0; normalIndex < 6; normalIndex++)
@@ -272,6 +279,7 @@ namespace Automata.Game.Chunks.Generation
                         continue;
                     }
 
+                    uint indexesStart = (uint)(vertexes.Count / 2);
                     indexes.Add(indexesStart + 0u);
                     indexes.Add(indexesStart + 1u);
                     indexes.Add(indexesStart + 3u);
@@ -324,15 +332,13 @@ namespace Automata.Game.Chunks.Generation
                     // capture x,z
                     vertexes.Add(compressedUV & ~(GenerationConstants.CHUNK_SIZE_BIT_MASK << GenerationConstants.CHUNK_SIZE_BIT_SHIFT));
 
-                    indexesStart += 4u;
-
                     break;
                 }
             }
         }
 
         private static void PackedNaiveMeshIndex(Span<ushort> blocks, Span<Direction> faces, ICollection<int> vertexes, ICollection<uint> indexes,
-            IReadOnlyList<INodeCollection<ushort>?> neighbors, int index, int localPosition, ushort currentBlockId, bool isCurrentBlockTransparent)
+            IReadOnlyList<INodeCollection<ushort>?> neighbors, int index, int localPosition, ushort blockID, bool isTransparent)
         {
             // iterate once over all 6 faces of given cubic space
             for (int normalIndex = 0; normalIndex < 6; normalIndex++)
@@ -354,11 +360,11 @@ namespace Automata.Game.Chunks.Generation
 
                 // axis value of the current face check direction
                 // example: for iteration normalIndex == 0—which is positive X—it'd be equal to localPosition.x
-                int faceCheckAxisValue = (localPosition >> componentShift) & GenerationConstants.CHUNK_SIZE_BIT_MASK;
+                int facedAxisValue = (localPosition >> componentShift) & GenerationConstants.CHUNK_SIZE_BIT_MASK;
 
                 // indicates whether or not the face check is within the current chunk bounds
-                bool isFaceCheckOutOfBounds = (!isNegativeFace && (faceCheckAxisValue == (GenerationConstants.CHUNK_SIZE - 1)))
-                                              || (isNegativeFace && (faceCheckAxisValue == 0));
+                bool isFaceCheckOutOfBounds = (!isNegativeFace && (facedAxisValue == (GenerationConstants.CHUNK_SIZE - 1)))
+                                              || (isNegativeFace && (facedAxisValue == 0));
 
                 if (isFaceCheckOutOfBounds)
                 {
@@ -384,9 +390,9 @@ namespace Automata.Game.Chunks.Generation
                                           )
                                           ?? BlockRegistry.NullID;
 
-                    if (isCurrentBlockTransparent)
+                    if (isTransparent)
                     {
-                        if (currentBlockId == facedBlockId)
+                        if (blockID == facedBlockId)
                         {
                             continue;
                         }
@@ -402,18 +408,18 @@ namespace Automata.Game.Chunks.Generation
                     int facedBlockIndex = index + _IndexStepByNormalIndex[normalIndex];
 
                     // if so, index into block ids and set facingBlockId
-                    ushort facedBlockId = blocks[facedBlockIndex];
+                    ushort facedBlockID = blocks[facedBlockIndex];
 
                     // if transparent, traverse so long as facing block is not the same block id
                     // if opaque, traverse so long as facing block is transparent
-                    if (isCurrentBlockTransparent)
+                    if (isTransparent)
                     {
-                        if (currentBlockId == facedBlockId)
+                        if (blockID == facedBlockID)
                         {
                             continue;
                         }
                     }
-                    else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockId, Block.Attribute.Transparent))
+                    else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockID, Block.Attribute.Transparent))
                     {
                         // we've culled this face, and faced block is opaque as well, so cull it's face adjacent to current.
                         if (!isNegativeFace)
@@ -425,13 +431,15 @@ namespace Automata.Game.Chunks.Generation
                     }
                 }
 
-                // int compressedUv = (textureId << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2))
-                //                    ^ (1 << GenerationConstants.CHUNK_SIZE_BIT_SHIFT)
-                //                    ^ 1;
+                int depth = TextureAtlas.Instance.GetTileDepth(BlockRegistry.Instance.GetBlockName(blockID));
+
+                int compressedUv = (depth << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2))
+                                   | (1 << GenerationConstants.CHUNK_SIZE_BIT_SHIFT)
+                                   | 1;
 
                 faces[index] |= faceDirection;
 
-                uint vertexesCount = (uint)vertexes.Count;
+                uint vertexesCount = (uint)(vertexes.Count / 2);
 
                 indexes.Add(0u + vertexesCount);
                 indexes.Add(1u + vertexesCount);
@@ -444,19 +452,19 @@ namespace Automata.Game.Chunks.Generation
 
                 vertexes.Add(localPosition + compressedVertexes[0]);
 
-                //_MeshData.AddVertex(compressedUv & (int.MaxValue << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2)));
+                vertexes.Add(compressedUv & (int.MaxValue << (GenerationConstants.CHUNK_SIZE_BIT_SHIFT * 2)));
 
                 vertexes.Add(localPosition + compressedVertexes[1]);
 
-                //_MeshData.AddVertex(compressedUv & (int.MaxValue << GenerationConstants.CHUNK_SIZE_BIT_SHIFT));
+                vertexes.Add(compressedUv & (int.MaxValue << GenerationConstants.CHUNK_SIZE_BIT_SHIFT));
 
                 vertexes.Add(localPosition + compressedVertexes[2]);
 
-                //_MeshData.AddVertex(compressedUv & ~(GenerationConstants.CHUNK_SIZE_BIT_MASK << GenerationConstants.CHUNK_SIZE_BIT_SHIFT));
+                vertexes.Add(compressedUv & ~(GenerationConstants.CHUNK_SIZE_BIT_MASK << GenerationConstants.CHUNK_SIZE_BIT_SHIFT));
 
                 vertexes.Add(localPosition + compressedVertexes[3]);
 
-                //_MeshData.AddVertex(compressedUv & int.MaxValue);
+                vertexes.Add(compressedUv & int.MaxValue);
             }
         }
 
