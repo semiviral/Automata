@@ -22,7 +22,7 @@ namespace Automata.Engine.Rendering.Fonts
         [DllImport(_FREETYPE_DLL_IMPORT, CallingConvention = _CONVENTION)]
         public static extern FreeTypeError FT_Done_Library(IntPtr library);
 
-        [DllImport(_FREETYPE_DLL_IMPORT, CallingConvention = _CONVENTION)]
+        [DllImport(_FREETYPE_DLL_IMPORT, CallingConvention = _CONVENTION, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)]
         public static extern FreeTypeError FT_New_Face(IntPtr library, string filePath, int faceIndex, out IntPtr reference);
 
         [DllImport(_FREETYPE_DLL_IMPORT, CallingConvention = _CONVENTION)]

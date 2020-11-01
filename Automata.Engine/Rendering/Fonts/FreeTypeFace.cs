@@ -1,63 +1,63 @@
 using System;
 using System.Runtime.InteropServices;
 
-using FreeTypeLong = System.IntPtr;
-using FreeTypeULong = System.UIntPtr;
-
 namespace Automata.Engine.Rendering.Fonts
 {
     [StructLayout(LayoutKind.Sequential)]
-    public struct GenericContainer
+    public readonly struct GenericContainer
     {
-        public IntPtr Data;
-        public IntPtr Finalizer;
+        public readonly IntPtr Data;
+        public readonly IntPtr Finalizer;
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct FreeTypeFace
+    public readonly struct FreeTypeFace
     {
-        public FreeTypeLong FacesCount;
-        public FreeTypeLong FaceIndex;
+        public readonly long FacesCount;
+        public readonly long FaceIndex;
 
-        public FreeTypeLong FaceFlags;
-        public FreeTypeLong StyleFlags;
+        public readonly long FaceFlags;
+        public readonly long StyleFlags;
 
-        public FreeTypeLong GlyphCount;
+        public readonly long GlyphCount;
 
-        public IntPtr FamilyName;
-        public IntPtr StyleName;
+        public readonly IntPtr FamilyName;
+        public readonly IntPtr StyleName;
 
-        public int FixedSizesCount;
-        public IntPtr AvailableSizes;
+        public readonly int FixedSizesCount;
+        public readonly IntPtr AvailableSizes;
 
-        public int CharmapCount;
-        public IntPtr Charmaps;
+        public readonly int CharmapCount;
+        public readonly IntPtr Charmaps;
 
-        public FreeTypeBounds Bounds;
+        public readonly GenericContainer Generic;
 
-        public ushort UnitsPerEM;
-        public short Ascender;
-        public short Descender;
-        public short Height;
+        public readonly FreeTypeBounds Bounds;
 
-        public short MaxAdvanceWidth;
-        public short MaxAdvanceHeight;
+        public readonly ushort UnitsPerEM;
+        public readonly short Ascender;
+        public readonly short Descender;
+        public readonly short Height;
 
-        public short UnderlinePosition;
-        public short UnderlineThickness;
+        public readonly short MaxAdvanceWidth;
+        public readonly short MaxAdvanceHeight;
 
-        public IntPtr Glyph;
-        public IntPtr Size;
-        public IntPtr Charmap;
+        public readonly short UnderlinePosition;
+        public readonly short UnderlineThickness;
 
-        private IntPtr Driver;
-        private IntPtr Memory;
-        private IntPtr Stream;
+        public readonly IntPtr Glyph;
+        public readonly IntPtr Size;
+        public readonly IntPtr Charmap;
 
-        public IntPtr SizesList;
-        public GenericContainer AutoHint;
-        public IntPtr Extensions;
+        private readonly IntPtr Driver;
+        private readonly IntPtr Memory;
+        private readonly IntPtr Stream;
 
-        private IntPtr @internal;
+        public readonly IntPtr SizesList;
+
+        public readonly GenericContainer AutoHint;
+        public readonly IntPtr Extensions;
+
+        private readonly IntPtr @internal;
     }
 }

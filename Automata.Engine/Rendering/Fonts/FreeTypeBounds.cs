@@ -1,21 +1,18 @@
 using System;
 using System.Runtime.InteropServices;
 
-using FreeTypeLong = System.IntPtr;
-using FreeTypeULong = System.UIntPtr;
-
 namespace Automata.Engine.Rendering.Fonts
 {
     [StructLayout(LayoutKind.Sequential)]
-    public struct FreeTypeBounds : IEquatable<FreeTypeBounds>
+    public readonly struct FreeTypeBounds : IEquatable<FreeTypeBounds>
     {
-        private FreeTypeLong XMin, YMin;
-        private FreeTypeLong XMax, YMax;
+        private readonly long XMin, YMin;
+        private readonly long XMax, YMax;
 
-        public int Left => (int)XMin;
-        public int Bottom => (int)YMin;
-        public int Right => (int)XMax;
-        public int Top => (int)YMax;
+        public long Left => XMin;
+        public long Bottom => YMin;
+        public long Right => XMax;
+        public long Top => YMax;
 
         public bool Equals(FreeTypeBounds other) =>
             XMin.Equals(other.XMin)

@@ -42,14 +42,15 @@ namespace Automata.Engine.Rendering.Fonts
                 }
 
                 _Handle = value;
-                _Face = Marshal.PtrToStructure<FreeTypeFace>(Handle);
+                _Face = Marshal.PtrToStructure<FreeTypeFace>(value);
             }
         }
 
         public string? FontFamily => Marshal.PtrToStringAnsi(Face.FamilyName);
         public string? FontStyle => Marshal.PtrToStringAnsi(Face.StyleName);
-        public int FaceCount => (int)Face.FacesCount;
-        public int GlyphCount => (int)Face.GlyphCount;
+        public long FaceCount => Face.FacesCount;
+        public long FaceIndex => Face.FaceIndex;
+        public long GlyphCount => Face.GlyphCount;
 
 
         public FontFace(FontLibrary fontLibrary, string path, int faceIndex)
