@@ -8,15 +8,9 @@ namespace Automata.Engine.Rendering.Font
 
         private bool _Disposed;
 
-        public FontLibrary()
-        {
-            FreeTypeError error = FreeType.FT_Init_FreeType(out _Handle);
+        public IntPtr Handle => _Handle;
 
-            if (error is not FreeTypeError.Ok)
-            {
-                throw new FreeTypeException(error);
-            }
-        }
+        public FontLibrary() => FreeType.ThrowIfNotOk(FreeType.FT_Init_FreeType(out _Handle));
 
         public void Dispose()
         {
@@ -31,7 +25,7 @@ namespace Automata.Engine.Rendering.Font
                 return;
             }
 
-            FreeType.FT_Done_Library(_Handle);
+            FreeType.FT_Done_Library(Handle);
 
             _Disposed = true;
         }
