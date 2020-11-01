@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Automata.Engine.Collections;
-using Automata.Engine.Numerics;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Game.Blocks;
 using Generic_Octree;
@@ -152,7 +151,6 @@ namespace Automata.Game.Chunks.Generation
                 int componentShift = GenerationConstants.CHUNK_SIZE_SHIFT * componentIndex;
 
                 // axis value of the current face check direction
-                // example: for iteration normalIndex == 0—which is positive X—it'd be equal to localPosition.x
                 int facedAxisValue = (localPosition >> componentShift) & GenerationConstants.CHUNK_SIZE_MASK;
 
                 // indicates whether or not the face check is within the current chunk bounds
@@ -160,7 +158,6 @@ namespace Automata.Game.Chunks.Generation
                                       || (isNegativeNormal && (facedAxisValue == 0));
 
                 // total number of successful traversals
-                // remark: this is outside the for loop so that the if statement after can determine if any traversals have happened
                 int traversals = 0;
 
                 for (int perpendicularNormalIndex = 1; perpendicularNormalIndex < 3; perpendicularNormalIndex++)
@@ -327,137 +324,6 @@ namespace Automata.Game.Chunks.Generation
             }
         }
 
-        private static void PackedNaiveMeshIndex(Span<ushort> blocks, Span<Direction> faces, ICollection<int> vertexes, ICollection<uint> indexes,
-            IReadOnlyList<INodeCollection<ushort>?> neighbors, int index, int localPosition, ushort blockID, bool isTransparent)
-        {
-            // iterate once over all 6 faces of given cubic space
-            for (int normalIndex = 0; normalIndex < 6; normalIndex++)
-            {
-                // face direction always exists on a single bit, so shift 1 by the current normalIndex (0-5)
-                Direction faceDirection = (Direction)(1 << normalIndex);
-
-                if (faces[index].HasDirection(faceDirection))
-                {
-                    continue;
-                }
-
-                // indicates whether the current face checking direction is negative or positive
-                bool isNegativeFace = (normalIndex - 3) >= 0;
-
-                // normalIndex constrained to represent the 3 axes
-                int componentIndex = normalIndex % 3;
-                int componentShift = GenerationConstants.CHUNK_SIZE_SHIFT * componentIndex;
-
-                // axis value of the current face check direction
-                // example: for iteration normalIndex == 0—which is positive X—it'd be equal to localPosition.x
-                int facedAxisValue = (localPosition >> componentShift) & GenerationConstants.CHUNK_SIZE_MASK;
-
-                // indicates whether or not the face check is within the current chunk bounds
-                bool isFaceCheckOutOfBounds = (!isNegativeFace && (facedAxisValue == (GenerationConstants.CHUNK_SIZE - 1)))
-                                              || (isNegativeFace && (facedAxisValue == 0));
-
-                if (isFaceCheckOutOfBounds)
-                {
-                    // this block of code translates the integer local position to the local position of the neighbor at [normalIndex]
-                    int sign = isNegativeFace ? -1 : 1;
-                    int componentMask = GenerationConstants.CHUNK_SIZE_MASK << componentShift;
-
-                    int neighborLocalPosition = (~componentMask & localPosition)
-                                                | (Wrap(((localPosition & componentMask) >> componentShift) + sign,
-                                                       GenerationConstants.CHUNK_SIZE, 0, GenerationConstants.CHUNK_SIZE - 1)
-                                                   << componentShift);
-
-                    // index into neighbor blocks collections, call .GetPoint() with adjusted local position
-                    // remark: if there's no neighbor at the index given, then no chunk exists there (for instance,
-                    //     chunks at the edge of render distance). In this case, return NullID so no face is rendered on edges.
-                    ushort facedBlockId = neighbors[normalIndex]?.GetPoint(
-                                              (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_SHIFT * 0))
-                                              & GenerationConstants.CHUNK_SIZE_MASK,
-                                              (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_SHIFT * 1))
-                                              & GenerationConstants.CHUNK_SIZE_MASK,
-                                              (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_SHIFT * 2))
-                                              & GenerationConstants.CHUNK_SIZE_MASK
-                                          )
-                                          ?? BlockRegistry.NullID;
-
-                    if (isTransparent)
-                    {
-                        if (blockID == facedBlockId)
-                        {
-                            continue;
-                        }
-                    }
-                    else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockId, Block.Attribute.Transparent))
-                    {
-                        continue;
-                    }
-                }
-                else
-                {
-                    // amount by integer to add to current traversal index to get 3D->1D position of facing block
-                    int facedBlockIndex = index + _IndexStepByNormalIndex[normalIndex];
-
-                    // if so, index into block ids and set facingBlockId
-                    ushort facedBlockID = blocks[facedBlockIndex];
-
-                    // if transparent, traverse so long as facing block is not the same block id
-                    // if opaque, traverse so long as facing block is transparent
-                    if (isTransparent)
-                    {
-                        if (blockID == facedBlockID)
-                        {
-                            continue;
-                        }
-                    }
-                    else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockID, Block.Attribute.Transparent))
-                    {
-                        // we've culled this face, and faced block is opaque as well, so cull it's face adjacent to current.
-                        if (!isNegativeFace)
-                        {
-                            faces[facedBlockIndex] |= (Direction)(1 << ((normalIndex + 3) % 6));
-                        }
-
-                        continue;
-                    }
-                }
-
-                int depth = TextureAtlas.Instance.GetTileDepth(BlockRegistry.Instance.GetBlockName(blockID));
-
-                int compressedUv = (depth << (GenerationConstants.CHUNK_SIZE_SHIFT * 2))
-                                   | (1 << GenerationConstants.CHUNK_SIZE_SHIFT)
-                                   | 1;
-
-                faces[index] |= faceDirection;
-
-                uint vertexesCount = (uint)(vertexes.Count / 2);
-
-                indexes.Add(0u + vertexesCount);
-                indexes.Add(1u + vertexesCount);
-                indexes.Add(3u + vertexesCount);
-                indexes.Add(1u + vertexesCount);
-                indexes.Add(2u + vertexesCount);
-                indexes.Add(3u + vertexesCount);
-
-                Span<int> compressedVertexes = _PackedVertexesByIteration[normalIndex];
-
-                vertexes.Add(localPosition + compressedVertexes[0]);
-
-                vertexes.Add(compressedUv & (int.MaxValue << (GenerationConstants.CHUNK_SIZE_SHIFT * 2)));
-
-                vertexes.Add(localPosition + compressedVertexes[1]);
-
-                vertexes.Add(compressedUv & (int.MaxValue << GenerationConstants.CHUNK_SIZE_SHIFT));
-
-                vertexes.Add(localPosition + compressedVertexes[2]);
-
-                vertexes.Add(compressedUv & ~(GenerationConstants.CHUNK_SIZE_MASK << GenerationConstants.CHUNK_SIZE_SHIFT));
-
-                vertexes.Add(localPosition + compressedVertexes[3]);
-
-                vertexes.Add(compressedUv & int.MaxValue);
-            }
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int Wrap(int value, int delta, int minVal, int maxVal)
         {
@@ -466,17 +332,5 @@ namespace Automata.Game.Chunks.Generation
             value += (1 - (value / mod)) * mod;
             return (value % mod) + minVal;
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int CompressVertex(Vector3i vertex) =>
-            (vertex.X & GenerationConstants.CHUNK_SIZE_MASK)
-            | ((vertex.Y & GenerationConstants.CHUNK_SIZE_MASK) << GenerationConstants.CHUNK_SIZE_SHIFT)
-            | ((vertex.Z & GenerationConstants.CHUNK_SIZE_MASK) << (GenerationConstants.CHUNK_SIZE_SHIFT * 2));
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Vector3i DecompressVertex(int vertex) =>
-            new Vector3i(vertex & GenerationConstants.CHUNK_SIZE_MASK,
-                (vertex >> GenerationConstants.CHUNK_SIZE_SHIFT) & GenerationConstants.CHUNK_SIZE_MASK,
-                (vertex >> (GenerationConstants.CHUNK_SIZE_SHIFT * 2)) & GenerationConstants.CHUNK_SIZE_MASK);
     }
 }

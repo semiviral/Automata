@@ -14,7 +14,7 @@ namespace Automata.Game.Chunks
     public class Chunk : IComponent
     {
         public Guid ID { get; } = Guid.NewGuid();
-        public GenerationState State { get; set; }
+        public GenerationState State { get; set; } = GenerationState.Ungenerated;
         public INodeCollection<ushort>? Blocks { get; set; }
         public Chunk?[] Neighbors { get; } = new Chunk?[6];
 

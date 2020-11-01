@@ -21,6 +21,12 @@ namespace Automata.Game.Chunks
 {
     public class ChunkRegionLoaderSystem : ComponentSystem
     {
+        private static readonly Bounds _ChunkBounds = new Bounds
+        {
+            Spheric = new Sphere(new Vector3(GenerationConstants.CHUNK_RADIUS), GenerationConstants.CHUNK_RADIUS),
+            Cubic = new Cube(Vector3.Zero, new Vector3(GenerationConstants.CHUNK_SIZE))
+        };
+
         private readonly Dictionary<Vector3i, IEntity> _ChunkEntities;
 
         public ChunkRegionLoaderSystem() => _ChunkEntities = new Dictionary<Vector3i, IEntity>();
@@ -75,13 +81,16 @@ namespace Automata.Game.Chunks
 
             foreach (Vector3i origin in activations)
             {
-                IEntity chunk = entityManager.ComposeEntity<ChunkComposition>(true);
-                chunk.GetComponent<Translation>().Value = origin;
-                chunk.GetComponent<Chunk>().State = GenerationState.Ungenerated;
+                IEntity chunk = new Entity();
+                entityManager.RegisterEntity(chunk);
+                entityManager.RegisterComponent<Chunk>(chunk);
+                entityManager.RegisterComponent(chunk, _ChunkBounds);
 
-                Bounds bounds = chunk.GetComponent<Bounds>();
-                bounds.Spheric = new Sphere(new Vector3(GenerationConstants.CHUNK_RADIUS), GenerationConstants.CHUNK_RADIUS);
-                bounds.Cubic = new Cube(Vector3.Zero, new Vector3(GenerationConstants.CHUNK_SIZE));
+                entityManager.RegisterComponent(chunk, new Translation
+                {
+                    Value = origin
+                });
+
                 _ChunkEntities.Add(origin, chunk);
 
                 totalActivations += 1;
@@ -105,8 +114,7 @@ namespace Automata.Game.Chunks
             for (int z = -chunkLoader.Radius; z < (chunkLoader.Radius + 1); z++)
             for (int x = -chunkLoader.Radius; x < (chunkLoader.Radius + 1); x++)
             {
-                Vector3i localOrigin = new Vector3i(x, y, z) * GenerationConstants.CHUNK_SIZE;
-                yield return localOrigin + chunkLoaderOriginYAdjusted;
+                yield return chunkLoaderOriginYAdjusted + (new Vector3i(x, y, z) * GenerationConstants.CHUNK_SIZE);
             }
         }
 
