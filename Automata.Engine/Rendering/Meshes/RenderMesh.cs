@@ -26,7 +26,7 @@ namespace Automata.Engine.Rendering.Meshes
         public bool ShouldRender => Mesh is not null && Mesh.Visible && (Mesh.IndexesByteLength > 0);
 
         public Matrix4x4 Model { get; set; } = Matrix4x4.Identity;
-        public bool Changed { get; set; } = false;
+        public bool Changed { get; set; }
 
         public void Dispose() => _Mesh?.Dispose();
     }

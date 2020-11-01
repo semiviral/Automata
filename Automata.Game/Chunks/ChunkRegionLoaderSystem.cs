@@ -3,14 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using Automata.Engine;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
-using Automata.Engine.Extensions;
 using Automata.Engine.Numerics;
-using Automata.Engine.Numerics.Shapes;
-using Automata.Engine.Rendering;
 using Automata.Engine.Systems;
 using Automata.Game.Chunks.Generation;
 using Serilog;
@@ -22,8 +18,6 @@ namespace Automata.Game.Chunks
 {
     public class ChunkRegionLoaderSystem : ComponentSystem
     {
-
-
         private readonly ChunkMap _ChunkMap;
 
         public ChunkRegionLoaderSystem() => _ChunkMap = new ChunkMap();
