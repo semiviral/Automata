@@ -15,10 +15,10 @@ namespace Automata.Game.Blocks
         [Flags]
         public enum Attribute
         {
-            Transparent = 1,
-            Collideable = 2,
-            Destructible = 4,
-            Collectible = 8
+            Transparent = 1 << 0,
+            Collideable = 1 << 1,
+            Destructible = 1 << 2,
+            Collectible = 1 << 3
         }
 
         private static readonly Func<Direction, string> _DefaultUVsRule;

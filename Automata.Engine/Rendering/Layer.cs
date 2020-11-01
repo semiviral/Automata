@@ -1,5 +1,8 @@
+using System;
+
 namespace Automata.Engine.Rendering
 {
+    [Flags]
     public enum Layer : ushort
     {
         Layer0 = 1 << 0,
@@ -18,6 +21,6 @@ namespace Automata.Engine.Rendering
         Layer13 = 1 << 13,
         Layer14 = 1 << 14,
         Layer15 = 1 << 15,
-        All = ushort.MaxValue
+        Mask = ushort.MaxValue
     }
 }

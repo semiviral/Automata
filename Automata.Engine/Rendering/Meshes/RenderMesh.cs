@@ -13,8 +13,6 @@ namespace Automata.Engine.Rendering.Meshes
     {
         private IMesh? _Mesh;
 
-        public Matrix4x4 Model { get; set; } = Matrix4x4.Identity;
-
         public IMesh? Mesh
         {
             get => _Mesh;
@@ -27,7 +25,8 @@ namespace Automata.Engine.Rendering.Meshes
 
         public bool ShouldRender => Mesh is not null && Mesh.Visible && (Mesh.IndexesByteLength > 0);
 
-        public bool Changed { get; set; }
+        public Matrix4x4 Model { get; set; } = Matrix4x4.Identity;
+        public bool Changed { get; set; } = false;
 
         public void Dispose() => _Mesh?.Dispose();
     }

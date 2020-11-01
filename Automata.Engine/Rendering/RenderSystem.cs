@@ -98,7 +98,7 @@ namespace Automata.Engine.Rendering
                         Matrix4x4 modelViewProjection = renderMesh.Model * viewProjection;
 
                         if (!renderMesh.ShouldRender // check if should render at all
-                            || ((camera.RenderedLayers & renderMesh.Mesh!.Layer) == renderMesh.Mesh!.Layer)
+                            || ((camera.RenderedLayers & renderMesh.Mesh!.Layer) != renderMesh.Mesh!.Layer)
                             || !objectEntity.TryGetComponent(out Material? material)
 
                             // check if occluded by frustum

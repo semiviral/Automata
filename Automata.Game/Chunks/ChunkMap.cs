@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -50,7 +51,8 @@ namespace Automata.Game.Chunks
                 // update adjacent chunk meshes
                 foreach (IEntity? entity in GetOriginNeighbors(origin).Where(entity => entity is not null))
                 {
-                    entity!.GetComponent<Chunk>().State = GenerationState.Unmeshed;
+                    Chunk neighborChunk = entity!.GetComponent<Chunk>();
+                    neighborChunk.State = (GenerationState)Math.Min((int)neighborChunk.State, (int)GenerationState.Unmeshed);
                 }
 
                 return true;

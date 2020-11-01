@@ -13,7 +13,7 @@ namespace Automata.Engine.Rendering
         public Matrix4x4 View { get; set; } = Matrix4x4.Identity;
         public Matrix4x4 Projection { get; set; } = Matrix4x4.Identity;
         public Vector4 ProjectionParameters { get; set; } = Vector4.Zero;
-        public Layer RenderedLayers { get; set; } = Layer.All;
+        public Layer RenderedLayers { get; set; } = Layer.Mask;
 
         public void CalculateProjection(Vector4 projectionParameters) =>
             CalculateProjection(projectionParameters.X, projectionParameters.Y, projectionParameters.Z, projectionParameters.W);

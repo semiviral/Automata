@@ -22,34 +22,34 @@ namespace Automata.Game
         /// <summary>
         ///     Positive on X axis
         /// </summary>
-        East = 0b0000_0001,
+        East = 1 << 0,
 
         /// <summary>
         ///     Positive on Y axis
         /// </summary>
-        Up = 0b0000_0010,
+        Up = 1 << 1,
 
         /// <summary>
         ///     Positive on Z axis
         /// </summary>
-        North = 0b0000_0100,
+        North = 1 << 2,
 
         /// <summary>
         ///     Negative on X axis
         /// </summary>
-        West = 0b0000_1000,
+        West = 1 << 3,
 
         /// <summary>
         ///     Negative on Y axis
         /// </summary>
-        Down = 0b0001_0000,
+        Down = 1 << 4,
 
         /// <summary>
         ///     Negative on Z axis
         /// </summary>
-        South = 0b0010_0000,
+        South = 1 << 5,
 
-        Mask = 0b0011_1111
+        Mask = byte.MaxValue
     }
 
     public static class Directions
