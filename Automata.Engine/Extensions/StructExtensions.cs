@@ -5,53 +5,45 @@ namespace Automata.Engine.Extensions
     public static class StructExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe T SetValue<T, TComponent>(this T a, int index, TComponent newValue)
+        public static T SetComponent<T, TComponent>(this T a, int index, TComponent newValue)
             where T : unmanaged
             where TComponent : unmanaged
         {
-            byte* ptr = (byte*)&a;
-
-            int byteIndex = index * sizeof(TComponent);
-            Unsafe.Write(&ptr[byteIndex], Unsafe.Read<TComponent>(&ptr[byteIndex]));
-
-            return Unsafe.Read<T>(ptr);
+            ref TComponent component = ref Unsafe.Add(ref Unsafe.As<T, TComponent>(ref a), index);
+            Unsafe.WriteUnaligned(ref Unsafe.As<TComponent, byte>(ref component), newValue);
+            return a;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe T WithValue<T, TComponent>(this T a, int index)
+        public static T WithComponent<T, TComponent>(this T a, int index)
             where T : unmanaged
             where TComponent : unmanaged
-
         {
-            byte* ptr = (byte*)&a;
             T result = new T();
-            byte* resultPtr = (byte*)&result;
 
-            int byteIndex = index * sizeof(TComponent);
-            Unsafe.Write(&resultPtr[byteIndex], Unsafe.Read<TComponent>(&ptr[byteIndex]));
+            ref TComponent aComponentOffset = ref a.GetComponent<T, TComponent>(index);
+            ref TComponent resultComponentOffset = ref result.GetComponent<T, TComponent>(index);
 
-            return Unsafe.Read<T>(resultPtr);
+            Unsafe.WriteUnaligned(ref Unsafe.As<TComponent, byte>(ref resultComponentOffset), aComponentOffset);
+
+            return result;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe T WithValue<T, TComponent>(this T a, int index, TComponent value)
+        public static T ReplaceComponent<T, TComponent>(this T a, int index, TComponent value)
             where T : unmanaged
             where TComponent : unmanaged
 
         {
             T result = a;
-            byte* ptr = (byte*)&result;
 
-            int byteIndex = index * sizeof(TComponent);
-            Unsafe.Write(&ptr[byteIndex], value);
+            Unsafe.WriteUnaligned(ref Unsafe.As<TComponent, byte>(ref a.GetComponent<T, TComponent>(index)), value);
 
-            return Unsafe.Read<T>(ptr);
+            return result;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe TComponent GetValue<T, TComponent>(this T a, int index)
-            where T : unmanaged
-            where TComponent : unmanaged =>
-            Unsafe.Read<TComponent>(&((byte*)&a)[index * sizeof(TComponent)]);
+        private static ref TComponent GetComponent<T, TComponent>(ref this T a, int index) where T : unmanaged where TComponent : unmanaged =>
+            ref Unsafe.Add(ref Unsafe.As<T, TComponent>(ref a), index);
     }
 }

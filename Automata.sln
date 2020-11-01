@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Automata.Engine", "Automata
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Automata.Game", "Automata.Game\Automata.Game.csproj", "{EC9BB4FA-8EEE-4890-A510-87D4D77E3AF7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmarking", "Benchmarking\Benchmarking.csproj", "{39883E3D-CE25-4F9A-A376-76D7E13F9E3F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{EC9BB4FA-8EEE-4890-A510-87D4D77E3AF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC9BB4FA-8EEE-4890-A510-87D4D77E3AF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EC9BB4FA-8EEE-4890-A510-87D4D77E3AF7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39883E3D-CE25-4F9A-A376-76D7E13F9E3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39883E3D-CE25-4F9A-A376-76D7E13F9E3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39883E3D-CE25-4F9A-A376-76D7E13F9E3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39883E3D-CE25-4F9A-A376-76D7E13F9E3F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

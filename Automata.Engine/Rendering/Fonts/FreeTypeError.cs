@@ -1,4 +1,4 @@
-namespace Automata.Engine.Rendering.Font
+namespace Automata.Engine.Rendering.Fonts
 {
 	/// <summary>
 	///     FreeType error codes.

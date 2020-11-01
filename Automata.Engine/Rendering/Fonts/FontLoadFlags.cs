@@ -1,6 +1,6 @@
 using System;
 
-namespace Automata.Engine.Rendering.Font
+namespace Automata.Engine.Rendering.Fonts
 {
 	/// <summary>
 	/// </summary>
@@ -8,7 +8,7 @@ namespace Automata.Engine.Rendering.Font
 	///     Copied from SharpFont (https://github.com/Robmaister/SharpFont)
 	/// </remarks>
 	[Flags]
-    public enum FontLoadFlags : uint
+    public enum FontLoadFlags
     {
 	    /// <summary>
 	    ///     Corresponding to 0, this value is used as the default glyph load operation. In this case, the following
@@ -179,6 +179,4 @@ namespace Automata.Engine.Rendering.Font
 	    /// </summary>
 	    AdvanceFlagFastOnly = 0x20000000
     }
-}
-
 }

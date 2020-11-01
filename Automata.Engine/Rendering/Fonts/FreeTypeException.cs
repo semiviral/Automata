@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Automata.Engine.Rendering.Font
+namespace Automata.Engine.Rendering.Fonts
 {
 	/// <summary>
 	///     An exception that gets thrown when FreeType returns an error code.

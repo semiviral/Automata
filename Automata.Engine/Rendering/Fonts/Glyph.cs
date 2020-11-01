@@ -1,6 +1,6 @@
 using Automata.Engine.Numerics;
 
-namespace Automata.Engine.Rendering.Font
+namespace Automata.Engine.Rendering.Fonts
 {
     public class Glyph
     {

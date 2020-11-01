@@ -93,7 +93,7 @@ namespace Automata.Game.Chunks
             {
                 int sign = (normalIndex - 3) >= 0 ? -1 : 1;
                 int componentIndex = normalIndex % 3;
-                Vector3i component = Vector3i.One.WithValue<Vector3i, int>(componentIndex) * sign;
+                Vector3i component = Vector3i.One.WithComponent<Vector3i, int>(componentIndex) * sign;
                 Vector3i neighborOrigin = origin + (component * GenerationConstants.CHUNK_SIZE);
 
                 _Chunks.TryGetValue(neighborOrigin, out IEntity? neighbor);

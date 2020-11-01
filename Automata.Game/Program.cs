@@ -2,13 +2,15 @@
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
 using Automata.Engine.Input;
 using Automata.Engine.Rendering;
-using Automata.Engine.Rendering.Font;
+using Automata.Engine.Rendering.Fonts;
 using Automata.Engine.Rendering.GLFW;
 using Automata.Engine.Rendering.OpenGL;
+using Automata.Engine.Rendering.OpenGL.Textures;
 using Automata.Engine.Systems;
 using Automata.Engine.Worlds;
 using Automata.Game.Blocks;
@@ -25,7 +27,7 @@ namespace Automata.Game
         private static readonly string _LocalDataPath =
             $@"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.Create)}\Automata\";
 
-        private static unsafe void Main()
+        private static void Main()
         {
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
@@ -34,27 +36,14 @@ namespace Automata.Game
 
             Log.Debug("Logger initialized.");
 
-
-
             FontLibrary library = new FontLibrary();
             FontFace fontFace = new FontFace(library, @".\Resources\Fonts\Consolas.ttf", 0);
             fontFace.SetPixelSize(0u, 48u);
-
-            uint length = 0;
-            FreeType.ThrowIfNotOk(FreeType.FT_Load_Sfnt_Table(fontFace.Handle, 0u, 0, IntPtr.Zero, ref length));
-
-            Span<byte> memory = stackalloc byte[(int)length];
-            byte referenceByte = memory.GetPinnableReference();
-            IntPtr buffer = (IntPtr)(&referenceByte);
-
-            FreeType.ThrowIfNotOk(FreeType.FT_Load_Sfnt_Table(fontFace.Handle, 0u, 0, buffer, ref length));
+            fontFace.SelectCharmap(FontEncoding.Unicode);
+            uint charCode = fontFace.FirstCharacterCode(out _);
+            fontFace.LoadCharacter(charCode, FontLoadFlags.Render);
 
 
-            // if (!Directory.Exists(_LocalDataPath))
-            // {
-            //     Log.Information("Application data folder missing. Creating.");
-            //     Directory.CreateDirectory(_LocalDataPath);
-            // }
 
             Initialize();
 

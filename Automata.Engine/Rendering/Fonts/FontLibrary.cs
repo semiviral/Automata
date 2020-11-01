@@ -1,6 +1,6 @@
 using System;
 
-namespace Automata.Engine.Rendering.Font
+namespace Automata.Engine.Rendering.Fonts
 {
     public class FontLibrary : IDisposable
     {
@@ -8,7 +8,13 @@ namespace Automata.Engine.Rendering.Font
 
         private bool _Disposed;
 
-        public IntPtr Handle => _Handle;
+        public IntPtr Handle         {
+            get
+            {
+                if (_Disposed) throw new ObjectDisposedException(nameof(FontFace));
+                return _Handle;
+            }
+        }
 
         public FontLibrary() => FreeType.ThrowIfNotOk(FreeType.FT_Init_FreeType(out _Handle));
 
