@@ -10,6 +10,7 @@ using Automata.Engine.Entities;
 using Automata.Engine.Extensions;
 using Automata.Engine.Numerics;
 using Automata.Engine.Numerics.Shapes;
+using Automata.Engine.Rendering;
 using Automata.Engine.Systems;
 using Automata.Game.Chunks.Generation;
 using Serilog;
@@ -21,15 +22,11 @@ namespace Automata.Game.Chunks
 {
     public class ChunkRegionLoaderSystem : ComponentSystem
     {
-        private static readonly Bounds _ChunkBounds = new Bounds
-        {
-            Spheric = new Sphere(new Vector3(GenerationConstants.CHUNK_RADIUS), GenerationConstants.CHUNK_RADIUS),
-            Cubic = new Cube(Vector3.Zero, new Vector3(GenerationConstants.CHUNK_SIZE))
-        };
 
-        private readonly Dictionary<Vector3i, IEntity> _ChunkEntities;
 
-        public ChunkRegionLoaderSystem() => _ChunkEntities = new Dictionary<Vector3i, IEntity>();
+        private readonly ChunkMap _ChunkMap;
+
+        public ChunkRegionLoaderSystem() => _ChunkMap = new ChunkMap();
 
         [HandlesComponents(DistinctionStrategy.All, typeof(Translation), typeof(ChunkLoader))]
         public override void Update(EntityManager entityManager, TimeSpan delta)
@@ -60,47 +57,13 @@ namespace Automata.Game.Chunks
             HashSet<Vector3i> withinLoaderRange = new HashSet<Vector3i>(components.SelectMany(loader =>
                 GetActiveChunkLoaderRegion(loader.ChunkLoader)));
 
-            IEnumerable<Vector3i> activations = withinLoaderRange.Except(_ChunkEntities.Keys);
-            IEnumerable<Vector3i> deactivations = _ChunkEntities.Keys.Except(withinLoaderRange);
+            IEnumerable<Vector3i> activations = withinLoaderRange.Except(_ChunkMap.Origins);
+            IEnumerable<Vector3i> deactivations = _ChunkMap.Origins.Except(withinLoaderRange);
 
-            int totalActivations = 0, totalDeactivations = 0;
+            int totalDeactivations = deactivations.Count(origin => _ChunkMap.TryRemove(entityManager, origin, out IEntity? _));
+            int totalActivations = activations.Count(origin => _ChunkMap.TryAdd(entityManager, origin, out IEntity? _));
 
-            foreach (Vector3i origin in deactivations)
-            {
-                _ChunkEntities.Remove(origin, out IEntity? entity);
-
-                if (entity is null)
-                {
-                    continue;
-                }
-
-                entityManager.RemoveEntity(entity);
-
-                totalDeactivations += 1;
-            }
-
-            foreach (Vector3i origin in activations)
-            {
-                IEntity chunk = new Entity();
-                entityManager.RegisterEntity(chunk);
-                entityManager.RegisterComponent<Chunk>(chunk);
-                entityManager.RegisterComponent(chunk, _ChunkBounds);
-
-                entityManager.RegisterComponent(chunk, new Translation
-                {
-                    Value = origin
-                });
-
-                _ChunkEntities.Add(origin, chunk);
-
-                totalActivations += 1;
-            }
-
-            // assign neighbors
-            foreach ((Vector3i origin, IEntity entity) in _ChunkEntities)
-            {
-                SetNeighborChunks(origin, entity.GetComponent<Chunk>());
-            }
+            _ChunkMap.RecalculateAllNeighbors();
 
             Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkRegionLoaderSystem),
                 $"Region loading: {totalActivations} activations, {totalDeactivations} deactivations"));
@@ -115,22 +78,6 @@ namespace Automata.Game.Chunks
             for (int x = -chunkLoader.Radius; x < (chunkLoader.Radius + 1); x++)
             {
                 yield return chunkLoaderOriginYAdjusted + (new Vector3i(x, y, z) * GenerationConstants.CHUNK_SIZE);
-            }
-        }
-
-        private void SetNeighborChunks(Vector3i origin, Chunk chunk)
-        {
-            for (int normalIndex = 0; normalIndex < chunk.Neighbors.Length; normalIndex++)
-            {
-                int sign = (normalIndex - 3) >= 0 ? -1 : 1;
-                int componentIndex = normalIndex % 3;
-                Vector3i component = Vector3i.One.WithValue<Vector3i, int>(componentIndex) * sign;
-                Vector3i neighborOrigin = origin + (component * GenerationConstants.CHUNK_SIZE);
-
-                if (_ChunkEntities.TryGetValue(neighborOrigin, out IEntity? entity) && entity.TryGetComponent(out Chunk? neighbor))
-                {
-                    chunk.Neighbors[normalIndex] = neighbor;
-                }
             }
         }
     }

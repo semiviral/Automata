@@ -1,8 +1,9 @@
+using Automata.Engine.Components;
 using Automata.Engine.Numerics.Shapes;
 
-namespace Automata.Engine.Components
+namespace Automata.Engine.Rendering
 {
-    public class Bounds : IComponent
+    public class OcclusionBounds : IComponent
     {
         public Sphere Spheric { get; set; }
         public Cube Cubic { get; set; }

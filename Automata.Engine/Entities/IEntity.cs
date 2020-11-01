@@ -16,6 +16,7 @@ namespace Automata.Engine.Entities
         IReadOnlyDictionary<Type, IComponent> Components { get; }
 
         void AddComponent(IComponent component);
+        void AddComponent<TComponent>() where TComponent : class, IComponent, new();
 
         TComponent RemoveComponent<TComponent>() where TComponent : class, IComponent;
         IComponent RemoveComponent(Type type);

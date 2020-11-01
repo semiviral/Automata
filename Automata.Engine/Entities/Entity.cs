@@ -14,6 +14,9 @@ namespace Automata.Engine.Entities
     {
         private readonly Dictionary<Type, IComponent> _Components;
 
+        public Guid ID { get; }
+        public IReadOnlyDictionary<Type, IComponent> Components => _Components;
+
         public Entity()
         {
             _Components = new Dictionary<Type, IComponent>();
@@ -21,16 +24,8 @@ namespace Automata.Engine.Entities
             ID = Guid.NewGuid();
         }
 
-        public override bool Equals(object? obj) => obj is IEntity entity && Equals(entity);
-
-        public static bool operator ==(Entity? left, Entity? right) => Equals(left, right);
-
-        public static bool operator !=(Entity? left, Entity? right) => !Equals(left, right);
-
-        public Guid ID { get; }
-        public IReadOnlyDictionary<Type, IComponent> Components => _Components;
-
         public void AddComponent(IComponent component) => _Components.Add(component.GetType(), component);
+        public void AddComponent<TComponent>() where TComponent : class, IComponent, new() => _Components.Add(typeof(TComponent), new TComponent());
 
         public T RemoveComponent<T>() where T : class, IComponent
         {
@@ -76,8 +71,13 @@ namespace Automata.Engine.Entities
 
         public bool HasComponent<TComponent>() where TComponent : class, IComponent => _Components.ContainsKey(typeof(TComponent));
 
+        public override bool Equals(object? obj) => obj is IEntity entity && Equals(entity);
         public bool Equals(IEntity? other) => other is not null && ID.Equals(other.ID);
 
         public override int GetHashCode() => ID.GetHashCode();
+
+        public static bool operator ==(Entity? left, Entity? right) => Equals(left, right);
+
+        public static bool operator !=(Entity? left, Entity? right) => !Equals(left, right);
     }
 }

@@ -99,7 +99,7 @@ namespace Automata.Engine.Rendering
                         if (!renderMesh.ShouldRender // check if should render at all
                             || !objectEntity.TryGetComponent(out Material? material) // if no RenderShader component, don't try to render
                             // check if occluded by frustum
-                            || (objectEntity.TryGetComponent(out Bounds? bounds) && CheckClipFrustumOcclude(bounds, planes, modelViewProjection)))
+                            || (objectEntity.TryGetComponent(out OcclusionBounds? bounds) && CheckClipFrustumOcclude(bounds, planes, modelViewProjection)))
                         {
                             continue;
                         }
@@ -149,7 +149,7 @@ namespace Automata.Engine.Rendering
             }
         }
 
-        private static bool CheckClipFrustumOcclude(Bounds bounds, Span<Plane> planes, Matrix4x4 mvp)
+        private static bool CheckClipFrustumOcclude(OcclusionBounds occlusionBounds, Span<Plane> planes, Matrix4x4 mvp)
         {
             return false;
             ClipFrustum frustum = new ClipFrustum(planes, mvp);
@@ -158,12 +158,12 @@ namespace Automata.Engine.Rendering
             return
 
                 // test spherical bounds
-                ((bounds.Spheric != Sphere.Zero) && (intersection = frustum.Intersects(bounds.Spheric)) is Frustum.Intersect.Outside)
+                ((occlusionBounds.Spheric != Sphere.Zero) && (intersection = frustum.Intersects(occlusionBounds.Spheric)) is Frustum.Intersect.Outside)
 
                 // if spherical bounds occlusion fails (i.e. intersects) try cubic
                 || (intersection is not Frustum.Intersect.Inside
-                    && (bounds.Cubic != Cube.Zero)
-                    && frustum.Intersects(bounds.Cubic) is Frustum.Intersect.Outside);
+                    && (occlusionBounds.Cubic != Cube.Zero)
+                    && frustum.Intersects(occlusionBounds.Cubic) is Frustum.Intersect.Outside);
         }
 
         private void GameWindowResized(object sender, Vector2i newSize) => _NewAspectRatio = (float)newSize.X / (float)newSize.Y;

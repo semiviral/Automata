@@ -2,6 +2,7 @@
 
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
+using Automata.Engine.Rendering;
 using Automata.Engine.Systems;
 
 #endregion
@@ -11,7 +12,7 @@ namespace Automata.Game.Chunks
 {
     public class ChunkComposition : IEntityComposition
     {
-        public ChunkComposition() => ComposedTypes = new ComponentTypes((DistinctionStrategy)0, typeof(Translation), typeof(Chunk), typeof(Bounds));
+        public ChunkComposition() => ComposedTypes = new ComponentTypes((DistinctionStrategy)0, typeof(Translation), typeof(Chunk), typeof(OcclusionBounds));
         public ComponentTypes ComposedTypes { get; }
     }
 }

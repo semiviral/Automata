@@ -15,8 +15,9 @@ namespace Automata.Game.Chunks.Generation
 {
     public static class ChunkMesher
     {
-        private const int _DEFAULT_VERTEXES_CAPACITY = 2048;
-        private const int _DEFAULT_INDEXES_CAPACITY = (_DEFAULT_VERTEXES_CAPACITY * 3) / 2;
+        // these are semi-magic defaults, based on a collective average
+        private const int _DEFAULT_VERTEXES_CAPACITY = 4096;
+        private const int _DEFAULT_INDEXES_CAPACITY = 3072;
 
         private static readonly int[][] _PackedVertexesByIteration =
         {
@@ -128,6 +129,7 @@ namespace Automata.Game.Chunks.Generation
             return vertexes.Count == 0 ? PendingMesh<int>.Empty : new PendingMesh<int>(vertexes.Segment, indexes.Segment);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void PackedTraverseIndex(Span<ushort> blocks, Span<Direction> faces, ICollection<int> vertexes, ICollection<uint> indexes,
             IReadOnlyList<INodeCollection<ushort>?> neighbors, int index, int localPosition, ushort blockID, bool isTransparent)
         {

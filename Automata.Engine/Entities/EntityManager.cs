@@ -135,7 +135,7 @@ namespace Automata.Engine.Entities
         /// <remarks>
         ///     Use this method to ensure <see cref="EntityManager" /> caches remain accurate.
         /// </remarks>
-        public void RegisterComponent<T>(IEntity entity) where T : class, IComponent =>
+        public void RegisterComponent<T>(IEntity entity) where T : class, IComponent, new() =>
             RegisterComponentInternal(entity, typeof(T), null);
 
         private void RegisterComponentInternal(IEntity entity, Type type, IComponent? component)
