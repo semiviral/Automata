@@ -4,7 +4,7 @@ namespace Automata.Engine.Rendering.Font
 	///     FreeType error codes.
 	/// </summary>
 	/// <remarks>
-	///		Copied from SharpFont.Error (https://github.com/Robmaister/SharpFont)
+	///     Copied from SharpFont (https://github.com/Robmaister/SharpFont)
 	/// </remarks>
 	public enum FreeTypeError
     {

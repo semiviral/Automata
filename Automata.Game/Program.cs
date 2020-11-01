@@ -40,13 +40,15 @@ namespace Automata.Game
             FontFace fontFace = new FontFace(library, @".\Resources\Fonts\Consolas.ttf", 0);
             fontFace.SetPixelSize(0u, 48u);
 
-            Span<byte> memory = stackalloc byte[8192];
-            byte referenceByte = memory.GetPinnableReference();
+            uint length = 0;
+            FreeType.ThrowIfNotOk(FreeType.FT_Load_Sfnt_Table(fontFace.Handle, 0u, 0, IntPtr.Zero, ref length));
 
+            Span<byte> memory = stackalloc byte[(int)length];
+            byte referenceByte = memory.GetPinnableReference();
             IntPtr buffer = (IntPtr)(&referenceByte);
 
-            uint length = 0;
-            FreeType.FT_Load_Sfnt_Table(fontFace.Handle, 0u, 0, buffer, ref length);
+            FreeType.ThrowIfNotOk(FreeType.FT_Load_Sfnt_Table(fontFace.Handle, 0u, 0, buffer, ref length));
+
 
             // if (!Directory.Exists(_LocalDataPath))
             // {

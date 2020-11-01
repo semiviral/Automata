@@ -77,4 +77,11 @@
       </None>
     </ItemGroup>
 
+    <ItemGroup>
+      <Content Include="..\References\freetype-2.10.4.dll">
+        <Link>References\freetype-2.10.4.dll</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
 </Project>
