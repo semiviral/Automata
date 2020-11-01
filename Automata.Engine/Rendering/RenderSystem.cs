@@ -22,6 +22,7 @@ namespace Automata.Engine.Rendering
     public class RenderSystem : ComponentSystem
     {
         private const bool _ENABLE_BACK_FACE_CULLING = true;
+        private const bool _ENABLE_FRUSTUM_CULLING = false;
 
         private readonly GL _GL;
         private float _NewAspectRatio;
@@ -97,9 +98,13 @@ namespace Automata.Engine.Rendering
                         Matrix4x4 modelViewProjection = renderMesh.Model * viewProjection;
 
                         if (!renderMesh.ShouldRender // check if should render at all
-                            || !objectEntity.TryGetComponent(out Material? material) // if no RenderShader component, don't try to render
+                            || ((camera.RenderedLayers & renderMesh.Mesh!.Layer) == renderMesh.Mesh!.Layer)
+                            || !objectEntity.TryGetComponent(out Material? material)
+
                             // check if occluded by frustum
-                            || (objectEntity.TryGetComponent(out OcclusionBounds? bounds) && CheckClipFrustumOcclude(bounds, planes, modelViewProjection)))
+                            || (objectEntity.TryGetComponent(out OcclusionBounds? bounds)
+                                && _ENABLE_FRUSTUM_CULLING
+                                && CheckClipFrustumOcclude(bounds, planes, modelViewProjection)))
                         {
                             continue;
                         }
@@ -151,7 +156,6 @@ namespace Automata.Engine.Rendering
 
         private static bool CheckClipFrustumOcclude(OcclusionBounds occlusionBounds, Span<Plane> planes, Matrix4x4 mvp)
         {
-            return false;
             ClipFrustum frustum = new ClipFrustum(planes, mvp);
             Frustum.Intersect intersection = Frustum.Intersect.Outside;
 

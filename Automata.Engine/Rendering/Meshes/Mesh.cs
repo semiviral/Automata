@@ -13,16 +13,24 @@ namespace Automata.Engine.Rendering.Meshes
     {
         private readonly uint _AttributeStride;
 
+        public Guid ID { get; }
+        public bool Visible { get; }
+        public Layer Layer { get; }
+
         public BufferObject<TDataType> VertexesBuffer { get; }
         public BufferObject<uint> IndexesBuffer { get; }
         public VertexArrayObject<TDataType, uint> VertexArrayObject { get; }
 
-        public Mesh(uint attributeStride)
+        public uint IndexesLength => IndexesBuffer.Length;
+        public uint IndexesByteLength => IndexesBuffer.ByteLength;
+
+        public Mesh(uint attributeStride, Layer layer = Layer.Layer0)
         {
             _AttributeStride = attributeStride;
 
             ID = Guid.NewGuid();
             Visible = true;
+            Layer = layer;
             VertexesBuffer = new BufferObject<TDataType>(GLAPI.Instance.GL, BufferTargetARB.ArrayBuffer);
             IndexesBuffer = new BufferObject<uint>(GLAPI.Instance.GL, BufferTargetARB.ElementArrayBuffer);
             VertexArrayObject = new VertexArrayObject<TDataType, uint>(GLAPI.Instance.GL, VertexesBuffer, IndexesBuffer);
@@ -65,12 +73,6 @@ namespace Automata.Engine.Rendering.Meshes
                 VertexArrayObject.VertexAttributeLPointer(index, dimensions, VertexAttribPointerType.Double, _AttributeStride, offset);
             }
         }
-
-        public Guid ID { get; }
-        public bool Visible { get; }
-
-        public uint IndexesLength => IndexesBuffer.Length;
-        public uint IndexesByteLength => IndexesBuffer.ByteLength;
 
         public void Bind() => VertexArrayObject.Bind();
         public void Unbind() => VertexArrayObject.Unbind();
