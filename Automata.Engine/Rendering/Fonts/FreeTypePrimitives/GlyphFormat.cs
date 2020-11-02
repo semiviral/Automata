@@ -1,4 +1,4 @@
-namespace Automata.Engine.Rendering.Fonts.FreeType
+namespace Automata.Engine.Rendering.Fonts.FreeTypePrimitives
 {
     /// <summary>
     ///     An enumeration type used to describe the format of a given glyph image. Note that this version of FreeType only

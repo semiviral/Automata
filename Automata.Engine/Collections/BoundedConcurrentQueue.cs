@@ -21,10 +21,7 @@ namespace Automata.Engine.Collections
         {
             _ConcurrentQueue.Enqueue(item);
 
-            if (_ConcurrentQueue.Count > MaximumSize)
-            {
-                TryDequeue(out _);
-            }
+            if (_ConcurrentQueue.Count > MaximumSize) TryDequeue(out _);
         }
 
         public bool TryDequeue([MaybeNullWhen(false)] out T item) => _ConcurrentQueue.TryDequeue(out item);

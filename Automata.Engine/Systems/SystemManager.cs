@@ -48,18 +48,12 @@ namespace Automata.Engine.Systems
         {
             foreach (ComponentSystem componentSystem in _ComponentSystems)
             {
-                if (!componentSystem.Enabled || !VerifyHandledTypesExist(entityManager, _HandledTypes[componentSystem.GetType()]))
-                {
-                    continue;
-                }
+                if (!componentSystem.Enabled || !VerifyHandledTypesExist(entityManager, _HandledTypes[componentSystem.GetType()])) continue;
 
                 componentSystem.Update(entityManager, frameTimer.Elapsed);
             }
 
-            foreach (IComponentChangeable changeable in entityManager.GetComponentsAssignableFrom<IComponentChangeable>())
-            {
-                changeable.Changed = false;
-            }
+            foreach (IComponentChangeable changeable in entityManager.GetComponentsAssignableFrom<IComponentChangeable>()) changeable.Changed = false;
         }
 
         /// <summary>
@@ -155,18 +149,12 @@ namespace Automata.Engine.Systems
 
         private void DisposeInternal()
         {
-            foreach (ComponentSystem componentSystem in _ComponentSystems)
-            {
-                componentSystem.Dispose();
-            }
+            foreach (ComponentSystem componentSystem in _ComponentSystems) componentSystem.Dispose();
         }
 
         public void Dispose()
         {
-            if (_Disposed)
-            {
-                return;
-            }
+            if (_Disposed) return;
 
             DisposeInternal();
             GC.SuppressFinalize(this);

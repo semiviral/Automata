@@ -33,10 +33,7 @@ namespace Automata.Engine.Worlds
 
         public static void RegisterWorld(string name, World world)
         {
-            if (Worlds.ContainsKey(name))
-            {
-                throw new ArgumentException(name);
-            }
+            if (Worlds.ContainsKey(name)) throw new ArgumentException(name);
 
             Worlds.Add(name, world);
 
@@ -49,10 +46,7 @@ namespace Automata.Engine.Worlds
         {
             foreach ((string _, World world) in Worlds)
             {
-                if (!world.Active)
-                {
-                    continue;
-                }
+                if (!world.Active) continue;
 
                 world.Update(frameTimer);
             }
@@ -73,10 +67,7 @@ namespace Automata.Engine.Worlds
 
         public void Dispose()
         {
-            if (_Disposed)
-            {
-                return;
-            }
+            if (_Disposed) return;
 
             DisposeInternal();
             GC.SuppressFinalize(this);

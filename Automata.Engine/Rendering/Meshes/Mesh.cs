@@ -41,37 +41,21 @@ namespace Automata.Engine.Rendering.Meshes
             int dimensions = sizeof(TDataType) / sizeof(TAttributePrimitive);
 
             if (typeof(TAttributePrimitive) == typeof(int))
-            {
                 VertexArrayObject.VertexAttributeIPointer(index, dimensions, VertexAttribPointerType.Int, _AttributeStride, offset);
-            }
             else if (typeof(TAttributePrimitive) == typeof(uint))
-            {
                 VertexArrayObject.VertexAttributeIPointer(index, dimensions, VertexAttribPointerType.UnsignedInt, _AttributeStride, offset);
-            }
             else if (typeof(TAttributePrimitive) == typeof(short))
-            {
                 VertexArrayObject.VertexAttributeIPointer(index, dimensions, VertexAttribPointerType.Short, _AttributeStride, offset);
-            }
             else if (typeof(TAttributePrimitive) == typeof(ushort))
-            {
                 VertexArrayObject.VertexAttributeIPointer(index, dimensions, VertexAttribPointerType.UnsignedShort, _AttributeStride, offset);
-            }
             else if (typeof(TAttributePrimitive) == typeof(sbyte))
-            {
                 VertexArrayObject.VertexAttributeIPointer(index, dimensions, VertexAttribPointerType.Byte, _AttributeStride, offset);
-            }
             else if (typeof(TAttributePrimitive) == typeof(byte))
-            {
                 VertexArrayObject.VertexAttributeIPointer(index, dimensions, VertexAttribPointerType.UnsignedByte, _AttributeStride, offset);
-            }
             else if (typeof(TAttributePrimitive) == typeof(float))
-            {
                 VertexArrayObject.VertexAttributePointer(index, dimensions, VertexAttribPointerType.Float, _AttributeStride, offset);
-            }
             else if (typeof(TAttributePrimitive) == typeof(double))
-            {
                 VertexArrayObject.VertexAttributeLPointer(index, dimensions, VertexAttribPointerType.Double, _AttributeStride, offset);
-            }
         }
 
         public void Bind() => VertexArrayObject.Bind();

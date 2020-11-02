@@ -1,6 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
-using Automata.Engine.Rendering.Fonts.FreeType;
+using Automata.Engine.Rendering.Fonts.FreeTypePrimitives;
 
 namespace Automata.Engine.Rendering.Fonts
 {
@@ -8,6 +8,7 @@ namespace Automata.Engine.Rendering.Fonts
     {
         private IntPtr _Handle;
         private FreeTypeFace _Face;
+        private readonly FontLibrary _Library;
 
         private bool _Disposed;
 
@@ -15,10 +16,7 @@ namespace Automata.Engine.Rendering.Fonts
         {
             get
             {
-                if (_Disposed)
-                {
-                    throw new ObjectDisposedException(nameof(FontFace));
-                }
+                if (_Disposed) throw new ObjectDisposedException(nameof(FontFace));
 
                 return _Face;
             }
@@ -28,19 +26,13 @@ namespace Automata.Engine.Rendering.Fonts
         {
             get
             {
-                if (_Disposed)
-                {
-                    throw new ObjectDisposedException(nameof(FontFace));
-                }
+                if (_Disposed) throw new ObjectDisposedException(nameof(FontFace));
 
                 return _Handle;
             }
             private set
             {
-                if (_Disposed)
-                {
-                    throw new ObjectDisposedException(nameof(FontFace));
-                }
+                if (_Disposed) throw new ObjectDisposedException(nameof(FontFace));
 
                 _Handle = value;
                 _Face = Marshal.PtrToStructure<FreeTypeFace>(value);
@@ -53,22 +45,24 @@ namespace Automata.Engine.Rendering.Fonts
         public long FaceIndex => Face.FaceIndex;
         public long GlyphCount => Face.GlyphCount;
 
-
         public FontFace(FontLibrary fontLibrary, string path, int faceIndex)
         {
-            FreeType.FreeType.ThrowIfNotOk(FreeType.FreeType.FT_New_Face(fontLibrary.Handle, path, faceIndex, out IntPtr handle));
+            FreeType.ThrowIfNotOk(FreeType.FT_New_Face(fontLibrary.Handle, path, faceIndex, out IntPtr handle));
+            _Library = fontLibrary;
             Handle = handle;
         }
 
-        public void SetPixelSize(uint width, uint height) => FreeType.FreeType.ThrowIfNotOk(FreeType.FreeType.FT_Set_Pixel_Sizes(Handle, width, height));
+        public Glyph Glyph() => new Glyph(_Face.Glyph, _Library, this);
 
-        public void SelectCharmap(FontEncoding encoding) => FreeType.FreeType.ThrowIfNotOk(FreeType.FreeType.FT_Select_Charmap(Handle, encoding));
+        public void SetPixelSize(uint width, uint height) => FreeType.ThrowIfNotOk(FreeType.FT_Set_Pixel_Sizes(Handle, width, height));
 
-        public uint FirstCharacterCode(out uint glyphIndex) => FreeType.FreeType.FT_Get_First_Char(Handle, out glyphIndex);
-        public uint NextCharacterCode(out uint glyphIndex) => FreeType.FreeType.FT_Get_Next_Char(Handle, out glyphIndex);
+        public void SelectCharmap(FontEncoding encoding) => FreeType.ThrowIfNotOk(FreeType.FT_Select_Charmap(Handle, encoding));
+
+        public uint FirstCharacterCode(out uint glyphIndex) => FreeType.FT_Get_First_Char(Handle, out glyphIndex);
+        public uint NextCharacterCode(out uint glyphIndex) => FreeType.FT_Get_Next_Char(Handle, out glyphIndex);
 
         public void LoadCharacter(uint characterCode, LoadFlags loadFlags) =>
-            FreeType.FreeType.ThrowIfNotOk(FreeType.FreeType.FT_Load_Char(Handle, characterCode, loadFlags));
+            FreeType.ThrowIfNotOk(FreeType.FT_Load_Char(Handle, characterCode, loadFlags));
 
         public void Dispose()
         {
@@ -78,12 +72,9 @@ namespace Automata.Engine.Rendering.Fonts
 
         private void Dispose(bool dispose)
         {
-            if (_Disposed || !dispose)
-            {
-                return;
-            }
+            if (_Disposed || !dispose) return;
 
-            FreeType.FreeType.FT_Done_Face(Handle);
+            FreeType.FT_Done_Face(Handle);
 
             _Disposed = true;
         }

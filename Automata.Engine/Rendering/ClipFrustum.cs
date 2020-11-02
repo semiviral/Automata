@@ -29,10 +29,7 @@ namespace Automata.Engine.Rendering
 
         public ClipFrustum(Span<Plane> planes, Matrix4x4 mvp)
         {
-            if (planes.Length != Frustum.TOTAL_PLANES)
-            {
-                throw new ArgumentOutOfRangeException(nameof(planes), "Length must be 6.");
-            }
+            if (planes.Length != Frustum.TOTAL_PLANES) throw new ArgumentOutOfRangeException(nameof(planes), "Length must be 6.");
 
             planes[Frustum.NEAR] = new Plane
             (
@@ -89,10 +86,7 @@ namespace Automata.Engine.Rendering
         {
             foreach (Plane plane in _Planes)
             {
-                if (plane.Distance(point) < 0f)
-                {
-                    return Frustum.Intersect.Outside;
-                }
+                if (plane.Distance(point) < 0f) return Frustum.Intersect.Outside;
             }
 
             return Frustum.Intersect.Inside;
@@ -106,14 +100,8 @@ namespace Automata.Engine.Rendering
             {
                 float distance = plane.Distance(sphere.Center);
 
-                if (distance < -sphere.Radius)
-                {
-                    return Frustum.Intersect.Outside;
-                }
-                else if (distance < sphere.Radius)
-                {
-                    result = Frustum.Intersect.Intersect;
-                }
+                if (distance < -sphere.Radius) return Frustum.Intersect.Outside;
+                else if (distance < sphere.Radius) result = Frustum.Intersect.Intersect;
             }
 
             return result;
@@ -125,14 +113,8 @@ namespace Automata.Engine.Rendering
 
             foreach (Plane plane in _Planes)
             {
-                if (plane.Distance(cube.GreaterSumVertex(plane.Normal)) < 0f)
-                {
-                    return Frustum.Intersect.Outside;
-                }
-                else if (plane.Distance(cube.LesserSumVertex(plane.Normal)) < 0f)
-                {
-                    result = Frustum.Intersect.Intersect;
-                }
+                if (plane.Distance(cube.GreaterSumVertex(plane.Normal)) < 0f) return Frustum.Intersect.Outside;
+                else if (plane.Distance(cube.LesserSumVertex(plane.Normal)) < 0f) result = Frustum.Intersect.Intersect;
             }
 
             return result;

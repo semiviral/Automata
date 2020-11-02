@@ -1,11 +1,11 @@
 ﻿using System;
 
-namespace Automata.Engine.Rendering.Fonts.FreeType
+namespace Automata.Engine.Rendering.Fonts.FreeTypePrimitives
 {
-	/// <summary>
-	///     An exception that gets thrown when FreeType returns an error code.
-	/// </summary>
-	public class FreeTypeException : Exception
+    /// <summary>
+    ///     An exception that gets thrown when FreeType returns an error code.
+    /// </summary>
+    public class FreeTypeException : Exception
     {
         public FreeTypeError Error { get; }
 

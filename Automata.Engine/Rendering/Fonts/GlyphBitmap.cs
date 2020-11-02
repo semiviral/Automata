@@ -1,6 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
-using Automata.Engine.Rendering.Fonts.FreeType;
+using Automata.Engine.Rendering.Fonts.FreeTypePrimitives;
 
 namespace Automata.Engine.Rendering.Fonts
 {
@@ -41,7 +41,7 @@ namespace Automata.Engine.Rendering.Fonts
         internal GlyphBitmap(FontLibrary fontLibrary)
         {
             IntPtr handle = Marshal.AllocHGlobal(Marshal.SizeOf<FreeTypeBitmap>());
-            FreeType.FreeType.FT_Bitmap_New(handle);
+            FreeType.FT_Bitmap_New(handle);
             Handle = handle;
 
             _Library = fontLibrary;
@@ -76,7 +76,7 @@ namespace Automata.Engine.Rendering.Fonts
 
             if (_User)
             {
-                FreeType.FreeType.FT_Bitmap_Done(_Library.Handle, Handle);
+                FreeType.FT_Bitmap_Done(_Library.Handle, Handle);
                 Marshal.FreeHGlobal(Handle);
             }
 

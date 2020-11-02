@@ -32,10 +32,7 @@ namespace Automata.Game.Blocks
             ID = id;
             BlockName = blockName;
 
-            foreach (Attribute property in properties)
-            {
-                Attributes |= property;
-            }
+            foreach (Attribute property in properties) Attributes |= property;
 
             _UVsRule = uvsRule ?? _DefaultUVsRule;
         }

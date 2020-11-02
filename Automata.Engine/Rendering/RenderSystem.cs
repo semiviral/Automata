@@ -72,10 +72,7 @@ namespace Automata.Engine.Rendering
                         camera.View = inverted;
                     }
 
-                    if (_NewAspectRatio > 0f)
-                    {
-                        camera.CalculateProjection(90f, _NewAspectRatio, 0.1f, 1000f);
-                    }
+                    if (_NewAspectRatio > 0f) camera.CalculateProjection(90f, _NewAspectRatio, 0.1f, 1000f);
 
                     Matrix4x4 viewProjection = camera.View * camera.Projection;
                     Material? currentMaterial = null;
@@ -104,10 +101,7 @@ namespace Automata.Engine.Rendering
                             // check if occluded by frustum
                             || (objectEntity.TryGetComponent(out OcclusionBounds? bounds)
                                 && _ENABLE_FRUSTUM_CULLING
-                                && CheckClipFrustumOcclude(bounds, planes, modelViewProjection)))
-                        {
-                            continue;
-                        }
+                                && CheckClipFrustumOcclude(bounds, planes, modelViewProjection))) continue;
 
                         if (currentMaterial is null || (material.Shader.ID != currentMaterial.Shader.ID))
                         {
@@ -125,9 +119,7 @@ namespace Automata.Engine.Rendering
                         if (material.Shader.HasAutomataUniforms)
                         {
                             if (Matrix4x4.Invert(renderMesh.Model, out Matrix4x4 modelInverted))
-                            {
                                 material.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_OBJECT, modelInverted);
-                            }
 
                             material.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_WORLD, renderMesh.Model);
                             material.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_MVP, modelViewProjection);

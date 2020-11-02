@@ -1,17 +1,12 @@
-﻿using System;
-using System.Drawing;
-using System.IO;
-using System.Runtime.InteropServices;
-using System.Text;
+﻿using System.Drawing;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
 using Automata.Engine.Input;
 using Automata.Engine.Rendering;
 using Automata.Engine.Rendering.Fonts;
-using Automata.Engine.Rendering.Fonts.FreeType;
+using Automata.Engine.Rendering.Fonts.FreeTypePrimitives;
 using Automata.Engine.Rendering.GLFW;
 using Automata.Engine.Rendering.OpenGL;
-using Automata.Engine.Rendering.OpenGL.Textures;
 using Automata.Engine.Systems;
 using Automata.Engine.Worlds;
 using Automata.Game.Blocks;
@@ -25,9 +20,6 @@ namespace Automata.Game
 {
     public class Program
     {
-        private static readonly string _LocalDataPath =
-            $@"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.Create)}\Automata\";
-
         private static void Main()
         {
             Log.Logger = new LoggerConfiguration()
@@ -44,7 +36,7 @@ namespace Automata.Game
             uint charCode = fontFace.FirstCharacterCode(out _);
             fontFace.LoadCharacter(charCode, LoadFlags.Render);
 
-
+            Glyph glyph = fontFace.Glyph();
 
             Initialize();
 

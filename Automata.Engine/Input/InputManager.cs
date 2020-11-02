@@ -66,10 +66,7 @@ namespace Automata.Engine.Input
 
         public Vector2 GetMousePosition(int mouseIndex)
         {
-            if ((mouseIndex < 0) || (mouseIndex >= _Mice.Count))
-            {
-                throw new IndexOutOfRangeException(nameof(mouseIndex));
-            }
+            if ((mouseIndex < 0) || (mouseIndex >= _Mice.Count)) throw new IndexOutOfRangeException(nameof(mouseIndex));
 
             PointF position = _Mice[mouseIndex].Position;
             position.Y = -position.Y + AutomataWindow.Instance.Size.Y;
@@ -87,10 +84,7 @@ namespace Automata.Engine.Input
 
         public void SetMousePositionRelative(int mouseIndex, Vector2 position)
         {
-            if ((mouseIndex < 0) || (mouseIndex >= _Mice.Count))
-            {
-                throw new IndexOutOfRangeException(nameof(mouseIndex));
-            }
+            if ((mouseIndex < 0) || (mouseIndex >= _Mice.Count)) throw new IndexOutOfRangeException(nameof(mouseIndex));
 
             position += (Vector2)AutomataWindow.Instance.Center;
             _Mice[mouseIndex].Position = Unsafe.As<Vector2, PointF>(ref position);

@@ -34,19 +34,13 @@ namespace Automata.Game.Chunks
                 Vector3i translationInt32 = Vector3i.FromVector3(translation.Value);
                 Vector3i difference = Vector3i.Abs(translationInt32 - chunkLoader.Origin);
 
-                if (!chunkLoader.Changed && Vector3b.All(difference < GenerationConstants.CHUNK_SIZE))
-                {
-                    continue;
-                }
+                if (!chunkLoader.Changed && Vector3b.All(difference < GenerationConstants.CHUNK_SIZE)) continue;
 
                 chunkLoader.Origin = chunkLoader.Origin = Vector3i.RoundBy(translationInt32, GenerationConstants.CHUNK_SIZE);
                 recalculateChunkRegions = true;
             }
 
-            if (!recalculateChunkRegions)
-            {
-                return;
-            }
+            if (!recalculateChunkRegions) return;
 
             HashSet<Vector3i> withinLoaderRange = new HashSet<Vector3i>(components.SelectMany(loader =>
                 GetActiveChunkLoaderRegion(loader.ChunkLoader)));
@@ -70,9 +64,7 @@ namespace Automata.Game.Chunks
             for (int y = 0; y < GenerationConstants.WORLD_HEIGHT_IN_CHUNKS; y++)
             for (int z = -chunkLoader.Radius; z < (chunkLoader.Radius + 1); z++)
             for (int x = -chunkLoader.Radius; x < (chunkLoader.Radius + 1); x++)
-            {
                 yield return chunkLoaderOriginYAdjusted + (new Vector3i(x, y, z) * GenerationConstants.CHUNK_SIZE);
-            }
         }
     }
 }

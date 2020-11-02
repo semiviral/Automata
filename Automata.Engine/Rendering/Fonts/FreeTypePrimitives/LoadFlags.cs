@@ -1,6 +1,6 @@
 using System;
 
-namespace Automata.Engine.Rendering.Fonts.FreeType
+namespace Automata.Engine.Rendering.Fonts.FreeTypePrimitives
 {
 	/// <summary>
 	/// </summary>

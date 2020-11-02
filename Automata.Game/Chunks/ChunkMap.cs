@@ -66,10 +66,7 @@ namespace Automata.Game.Chunks
                 entityManager.RemoveEntity(chunks);
                 return true;
             }
-            else
-            {
-                return false;
-            }
+            else return false;
         }
 
         public void RecalculateAllNeighbors()

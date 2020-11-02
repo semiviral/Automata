@@ -114,10 +114,7 @@ namespace Automata.Engine.Rendering.OpenGL
 
             string infoLog = _GL.GetProgramInfoLog(_Handle);
 
-            if (!string.IsNullOrWhiteSpace(infoLog))
-            {
-                throw new ShaderProgramException(infoLog);
-            }
+            if (!string.IsNullOrWhiteSpace(infoLog)) throw new ShaderProgramException(infoLog);
 
             _GL.DetachShader(_Handle, vertexShaderHandle);
             _GL.DetachShader(_Handle, fragmentShaderHandle);
@@ -144,19 +141,13 @@ namespace Automata.Engine.Rendering.OpenGL
             const string compound_shader_key_format = "{0}:{1}";
             string compoundShaderKey = string.Format(compound_shader_key_format, vertexShaderPath, fragmentShaderPath);
 
-            if (_CachedShaders.TryGetValue(compoundShaderKey, out shader))
-            {
-                return true;
-            }
+            if (_CachedShaders.TryGetValue(compoundShaderKey, out shader)) return true;
             else if (TryLoadShader(vertexShaderPath, fragmentShaderPath, out shader))
             {
                 _CachedShaders.Add(compoundShaderKey, shader);
                 return true;
             }
-            else
-            {
-                return false;
-            }
+            else return false;
         }
 
         public static bool TryLoadShader(string vertexShaderPath, string fragmentShaderPath, [NotNullWhen(true)] out Shader? shader)
@@ -193,10 +184,7 @@ namespace Automata.Engine.Rendering.OpenGL
 
             string infoLog = gl.GetShaderInfoLog(handle);
 
-            if (!string.IsNullOrWhiteSpace(infoLog))
-            {
-                throw new ShaderLoadException(shaderType, infoLog);
-            }
+            if (!string.IsNullOrWhiteSpace(infoLog)) throw new ShaderLoadException(shaderType, infoLog);
 
             return handle;
         }
@@ -214,10 +202,7 @@ namespace Automata.Engine.Rendering.OpenGL
 
                 return true;
             }
-            else
-            {
-                return false;
-            }
+            else return false;
         }
 
         public bool TrySetUniform(string name, float value)
@@ -228,10 +213,7 @@ namespace Automata.Engine.Rendering.OpenGL
 
                 return true;
             }
-            else
-            {
-                return false;
-            }
+            else return false;
         }
 
         public bool TrySetUniform(string name, Vector3 value)
@@ -242,10 +224,7 @@ namespace Automata.Engine.Rendering.OpenGL
 
                 return true;
             }
-            else
-            {
-                return false;
-            }
+            else return false;
         }
 
         public bool TrySetUniform(string name, Vector4 value)
@@ -256,10 +235,7 @@ namespace Automata.Engine.Rendering.OpenGL
 
                 return true;
             }
-            else
-            {
-                return false;
-            }
+            else return false;
         }
 
         public bool TrySetUniform(string name, Matrix4x4 value)
@@ -269,10 +245,7 @@ namespace Automata.Engine.Rendering.OpenGL
                 _GL.ProgramUniformMatrix4(_Handle, location, 1, false, value.Unroll());
                 return true;
             }
-            else
-            {
-                return false;
-            }
+            else return false;
         }
 
         private bool TryGetUniformLocation(string name, out int location) => _CachedUniformLocations.TryGetValue(name, out location);

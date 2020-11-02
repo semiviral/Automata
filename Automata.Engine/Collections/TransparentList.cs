@@ -38,18 +38,9 @@ namespace Automata.Engine.Collections
 
         public void Insert(int index, T item)
         {
-            if (index > Count)
-            {
-                throw new ArgumentOutOfRangeException(nameof(index), "Must be non-negative and less than the size of the collection.");
-            }
-            else if (index == Count)
-            {
-                EnsureCapacityOrResize(Count + 1);
-            }
-            else if (index < Count)
-            {
-                Array.Copy(_InternalArray, index, _InternalArray, index + 1, Count - index);
-            }
+            if (index > Count) throw new ArgumentOutOfRangeException(nameof(index), "Must be non-negative and less than the size of the collection.");
+            else if (index == Count) EnsureCapacityOrResize(Count + 1);
+            else if (index < Count) Array.Copy(_InternalArray, index, _InternalArray, index + 1, Count - index);
 
             _InternalArray[index] = item;
             Count += 1;
@@ -57,17 +48,11 @@ namespace Automata.Engine.Collections
 
         private void EnsureCapacityOrResize(int minimumCapacity)
         {
-            if (_InternalArray.Length >= minimumCapacity)
-            {
-                return;
-            }
+            if (_InternalArray.Length >= minimumCapacity) return;
 
             int newCapacity = _InternalArray.Length == 0 ? _DEFAULT_SIZE : _InternalArray.Length * 2;
 
-            if (newCapacity < minimumCapacity)
-            {
-                newCapacity = minimumCapacity;
-            }
+            if (newCapacity < minimumCapacity) newCapacity = minimumCapacity;
 
             T[] newArray = new T[newCapacity];
             Array.Copy(_InternalArray, newArray, _InternalArray.Length);
@@ -78,10 +63,7 @@ namespace Automata.Engine.Collections
         {
             int index = IndexOf(item);
 
-            if (index == -1)
-            {
-                return false;
-            }
+            if (index == -1) return false;
 
             RemoveAt(index);
             return true;
@@ -89,27 +71,18 @@ namespace Automata.Engine.Collections
 
         public void RemoveAt(int index)
         {
-            if (index > Count)
-            {
-                throw new ArgumentOutOfRangeException(nameof(index), "Must be non-negative and less than the size of the collection.");
-            }
+            if (index > Count) throw new ArgumentOutOfRangeException(nameof(index), "Must be non-negative and less than the size of the collection.");
 
             Count -= 1;
 
-            if (index < Count)
-            {
-                Array.Copy(_InternalArray, index + 1, _InternalArray, index, Count - index);
-            }
+            if (index < Count) Array.Copy(_InternalArray, index + 1, _InternalArray, index, Count - index);
 
             _InternalArray[Count] = default!;
         }
 
         public void Clear()
         {
-            if (Count == 0)
-            {
-                return;
-            }
+            if (Count == 0) return;
 
             Array.Clear(_InternalArray, 0, Count);
             Count = 0;

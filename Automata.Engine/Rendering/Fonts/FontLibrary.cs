@@ -1,4 +1,5 @@
 using System;
+using Automata.Engine.Rendering.Fonts.FreeTypePrimitives;
 
 namespace Automata.Engine.Rendering.Fonts
 {
@@ -8,7 +9,8 @@ namespace Automata.Engine.Rendering.Fonts
 
         private bool _Disposed;
 
-        public IntPtr Handle         {
+        public IntPtr Handle
+        {
             get
             {
                 if (_Disposed) throw new ObjectDisposedException(nameof(FontFace));
@@ -16,7 +18,7 @@ namespace Automata.Engine.Rendering.Fonts
             }
         }
 
-        public FontLibrary() => FreeType.FreeType.ThrowIfNotOk(FreeType.FreeType.FT_Init_FreeType(out _Handle));
+        public FontLibrary() => FreeType.ThrowIfNotOk(FreeType.FT_Init_FreeType(out _Handle));
 
         public void Dispose()
         {
@@ -26,12 +28,9 @@ namespace Automata.Engine.Rendering.Fonts
 
         private void Dispose(bool dispose)
         {
-            if (_Disposed || !dispose)
-            {
-                return;
-            }
+            if (_Disposed || !dispose) return;
 
-            FreeType.FreeType.FT_Done_Library(Handle);
+            FreeType.FT_Done_Library(Handle);
 
             _Disposed = true;
         }

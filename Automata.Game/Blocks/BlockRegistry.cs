@@ -46,24 +46,15 @@ namespace Automata.Game.Blocks
 
             foreach ((string directoryPath, Resource resource) in resources)
             {
-                if (resource.Group is null)
-                {
-                    continue;
-                }
+                if (resource.Group is null) continue;
 
                 foreach (Resource.BlockDefinition blockDefinition in resource.BlockDefinitions ?? Enumerable.Empty<Resource.BlockDefinition>())
                 {
-                    if (blockDefinition.Name is null)
-                    {
-                        continue;
-                    }
+                    if (blockDefinition.Name is null) continue;
 
                     Block.Attribute attributes = 0;
 
-                    if (blockDefinition.Attributes is not null && !TryParseAttributes(blockDefinition.Attributes, out attributes))
-                    {
-                        continue;
-                    }
+                    if (blockDefinition.Attributes is not null && !TryParseAttributes(blockDefinition.Attributes, out attributes)) continue;
 
                     ushort id = RegisterBlock(resource.Group, blockDefinition.Name, null, attributes);
 
@@ -99,10 +90,7 @@ namespace Automata.Game.Blocks
                 {
                     string aliasName = attribute.Substring(attribute.IndexOf(' ') + 1);
 
-                    if (_AttributeAliases.TryGetValue(aliasName, out Block.Attribute aliasAttribute))
-                    {
-                        result |= aliasAttribute;
-                    }
+                    if (_AttributeAliases.TryGetValue(aliasName, out Block.Attribute aliasAttribute)) result |= aliasAttribute;
                     else
                     {
                         Log.Error(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(BlockRegistry),
@@ -111,10 +99,7 @@ namespace Automata.Game.Blocks
                         return false;
                     }
                 }
-                else if (Enum.TryParse(typeof(Block.Attribute), attribute, true, out object? parsed))
-                {
-                    result |= (Block.Attribute)parsed!;
-                }
+                else if (Enum.TryParse(typeof(Block.Attribute), attribute, true, out object? parsed)) result |= (Block.Attribute)parsed!;
                 else
                 {
                     Log.Error(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(BlockRegistry),
@@ -131,10 +116,7 @@ namespace Automata.Game.Blocks
         {
             const string group_with_block_name_format = "{0}:{1}";
 
-            if (Blocks.Count >= ushort.MaxValue)
-            {
-                throw new OverflowException($"{nameof(BlockRegistry)} has run out of valid block IDs.");
-            }
+            if (Blocks.Count >= ushort.MaxValue) throw new OverflowException($"{nameof(BlockRegistry)} has run out of valid block IDs.");
 
             ushort blockID = (ushort)Blocks.Count;
             string groupedName = string.Format(group_with_block_name_format, group, blockName);
@@ -160,10 +142,7 @@ namespace Automata.Game.Blocks
 
         public IBlock GetBlockDefinition(ushort blockId)
         {
-            if (!BlockIdExists(blockId))
-            {
-                throw new ArgumentException("Given block ID does not exist.", nameof(blockId));
-            }
+            if (!BlockIdExists(blockId)) throw new ArgumentException("Given block ID does not exist.", nameof(blockId));
 
             return Blocks[blockId];
         }

@@ -27,28 +27,17 @@ namespace Automata.Game.Chunks.Generation
                 for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
                 for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++, heightmapIndex++, index++)
                 {
-                    if (y == 0)
-                    {
-                        heightmap[heightmapIndex] = CalculateHeight(origin.X + x, origin.Z + z, parameters.Frequency, parameters.Persistence);
-                    }
+                    if (y == 0) heightmap[heightmapIndex] = CalculateHeight(origin.X + x, origin.Z + z, parameters.Frequency, parameters.Persistence);
 
                     int noiseHeight = heightmap[heightmapIndex];
                     int globalHeight = origin.Y + y;
 
                     if ((globalHeight < 4) && (globalHeight <= parameters.SeededRandom.Next(0, 4)))
-                    {
                         blocks[index] = BlockRegistry.Instance.GetBlockID("Core:Bedrock");
-                    }
                     else if ((noiseHeight < origin.Y)
                              || (CalculateCaveNoise(origin.X + x, origin.Y + y, origin.Z + z, parameters.Seed ^ 2, parameters.Seed ^ 3, parameters.Persistence)
-                                 < 0.000225f))
-                    {
-                        blocks[index] = BlockRegistry.AirID;
-                    }
-                    else if (globalHeight == noiseHeight)
-                    {
-                        blocks[index] = BlockRegistry.Instance.GetBlockID("Core:Grass");
-                    }
+                                 < 0.000225f)) blocks[index] = BlockRegistry.AirID;
+                    else if (globalHeight == noiseHeight) blocks[index] = BlockRegistry.Instance.GetBlockID("Core:Grass");
                     else if ((globalHeight < noiseHeight) && (globalHeight >= (noiseHeight - 3))) // lay dirt up to 3 blocks below noise height
                     {
                         blocks[index] = parameters.SeededRandom.Next(0, 8) == 0
@@ -61,10 +50,7 @@ namespace Automata.Game.Chunks.Generation
                             ? BlockRegistry.Instance.GetBlockID("Core:Ore_Coal")
                             : BlockRegistry.Instance.GetBlockID("Core:Stone");
                     }
-                    else
-                    {
-                        blocks[index] = BlockRegistry.AirID;
-                    }
+                    else blocks[index] = BlockRegistry.AirID;
                 }
             }
         }

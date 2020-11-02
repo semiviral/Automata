@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Automata.Engine.Rendering.Fonts.FreeType
+namespace Automata.Engine.Rendering.Fonts.FreeTypePrimitives
 {
     public static class FreeType
     {
@@ -10,10 +10,7 @@ namespace Automata.Engine.Rendering.Fonts.FreeType
 
         public static void ThrowIfNotOk(FreeTypeError error)
         {
-            if (error is not FreeTypeError.Ok)
-            {
-                throw new FreeTypeException(error);
-            }
+            if (error is not FreeTypeError.Ok) throw new FreeTypeException(error);
         }
 
         [DllImport(_FREETYPE_DLL_IMPORT, CallingConvention = _CONVENTION)]

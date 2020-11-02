@@ -16,20 +16,11 @@ namespace Automata.Engine.Numerics.Shapes
         {
             Vector3 result = Origin;
 
-            if (a.X > 0f)
-            {
-                result.X += Extents.X;
-            }
+            if (a.X > 0f) result.X += Extents.X;
 
-            if (a.Y > 0f)
-            {
-                result.Y += Extents.Y;
-            }
+            if (a.Y > 0f) result.Y += Extents.Y;
 
-            if (a.Z > 0f)
-            {
-                result.Z += Extents.Z;
-            }
+            if (a.Z > 0f) result.Z += Extents.Z;
 
             return result;
         }
@@ -38,20 +29,11 @@ namespace Automata.Engine.Numerics.Shapes
         {
             Vector3 result = Origin;
 
-            if (a.X < 0f)
-            {
-                result.X += Extents.X;
-            }
+            if (a.X < 0f) result.X += Extents.X;
 
-            if (a.Y < 0f)
-            {
-                result.Y += Extents.Y;
-            }
+            if (a.Y < 0f) result.Y += Extents.Y;
 
-            if (a.Z < 0f)
-            {
-                result.Z += Extents.Z;
-            }
+            if (a.Z < 0f) result.Z += Extents.Z;
 
             return result;
         }

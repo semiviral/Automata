@@ -34,10 +34,7 @@ namespace Automata.Game
 
                 // it shouldn't be too uncommon for multiple identical paths to be parsed out
                 // as it just means multiple blocks are using the same texture
-                if (_TextureDepths.ContainsKey(formattedName))
-                {
-                    continue;
-                }
+                if (_TextureDepths.ContainsKey(formattedName)) continue;
 
                 if (_TextureDepths.TryAdd(formattedName, depth))
                 {

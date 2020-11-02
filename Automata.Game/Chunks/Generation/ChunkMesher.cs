@@ -88,10 +88,7 @@ namespace Automata.Game.Chunks.Generation
 
         public static PendingMesh<int> GeneratePackedMesh(INodeCollection<ushort> blocksCollection, INodeCollection<ushort>?[] neighbors)
         {
-            if (blocksCollection.IsUniform && (blocksCollection.Value == BlockRegistry.AirID))
-            {
-                return PendingMesh<int>.Empty;
-            }
+            if (blocksCollection.IsUniform && (blocksCollection.Value == BlockRegistry.AirID)) return PendingMesh<int>.Empty;
 
             int index = 0;
             TransparentList<int> vertexes = new TransparentList<int>(_DEFAULT_VERTEXES_CAPACITY);
@@ -103,9 +100,7 @@ namespace Automata.Game.Chunks.Generation
             for (int y = 0; y < GenerationConstants.CHUNK_SIZE; y++)
             for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
             for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++, index++)
-            {
                 blocks[index] = blocksCollection.GetPoint(x, y, z);
-            }
 
             index = 0;
 
@@ -115,10 +110,7 @@ namespace Automata.Game.Chunks.Generation
             {
                 ushort currentBlockId = blocks[index];
 
-                if (currentBlockId == BlockRegistry.AirID)
-                {
-                    continue;
-                }
+                if (currentBlockId == BlockRegistry.AirID) continue;
 
                 int localPosition = x | (y << GenerationConstants.CHUNK_SIZE_SHIFT) | (z << (GenerationConstants.CHUNK_SIZE_SHIFT * 2));
 
@@ -140,10 +132,7 @@ namespace Automata.Game.Chunks.Generation
                 Direction faceDirection = (Direction)(1 << normalIndex);
 
                 // check if current index has face already
-                if (faces[index].HasDirection(faceDirection))
-                {
-                    continue;
-                }
+                if (faces[index].HasDirection(faceDirection)) continue;
 
                 // indicates whether the current face checking direction is negative or positive
                 bool isNegativeNormal = (normalIndex - 3) >= 0;
@@ -215,15 +204,9 @@ namespace Automata.Game.Chunks.Generation
 
                             if (isTransparent)
                             {
-                                if (blockID != facedBlockID)
-                                {
-                                    break;
-                                }
+                                if (blockID != facedBlockID) break;
                             }
-                            else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockID, Block.Attribute.Transparent))
-                            {
-                                break;
-                            }
+                            else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockID, Block.Attribute.Transparent)) break;
                         }
                         else
                         {
@@ -237,10 +220,7 @@ namespace Automata.Game.Chunks.Generation
                             // if opaque, traverse so long as facing block is transparent
                             if (isTransparent)
                             {
-                                if (blockID != facedBlockID)
-                                {
-                                    break;
-                                }
+                                if (blockID != facedBlockID) break;
                             }
                             else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockID, Block.Attribute.Transparent))
                             {
@@ -258,16 +238,10 @@ namespace Automata.Game.Chunks.Generation
                     }
 
                     // face is occluded
-                    if (traversals == 0)
-                    {
-                        break;
-                    }
+                    if (traversals == 0) break;
 
                     // if it's the first traversal and we've only made a 1x1x1 face, continue to test next axis
-                    else if ((traversals == 1) && (perpendicularNormalIndex == 1))
-                    {
-                        continue;
-                    }
+                    else if ((traversals == 1) && (perpendicularNormalIndex == 1)) continue;
 
                     uint indexesStart = (uint)(vertexes.Count / 2);
                     indexes.Add(indexesStart + 0u);

@@ -1,6 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
-using Automata.Engine.Rendering.Fonts.FreeType;
+using Automata.Engine.Rendering.Fonts.FreeTypePrimitives;
 
 namespace Automata.Engine.Rendering.Fonts
 {
