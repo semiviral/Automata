@@ -1,6 +1,6 @@
 using System;
 
-namespace Automata.Engine.Rendering.Fonts
+namespace Automata.Engine.Rendering.Fonts.FreeType
 {
 	/// <summary>
 	/// </summary>
@@ -8,7 +8,7 @@ namespace Automata.Engine.Rendering.Fonts
 	///     Copied from SharpFont (https://github.com/Robmaister/SharpFont)
 	/// </remarks>
 	[Flags]
-    public enum FontLoadFlags
+    public enum LoadFlags
     {
 	    /// <summary>
 	    ///     Corresponding to 0, this value is used as the default glyph load operation. In this case, the following

@@ -8,6 +8,7 @@ using Automata.Engine.Entities;
 using Automata.Engine.Input;
 using Automata.Engine.Rendering;
 using Automata.Engine.Rendering.Fonts;
+using Automata.Engine.Rendering.Fonts.FreeType;
 using Automata.Engine.Rendering.GLFW;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Textures;
@@ -41,7 +42,7 @@ namespace Automata.Game
             fontFace.SetPixelSize(0u, 48u);
             fontFace.SelectCharmap(FontEncoding.Unicode);
             uint charCode = fontFace.FirstCharacterCode(out _);
-            fontFace.LoadCharacter(charCode, FontLoadFlags.Render);
+            fontFace.LoadCharacter(charCode, LoadFlags.Render);
 
 
 

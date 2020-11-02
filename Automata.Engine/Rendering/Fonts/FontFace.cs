@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using Automata.Engine.Rendering.Fonts.FreeType;
 
 namespace Automata.Engine.Rendering.Fonts
 {
@@ -55,19 +56,19 @@ namespace Automata.Engine.Rendering.Fonts
 
         public FontFace(FontLibrary fontLibrary, string path, int faceIndex)
         {
-            FreeType.ThrowIfNotOk(FreeType.FT_New_Face(fontLibrary.Handle, path, faceIndex, out IntPtr handle));
+            FreeType.FreeType.ThrowIfNotOk(FreeType.FreeType.FT_New_Face(fontLibrary.Handle, path, faceIndex, out IntPtr handle));
             Handle = handle;
         }
 
-        public void SetPixelSize(uint width, uint height) => FreeType.ThrowIfNotOk(FreeType.FT_Set_Pixel_Sizes(Handle, width, height));
+        public void SetPixelSize(uint width, uint height) => FreeType.FreeType.ThrowIfNotOk(FreeType.FreeType.FT_Set_Pixel_Sizes(Handle, width, height));
 
-        public void SelectCharmap(FontEncoding encoding) => FreeType.ThrowIfNotOk(FreeType.FT_Select_Charmap(Handle, encoding));
+        public void SelectCharmap(FontEncoding encoding) => FreeType.FreeType.ThrowIfNotOk(FreeType.FreeType.FT_Select_Charmap(Handle, encoding));
 
-        public uint FirstCharacterCode(out uint glyphIndex) => FreeType.FT_Get_First_Char(Handle, out glyphIndex);
-        public uint NextCharacterCode(out uint glyphIndex) => FreeType.FT_Get_Next_Char(Handle, out glyphIndex);
+        public uint FirstCharacterCode(out uint glyphIndex) => FreeType.FreeType.FT_Get_First_Char(Handle, out glyphIndex);
+        public uint NextCharacterCode(out uint glyphIndex) => FreeType.FreeType.FT_Get_Next_Char(Handle, out glyphIndex);
 
-        public void LoadCharacter(uint characterCode, FontLoadFlags loadFlags) =>
-            FreeType.ThrowIfNotOk(FreeType.FT_Load_Char(Handle, characterCode, loadFlags));
+        public void LoadCharacter(uint characterCode, LoadFlags loadFlags) =>
+            FreeType.FreeType.ThrowIfNotOk(FreeType.FreeType.FT_Load_Char(Handle, characterCode, loadFlags));
 
         public void Dispose()
         {
@@ -82,7 +83,7 @@ namespace Automata.Engine.Rendering.Fonts
                 return;
             }
 
-            FreeType.FT_Done_Face(Handle);
+            FreeType.FreeType.FT_Done_Face(Handle);
 
             _Disposed = true;
         }

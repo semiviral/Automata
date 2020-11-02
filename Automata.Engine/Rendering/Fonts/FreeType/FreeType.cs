@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Automata.Engine.Rendering.Fonts
+namespace Automata.Engine.Rendering.Fonts.FreeType
 {
     public static class FreeType
     {
@@ -41,9 +41,15 @@ namespace Automata.Engine.Rendering.Fonts
         public static extern uint FT_Get_Next_Char(IntPtr face, out uint glyphIndex);
 
         [DllImport(_FREETYPE_DLL_IMPORT, CallingConvention = _CONVENTION)]
-        public static extern FreeTypeError FT_Load_Char(IntPtr face, uint charCode, FontLoadFlags fontLoadFlags);
+        public static extern FreeTypeError FT_Load_Char(IntPtr face, uint charCode, LoadFlags loadFlags);
 
         [DllImport(_FREETYPE_DLL_IMPORT, CallingConvention = _CONVENTION)]
         public static extern FreeTypeError FT_Load_Sfnt_Table(IntPtr face, uint tag, int offset, IntPtr buffer, ref uint length);
+
+        [DllImport(_FREETYPE_DLL_IMPORT, CallingConvention = _CONVENTION)]
+        public static extern void FT_Bitmap_New(IntPtr preAllocated);
+
+        [DllImport(_FREETYPE_DLL_IMPORT, CallingConvention = _CONVENTION)]
+        public static extern FreeTypeError FT_Bitmap_Done(IntPtr library, IntPtr bitmap);
     }
 }

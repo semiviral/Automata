@@ -1,4 +1,4 @@
-namespace Automata.Engine.Rendering.Fonts
+namespace Automata.Engine.Rendering.Fonts.FreeType
 {
 	/// <summary>
 	///     An enumeration used to specify character sets supported by charmaps.

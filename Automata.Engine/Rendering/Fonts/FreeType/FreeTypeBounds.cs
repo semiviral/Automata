@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Automata.Engine.Rendering.Fonts
+namespace Automata.Engine.Rendering.Fonts.FreeType
 {
     [StructLayout(LayoutKind.Sequential)]
     public readonly struct FreeTypeBounds : IEquatable<FreeTypeBounds>
