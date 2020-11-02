@@ -1,4 +1,7 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
+using System.Linq;
+using System.Text;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
 using Automata.Engine.Input;
@@ -20,7 +23,7 @@ namespace Automata.Game
 {
     public class Program
     {
-        private static void Main()
+        private static unsafe void Main()
         {
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
@@ -30,13 +33,19 @@ namespace Automata.Game
             Log.Debug("Logger initialized.");
 
             FontLibrary library = new FontLibrary();
-            FontFace fontFace = new FontFace(library, @".\Resources\Fonts\Consolas.ttf", 0);
-            fontFace.SetPixelSize(0u, 48u);
+            FontFace fontFace = new FontFace(library, @".\Resources\Fonts\Arial.ttf", 0u);
+            fontFace.SetPixelSize(0u, 12u);
             fontFace.SelectCharmap(FontEncoding.Unicode);
-            uint charCode = fontFace.FirstCharacterCode(out _);
-            fontFace.LoadCharacter(charCode, LoadFlags.Render);
+            fontFace.ParseAvailableCharacters();
 
-            Glyph glyph = fontFace.Glyph();
+            Glyph glyph;
+            for (byte charCode = 0; charCode < 128; charCode++)
+            {
+                fontFace.LoadCharacter((char)charCode, LoadFlags.Default);
+
+                 glyph = fontFace.Glyph();
+                Console.WriteLine(glyph.Metrics().Height.Value);
+            }
 
             Initialize();
 

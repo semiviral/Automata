@@ -6,13 +6,13 @@ namespace Automata.Engine.Rendering.Fonts.FreeTypePrimitives
     [StructLayout(LayoutKind.Sequential)]
     public readonly struct FreeTypeBounds : IEquatable<FreeTypeBounds>
     {
-        private readonly long XMin, YMin;
-        private readonly long XMax, YMax;
+        private readonly int XMin, YMin;
+        private readonly int XMax, YMax;
 
-        public long Left => XMin;
-        public long Bottom => YMin;
-        public long Right => XMax;
-        public long Top => YMax;
+        public int Left => XMin;
+        public int Bottom => YMin;
+        public int Right => XMax;
+        public int Top => YMax;
 
         public bool Equals(FreeTypeBounds other) =>
             XMin.Equals(other.XMin)

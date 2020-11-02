@@ -13,8 +13,8 @@ namespace Automata.Engine.Rendering.Fonts.FreeTypePrimitives
         internal readonly GenericContainer Generic;
 
         internal readonly FreeTypeGlyphMetrics Metrics;
-        internal readonly long LinearHorizonAdvance;
-        internal readonly long LinearVerticalAdvance;
+        internal readonly Fixed266 LinearHorizonAdvance;
+        internal readonly Fixed266 LinearVerticalAdvance;
         internal readonly Vector2x266 Advance;
 
         internal readonly GlyphFormat Format;
@@ -31,8 +31,8 @@ namespace Automata.Engine.Rendering.Fonts.FreeTypePrimitives
         internal readonly IntPtr ControlData;
         internal readonly long ControlLength;
 
-        internal readonly long LSBDelta;
-        internal readonly long RSBDelta;
+        internal readonly int LSBDelta;
+        internal readonly int RSBDelta;
 
         internal readonly IntPtr Other;
 

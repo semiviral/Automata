@@ -34,8 +34,8 @@ namespace Automata.Engine.Rendering.Fonts
             }
         }
 
-        public int Rows => Bitmap.Rows;
-        public int Width => Bitmap.Width;
+        public uint Rows => Bitmap.Rows;
+        public uint Width => Bitmap.Width;
         public int Pitch => Bitmap.Pitch;
 
         internal GlyphBitmap(FontLibrary fontLibrary)
@@ -59,7 +59,7 @@ namespace Automata.Engine.Rendering.Fonts
         {
             if (Pitch < 0) throw new ArgumentOutOfRangeException(nameof(Pitch), "Pitch is negative.");
 
-            return new Span<byte>(Bitmap.Buffer.ToPointer(), Rows * Pitch);
+            return new Span<byte>(Bitmap.Buffer.ToPointer(), (int)(Rows * Pitch));
         }
 
         public void Dispose()

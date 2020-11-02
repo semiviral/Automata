@@ -19,10 +19,10 @@ namespace Automata.Engine.Rendering.Fonts
             }
         }
 
+        public Fixed266 Width => _GlyphMetrics.Width;
+        public Fixed266 Height => _GlyphMetrics.Height;
+
         internal GlyphMetrics(IntPtr handle) => Handle = handle;
         internal GlyphMetrics(FreeTypeGlyphMetrics glyphMetrics) => _GlyphMetrics = glyphMetrics;
-
-        public Fixed266 Width => Fixed266.From((int)_GlyphMetrics.Width);
-        public Fixed266 Height => Fixed266.From((int)_GlyphMetrics.Height);
     }
 }

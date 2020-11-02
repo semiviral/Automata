@@ -6,8 +6,8 @@ namespace Automata.Engine.Rendering.Fonts.FreeTypePrimitives
     [StructLayout(LayoutKind.Sequential)]
     internal readonly struct FreeTypeBitmap
     {
-        internal readonly int Rows;
-        internal readonly int Width;
+        internal readonly uint Rows;
+        internal readonly uint Width;
         internal readonly int Pitch;
 
         internal readonly IntPtr Buffer;

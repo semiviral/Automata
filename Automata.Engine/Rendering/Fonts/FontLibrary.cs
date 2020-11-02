@@ -8,6 +8,7 @@ namespace Automata.Engine.Rendering.Fonts
         private readonly IntPtr _Handle;
 
         private bool _Disposed;
+        private bool _CustomMemory;
 
         public IntPtr Handle
         {
@@ -20,6 +21,12 @@ namespace Automata.Engine.Rendering.Fonts
 
         public FontLibrary() => FreeType.ThrowIfNotOk(FreeType.FT_Init_FreeType(out _Handle));
 
+        public Version Version()
+        {
+            FreeType.FT_Library_Version(Handle, out int major, out int minor, out int patch);
+            return new Version(major, minor, patch);
+        }
+
         public void Dispose()
         {
             GC.SuppressFinalize(this);
@@ -30,7 +37,7 @@ namespace Automata.Engine.Rendering.Fonts
         {
             if (_Disposed || !dispose) return;
 
-            FreeType.FT_Done_Library(Handle);
+            FreeType.ThrowIfNotOk(_CustomMemory ? FreeType.FT_Done_Library(Handle) : FreeType.FT_Done_FreeType(Handle));
 
             _Disposed = true;
         }

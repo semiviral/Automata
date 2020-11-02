@@ -1,6 +1,9 @@
 using System;
 using System.Runtime.InteropServices;
 
+using FreeTypeLong = System.IntPtr;
+
+
 namespace Automata.Engine.Rendering.Fonts.FreeTypePrimitives
 {
     [StructLayout(LayoutKind.Sequential)]
@@ -13,13 +16,13 @@ namespace Automata.Engine.Rendering.Fonts.FreeTypePrimitives
     [StructLayout(LayoutKind.Sequential)]
     public readonly struct FreeTypeFace
     {
-        public readonly long FacesCount;
-        public readonly long FaceIndex;
+        public readonly int FacesCount;
+        public readonly int FaceIndex;
 
-        public readonly long FaceFlags;
-        public readonly long StyleFlags;
+        public readonly FaceFlags FaceFlags;
+        public readonly StyleFlags StyleFlags;
 
-        public readonly long GlyphCount;
+        public readonly int GlyphCount;
 
         public readonly IntPtr FamilyName;
         public readonly IntPtr StyleName;

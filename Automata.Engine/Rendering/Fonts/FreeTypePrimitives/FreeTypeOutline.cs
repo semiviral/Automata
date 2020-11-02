@@ -9,7 +9,7 @@ namespace Automata.Engine.Rendering.Fonts.FreeTypePrimitives
         internal readonly short NContours;
         internal readonly short NPoints;
 
-        internal readonly IntPtr Points;
+        internal readonly Vector2x266 Points;
         internal readonly IntPtr Tags;
         internal readonly IntPtr Contours;
 
