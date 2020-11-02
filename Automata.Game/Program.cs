@@ -37,12 +37,9 @@ namespace Automata.Game
             FontFace fontFace = new FontFace(library, @".\Resources\Fonts\Arial.ttf", 0u);
             fontFace.SelectCharmap(FontEncoding.Unicode);
             fontFace.SetPixelSize(0u, 12u);
-            fontFace.ParseAvailableCharacters();
-            uint glyphIndex = fontFace.GetGlyphIndex('a');
-            fontFace.LoadGlyph(glyphIndex, LoadFlags.Default, LoadTarget.Normal);
+            // fontFace.ParseAvailableCharacters();
+            fontFace.LoadCharacter('a', LoadFlags.Default, LoadTarget.Normal);
             Glyph glyph = fontFace.Glyph();
-
-            Span<byte> buffer = new Span<byte>((byte*)glyph.Handle, sizeof(FreeTypeGlyph));
 
             Initialize();
 
