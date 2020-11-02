@@ -1,14 +1,8 @@
-﻿using System;
-using System.Drawing;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
+﻿using System.Drawing;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
 using Automata.Engine.Input;
 using Automata.Engine.Rendering;
-using Automata.Engine.Rendering.Fonts;
-using Automata.Engine.Rendering.Fonts.FreeTypePrimitives;
 using Automata.Engine.Rendering.GLFW;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Systems;
@@ -24,7 +18,7 @@ namespace Automata.Game
 {
     public class Program
     {
-        private static unsafe void Main()
+        private static void Main()
         {
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
@@ -33,13 +27,13 @@ namespace Automata.Game
 
             Log.Debug("Logger initialized.");
 
-            FontLibrary library = new FontLibrary();
-            FontFace fontFace = new FontFace(library, @".\Resources\Fonts\Arial.ttf", 0u);
-            fontFace.SelectCharmap(FontEncoding.Unicode);
-            fontFace.SetPixelSize(0u, 12u);
-            // fontFace.ParseAvailableCharacters();
-            fontFace.LoadCharacter('a', LoadFlags.Default, LoadTarget.Normal);
-            Glyph glyph = fontFace.Glyph();
+            // FontLibrary library = new FontLibrary();
+            // FontFace fontFace = new FontFace(library, @".\Resources\Fonts\Arial.ttf", 0u);
+            // fontFace.SelectCharmap(FontEncoding.Unicode);
+            // fontFace.SetPixelSize(0u, 12u);
+            // // fontFace.ParseAvailableCharacters();
+            // fontFace.LoadCharacter('a', LoadFlags.Default, LoadTarget.Normal);
+            // Glyph glyph = fontFace.Glyph();
 
             Initialize();
 
@@ -52,7 +46,11 @@ namespace Automata.Game
             world.EntityManager.RegisterEntity(player);
             world.EntityManager.RegisterComponent<Translation>(player);
             world.EntityManager.RegisterComponent<Rotation>(player);
-            world.EntityManager.RegisterComponent<Camera>(player);
+
+            world.EntityManager.RegisterComponent(player, new Camera
+            {
+                Projector = Projector.Perspective
+            });
 
             world.EntityManager.RegisterComponent(player, new KeyboardListener
             {

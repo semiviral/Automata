@@ -72,9 +72,19 @@ namespace Automata.Engine.Rendering
                         camera.View = inverted;
                     }
 
-                    if (_NewAspectRatio > 0f) camera.CalculateProjection(90f, _NewAspectRatio, 0.1f, 1000f);
+                    if (_NewAspectRatio > 0f)
+                    {
+                        camera.Projection = camera.Projector switch
+                        {
+                            Projector.Perspective => new PerspectiveProjection(90f, _NewAspectRatio, 0.1f, 1000f),
+                            Projector.Orthographic => new OrthographicProjection(AutomataWindow.Instance.Size, 0.1f, 1000f),
+                            Projector.None or _ => camera.Projection
+                        };
+                    }
 
-                    Matrix4x4 viewProjection = camera.View * camera.Projection;
+                    if (camera.Projection is null) continue;
+
+                    Matrix4x4 viewProjection = camera.View * camera.Projection.Matrix;
                     Material? currentMaterial = null;
 
                     foreach (IEntity objectEntity in entityManager.GetEntitiesWithComponents<RenderMesh>())
@@ -127,7 +137,7 @@ namespace Automata.Engine.Rendering
                             material.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC3_CAMERA_WORLD_POSITION,
                                 cameraTranslation?.Value ?? Vector3.Zero);
 
-                            material.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_CAMERA_PROJECTION_PARAMS, camera.ProjectionParameters);
+                            material.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_CAMERA_PROJECTION_PARAMS, camera.Projection.Parameters);
                             material.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_VIEWPORT, viewport);
                         }
 
