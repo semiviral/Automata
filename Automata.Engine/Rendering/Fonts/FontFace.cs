@@ -79,8 +79,11 @@ namespace Automata.Engine.Rendering.Fonts
         public void SelectCharmap(FontEncoding encoding) => FreeType.ThrowIfNotOk(FreeType.FT_Select_Charmap(Handle, encoding));
         public uint FirstCharacterCode(out uint glyphIndex) => FreeType.FT_Get_First_Char(Handle, out glyphIndex);
         public uint NextCharacterCode(uint charCode, out uint glyphIndex) => FreeType.FT_Get_Next_Char(Handle, charCode, out glyphIndex);
-        public void LoadCharacter(uint charCode, LoadFlags loadFlags) => FreeType.ThrowIfNotOk(FreeType.FT_Load_Char(Handle, charCode, loadFlags));
-        public void LoadGlyph(uint glyphIndex, LoadFlags loadFlags) => FreeType.ThrowIfNotOk(FreeType.FT_Load_Glyph(Handle, glyphIndex, loadFlags));
+        public void LoadCharacter(uint charCode, LoadFlags loadFlags, LoadTarget loadTarget) =>
+            FreeType.ThrowIfNotOk(FreeType.FT_Load_Char(Handle, charCode, (LoadFlags)((int)loadFlags | (int)loadTarget)));
+        public void LoadGlyph(uint glyphIndex, LoadFlags loadFlags, LoadTarget loadTarget) =>
+            FreeType.ThrowIfNotOk(FreeType.FT_Load_Glyph(Handle, glyphIndex, (LoadFlags)((int)loadFlags | (int)loadTarget)));
+        public uint GetGlyphIndex(uint charCode) => FreeType.FT_Get_Char_Index(Handle, charCode);
 
         /// <summary>
         ///     Iterates the font and adds all of the valid character codes to an internal collection.

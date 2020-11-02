@@ -13,7 +13,7 @@ namespace Automata.Engine.Rendering.Fonts
         private readonly FontLibrary _ParentLibrary;
         private readonly FontFace _ParentFace;
 
-        internal IntPtr Handle
+        public IntPtr Handle
         {
             get => _Handle;
             set

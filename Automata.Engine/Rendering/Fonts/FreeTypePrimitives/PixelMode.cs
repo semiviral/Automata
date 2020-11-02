@@ -41,14 +41,14 @@ namespace Automata.Engine.Rendering.Fonts.FreeTypePrimitives
 
 	    /// <summary>
 	    ///     An 8-bit bitmap, representing RGB or BGR decimated glyph images used for display on LCD displays; the
-	    ///     bitmap is three times wider than the original glyph image. See also <see cref="RenderMode.Lcd" />.
+	    ///     bitmap is three times wider than the original glyph image. See also <see cref="RenderMode.LCD" />.
 	    /// </summary>
 	    Lcd,
 
 	    /// <summary>
 	    ///     An 8-bit bitmap, representing RGB or BGR decimated glyph images used for display on rotated LCD displays;
 	    ///     the bitmap is three times taller than the original glyph image. See also
-	    ///     <see cref="RenderMode.VerticalLcd" />.
+	    ///     <see cref="RenderMode.VerticalLCD" />.
 	    /// </summary>
 	    VerticalLcd,
 

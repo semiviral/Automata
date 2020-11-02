@@ -11,6 +11,6 @@ namespace Automata.Engine.Rendering.Fonts.FreeTypePrimitives
 
         public Fixed266(int value) => _Value = value;
 
-        public static Fixed266 From(int value) => new Fixed266(value);
+        public override string ToString() => $"{Value}";
     }
 }

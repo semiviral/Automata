@@ -56,10 +56,9 @@ namespace Automata.Engine.Rendering.Fonts.FreeTypePrimitives
         private readonly IntPtr Memory;
         private readonly IntPtr Stream;
 
-        public readonly IntPtr SizesList;
-
-        public readonly GenericContainer AutoHint;
-        public readonly IntPtr Extensions;
+        private readonly IntPtr SizesList;
+        private readonly GenericContainer AutoHint;
+        private readonly IntPtr Extensions;
 
         private readonly IntPtr @internal;
     }

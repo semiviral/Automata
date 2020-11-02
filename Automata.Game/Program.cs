@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
@@ -34,18 +35,14 @@ namespace Automata.Game
 
             FontLibrary library = new FontLibrary();
             FontFace fontFace = new FontFace(library, @".\Resources\Fonts\Arial.ttf", 0u);
-            fontFace.SetPixelSize(0u, 12u);
             fontFace.SelectCharmap(FontEncoding.Unicode);
+            fontFace.SetPixelSize(0u, 12u);
             fontFace.ParseAvailableCharacters();
+            uint glyphIndex = fontFace.GetGlyphIndex('a');
+            fontFace.LoadGlyph(glyphIndex, LoadFlags.Default, LoadTarget.Normal);
+            Glyph glyph = fontFace.Glyph();
 
-            Glyph glyph;
-            for (byte charCode = 0; charCode < 128; charCode++)
-            {
-                fontFace.LoadCharacter((char)charCode, LoadFlags.Default);
-
-                 glyph = fontFace.Glyph();
-                Console.WriteLine(glyph.Metrics().Height.Value);
-            }
+            Span<byte> buffer = new Span<byte>((byte*)glyph.Handle, sizeof(FreeTypeGlyph));
 
             Initialize();
 

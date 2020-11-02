@@ -44,6 +44,9 @@ namespace Automata.Engine.Rendering.Fonts.FreeTypePrimitives
         public static extern uint FT_Get_Next_Char(IntPtr face, uint currentCharacterCode, out uint glyphIndex);
 
         [DllImport(_FREETYPE_DLL_IMPORT, CallingConvention = _CONVENTION)]
+        public static extern uint FT_Get_Char_Index(IntPtr face, uint charCode);
+
+        [DllImport(_FREETYPE_DLL_IMPORT, CallingConvention = _CONVENTION)]
         public static extern FreeTypeError FT_Load_Char(IntPtr face, uint charCode, LoadFlags loadFlags);
 
         [DllImport(_FREETYPE_DLL_IMPORT, CallingConvention = _CONVENTION)]

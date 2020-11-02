@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 namespace Automata.Engine.Rendering.Fonts.FreeTypePrimitives
 {
     [StructLayout(LayoutKind.Sequential)]
-    internal readonly struct FreeTypeGlyph
+    public readonly struct FreeTypeGlyph
     {
         internal readonly IntPtr Library;
         internal readonly IntPtr Face;
