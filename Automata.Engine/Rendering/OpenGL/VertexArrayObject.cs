@@ -30,8 +30,8 @@ namespace Automata.Engine.Rendering.OpenGL
         {
             Bind();
 
-            _GL.VertexAttribPointer(attributeIndex, dimensions, type, false, stride, (void*)(offset * sizeof(TVertexType)));
             _GL.EnableVertexAttribArray(attributeIndex);
+            _GL.VertexAttribPointer(attributeIndex, dimensions, type, false, stride, (void*)(offset * sizeof(TVertexType)));
 
             Unbind();
         }
@@ -40,8 +40,8 @@ namespace Automata.Engine.Rendering.OpenGL
         {
             Bind();
 
-            _GL.VertexAttribIPointer(attributeIndex, dimensions, type, stride, (void*)(offset * sizeof(TVertexType)));
             _GL.EnableVertexAttribArray(attributeIndex);
+            _GL.VertexAttribIPointer(attributeIndex, dimensions, type, stride, (void*)(offset * sizeof(TVertexType)));
 
             Unbind();
         }
@@ -50,8 +50,8 @@ namespace Automata.Engine.Rendering.OpenGL
         {
             Bind();
 
-            _GL.VertexAttribLPointer(attributeIndex, dimensions, type, stride, (void*)(offset * sizeof(TVertexType)));
             _GL.EnableVertexAttribArray(attributeIndex);
+            _GL.VertexAttribLPointer(attributeIndex, dimensions, type, stride, (void*)(offset * sizeof(TVertexType)));
 
             Unbind();
         }

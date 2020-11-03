@@ -56,6 +56,7 @@ namespace Automata.Engine.Rendering.Meshes
                 VertexArrayObject.VertexAttributePointer(index, dimensions, VertexAttribPointerType.Float, _AttributeStride, offset);
             else if (typeof(TAttributePrimitive) == typeof(double))
                 VertexArrayObject.VertexAttributeLPointer(index, dimensions, VertexAttribPointerType.Double, _AttributeStride, offset);
+            else throw new NotSupportedException($"{nameof(TAttributePrimitive)} is of unsupported type '{typeof(TAttributePrimitive)}'.");
         }
 
         public void Bind() => VertexArrayObject.Bind();
