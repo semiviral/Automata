@@ -21,10 +21,10 @@ namespace Automata.Engine.Extensions
         {
             T result = new T();
 
-            ref TComponent aComponentOffset = ref a.GetComponent<T, TComponent>(index);
-            ref TComponent resultComponentOffset = ref result.GetComponent<T, TComponent>(index);
+            ref TComponent aComponent = ref a.GetComponent<T, TComponent>(index);
+            ref TComponent resultComponent = ref result.GetComponent<T, TComponent>(index);
 
-            Unsafe.WriteUnaligned(ref Unsafe.As<TComponent, byte>(ref resultComponentOffset), aComponentOffset);
+            Unsafe.WriteUnaligned(ref Unsafe.As<TComponent, byte>(ref resultComponent), aComponent);
 
             return result;
         }

@@ -1,6 +1,7 @@
 #region
 
 using System;
+using System.Collections.Generic;
 using Silk.NET.OpenGL;
 
 #endregion
@@ -8,57 +9,53 @@ using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.OpenGL
 {
-    public class VertexArrayObject<TVertexType, TIndexType> : IDisposable
-        where TVertexType : unmanaged
-        where TIndexType : unmanaged
+    public class VertexArrayObject<TVertex, TIndex> : IDisposable
+        where TVertex : unmanaged
+        where TIndex : unmanaged
     {
         private readonly GL _GL;
-        private readonly uint _Handle;
 
-        public VertexArrayObject(GL gl, BufferObject<TVertexType> vbo, BufferObject<TIndexType> ebo)
+        private IVertexAttribute[] _VertexAttributes;
+
+        private uint Handle { get; }
+        public IReadOnlyCollection<IVertexAttribute> VertexAttributes => _VertexAttributes;
+
+        public unsafe VertexArrayObject(GL gl, BufferObject<TVertex> vbo, BufferObject<TIndex> ebo)
         {
             _GL = gl;
-            _Handle = _GL.GenVertexArray();
+            _VertexAttributes = new IVertexAttribute[0];
 
-            Bind();
-            vbo.Bind();
-            ebo.Bind();
-            Unbind();
+            Handle = _GL.GenVertexArray();
+
+            _GL.VertexArrayVertexBuffer(Handle, 0, vbo.Handle, 0, (uint)sizeof(TVertex));
+            _GL.VertexArrayElementBuffer(Handle, ebo.Handle);
         }
 
-        public unsafe void VertexAttributePointer(uint attributeIndex, int dimensions, VertexAttribPointerType type, uint stride, int offset)
+        public void AllocateVertexAttribute(IVertexAttribute vertexAttribute)
         {
-            Bind();
+            if (_VertexAttributes.Length < vertexAttribute.Index)
+            {
+                IVertexAttribute[] resized = new IVertexAttribute[vertexAttribute.Index + 1];
+                Array.Copy(_VertexAttributes, 0, resized, 0, _VertexAttributes.Length);
+                _VertexAttributes = resized;
+            }
 
-            _GL.EnableVertexAttribArray(attributeIndex);
-            _GL.VertexAttribPointer(attributeIndex, dimensions, type, false, stride, (void*)(offset * sizeof(TVertexType)));
-
-            Unbind();
+            _VertexAttributes[vertexAttribute.Index] = vertexAttribute;
         }
 
-        public unsafe void VertexAttributeIPointer(uint attributeIndex, int dimensions, VertexAttribPointerType type, uint stride, int offset)
+        public void CommitVertexAttributes()
         {
-            Bind();
-
-            _GL.EnableVertexAttribArray(attributeIndex);
-            _GL.VertexAttribIPointer(attributeIndex, dimensions, type, stride, (void*)(offset * sizeof(TVertexType)));
-
-            Unbind();
+            for (uint index = 0; index < _VertexAttributes.Length; index++)
+            {
+                _GL.EnableVertexArrayAttrib(Handle, index);
+                _VertexAttributes[index].Commit(_GL, Handle);
+                _GL.VertexArrayAttribBinding(Handle, index, 0u);
+            }
         }
 
-        public unsafe void VertexAttributeLPointer(uint attributeIndex, int dimensions, VertexAttribPointerType type, uint stride, int offset)
-        {
-            Bind();
-
-            _GL.EnableVertexAttribArray(attributeIndex);
-            _GL.VertexAttribLPointer(attributeIndex, dimensions, type, stride, (void*)(offset * sizeof(TVertexType)));
-
-            Unbind();
-        }
-
-        public void Bind() => _GL.BindVertexArray(_Handle);
+        public void Bind() => _GL.BindVertexArray(Handle);
         public void Unbind() => _GL.BindVertexArray(0);
 
-        public void Dispose() => _GL.DeleteVertexArray(_Handle);
+        public void Dispose() => _GL.DeleteVertexArray(Handle);
     }
 }

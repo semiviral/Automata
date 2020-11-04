@@ -20,11 +20,13 @@ void main()
             (vert >> (_componentShift * 2)) & _componentMask,
             1.0
         );
+
+    int coordinatesOffset = _componentMask * 3;
     ivec3 uncompressedNormal =
         ivec3(
-            ((vert >> (_normalsShift + 0)) & 3) - 1,
-            ((vert >> (_normalsShift + 2)) & 3) - 1,
-            ((vert >> (_normalsShift + 4)) & 3) - 1
+            ((vert >> (coordinatesOffset + (_normalsShift * 0))) & 3) - 1,
+            ((vert >> (coordinatesOffset + (_normalsShift * 1))) & 3) - 1,
+            ((vert >> (coordinatesOffset + (_normalsShift * 2))) & 3) - 1
         );
     ivec3 uncompressedUV =
         ivec3(

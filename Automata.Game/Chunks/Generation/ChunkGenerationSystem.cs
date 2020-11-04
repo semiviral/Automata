@@ -157,11 +157,12 @@ namespace Automata.Game.Chunks.Generation
 
             if (!entity.TryGetComponent(out RenderMesh? renderMesh)) entityManager.RegisterComponent(entity, renderMesh = new RenderMesh());
 
-            if (renderMesh.Mesh is null or not Mesh<int>) renderMesh.Mesh = new Mesh<int>(sizeof(int) + sizeof(int));
+            if (renderMesh.Mesh is null or not Mesh<int>) renderMesh.Mesh = new Mesh<int>();
 
             Mesh<int> mesh = (renderMesh.Mesh as Mesh<int>)!;
             mesh.ModifyVertexAttributes<int>(0u, 0);
             mesh.ModifyVertexAttributes<int>(1u, 1);
+            mesh.Processed = true;
             mesh.VertexesBuffer.SetBufferData(pendingMesh.Vertexes, BufferDraw.DynamicDraw);
             mesh.IndexesBuffer.SetBufferData(pendingMesh.Indexes, BufferDraw.DynamicDraw);
 

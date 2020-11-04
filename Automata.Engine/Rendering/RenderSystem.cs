@@ -137,16 +137,18 @@ namespace Automata.Engine.Rendering
 
                             material.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_CAMERA_PROJECTION_PARAMS,
                                 camera.Projection?.Parameters ?? Vector4.Zero);
+
                             material.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_VIEWPORT, viewport);
                         }
 
                         renderMesh.Mesh!.Bind();
 
                         _GL.DrawElements(PrimitiveType.Triangles, renderMesh.Mesh!.IndexesLength, DrawElementsType.UnsignedInt, null);
+
+                        renderMesh.Mesh!.Unbind();
                     }
                 }
 
-                _GL.BindVertexArray(0);
                 _NewAspectRatio = 0f;
             }
             catch (Exception exception)

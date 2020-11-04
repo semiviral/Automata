@@ -48,8 +48,8 @@ namespace Automata.Game.Chunks
             IEnumerable<Vector3i> activations = withinLoaderRange.Except(_ChunkMap.Origins);
             IEnumerable<Vector3i> deactivations = _ChunkMap.Origins.Except(withinLoaderRange);
 
-            int totalDeactivations = deactivations.Count(origin => _ChunkMap.TryRemove(entityManager, origin, out IEntity? _));
             int totalActivations = activations.Count(origin => _ChunkMap.TryAdd(entityManager, origin, out IEntity? _));
+            int totalDeactivations = deactivations.Count(origin => _ChunkMap.TryRemove(entityManager, origin, out IEntity? _));
 
             _ChunkMap.RecalculateAllNeighbors();
 

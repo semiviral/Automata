@@ -26,12 +26,12 @@ namespace Automata.Engine.Rendering.OpenGL
         DynamicDraw = 35048
     }
 
-    public class BufferObject<TDataType> : IDisposable where TDataType : unmanaged
+    public class BufferObject<TData> : IDisposable where TData : unmanaged
     {
         private readonly BufferTargetARB _BufferType;
         private readonly GL _GL;
-        private readonly uint _Handle;
 
+        public uint Handle { get; }
         public uint Length { get; private set; }
         public uint ByteLength { get; private set; }
 
@@ -39,22 +39,22 @@ namespace Automata.Engine.Rendering.OpenGL
         {
             _GL = gl;
             _BufferType = bufferType;
-            _Handle = _GL.GenBuffer();
+            Handle = _GL.GenBuffer();
         }
 
-        public unsafe void SetBufferData(Span<TDataType> data, BufferDraw bufferDraw)
+        public unsafe void SetBufferData(Span<TData> data, BufferDraw bufferDraw)
         {
             Bind();
 
             Length = (uint)data.Length;
-            ByteLength = Length * (uint)sizeof(TDataType);
+            ByteLength = Length * (uint)sizeof(TData);
             _GL.BufferData(_BufferType, ByteLength, data, (BufferUsageARB)bufferDraw);
 
             Unbind();
         }
 
-        public void Bind() => _GL.BindBuffer(_BufferType, _Handle);
+        public void Bind() => _GL.BindBuffer(_BufferType, Handle);
         public void Unbind() => _GL.BindBuffer(_BufferType, 0);
-        public void Dispose() => _GL.DeleteBuffer(_Handle);
+        public void Dispose() => _GL.DeleteBuffer(Handle);
     }
 }
