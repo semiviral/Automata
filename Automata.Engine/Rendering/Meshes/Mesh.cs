@@ -2,7 +2,6 @@
 
 using System;
 using Automata.Engine.Rendering.OpenGL;
-using Silk.NET.OpenGL;
 
 #endregion
 
@@ -27,8 +26,8 @@ namespace Automata.Engine.Rendering.Meshes
             ID = Guid.NewGuid();
             Visible = true;
             Layer = layer;
-            VertexesBuffer = new BufferObject<TVertex>(GLAPI.Instance.GL, BufferTargetARB.ArrayBuffer);
-            IndexesBuffer = new BufferObject<uint>(GLAPI.Instance.GL, BufferTargetARB.ElementArrayBuffer);
+            VertexesBuffer = new BufferObject<TVertex>(GLAPI.Instance.GL);
+            IndexesBuffer = new BufferObject<uint>(GLAPI.Instance.GL);
             VertexArrayObject = new VertexArrayObject<TVertex, uint>(GLAPI.Instance.GL, VertexesBuffer, IndexesBuffer);
         }
 

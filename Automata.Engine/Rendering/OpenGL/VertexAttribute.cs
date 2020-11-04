@@ -18,7 +18,7 @@ namespace Automata.Engine.Rendering.OpenGL
 
         public uint Index { get; }
 
-        public VertexAttribute(uint index, uint dimensions, uint offset, bool normalized) =>
+        public VertexAttribute(uint index, uint dimensions, uint offset, bool normalized = false) =>
             (Index, _Dimensions, _Offset, _Normalized) = (index, (int)dimensions, offset, normalized);
 
         public void Commit(GL gl, uint vao)

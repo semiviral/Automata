@@ -28,33 +28,26 @@ namespace Automata.Engine.Rendering.OpenGL
 
     public class BufferObject<TData> : IDisposable where TData : unmanaged
     {
-        private readonly BufferTargetARB _BufferType;
         private readonly GL _GL;
 
         public uint Handle { get; }
         public uint Length { get; private set; }
         public uint ByteLength { get; private set; }
 
-        public BufferObject(GL gl, BufferTargetARB bufferType)
+        public BufferObject(GL gl)
         {
             _GL = gl;
-            _BufferType = bufferType;
             Handle = _GL.CreateBuffer();
         }
 
         public unsafe void SetBufferData(Span<TData> data, BufferDraw bufferDraw)
         {
-            Bind();
-
             Length = (uint)data.Length;
             ByteLength = Length * (uint)sizeof(TData);
-            _GL.BufferData(_BufferType, ByteLength, data, (BufferUsageARB)bufferDraw);
-
-            Unbind();
+            _GL.NamedBufferData(Handle, ByteLength, data, (VertexBufferObjectUsage)bufferDraw);
         }
 
-        public void Bind() => _GL.BindBuffer(_BufferType, Handle);
-        public void Unbind() => _GL.BindBuffer(_BufferType, 0);
+
         public void Dispose() => _GL.DeleteBuffer(Handle);
     }
 }

@@ -30,8 +30,8 @@ namespace Automata.Game.Chunks.Generation
     {
         private static readonly IVertexAttribute[] _DefaultAttributes =
         {
-            new VertexAttribute<int>(0u, 1u, 0u, false),
-            new VertexAttribute<int>(1u, 1u, sizeof(int), false)
+            new VertexAttribute<int>(0u, 1u, 0u),
+            new VertexAttribute<int>(1u, 1u, sizeof(int))
         };
 
         private readonly OrderedLinkedList<GenerationStep> _BuildSteps;
