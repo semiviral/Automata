@@ -39,7 +39,7 @@ namespace Automata.Engine.Rendering.OpenGL
         {
             _GL = gl;
             _BufferType = bufferType;
-            Handle = _GL.GenBuffer();
+            Handle = _GL.CreateBuffer();
         }
 
         public unsafe void SetBufferData(Span<TData> data, BufferDraw bufferDraw)

@@ -25,7 +25,7 @@ namespace Automata.Engine.Rendering.OpenGL
             _GL = gl;
             _VertexAttributes = new IVertexAttribute[0];
 
-            Handle = _GL.GenVertexArray();
+            Handle = _GL.CreateVertexArray();
 
             _GL.VertexArrayVertexBuffer(Handle, 0, vbo.Handle, 0, (uint)sizeof(TVertex));
             _GL.VertexArrayElementBuffer(Handle, ebo.Handle);
@@ -42,6 +42,8 @@ namespace Automata.Engine.Rendering.OpenGL
 
             _VertexAttributes[vertexAttribute.Index] = vertexAttribute;
         }
+
+        public void AllocateVertexAttributes(IVertexAttribute[] vertexAttributes) => _VertexAttributes = vertexAttributes;
 
         public void CommitVertexAttributes()
         {

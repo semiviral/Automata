@@ -14,7 +14,6 @@ namespace Automata.Engine.Rendering.Meshes
         public Guid ID { get; }
         public bool Visible { get; }
         public Layer Layer { get; }
-        public bool Processed { get; set; }
 
         public BufferObject<TVertex> VertexesBuffer { get; }
         public BufferObject<uint> IndexesBuffer { get; }

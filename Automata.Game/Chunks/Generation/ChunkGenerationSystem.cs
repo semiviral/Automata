@@ -28,9 +28,15 @@ namespace Automata.Game.Chunks.Generation
 {
     public class ChunkGenerationSystem : ComponentSystem
     {
+        private static readonly IVertexAttribute[] _DefaultAttributes =
+        {
+            new VertexAttribute<int>(0u, 1u, 0u, false),
+            new VertexAttribute<int>(1u, 1u, sizeof(int), false)
+        };
+
         private readonly OrderedLinkedList<GenerationStep> _BuildSteps;
         private readonly ConcurrentDictionary<Guid, INodeCollection<ushort>> _PendingBlockCollections;
-        private readonly ConcurrentDictionary<Guid, PendingMesh<int>> _PendingMeshes;
+        private readonly ConcurrentDictionary<Guid, PendingMesh<PackedVertex>> _PendingMeshes;
 
         private bool _KeysPressed;
 
@@ -39,7 +45,7 @@ namespace Automata.Game.Chunks.Generation
             _BuildSteps = new OrderedLinkedList<GenerationStep>();
             _BuildSteps.AddLast(new TerrainGenerationStep());
             _PendingBlockCollections = new ConcurrentDictionary<Guid, INodeCollection<ushort>>();
-            _PendingMeshes = new ConcurrentDictionary<Guid, PendingMesh<int>>();
+            _PendingMeshes = new ConcurrentDictionary<Guid, PendingMesh<PackedVertex>>();
 
             DiagnosticsProvider.EnableGroup<ChunkGenerationDiagnosticGroup>();
         }
@@ -71,7 +77,7 @@ namespace Automata.Game.Chunks.Generation
                         chunk.State += 1;
                         break;
 
-                    case GenerationState.AwaitingMeshing when _PendingMeshes.TryRemove(chunk.ID, out PendingMesh<int>? pendingMesh):
+                    case GenerationState.AwaitingMeshing when _PendingMeshes.TryRemove(chunk.ID, out PendingMesh<PackedVertex>? pendingMesh):
                         ApplyMesh(entityManager, entity, chunk.ID, pendingMesh);
 
                         chunk.State += 1;
@@ -134,7 +140,7 @@ namespace Automata.Game.Chunks.Generation
             Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
             stopwatch.Restart();
 
-            PendingMesh<int> pendingMesh = ChunkMesher.GeneratePackedMesh(chunk.Blocks, chunk.NeighborBlocks().ToArray());
+            PendingMesh<PackedVertex> pendingMesh = ChunkMesher.GeneratePackedMesh(chunk.Blocks, chunk.NeighborBlocks().ToArray());
 
             if (!_PendingMeshes.TryAdd(chunk.ID, pendingMesh)) Log.Error($"Failed to add chunk({origin}) mesh.");
 
@@ -148,7 +154,7 @@ namespace Automata.Game.Chunks.Generation
             DiagnosticsSystem.Stopwatches.Return(stopwatch);
         }
 
-        private static void ApplyMesh(EntityManager entityManager, IEntity entity, Guid chunkID, PendingMesh<int> pendingMesh)
+        private static void ApplyMesh(EntityManager entityManager, IEntity entity, Guid chunkID, PendingMesh<PackedVertex> pendingMesh)
         {
             Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
             stopwatch.Restart();
@@ -157,12 +163,16 @@ namespace Automata.Game.Chunks.Generation
 
             if (!entity.TryGetComponent(out RenderMesh? renderMesh)) entityManager.RegisterComponent(entity, renderMesh = new RenderMesh());
 
-            if (renderMesh.Mesh is null or not Mesh<int>) renderMesh.Mesh = new Mesh<int>();
+            if (renderMesh.Mesh is null or not Mesh<PackedVertex>) renderMesh.Mesh = new Mesh<PackedVertex>();
 
-            Mesh<int> mesh = (renderMesh.Mesh as Mesh<int>)!;
-            mesh.ModifyVertexAttributes<int>(0u, 0);
-            mesh.ModifyVertexAttributes<int>(1u, 1);
-            mesh.Processed = true;
+            Mesh<PackedVertex> mesh = (renderMesh.Mesh as Mesh<PackedVertex>)!;
+
+            if (!mesh.VertexArrayObject.VertexAttributes.SequenceEqual(_DefaultAttributes))
+            {
+                mesh.VertexArrayObject.AllocateVertexAttributes(_DefaultAttributes);
+                mesh.VertexArrayObject.CommitVertexAttributes();
+            }
+
             mesh.VertexesBuffer.SetBufferData(pendingMesh.Vertexes, BufferDraw.DynamicDraw);
             mesh.IndexesBuffer.SetBufferData(pendingMesh.Indexes, BufferDraw.DynamicDraw);
 
