@@ -243,7 +243,7 @@ namespace Automata.Game.Chunks.Generation
                     // if it's the first traversal and we've only made a 1x1x1 face, continue to test next axis
                     else if ((traversals == 1) && (perpendicularNormalIndex == 1)) continue;
 
-                    uint indexesStart = (uint)(vertexes.Count / 2);
+                    uint indexesStart = (uint)vertexes.Count;
                     indexes.Add(indexesStart + 0u);
                     indexes.Add(indexesStart + 1u);
                     indexes.Add(indexesStart + 3u);
