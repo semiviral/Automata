@@ -1,16 +1,13 @@
-using System;
 using System.Runtime.InteropServices;
-
 using FreeTypeLong = System.IntPtr;
-
 
 namespace Automata.Engine.Rendering.Fonts.FreeTypePrimitives
 {
     [StructLayout(LayoutKind.Sequential)]
     public readonly struct GenericContainer
     {
-        public readonly IntPtr Data;
-        public readonly IntPtr Finalizer;
+        public readonly FreeTypeLong Data;
+        public readonly FreeTypeLong Finalizer;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -24,14 +21,14 @@ namespace Automata.Engine.Rendering.Fonts.FreeTypePrimitives
 
         public readonly int GlyphCount;
 
-        public readonly IntPtr FamilyName;
-        public readonly IntPtr StyleName;
+        public readonly FreeTypeLong FamilyName;
+        public readonly FreeTypeLong StyleName;
 
         public readonly int FixedSizesCount;
-        public readonly IntPtr AvailableSizes;
+        public readonly FreeTypeLong AvailableSizes;
 
         public readonly int CharmapCount;
-        public readonly IntPtr Charmaps;
+        public readonly FreeTypeLong Charmaps;
 
         public readonly GenericContainer Generic;
 
@@ -48,18 +45,18 @@ namespace Automata.Engine.Rendering.Fonts.FreeTypePrimitives
         public readonly short UnderlinePosition;
         public readonly short UnderlineThickness;
 
-        public readonly IntPtr Glyph;
-        public readonly IntPtr Size;
-        public readonly IntPtr Charmap;
+        public readonly FreeTypeLong Glyph;
+        public readonly FreeTypeLong Size;
+        public readonly FreeTypeLong Charmap;
 
-        private readonly IntPtr Driver;
-        private readonly IntPtr Memory;
-        private readonly IntPtr Stream;
+        private readonly FreeTypeLong Driver;
+        private readonly FreeTypeLong Memory;
+        private readonly FreeTypeLong Stream;
 
-        private readonly IntPtr SizesList;
+        private readonly FreeTypeLong SizesList;
         private readonly GenericContainer AutoHint;
-        private readonly IntPtr Extensions;
+        private readonly FreeTypeLong Extensions;
 
-        private readonly IntPtr @internal;
+        private readonly FreeTypeLong @internal;
     }
 }

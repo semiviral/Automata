@@ -47,7 +47,6 @@ namespace Automata.Engine.Rendering.OpenGL
             _GL.NamedBufferData(Handle, ByteLength, data, (VertexBufferObjectUsage)bufferDraw);
         }
 
-
         public void Dispose() => _GL.DeleteBuffer(Handle);
     }
 }

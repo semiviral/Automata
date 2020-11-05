@@ -30,7 +30,7 @@ namespace Automata.Engine.Rendering.Fonts.FreeTypePrimitives
 	///         <code>
 	/// FT_Load_Glyph( face, glyph_index,
 	///          load_flags | FT_LOAD_TARGET_LIGHT );
-	///
+	/// 
 	/// FT_Render_Glyph( face->glyph, FT_RENDER_MODE_LCD );
 	/// </code>
 	///     </para>
