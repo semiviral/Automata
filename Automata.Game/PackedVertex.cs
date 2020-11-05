@@ -5,8 +5,8 @@ namespace Automata.Game
     [StructLayout(LayoutKind.Sequential)]
     public readonly struct PackedVertex
     {
-        public int LocalCoordinates { get; }
-        public int UVCoordinates { get; }
+        public readonly int LocalCoordinates;
+        public readonly int UVCoordinates;
 
         public PackedVertex(int localCoordinates, int uvCoordinates) => (LocalCoordinates, UVCoordinates) = (localCoordinates, uvCoordinates);
     }

@@ -36,16 +36,8 @@ namespace Automata.Game.Chunks
             }
             else
             {
-                chunk = new Entity();
+                chunk = ComposeChunk(origin);
                 entityManager.RegisterEntity(chunk);
-                entityManager.RegisterComponent<Chunk>(chunk);
-                entityManager.RegisterComponent(chunk, _ChunkOcclusionBounds);
-
-                entityManager.RegisterComponent(chunk, new Translation
-                {
-                    Value = origin
-                });
-
                 _Chunks.Add(origin, chunk);
 
                 // update adjacent chunk meshes
@@ -57,6 +49,20 @@ namespace Automata.Game.Chunks
 
                 return true;
             }
+        }
+
+        private static IEntity ComposeChunk(Vector3i origin)
+        {
+            IEntity chunk = new Entity();
+            chunk.AddComponent<Chunk>();
+            chunk.AddComponent(_ChunkOcclusionBounds);
+
+            chunk.AddComponent(new Translation
+            {
+                Value = origin
+            });
+
+            return chunk;
         }
 
         public bool TryRemove(EntityManager entityManager, Vector3i origin, out IEntity? chunks)
