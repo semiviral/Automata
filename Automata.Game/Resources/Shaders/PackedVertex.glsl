@@ -21,7 +21,7 @@ void main()
             1.0
         );
 
-    int coordinatesOffset = _componentMask * 3;
+    int coordinatesOffset = _componentShift * 3;
     ivec3 uncompressedNormal =
         ivec3(
             ((vert >> (coordinatesOffset + (_normalsShift * 0))) & 3) - 1,
@@ -35,9 +35,14 @@ void main()
             (uv >> (_componentShift * 2)) & _componentMask
         );
 
-    vec3 smoothNormals = vec3(smoothstep(-1, 1, uncompressedNormal.x), smoothstep(-1, 1, uncompressedNormal.y), smoothstep(-1, 1, uncompressedNormal.z));
+    vec3 lerpedNormal =
+        vec3(
+            smoothstep(-1.5, 4.25, uncompressedNormal.x) * 1.3,
+            smoothstep(-1.5, 4.25, uncompressedNormal.y) * 1.15,
+            smoothstep(-1.5, 4.25, uncompressedNormal.z)
+        );
 
-    gl_Position = _mvp * uncompressedPosition;
     texUV = uncompressedUV;
-    vertexColor = vec3(1.0); //* smoothNormals;
+    vertexColor = vec3(lerpedNormal.x + lerpedNormal.y + lerpedNormal.z);
+    gl_Position = _mvp * uncompressedPosition;
 }

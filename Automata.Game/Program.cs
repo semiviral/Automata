@@ -1,6 +1,9 @@
 ﻿using System.Drawing;
+using System.IO;
+using Automata.Engine;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
+using Automata.Engine.Extensions;
 using Automata.Engine.Input;
 using Automata.Engine.Rendering;
 using Automata.Engine.Rendering.GLFW;
@@ -13,6 +16,7 @@ using Automata.Game.Chunks.Generation;
 using ConcurrencyPools;
 using Serilog;
 using Silk.NET.Windowing.Common;
+using Tomlyn;
 
 namespace Automata.Game
 {
@@ -25,7 +29,7 @@ namespace Automata.Game
                 .WriteTo.Console()
                 .CreateLogger();
 
-            Log.Debug("Logger initialized.");
+            Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(Serilog), "Logger initialized."));
 
             // FontLibrary library = new FontLibrary();
             // FontFace fontFace = new FontFace(library, @".\Resources\Fonts\Arial.ttf", 0u);
