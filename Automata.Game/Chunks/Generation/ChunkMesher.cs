@@ -173,9 +173,9 @@ namespace Automata.Game.Chunks.Generation
                         (totalTraversalLength < GenerationConstants.CHUNK_SIZE)
                         && !faces[traversalIndex].HasDirection(faceDirection)
                         && (blocks[traversalIndex] == blockID);
-                        totalTraversalLength++,
-                        traversals++, // increment traversals
-                        traversalIndex += traversalIndexStep) // increment traversal index by index step to adjust local working position
+                        traversalIndex += traversalIndexStep, // increment traversal index
+                        totalTraversalLength++, // increment total traversals
+                        traversals++) // increment traversals
                     {
                         // check if current facing block axis value is within the local chunk
                         if (facingNeighbor)
