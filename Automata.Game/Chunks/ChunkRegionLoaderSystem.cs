@@ -6,6 +6,7 @@ using System.Linq;
 using Automata.Engine;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
+using Automata.Engine.Extensions;
 using Automata.Engine.Numerics;
 using Automata.Engine.Systems;
 using Automata.Game.Chunks.Generation;
@@ -31,7 +32,7 @@ namespace Automata.Game.Chunks
 
             foreach ((Translation translation, ChunkLoader chunkLoader) in components)
             {
-                Vector3i translationInt32 = Vector3i.FromVector3(translation.Value);
+                Vector3i translationInt32 = Vector3i.FromVector3(translation.Value).SetComponent(1, 0);
                 Vector3i difference = Vector3i.Abs(translationInt32 - chunkLoader.Origin);
 
                 if (!chunkLoader.Changed && Vector3b.All(difference < GenerationConstants.CHUNK_SIZE)) continue;

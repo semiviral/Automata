@@ -10,7 +10,7 @@ namespace Automata.Engine.Rendering.OpenGL
         public void Commit(GL gl, uint vao);
     }
 
-    public readonly struct VertexAttribute<TComponent> : IVertexAttribute where TComponent : unmanaged
+    public class VertexAttribute<TComponent> : IVertexAttribute, IEquatable<VertexAttribute<TComponent>> where TComponent : unmanaged
     {
         private readonly int _Dimensions;
         private readonly uint _Offset;
@@ -33,5 +33,19 @@ namespace Automata.Engine.Rendering.OpenGL
             else if (typeof(TComponent) == typeof(double)) gl.VertexArrayAttribLFormat(vao, Index, _Dimensions, VertexAttribLType.Double, _Offset);
             else throw new NotSupportedException($"{nameof(TComponent)} is of unsupported type '{typeof(TComponent)}'. Must be a primitive.");
         }
+
+        public bool Equals(VertexAttribute<TComponent>? other) =>
+            other is not null
+            && (_Dimensions == other._Dimensions)
+            && (_Offset == other._Offset)
+            && (_Normalized == other._Normalized)
+            && (Index == other.Index);
+
+        public override bool Equals(object? obj) => obj is VertexAttribute<TComponent> other && Equals(other);
+
+        public override int GetHashCode() => HashCode.Combine(_Dimensions, _Offset, _Normalized, Index);
+
+        public static bool operator ==(VertexAttribute<TComponent>? left, VertexAttribute<TComponent>? right) => Equals(left, right);
+        public static bool operator !=(VertexAttribute<TComponent>? left, VertexAttribute<TComponent>? right) => !Equals(left, right);
     }
 }
