@@ -46,8 +46,8 @@ namespace Automata.Game.Chunks
             HashSet<Vector3i> withinLoaderRange = new HashSet<Vector3i>(components.SelectMany(loader =>
                 GetActiveChunkLoaderRegion(loader.ChunkLoader)));
 
-            IEnumerable<Vector3i> activations = withinLoaderRange.Except(_ChunkMap.Origins);
-            IEnumerable<Vector3i> deactivations = _ChunkMap.Origins.Except(withinLoaderRange);
+            IEnumerable<Vector3i> activations = withinLoaderRange.Except(_ChunkMap.Active);
+            IEnumerable<Vector3i> deactivations = _ChunkMap.Active.Except(withinLoaderRange);
 
             int totalActivations = activations.Count(origin => _ChunkMap.TryAdd(entityManager, origin, out IEntity? _));
             int totalDeactivations = deactivations.Count(origin => _ChunkMap.TryRemove(entityManager, origin, out IEntity? _));

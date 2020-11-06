@@ -4,7 +4,7 @@ using Tomlyn;
 using Tomlyn.Model;
 using Tomlyn.Syntax;
 
-namespace Automata.Engine.Extensions
+namespace Automata.Game
 {
     [AttributeUsage(AttributeTargets.Property)]
     public class TomlPropertyAttribute : Attribute

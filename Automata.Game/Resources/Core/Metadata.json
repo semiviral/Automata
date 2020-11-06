@@ -69,6 +69,21 @@
       "Textures": [
         "Self"
       ]
+    },
+    {
+      "Name": "Sand",
+      "Attributes": [
+        "Alias Default"
+      ],
+      "Textures": ["Self"],
+      "Emission": {
+        "Intensity": 10,
+        "Color": {
+          "R": 4,
+          "G": 3,
+          "B": 7
+        }
+      }
     }
   ]
 }

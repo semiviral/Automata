@@ -23,7 +23,7 @@ namespace Automata.Game.Chunks
 
         private readonly Dictionary<Vector3i, IEntity> _Chunks;
 
-        public Dictionary<Vector3i, IEntity>.KeyCollection Origins => _Chunks.Keys;
+        public Dictionary<Vector3i, IEntity>.KeyCollection Active => _Chunks.Keys;
 
         public ChunkMap() => _Chunks = new Dictionary<Vector3i, IEntity>();
 

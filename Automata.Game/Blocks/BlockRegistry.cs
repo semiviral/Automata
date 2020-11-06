@@ -56,7 +56,7 @@ namespace Automata.Game.Blocks
 
                     if (blockDefinition.Attributes is not null && !TryParseAttributes(blockDefinition.Attributes, out attributes)) continue;
 
-                    ushort id = RegisterBlock(resource.Group, blockDefinition.Name, null, attributes);
+                    ushort id = RegisterBlock(resource.Group, blockDefinition.Name, attributes);
 
                     if (resource.Group.Equals("Core"))
                     {
@@ -112,7 +112,7 @@ namespace Automata.Game.Blocks
             return true;
         }
 
-        public ushort RegisterBlock(string group, string blockName, Func<Direction, string>? uvsRule, Block.Attribute attributes)
+        public ushort RegisterBlock(string group, string blockName, Block.Attribute attributes)
         {
             const string group_with_block_name_format = "{0}:{1}";
 
@@ -121,7 +121,7 @@ namespace Automata.Game.Blocks
             ushort blockID = (ushort)Blocks.Count;
             string groupedName = string.Format(group_with_block_name_format, group, blockName);
 
-            IBlock block = new Block(blockID, groupedName, uvsRule, attributes);
+            IBlock block = new Block(blockID, groupedName, attributes);
 
             Blocks.Add(block);
             BlockNames.Add(groupedName, blockID);
