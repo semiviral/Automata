@@ -8,7 +8,7 @@ using Automata.Engine.Numerics;
 
 namespace Automata.Game.Chunks.Generation
 {
-    public abstract class GenerationStep
+    public interface IGenerationStep
     {
         public class Parameters
         {
@@ -26,6 +26,6 @@ namespace Automata.Game.Chunks.Generation
             }
         }
 
-        public abstract void Generate(Vector3i origin, Parameters parameters, Span<ushort> blocks);
+        public void Generate(Vector3i origin, Parameters parameters, Span<ushort> blocks);
     }
 }

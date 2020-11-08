@@ -43,7 +43,7 @@ namespace Automata.Game.Chunks.Generation
             new VertexAttribute<int>(1u, 1u, sizeof(int))
         };
 
-        private readonly OrderedLinkedList<GenerationStep> _BuildSteps;
+        private readonly OrderedLinkedList<IGenerationStep> _BuildSteps;
         private readonly Channel<(IEntity, Palette<ushort>)> _PendingBlocks;
         private readonly Channel<(IEntity, PendingMesh<PackedVertex>)> _PendingMeshes;
 
@@ -51,7 +51,7 @@ namespace Automata.Game.Chunks.Generation
 
         public ChunkGenerationSystem()
         {
-            _BuildSteps = new OrderedLinkedList<GenerationStep>();
+            _BuildSteps = new OrderedLinkedList<IGenerationStep>();
             _BuildSteps.AddLast(new TerrainGenerationStep());
             _PendingBlocks = Channel.CreateUnbounded<(IEntity, Palette<ushort>)>(_DefaultOptions);
             _PendingMeshes = Channel.CreateUnbounded<(IEntity, PendingMesh<PackedVertex>)>(_DefaultOptions);
@@ -84,7 +84,7 @@ namespace Automata.Game.Chunks.Generation
                 {
                     case GenerationState.Ungenerated when chunk.MinimalNeighborState() >= GenerationState.Ungenerated:
                         BoundedPool.Active.QueueWork(() => GenerateBlocks(entity, chunk, Vector3i.FromVector3(translation.Value),
-                            new GenerationStep.Parameters(GenerationConstants.Seed, GenerationConstants.FREQUENCY, GenerationConstants.PERSISTENCE)));
+                            new IGenerationStep.Parameters(GenerationConstants.Seed, GenerationConstants.FREQUENCY, GenerationConstants.PERSISTENCE)));
 
                         chunk.State += 1;
                         break;
@@ -100,7 +100,7 @@ namespace Automata.Game.Chunks.Generation
             DiagnosticsInputCheck();
         }
 
-        private void GenerateBlocks(IEntity entity, Chunk chunk, Vector3i origin, GenerationStep.Parameters parameters)
+        private void GenerateBlocks(IEntity entity, Chunk chunk, Vector3i origin, IGenerationStep.Parameters parameters)
         {
             bool releaseMutex = false;
 
@@ -115,7 +115,7 @@ namespace Automata.Game.Chunks.Generation
 
             Span<ushort> blocks = stackalloc ushort[GenerationConstants.CHUNK_SIZE_CUBED];
 
-            foreach (GenerationStep generationStep in _BuildSteps) generationStep.Generate(origin, parameters, blocks);
+            foreach (IGenerationStep generationStep in _BuildSteps) generationStep.Generate(origin, parameters, blocks);
 
             stopwatch.Stop();
 

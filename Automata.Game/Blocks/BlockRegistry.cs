@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Automata.Engine;
+using Automata.Game.Chunks.Generation.Meshing;
 using Automata.Game.Resources;
 using Serilog;
 
@@ -121,7 +122,8 @@ namespace Automata.Game.Blocks
             ushort blockID = (ushort)Blocks.Count;
             string groupedName = string.Format(group_with_block_name_format, group, blockName);
 
-            IBlock block = new Block(blockID, groupedName, attributes);
+            int strategyIndex = ChunkMesher.MeshingStrategies.GetMeshingStrategyIndex(meshingStrategy ?? ChunkMesher.DEFAULT_STRATEGY);
+            IBlock block = new Block(blockID, groupedName, strategyIndex, attributes);
 
             Blocks.Add(block);
             BlockNames.Add(groupedName, blockID);
@@ -140,12 +142,8 @@ namespace Automata.Game.Blocks
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string GetBlockName(ushort blockID) => Blocks[blockID].BlockName;
 
-        public IBlock GetBlockDefinition(ushort blockID)
-        {
-            if (!BlockIDExists(blockID)) throw new ArgumentException("Given block ID does not exist.", nameof(blockID));
-
-            return Blocks[blockID];
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public IBlock GetBlockDefinition(ushort blockID) => Blocks[blockID];
 
         public bool TryGetBlockDefinition(ushort blockID, [NotNullWhen(true)] out IBlock? blockDefinition)
         {

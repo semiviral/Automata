@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using Automata.Engine;
+using Serilog;
 
 namespace Automata.Game.Chunks.Generation.Meshing
 {
@@ -25,6 +27,8 @@ namespace Automata.Game.Chunks.Generation.Meshing
                     _MeshingStrategiesIndexer.Add(identifier, _MeshingStrategies.Count);
                     _MeshingStrategies.Add(value);
                 }
+
+                Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(MeshingStrategies), $"Registered strategy: \"{identifier}\""));
             }
         }
 

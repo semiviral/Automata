@@ -12,9 +12,9 @@ using Automata.Game.Blocks;
 
 namespace Automata.Game.Chunks.Generation
 {
-    public class TerrainGenerationStep : GenerationStep
+    public class TerrainGenerationStep : IGenerationStep
     {
-        public override void Generate(Vector3i origin, Parameters parameters, Span<ushort> blocks)
+        public void Generate(Vector3i origin, IGenerationStep.Parameters parameters, Span<ushort> blocks)
         {
             Span<int> heightmap = stackalloc int[GenerationConstants.CHUNK_SIZE_SQUARED];
 
