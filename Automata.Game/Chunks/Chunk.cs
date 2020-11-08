@@ -4,8 +4,6 @@ using System.Linq;
 using Automata.Engine.Collections;
 using Automata.Engine.Components;
 
-
-
 namespace Automata.Game.Chunks
 {
     public class Chunk : IComponent
