@@ -1,11 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
 using Automata.Engine;
 using Automata.Engine.Collections;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
-using Automata.Engine.Extensions;
 using Automata.Engine.Input;
 using Automata.Engine.Rendering;
 using Automata.Engine.Rendering.GLFW;
@@ -18,7 +16,6 @@ using Automata.Game.Chunks.Generation;
 using ConcurrencyPools;
 using Serilog;
 using Silk.NET.Windowing.Common;
-using Tomlyn;
 
 namespace Automata.Game
 {
@@ -26,13 +23,20 @@ namespace Automata.Game
     {
         private static void Main()
         {
-            Palette<ushort> palette = new Palette<ushort>(10u, new List<ushort> {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15});
-            palette.SetValue(3, 6);
-            uint value = palette.GetValue(3);
-            palette.SetValue(3, 9);
-            uint value2 = palette.GetValue(3);
+            Palette<ushort> palette = new Palette<ushort>(10, 0);
+            palette.SetValue(0, 0);
+            palette.SetValue(1, 1);
+            palette.SetValue(2, 2);
+            palette.SetValue(3, 3);
+            palette.SetValue(4, 4);
+            palette.SetValue(5, 5);
+            palette.SetValue(6, 6);
+            palette.SetValue(7, 7);
+            palette.SetValue(8, 8);
+            palette.SetValue(9, 9);
+            palette.SetValue(10, 10);
 
-
+            List<ushort> values = new List<ushort>(palette);
 
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
