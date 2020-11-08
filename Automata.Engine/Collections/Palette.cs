@@ -3,6 +3,7 @@ using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace Automata.Engine.Collections
@@ -66,12 +67,12 @@ namespace Automata.Engine.Collections
             _Length = length;
             _IndexBits = 1;
             ComputeMask();
+            _LookupTable = new List<T>(lookupTable);
 
             // ensure palette can fit lookup table
             while (_IndexMask < lookupTable.Count) IncreaseIndexBits();
 
             _Palette = ArrayPool<uint>.Shared.Rent(Compute32BitSlices(_IndexBits, _Length));
-            _LookupTable = new List<T>(lookupTable);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -1,7 +1,6 @@
 #region
 
 using System;
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -31,7 +30,7 @@ namespace Automata.Game.Chunks.Generation
     {
         private static readonly Mutex _SingleThreadedGenerationMutex = new Mutex(false);
 
-        private static readonly UnboundedChannelOptions _DefaultOptions = new UnboundedChannelOptions()
+        private static readonly UnboundedChannelOptions _DefaultOptions = new UnboundedChannelOptions
         {
             SingleReader = true,
             SingleWriter = false

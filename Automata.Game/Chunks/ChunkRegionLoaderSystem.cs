@@ -55,7 +55,7 @@ namespace Automata.Game.Chunks
 
             _ChunkMap.RecalculateAllNeighbors();
 
-            Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkRegionLoaderSystem),
+            Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkRegionLoaderSystem),
                 $"Region loading: {totalActivations} activations, {totalDeactivations} deactivations"));
         }
 
