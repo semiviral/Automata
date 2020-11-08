@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using Automata.Engine;
 using Automata.Engine.Collections;
@@ -25,9 +26,11 @@ namespace Automata.Game
     {
         private static void Main()
         {
-            Palette palette = new Palette(10u);
+            Palette<ushort> palette = new Palette<ushort>(10u, new List<ushort> {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15});
             palette.SetValue(3, 6);
             uint value = palette.GetValue(3);
+            palette.SetValue(3, 9);
+            uint value2 = palette.GetValue(3);
 
 
 
