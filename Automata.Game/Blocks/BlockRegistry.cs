@@ -56,7 +56,7 @@ namespace Automata.Game.Blocks
 
                     if (blockDefinition.Attributes is not null && !TryParseAttributes(blockDefinition.Attributes, out attributes)) continue;
 
-                    ushort id = RegisterBlock(resource.Group, blockDefinition.Name, attributes);
+                    ushort id = RegisterBlock(resource.Group, blockDefinition.Name, attributes, blockDefinition.MeshingStrategy);
 
                     if (resource.Group.Equals("Core"))
                     {
@@ -112,7 +112,7 @@ namespace Automata.Game.Blocks
             return true;
         }
 
-        public ushort RegisterBlock(string group, string blockName, Block.Attribute attributes)
+        public ushort RegisterBlock(string group, string blockName, Block.Attribute attributes, string? meshingStrategy)
         {
             const string group_with_block_name_format = "{0}:{1}";
 

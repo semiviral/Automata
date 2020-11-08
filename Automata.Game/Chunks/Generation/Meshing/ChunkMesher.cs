@@ -1,10 +1,7 @@
 #region
 
 using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using Automata.Engine.Collections;
-using Automata.Engine.Numerics;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Game.Blocks;
 
@@ -21,12 +18,15 @@ namespace Automata.Game.Chunks.Generation.Meshing
 
         public const string DEFAULT_STRATEGY = "Block";
 
-        public static readonly Dictionary<string, IMeshingStrategy> MeshingStrategies = new Dictionary<string, IMeshingStrategy>();
+        public static readonly MeshingStrategies MeshingStrategies;
+
+        static ChunkMesher() => MeshingStrategies = new MeshingStrategies();
 
         public static PendingMesh<PackedVertex> GeneratePackedMesh(Palette<ushort> blocksCollection, Palette<ushort>?[] neighbors)
         {
             if ((blocksCollection.LookupTable.Count == 1) && (blocksCollection.LookupTable[0] == BlockRegistry.AirID)) return PendingMesh<PackedVertex>.Empty;
 
+            BlockRegistry blockRegistry = BlockRegistry.Instance;
             TransparentList<PackedVertex> vertexes = new TransparentList<PackedVertex>(_DEFAULT_VERTEXES_CAPACITY);
             TransparentList<uint> indexes = new TransparentList<uint>(_DEFAULT_INDEXES_CAPACITY);
             Span<ushort> blocks = stackalloc ushort[GenerationConstants.CHUNK_SIZE_CUBED];
@@ -43,12 +43,11 @@ namespace Automata.Game.Chunks.Generation.Meshing
 
                 if (currentBlockID == BlockRegistry.AirID) continue;
 
+                IMeshingStrategy meshingStrategy = MeshingStrategies[blockRegistry.GetBlockDefinition(currentBlockID).MeshingStrategyIndex];
                 int localPosition = x | (y << GenerationConstants.CHUNK_SIZE_SHIFT) | (z << (GenerationConstants.CHUNK_SIZE_SHIFT * 2));
 
-
-
-                (blocks, faces, vertexes, indexes, neighbors, index, localPosition, currentBlockID,
-                    BlockRegistry.Instance.CheckBlockHasProperty(currentBlockID, Block.Attribute.Transparent));
+                meshingStrategy.Mesh(blocks, faces, vertexes, indexes, neighbors, index, localPosition, currentBlockID,
+                    blockRegistry.CheckBlockHasProperty(currentBlockID, Block.Attribute.Transparent));
             }
 
             return vertexes.Count == 0 ? PendingMesh<PackedVertex>.Empty : new PendingMesh<PackedVertex>(vertexes.Segment, indexes.Segment);
