@@ -88,7 +88,7 @@ namespace Automata.Game.Chunks.Generation
 
         public static PendingMesh<PackedVertex> GeneratePackedMesh(Palette<ushort> blocksCollection, Palette<ushort>?[] neighbors)
         {
-            //if (blocksCollection.IsUniform && (blocksCollection.Value == BlockRegistry.AirID)) return PendingMesh<PackedVertex>.Empty;
+            if ((blocksCollection.LookupTable.Count == 1) && (blocksCollection.LookupTable[0] == BlockRegistry.AirID)) return PendingMesh<PackedVertex>.Empty;
 
             TransparentList<PackedVertex> vertexes = new TransparentList<PackedVertex>(_DEFAULT_VERTEXES_CAPACITY);
             TransparentList<uint> indexes = new TransparentList<uint>(_DEFAULT_INDEXES_CAPACITY);
@@ -96,8 +96,7 @@ namespace Automata.Game.Chunks.Generation
             Span<Direction> faces = stackalloc Direction[GenerationConstants.CHUNK_SIZE_CUBED];
             faces.Clear();
 
-            for (int index = 0; index < GenerationConstants.CHUNK_SIZE_CUBED; index++)
-                blocks[index] = blocksCollection.GetValue(index);
+            blocksCollection.CopyTo(blocks);
 
             for (int index = 0, y = 0; y < GenerationConstants.CHUNK_SIZE; y++)
             for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
@@ -193,6 +192,7 @@ namespace Automata.Game.Chunks.Generation
                                 (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_SHIFT * 1)) & GenerationConstants.CHUNK_SIZE_MASK,
                                 (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_SHIFT * 2)) & GenerationConstants.CHUNK_SIZE_MASK,
                                 GenerationConstants.CHUNK_SIZE);
+
                             ushort facedBlockID = neighbors[normalIndex]?.GetValue(facedBlockIndex) ?? BlockRegistry.NullID;
 
                             if (isTransparent)

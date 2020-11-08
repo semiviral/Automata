@@ -18,6 +18,7 @@ namespace Automata.Engine.Collections
         private uint[] _Palette;
 
         public int Count => (int)_Length;
+        public IReadOnlyList<T> LookupTable => _LookupTable;
 
         public Palette(uint length, T defaultItem)
         {
@@ -137,6 +138,19 @@ namespace Automata.Engine.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static ushort Compute32BitSlices(byte bits, uint length) =>
             (ushort)MathF.Ceiling((bits * length) / (float)_UINT_32_BITS);
+
+        public void CopyTo(Span<T> destination)
+        {
+            if (destination.Length < _Length) throw new ArgumentException("Destination span too short.");
+
+            int index = 0;
+
+            foreach (T item in this)
+            {
+                destination[index] = item;
+                index += 1;
+            }
+        }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 

@@ -65,14 +65,14 @@ namespace Automata.Game
 
             world.EntityManager.RegisterComponent(player, new ChunkLoader
             {
-                Radius = 6
+                Radius = 32
             });
         }
 
         private static void Initialize()
         {
             BoundedAsyncPool.SetActivePool();
-            BoundedPool.Active.ModifyThreadPoolSize(4);
+            BoundedPool.Active.DefaultThreadPoolSize();
             BoundedPool.Active.ExceptionOccurred += (_, exception) => Log.Error($"{exception.Message}\r\n{exception.StackTrace}");
 
             WindowOptions options = WindowOptions.Default;
