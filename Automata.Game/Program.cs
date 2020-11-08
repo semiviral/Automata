@@ -11,7 +11,6 @@ using Automata.Engine.Worlds;
 using Automata.Game.Blocks;
 using Automata.Game.Chunks;
 using Automata.Game.Chunks.Generation;
-using Automata.Game.Chunks.Generation.Meshing;
 using ConcurrencyPools;
 using Serilog;
 using Silk.NET.Windowing.Common;
@@ -66,7 +65,7 @@ namespace Automata.Game
 
             world.EntityManager.RegisterComponent(player, new ChunkLoader
             {
-                Radius = 2
+                Radius = 12
             });
         }
 
@@ -86,7 +85,6 @@ namespace Automata.Game
             AutomataWindow.Instance.CreateWindow(options);
             AutomataWindow.Instance.Closing += ApplicationCloseCallback;
 
-            ChunkMesher.MeshingStrategies["X"] = new XMeshingStrategy();
             BlockRegistry.Instance.LazyInitialize();
 
             World world = new GameWorld(true);

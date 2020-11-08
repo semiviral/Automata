@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using Automata.Engine.Collections;
 using DiagnosticsProviderNS;
 
 #endregion
@@ -33,10 +34,10 @@ namespace Automata.Game.Chunks.Generation
 
     public class ChunkGenerationDiagnosticGroup : IDiagnosticGroup
     {
-        private readonly ConcurrentBag<ApplyMeshTime> _ApplyMeshTimes;
-        private readonly ConcurrentBag<BuildingTime> _BuildingTimes;
-        private readonly ConcurrentBag<InsertionTime> _InsertionTimes;
-        private readonly ConcurrentBag<MeshingTime> _MeshingTimes;
+        private readonly BoundedConcurrentQueue<ApplyMeshTime> _ApplyMeshTimes;
+        private readonly BoundedConcurrentQueue<BuildingTime> _BuildingTimes;
+        private readonly BoundedConcurrentQueue<InsertionTime> _InsertionTimes;
+        private readonly BoundedConcurrentQueue<MeshingTime> _MeshingTimes;
 
         public IEnumerable<BuildingTime> BuildingTimes => _BuildingTimes;
         public IEnumerable<InsertionTime> InsertionTimes => _InsertionTimes;
@@ -45,10 +46,10 @@ namespace Automata.Game.Chunks.Generation
 
         public ChunkGenerationDiagnosticGroup()
         {
-            _BuildingTimes = new ConcurrentBag<BuildingTime>();
-            _InsertionTimes = new ConcurrentBag<InsertionTime>();
-            _MeshingTimes = new ConcurrentBag<MeshingTime>();
-            _ApplyMeshTimes = new ConcurrentBag<ApplyMeshTime>();
+            _BuildingTimes = new BoundedConcurrentQueue<BuildingTime>(300);
+            _InsertionTimes = new BoundedConcurrentQueue<InsertionTime>(300);
+            _MeshingTimes = new BoundedConcurrentQueue<MeshingTime>(300);
+            _ApplyMeshTimes = new BoundedConcurrentQueue<ApplyMeshTime>(300);
         }
 
         public override string ToString()
@@ -67,16 +68,16 @@ namespace Automata.Game.Chunks.Generation
             switch (data)
             {
                 case BuildingTime buildingTime:
-                    _BuildingTimes.Add(buildingTime);
+                    _BuildingTimes.Enqueue(buildingTime);
                     break;
                 case InsertionTime insertionTime:
-                    _InsertionTimes.Add(insertionTime);
+                    _InsertionTimes.Enqueue(insertionTime);
                     break;
                 case MeshingTime meshingTime:
-                    _MeshingTimes.Add(meshingTime);
+                    _MeshingTimes.Enqueue(meshingTime);
                     break;
                 case ApplyMeshTime applyMeshTime:
-                    _ApplyMeshTimes.Add(applyMeshTime);
+                    _ApplyMeshTimes.Enqueue(applyMeshTime);
                     break;
                 default: throw new ArgumentException("Data is not of a valid type for this diagnostic group.", nameof(data));
             }

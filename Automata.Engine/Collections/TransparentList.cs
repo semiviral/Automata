@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -8,6 +9,8 @@ namespace Automata.Engine.Collections
     {
         private const int _DEFAULT_SIZE = 8;
 
+        private readonly bool _Pooled;
+
         private T[] _InternalArray;
 
         public int Count { get; private set; }
@@ -16,8 +19,10 @@ namespace Automata.Engine.Collections
 
         public T this[int index] { get => _InternalArray[index]; set => _InternalArray[index] = value; }
 
-        public TransparentList() => _InternalArray = new T[_DEFAULT_SIZE];
-        public TransparentList(int capacity) => _InternalArray = new T[capacity];
+        public TransparentList(bool pooled = false) : this(_DEFAULT_SIZE, pooled) { }
+
+        public TransparentList(int capacity, bool pooled = false) =>
+            (_Pooled, _InternalArray) = (pooled, pooled ? ArrayPool<T>.Shared.Rent(capacity) : new T[capacity]);
 
         public bool Contains(T item) => (Count != 0) && (IndexOf(item) != -1);
 
@@ -94,5 +99,10 @@ namespace Automata.Engine.Collections
 
         public IEnumerator<T> GetEnumerator() => _InternalArray.GetEnumerator() as IEnumerator<T> ?? throw new NullReferenceException();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        ~TransparentList()
+        {
+            if (_Pooled) ArrayPool<T>.Shared.Return(_InternalArray);
+        }
     }
 }

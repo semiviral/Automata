@@ -23,7 +23,8 @@ namespace Automata.Game.Chunks.Generation.Meshing
         static ChunkMesher() =>
             MeshingStrategies = new MeshingStrategies
             {
-                [DEFAULT_STRATEGY] = new BlockMeshingStrategy()
+                [DEFAULT_STRATEGY] = new BlockMeshingStrategy(),
+                ["X"] = new XMeshingStrategy()
             };
 
         public static PendingMesh<PackedVertex> GeneratePackedMesh(Palette<ushort> blocksCollection, Palette<ushort>?[] neighbors)
