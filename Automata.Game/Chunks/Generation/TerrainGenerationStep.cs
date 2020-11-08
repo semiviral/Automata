@@ -41,7 +41,7 @@ namespace Automata.Game.Chunks.Generation
                     else if ((globalHeight < noiseHeight) && (globalHeight >= (noiseHeight - 3))) // lay dirt up to 3 blocks below noise height
                     {
                         blocks[index] = parameters.SeededRandom.Next(0, 8) == 0
-                            ? BlockRegistry.Instance.GetBlockID("Core:Dirt_Coarse")
+                            ? BlockRegistry.Instance.GetBlockID("Core:Grass_Tall")
                             : BlockRegistry.Instance.GetBlockID("Core:Dirt");
                     }
                     else if (globalHeight < (noiseHeight - 3))

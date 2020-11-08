@@ -9,5 +9,10 @@ out vec4 color;
 
 void main()
 {
-    color = texture(_tex0, texUV) * vec4(vertexColor, 1.0);
+    vec4 texColor = texture(_tex0, texUV);
+
+    if (texColor.a == 0.0)
+        discard;
+
+    color = texColor * vec4(vertexColor, 1.0);
 }

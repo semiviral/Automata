@@ -28,9 +28,9 @@
     {
       "Name": "Grass_Tall",
       "Attributes": [
-        "Destructible", "Collectible"
+        "Destructible", "Collectible", "Transparent"
       ],
-      "MeshingStrategy": "Block",
+      "MeshingStrategy": "X",
       "Textures": [
         "Self"
       ]
