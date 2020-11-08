@@ -43,7 +43,7 @@ namespace Automata.Game.Chunks.Generation
         };
 
         private readonly OrderedLinkedList<GenerationStep> _BuildSteps;
-        private readonly Channel<(Chunk, Palette<ushort>)> _PendingBlocks;
+        private readonly Channel<(IEntity, Palette<ushort>)> _PendingBlocks;
         private readonly Channel<(IEntity, PendingMesh<PackedVertex>)> _PendingMeshes;
 
         private bool _KeysPressed;
@@ -52,7 +52,7 @@ namespace Automata.Game.Chunks.Generation
         {
             _BuildSteps = new OrderedLinkedList<GenerationStep>();
             _BuildSteps.AddLast(new TerrainGenerationStep());
-            _PendingBlocks = Channel.CreateUnbounded<(Chunk, Palette<ushort>)>(_DefaultOptions);
+            _PendingBlocks = Channel.CreateUnbounded<(IEntity, Palette<ushort>)>(_DefaultOptions);
             _PendingMeshes = Channel.CreateUnbounded<(IEntity, PendingMesh<PackedVertex>)>(_DefaultOptions);
 
             DiagnosticsProvider.EnableGroup<ChunkGenerationDiagnosticGroup>();
@@ -61,15 +61,16 @@ namespace Automata.Game.Chunks.Generation
         [HandlesComponents(DistinctionStrategy.All, typeof(Translation), typeof(Chunk))]
         public override void Update(EntityManager entityManager, TimeSpan delta)
         {
-            while (_PendingBlocks.Reader.TryRead(out (Chunk Chunk, Palette<ushort> Blocks) pendingBlocks))
+            while (_PendingBlocks.Reader.TryRead(out (IEntity Entity, Palette<ushort> Blocks) pendingBlocks)
+                   && pendingBlocks.Entity.TryGetComponent(out Chunk? chunk))
             {
-                pendingBlocks.Chunk.Blocks = pendingBlocks.Blocks;
-                pendingBlocks.Chunk.State += 1;
+                chunk.Blocks = pendingBlocks.Blocks;
+                chunk.State += 1;
             }
 
-            while (_PendingMeshes.Reader.TryRead(out (IEntity Entity, PendingMesh<PackedVertex> Mesh) pendingMesh))
+            while (_PendingMeshes.Reader.TryRead(out (IEntity Entity, PendingMesh<PackedVertex> Mesh) pendingMesh)
+                   && pendingMesh.Entity.TryGetComponent(out Chunk? chunk))
             {
-                Chunk chunk = pendingMesh.Entity.GetComponent<Chunk>();
                 ApplyMesh(entityManager, pendingMesh.Entity, chunk.ID, pendingMesh.Mesh);
                 chunk.State += 1;
             }
@@ -81,7 +82,7 @@ namespace Automata.Game.Chunks.Generation
                 switch (chunk.State)
                 {
                     case GenerationState.Ungenerated when chunk.MinimalNeighborState() >= GenerationState.Ungenerated:
-                        BoundedPool.Active.QueueWork(() => GenerateBlocks(chunk, Vector3i.FromVector3(translation.Value),
+                        BoundedPool.Active.QueueWork(() => GenerateBlocks(entity, chunk, Vector3i.FromVector3(translation.Value),
                             new GenerationStep.Parameters(GenerationConstants.Seed, GenerationConstants.FREQUENCY, GenerationConstants.PERSISTENCE)));
 
                         chunk.State += 1;
@@ -98,7 +99,7 @@ namespace Automata.Game.Chunks.Generation
             DiagnosticsInputCheck();
         }
 
-        private void GenerateBlocks(Chunk chunk, Vector3i origin, GenerationStep.Parameters parameters)
+        private void GenerateBlocks(IEntity entity, Chunk chunk, Vector3i origin, GenerationStep.Parameters parameters)
         {
             bool releaseMutex = false;
 
@@ -128,7 +129,7 @@ namespace Automata.Game.Chunks.Generation
 
             for (int index = 0; index < GenerationConstants.CHUNK_SIZE_CUBED; index++) palette[index] = blocks[index];
 
-            if (!_PendingBlocks.Writer.TryWrite((chunk, palette))) Log.Error($"Failed to add chunk({origin}) blocks.");
+            if (!_PendingBlocks.Writer.TryWrite((entity, palette))) Log.Error($"Failed to add chunk({origin}) blocks.");
 
             stopwatch.Stop();
 

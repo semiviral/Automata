@@ -65,7 +65,7 @@ namespace Automata.Game
 
             world.EntityManager.RegisterComponent(player, new ChunkLoader
             {
-                Radius = 32
+                Radius = 16
             });
         }
 

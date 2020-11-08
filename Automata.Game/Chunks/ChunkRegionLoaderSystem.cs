@@ -26,9 +26,8 @@ namespace Automata.Game.Chunks
         [HandlesComponents(DistinctionStrategy.All, typeof(Translation), typeof(ChunkLoader))]
         public override void Update(EntityManager entityManager, TimeSpan delta)
         {
-            List<(Translation Translation, ChunkLoader ChunkLoader)> components = entityManager.GetComponents<Translation, ChunkLoader>().ToList();
-
             bool recalculateChunkRegions = false;
+            IEnumerable<(Translation Translation, ChunkLoader ChunkLoader)> components = entityManager.GetComponents<Translation, ChunkLoader>();
 
             foreach ((Translation translation, ChunkLoader chunkLoader) in components)
             {

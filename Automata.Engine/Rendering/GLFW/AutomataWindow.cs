@@ -118,14 +118,13 @@ namespace Automata.Engine.Rendering.GLFW
 
                 while (!Window.IsClosing)
                 {
-                    deltaTimer.Restart();
-
                     Window.DoEvents();
 
                     if (InputManager.Instance.IsKeyPressed(Key.Escape)) Window.Close();
 
                     if (!Window.IsClosing) World.GlobalUpdate(deltaTimer);
 
+                    deltaTimer.Restart();
                     Window.DoEvents();
                     Window.SwapBuffers();
 

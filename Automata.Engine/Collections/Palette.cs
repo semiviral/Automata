@@ -107,13 +107,13 @@ namespace Automata.Engine.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void SetValue(int index, uint value, byte bits, uint mask, Span<uint> palette)
+        private static void SetValue(int index, uint lookupIndex, byte bits, uint mask, Span<uint> palette)
         {
             int paletteIndex = (index * bits) / _UINT_32_BITS;
             int offset = (index - (paletteIndex * (_UINT_32_BITS / bits))) * bits;
-            palette[paletteIndex] = (palette[paletteIndex] & ~(mask << offset)) | (value << offset);
+            palette[paletteIndex] = (palette[paletteIndex] & ~(mask << offset)) | (lookupIndex << offset);
 
-            Debug.Assert(GetValue(index, bits, mask, palette).Equals(value), $"{nameof(SetValue)} failed.");
+            Debug.Assert(GetValue(index, bits, mask, palette).Equals(lookupIndex), $"{nameof(SetValue)} failed.");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
