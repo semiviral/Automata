@@ -32,8 +32,8 @@ namespace Automata.Game.Chunks.Generation.Meshing
             if ((blocksCollection.LookupTable.Count == 1) && (blocksCollection.LookupTable[0] == BlockRegistry.AirID)) return PendingMesh<PackedVertex>.Empty;
 
             BlockRegistry blockRegistry = BlockRegistry.Instance;
-            TransparentList<PackedVertex> vertexes = new TransparentList<PackedVertex>(_DEFAULT_VERTEXES_CAPACITY);
-            TransparentList<uint> indexes = new TransparentList<uint>(_DEFAULT_INDEXES_CAPACITY);
+            TransparentList<PackedVertex> vertexes = new TransparentList<PackedVertex>(_DEFAULT_VERTEXES_CAPACITY, true);
+            TransparentList<uint> indexes = new TransparentList<uint>(_DEFAULT_INDEXES_CAPACITY, true);
             Span<ushort> blocks = stackalloc ushort[GenerationConstants.CHUNK_SIZE_CUBED];
             Span<Direction> faces = stackalloc Direction[GenerationConstants.CHUNK_SIZE_CUBED];
             faces.Clear();

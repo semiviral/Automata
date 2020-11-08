@@ -16,8 +16,10 @@ namespace Automata.Engine.Collections
         public int Count { get; private set; }
         public bool IsReadOnly => false;
         public T[] Segment => _InternalArray[..Count];
+        public Memory<T> Memory => Segment;
+        public Span<T> Span => Segment;
 
-        public T this[int index] { get => _InternalArray[index]; set => _InternalArray[index] = value; }
+        public T this[int index] { get => Segment[index]; set => Segment[index] = value; }
 
         public TransparentList(bool pooled = false) : this(_DEFAULT_SIZE, pooled) { }
 
@@ -93,11 +95,11 @@ namespace Automata.Engine.Collections
             Count = 0;
         }
 
-        public void CopyTo(T[] array, int arrayIndex) => Array.Copy(_InternalArray, 0, array, arrayIndex, _InternalArray.Length);
+        public void CopyTo(T[] array, int arrayIndex) => Array.Copy(Segment, 0, array, arrayIndex, Segment.Length);
 
-        public int IndexOf(T item) => Array.IndexOf(_InternalArray, item);
+        public int IndexOf(T item) => Array.IndexOf(Segment, item);
 
-        public IEnumerator<T> GetEnumerator() => _InternalArray.GetEnumerator() as IEnumerator<T> ?? throw new NullReferenceException();
+        public IEnumerator<T> GetEnumerator() => Segment.GetEnumerator() as IEnumerator<T> ?? throw new NullReferenceException();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         ~TransparentList()

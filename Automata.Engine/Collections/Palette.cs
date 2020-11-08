@@ -53,12 +53,13 @@ namespace Automata.Engine.Collections
             Count = length;
             _IndexBits = 1;
             ComputeMask();
-            _Palette = ArrayPool<uint>.Shared.Rent(Compute32BitSlices(_IndexBits, Count));
 
             _LookupTable = new List<T>
             {
                 defaultItem
             };
+
+            _Palette = ArrayPool<uint>.Shared.Rent(Compute32BitSlices(_IndexBits, Count));
         }
 
         public Palette(int length, IReadOnlyCollection<T> lookupTable)
@@ -144,6 +145,16 @@ namespace Automata.Engine.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static ushort Compute32BitSlices(byte bits, int length) =>
             (ushort)MathF.Ceiling((bits * length) / (float)_UINT_32_BITS);
+
+        public void Clear(T defaultItem)
+        {
+            _IndexBits = 1;
+            ComputeMask();
+
+            _LookupTable.Clear();
+            _LookupTable.Add(defaultItem);
+            _Palette = ArrayPool<uint>.Shared.Rent(Compute32BitSlices(_IndexBits, Count));
+        }
 
         public void CopyTo(Span<T> destination)
         {
