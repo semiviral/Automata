@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
 using System.IO;
 using Automata.Engine;
+using Automata.Engine.Collections;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
 using Automata.Engine.Extensions;
@@ -24,6 +25,12 @@ namespace Automata.Game
     {
         private static void Main()
         {
+            Palette palette = new Palette(10u);
+            palette.SetValue(3, 6);
+            uint value = palette.GetValue(3);
+
+
+
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .WriteTo.Console()
