@@ -193,7 +193,7 @@ namespace Automata.Game.Chunks.Generation
                                 (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_SHIFT * 2)) & GenerationConstants.CHUNK_SIZE_MASK,
                                 GenerationConstants.CHUNK_SIZE);
 
-                            ushort facedBlockID = neighbors[normalIndex]?.GetValue(facedBlockIndex) ?? BlockRegistry.NullID;
+                            ushort facedBlockID = neighbors[normalIndex]?[facedBlockIndex] ?? BlockRegistry.NullID;
 
                             if (isTransparent)
                             {

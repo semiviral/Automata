@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -20,12 +21,37 @@ namespace Automata.Engine.Collections
         public int Count => (int)_Length;
         public IReadOnlyList<T> LookupTable => _LookupTable;
 
+        public T this[int index]
+        {
+            get
+            {
+                if (index >= _Length) throw new IndexOutOfRangeException("Index must be non-negative and less than the size of the collection.");
+
+                uint value = GetValue(index, _IndexBits, _IndexMask, _Palette);
+                return _LookupTable[(int)value];
+            }
+            set
+            {
+                if (index >= _Length) throw new IndexOutOfRangeException("Index must be non-negative and less than the size of the collection.");
+
+                int paletteIndex = _LookupTable.IndexOf(value);
+
+                if (paletteIndex == -1)
+                {
+                    AllocateLookupEntry(value);
+                    paletteIndex = _LookupTable.IndexOf(value);
+                }
+
+                SetValue(index, (uint)paletteIndex, _IndexBits, _IndexMask, _Palette);
+            }
+        }
+
         public Palette(uint length, T defaultItem)
         {
             _Length = length;
             _IndexBits = 1;
             ComputeMask();
-            _Palette = new uint[Compute32BitSlices(_IndexBits, _Length)];
+            _Palette = ArrayPool<uint>.Shared.Rent(Compute32BitSlices(_IndexBits, _Length));
 
             _LookupTable = new List<T>
             {
@@ -44,41 +70,16 @@ namespace Automata.Engine.Collections
             // ensure palette can fit lookup table
             while (_IndexMask < lookupTable.Count) IncreaseIndexBits();
 
-            _Palette = new uint[Compute32BitSlices(_IndexBits, _Length)];
+            _Palette = ArrayPool<uint>.Shared.Rent(Compute32BitSlices(_IndexBits, _Length));
             _LookupTable = new List<T>(lookupTable);
         }
 
-        public void SetValue(int index, T item)
-        {
-            if (index >= _Length) throw new IndexOutOfRangeException("Index must be non-negative and less than the size of the collection.");
-
-            int paletteIndex = _LookupTable.IndexOf(item);
-
-            if (paletteIndex == -1)
-            {
-                AllocateLookupEntry(item);
-                paletteIndex = _LookupTable.IndexOf(item);
-            }
-
-            SetValue(index, (uint)paletteIndex, _IndexBits, _IndexMask, _Palette);
-        }
-
-        public T GetValue(int index)
-        {
-            if (index >= _Length) throw new IndexOutOfRangeException("Index must be non-negative and less than the size of the collection.");
-
-            uint value = GetValue(index, _IndexBits, _IndexMask, _Palette);
-            return _LookupTable[(int)value];
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void AllocateLookupEntry(T entry)
+        private void AllocateLookupEntry(T item)
         {
-#if DEBUG
-            if (_LookupTable.Contains(entry)) throw new ArgumentException("Lookup table already contains entry.", nameof(entry));
-#endif
+            Debug.Assert(!_LookupTable.Contains(item), "Lookup table already contains item. This method should only be called when the item is not present.");
 
-            _LookupTable.Add(entry);
+            _LookupTable.Add(item);
 
             // check if lookup table length exceeds palette
             if (_LookupTable.Count <= _IndexMask) return;
@@ -97,7 +98,9 @@ namespace Automata.Engine.Collections
                 SetValue(index, value, _IndexBits, _IndexMask, palette);
             }
 
-            _Palette = palette.ToArray();
+            ArrayPool<uint>.Shared.Return(_Palette, true);
+            _Palette = ArrayPool<uint>.Shared.Rent(palette.Length);
+            palette.CopyTo(_Palette);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -168,5 +171,7 @@ namespace Automata.Engine.Collections
                 }
             }
         }
+
+        ~Palette() => ArrayPool<uint>.Shared.Return(_Palette, true);
     }
 }
