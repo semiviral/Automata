@@ -24,7 +24,7 @@ namespace Automata.Engine.Collections
             _Length = length;
             _IndexBits = 1;
             ComputeMask();
-            _Palette = new uint[ComputeRealLength(_IndexBits, _Length)];
+            _Palette = new uint[Compute32BitSlices(_IndexBits, _Length)];
 
             _LookupTable = new List<T>
             {
@@ -43,7 +43,7 @@ namespace Automata.Engine.Collections
             // ensure palette can fit lookup table
             while (_IndexMask < lookupTable.Count) IncreaseIndexBits();
 
-            _Palette = new uint[ComputeRealLength(_IndexBits, _Length)];
+            _Palette = new uint[Compute32BitSlices(_IndexBits, _Length)];
             _LookupTable = new List<T>(lookupTable);
         }
 
@@ -88,7 +88,7 @@ namespace Automata.Engine.Collections
 
             IncreaseIndexBits();
 
-            Span<uint> palette = stackalloc uint[ComputeRealLength(_IndexBits, _Length)];
+            Span<uint> palette = stackalloc uint[Compute32BitSlices(_IndexBits, _Length)];
 
             for (int index = 0; index < _Length; index++)
             {
@@ -121,6 +121,8 @@ namespace Automata.Engine.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void IncreaseIndexBits()
         {
+            if (_IndexBits == 32) throw new OverflowException($"Too many palette entries. Cannot exceed {int.MaxValue}.");
+
             _IndexBits <<= 1;
             ComputeMask();
         }
@@ -133,16 +135,24 @@ namespace Automata.Engine.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static ushort ComputeRealLength(byte bits, uint length) =>
+        private static ushort Compute32BitSlices(byte bits, uint length) =>
             (ushort)MathF.Ceiling((bits * length) / (float)_UINT_32_BITS);
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public IEnumerator<T> GetEnumerator()
         {
+            int index = 0;
+
             foreach (uint value in _Palette)
+            {
                 for (int offset = 0; offset < _UINT_32_BITS; offset += _IndexBits)
+                {
                     yield return _LookupTable[(int)((value >> offset) & _IndexMask)];
+
+                    if ((index += 1) >= _Length) yield break;
+                }
+            }
         }
     }
 }

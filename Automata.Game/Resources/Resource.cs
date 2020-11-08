@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
-using SixLabors.ImageSharp.PixelFormats;
 
 namespace Automata.Game.Resources
 {

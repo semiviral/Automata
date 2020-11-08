@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Automata.Engine.Collections;
+using Automata.Engine.Numerics;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Game.Blocks;
-using Generic_Octree;
 
 #endregion
 
@@ -86,25 +86,20 @@ namespace Automata.Game.Chunks.Generation
             -GenerationConstants.CHUNK_SIZE
         };
 
-        public static PendingMesh<PackedVertex> GeneratePackedMesh(INodeCollection<ushort> blocksCollection, INodeCollection<ushort>?[] neighbors)
+        public static PendingMesh<PackedVertex> GeneratePackedMesh(Palette<ushort> blocksCollection, Palette<ushort>?[] neighbors)
         {
-            if (blocksCollection.IsUniform && (blocksCollection.Value == BlockRegistry.AirID)) return PendingMesh<PackedVertex>.Empty;
+            //if (blocksCollection.IsUniform && (blocksCollection.Value == BlockRegistry.AirID)) return PendingMesh<PackedVertex>.Empty;
 
-            int index = 0;
             TransparentList<PackedVertex> vertexes = new TransparentList<PackedVertex>(_DEFAULT_VERTEXES_CAPACITY);
             TransparentList<uint> indexes = new TransparentList<uint>(_DEFAULT_INDEXES_CAPACITY);
             Span<ushort> blocks = stackalloc ushort[GenerationConstants.CHUNK_SIZE_CUBED];
             Span<Direction> faces = stackalloc Direction[GenerationConstants.CHUNK_SIZE_CUBED];
             faces.Clear();
 
-            for (int y = 0; y < GenerationConstants.CHUNK_SIZE; y++)
-            for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
-            for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++, index++)
-                blocks[index] = blocksCollection.GetPoint(x, y, z);
+            for (int index = 0; index < GenerationConstants.CHUNK_SIZE_CUBED; index++)
+                blocks[index] = blocksCollection.GetValue(index);
 
-            index = 0;
-
-            for (int y = 0; y < GenerationConstants.CHUNK_SIZE; y++)
+            for (int index = 0, y = 0; y < GenerationConstants.CHUNK_SIZE; y++)
             for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
             for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++, index++)
             {
@@ -123,7 +118,7 @@ namespace Automata.Game.Chunks.Generation
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void PackedTraverseIndex(Span<ushort> blocks, Span<Direction> faces, ICollection<PackedVertex> vertexes, ICollection<uint> indexes,
-            IReadOnlyList<INodeCollection<ushort>?> neighbors, int index, int localPosition, ushort blockID, bool isTransparent)
+            IReadOnlyList<Palette<ushort>?> neighbors, int index, int localPosition, ushort blockID, bool isTransparent)
         {
             // iterate once over all 6 faces of given cubic space
             for (int normalIndex = 0; normalIndex < 6; normalIndex++)
@@ -193,14 +188,12 @@ namespace Automata.Game.Chunks.Generation
                             // index into neighbor blocks collections, call .GetPoint() with adjusted local position
                             // remark: if there's no neighbor at the index given, then no chunk exists there (for instance,
                             //     chunks at the edge of render distance). In this case, return NullID so no face is rendered on edges.
-                            ushort facedBlockID = neighbors[normalIndex]?.GetPoint(
-                                                      neighborLocalPosition & GenerationConstants.CHUNK_SIZE_MASK,
-                                                      (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_SHIFT * 1))
-                                                      & GenerationConstants.CHUNK_SIZE_MASK,
-                                                      (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_SHIFT * 2))
-                                                      & GenerationConstants.CHUNK_SIZE_MASK
-                                                  )
-                                                  ?? BlockRegistry.NullID;
+                            int facedBlockIndex = Vector3i.Project1D(
+                                neighborLocalPosition & GenerationConstants.CHUNK_SIZE_MASK,
+                                (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_SHIFT * 1)) & GenerationConstants.CHUNK_SIZE_MASK,
+                                (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_SHIFT * 2)) & GenerationConstants.CHUNK_SIZE_MASK,
+                                GenerationConstants.CHUNK_SIZE);
+                            ushort facedBlockID = neighbors[normalIndex]?.GetValue(facedBlockIndex) ?? BlockRegistry.NullID;
 
                             if (isTransparent)
                             {

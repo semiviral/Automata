@@ -22,9 +22,6 @@
       <Reference Include="DiagnosticsProviderNS, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
         <HintPath>..\References\DiagnosticsProviderNS.dll</HintPath>
       </Reference>
-      <Reference Include="Generic-Octree, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-        <HintPath>..\References\Generic-Octree.dll</HintPath>
-      </Reference>
     </ItemGroup>
 
     <ItemGroup>

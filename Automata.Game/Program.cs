@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Drawing;
+﻿using System.Drawing;
 using Automata.Engine;
-using Automata.Engine.Collections;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
 using Automata.Engine.Input;
@@ -23,21 +21,6 @@ namespace Automata.Game
     {
         private static void Main()
         {
-            Palette<ushort> palette = new Palette<ushort>(10, 0);
-            palette.SetValue(0, 0);
-            palette.SetValue(1, 1);
-            palette.SetValue(2, 2);
-            palette.SetValue(3, 3);
-            palette.SetValue(4, 4);
-            palette.SetValue(5, 5);
-            palette.SetValue(6, 6);
-            palette.SetValue(7, 7);
-            palette.SetValue(8, 8);
-            palette.SetValue(9, 9);
-            palette.SetValue(10, 10);
-
-            List<ushort> values = new List<ushort>(palette);
-
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .WriteTo.Console()
@@ -89,7 +72,7 @@ namespace Automata.Game
         private static void Initialize()
         {
             BoundedAsyncPool.SetActivePool();
-            BoundedPool.Active.DefaultThreadPoolSize();
+            BoundedPool.Active.ModifyThreadPoolSize(4);
             BoundedPool.Active.ExceptionOccurred += (_, exception) => Log.Error($"{exception.Message}\r\n{exception.StackTrace}");
 
             WindowOptions options = WindowOptions.Default;
