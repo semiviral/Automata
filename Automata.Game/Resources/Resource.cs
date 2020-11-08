@@ -24,7 +24,7 @@ namespace Automata.Game.Resources
             public string? Name { get; set; }
             public List<string>? Attributes { get; set; }
             public List<string>? Textures { get; set; }
-            public LightEmission Emission { get; set; }
+            public LightEmission Luminance { get; set; }
         }
 
         public string? Group { get; set; }

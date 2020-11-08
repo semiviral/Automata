@@ -55,17 +55,17 @@ namespace Automata.Game
 
             world.EntityManager.RegisterComponent(player, new KeyboardListener
             {
-                Sensitivity = 400f
+                Sensitivity = 100f
             });
 
             world.EntityManager.RegisterComponent(player, new MouseListener
             {
-                Sensitivity = 40f
+                Sensitivity = 0.5f
             });
 
             world.EntityManager.RegisterComponent(player, new ChunkLoader
             {
-                Radius = 16
+                Radius = 6
             });
         }
 

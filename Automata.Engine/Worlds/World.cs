@@ -2,8 +2,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Automata.Engine.Entities;
 using Automata.Engine.Systems;
 using Serilog;
@@ -42,21 +42,12 @@ namespace Automata.Engine.Worlds
 
         public static bool TryGetWorld(string name, [NotNullWhen(true)] out World? world) => Worlds.TryGetValue(name, out world);
 
-        public static void GlobalUpdate(Stopwatch frameTimer)
+        public static void GlobalUpdate(TimeSpan deltaTime)
         {
-            foreach ((string _, World world) in Worlds)
-            {
-                if (!world.Active) continue;
-
-                world.Update(frameTimer);
-            }
+            foreach ((string _, World world) in Worlds.Where(world => world.Value.Active)) world.Update(deltaTime);
         }
 
-        protected virtual void Update(Stopwatch frameTimer)
-        {
-            // update system manager for frame
-            SystemManager.Update(EntityManager, frameTimer);
-        }
+        protected virtual void Update(TimeSpan deltaTime) => SystemManager.Update(EntityManager, deltaTime);
 
 
         #region IDisposable

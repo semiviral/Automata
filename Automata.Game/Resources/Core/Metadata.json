@@ -62,6 +62,42 @@
       ]
     },
     {
+      "Name": "Ore_Gold",
+      "Attributes": [
+        "Alias Default"
+      ],
+      "Textures": [
+        "Self"
+      ]
+    },
+    {
+      "Name": "Ore_Diamond",
+      "Attributes": [
+        "Alias Default"
+      ],
+      "Textures": [
+        "Self"
+      ]
+    },
+    {
+      "Name": "Ore_Iron",
+      "Attributes": [
+        "Alias Default"
+      ],
+      "Textures": [
+        "Self"
+      ]
+    },
+    {
+      "Name": "Gravel",
+      "Attributes": [
+        "Alias Default"
+      ],
+      "Textures": [
+        "Self"
+      ]
+    },
+    {
       "Name": "Bedrock",
       "Attributes": [
         "Collideable"
@@ -78,7 +114,7 @@
       "Textures": [
         "Self"
       ],
-      "Emission": {
+      "Luminance": {
         "Intensity": 10,
         "Color": {
           "R": 4,
@@ -86,6 +122,16 @@
           "B": 7
         }
       }
+    },
+    {
+      "Name": "Glass",
+      "Attributes": [
+        "Alias Default",
+        "Transparent"
+      ],
+      "Textures": [
+        "Self"
+      ]
     }
   ]
 }

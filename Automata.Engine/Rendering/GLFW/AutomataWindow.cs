@@ -114,23 +114,25 @@ namespace Automata.Engine.Rendering.GLFW
             try
             {
                 Stopwatch deltaTimer = new Stopwatch();
+                TimeSpan deltaTime = TimeSpan.Zero;
                 BoundedConcurrentQueue<double> fps = new BoundedConcurrentQueue<double>(60);
 
                 while (!Window.IsClosing)
                 {
+                    deltaTimer.Restart();
                     Window.DoEvents();
 
                     if (InputManager.Instance.IsKeyPressed(Key.Escape)) Window.Close();
 
-                    if (!Window.IsClosing) World.GlobalUpdate(deltaTimer);
+                    if (!Window.IsClosing) World.GlobalUpdate(deltaTime);
 
-                    deltaTimer.Restart();
                     Window.DoEvents();
                     Window.SwapBuffers();
 
                     if (CheckWaitForNextMonitorRefresh()) WaitForNextMonitorRefresh(deltaTimer);
 
-                    fps.Enqueue(1d / deltaTimer.Elapsed.TotalSeconds);
+                    deltaTime = deltaTimer.Elapsed;
+                    fps.Enqueue(1d / deltaTime.TotalSeconds);
                     Title = $"Automata {fps.Average():0.00} FPS";
                 }
             }

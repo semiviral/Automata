@@ -44,13 +44,13 @@ namespace Automata.Engine.Systems
             RegisterSystem<LastOrderSystem>(SystemRegistrationOrder.Last);
         }
 
-        public void Update(EntityManager entityManager, Stopwatch frameTimer)
+        public void Update(EntityManager entityManager, TimeSpan deltaTime)
         {
             foreach (ComponentSystem componentSystem in _ComponentSystems)
             {
                 if (!componentSystem.Enabled || !VerifyHandledTypesExist(entityManager, _HandledTypes[componentSystem.GetType()])) continue;
 
-                componentSystem.Update(entityManager, frameTimer.Elapsed);
+                componentSystem.Update(entityManager, deltaTime);
             }
 
             foreach (IComponentChangeable changeable in entityManager.GetComponentsAssignableFrom<IComponentChangeable>()) changeable.Changed = false;
