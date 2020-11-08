@@ -26,6 +26,16 @@
       ]
     },
     {
+      "Name": "Grass_Tall",
+      "Attributes": [
+        "Destructible", "Collectible"
+      ],
+      "MeshingStrategy": "Block",
+      "Textures": [
+        "Self"
+      ]
+    },
+    {
       "Name": "Dirt",
       "Attributes": [
         "Alias Default"

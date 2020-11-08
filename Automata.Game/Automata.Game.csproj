@@ -106,7 +106,7 @@
       <None Update="Resources\Core\Textures\Sand.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
-      <None Update="Resources\Core\Textures\Tall_Grass.png">
+      <None Update="Resources\Core\Textures\Grass_Tall.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>

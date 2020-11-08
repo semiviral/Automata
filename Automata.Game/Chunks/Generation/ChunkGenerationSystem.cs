@@ -16,6 +16,7 @@ using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Systems;
 using Automata.Game.Blocks;
+using Automata.Game.Chunks.Generation.Meshing;
 using ConcurrencyPools;
 using DiagnosticsProviderNS;
 using Serilog;

@@ -23,8 +23,11 @@ namespace Automata.Game.Resources
 
             public string? Name { get; set; }
             public List<string>? Attributes { get; set; }
+            public string? MeshingStrategy { get; set; }
             public List<string>? Textures { get; set; }
-            public LightEmission Luminance { get; set; }
+            public LightEmission? Luminance { get; set; }
+
+            public BlockDefinition() => MeshingStrategy = "Block";
         }
 
         public string? Group { get; set; }
