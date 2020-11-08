@@ -75,7 +75,9 @@
       "Attributes": [
         "Alias Default"
       ],
-      "Textures": ["Self"],
+      "Textures": [
+        "Self"
+      ],
       "Emission": {
         "Intensity": 10,
         "Color": {

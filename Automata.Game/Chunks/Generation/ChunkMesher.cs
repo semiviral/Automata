@@ -108,14 +108,14 @@ namespace Automata.Game.Chunks.Generation
             for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
             for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++, index++)
             {
-                ushort currentBlockId = blocks[index];
+                ushort currentBlockID = blocks[index];
 
-                if (currentBlockId == BlockRegistry.AirID) continue;
+                if (currentBlockID == BlockRegistry.AirID) continue;
 
                 int localPosition = x | (y << GenerationConstants.CHUNK_SIZE_SHIFT) | (z << (GenerationConstants.CHUNK_SIZE_SHIFT * 2));
 
-                PackedTraverseIndex(blocks, faces, vertexes, indexes, neighbors, index, localPosition, currentBlockId,
-                    BlockRegistry.Instance.CheckBlockHasProperty(currentBlockId, Block.Attribute.Transparent));
+                PackedTraverseIndex(blocks, faces, vertexes, indexes, neighbors, index, localPosition, currentBlockID,
+                    BlockRegistry.Instance.CheckBlockHasProperty(currentBlockID, Block.Attribute.Transparent));
             }
 
             return vertexes.Count == 0 ? PendingMesh<PackedVertex>.Empty : new PendingMesh<PackedVertex>(vertexes.Segment, indexes.Segment);

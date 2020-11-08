@@ -132,7 +132,7 @@ namespace Automata.Game.Blocks
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool BlockIdExists(ushort blockID) => blockID < Blocks.Count;
+        public bool BlockIDExists(ushort blockID) => blockID < Blocks.Count;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ushort GetBlockID(string blockName) => BlockNames[blockName];
@@ -140,18 +140,18 @@ namespace Automata.Game.Blocks
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string GetBlockName(ushort blockID) => Blocks[blockID].BlockName;
 
-        public IBlock GetBlockDefinition(ushort blockId)
+        public IBlock GetBlockDefinition(ushort blockID)
         {
-            if (!BlockIdExists(blockId)) throw new ArgumentException("Given block ID does not exist.", nameof(blockId));
+            if (!BlockIDExists(blockID)) throw new ArgumentException("Given block ID does not exist.", nameof(blockID));
 
-            return Blocks[blockId];
+            return Blocks[blockID];
         }
 
-        public bool TryGetBlockDefinition(ushort blockId, [NotNullWhen(true)] out IBlock? blockDefinition)
+        public bool TryGetBlockDefinition(ushort blockID, [NotNullWhen(true)] out IBlock? blockDefinition)
         {
-            if (BlockIdExists(blockId))
+            if (BlockIDExists(blockID))
             {
-                blockDefinition = Blocks[blockId];
+                blockDefinition = Blocks[blockID];
                 return true;
             }
 
@@ -160,6 +160,6 @@ namespace Automata.Game.Blocks
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool CheckBlockHasProperty(ushort blockId, Block.Attribute attribute) => Blocks[blockId].HasAttribute(attribute);
+        public bool CheckBlockHasProperty(ushort blockID, Block.Attribute attribute) => Blocks[blockID].HasAttribute(attribute);
     }
 }

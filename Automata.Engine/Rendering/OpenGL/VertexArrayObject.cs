@@ -9,9 +9,8 @@ using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.OpenGL
 {
-    public class VertexArrayObject<TVertex, TIndex> : IDisposable
+    public class VertexArrayObject<TVertex> : IDisposable
         where TVertex : unmanaged
-        where TIndex : unmanaged
     {
         private readonly GL _GL;
 
@@ -20,7 +19,17 @@ namespace Automata.Engine.Rendering.OpenGL
         private uint Handle { get; }
         public IReadOnlyCollection<IVertexAttribute> VertexAttributes => _VertexAttributes;
 
-        public unsafe VertexArrayObject(GL gl, BufferObject<TVertex> vbo, BufferObject<TIndex> ebo)
+        public unsafe VertexArrayObject(GL gl, BufferObject<TVertex> vbo)
+        {
+            _GL = gl;
+            _VertexAttributes = new IVertexAttribute[0];
+
+            Handle = _GL.CreateVertexArray();
+
+            _GL.VertexArrayVertexBuffer(Handle, 0, vbo.Handle, 0, (uint)sizeof(TVertex));
+        }
+
+        public unsafe VertexArrayObject(GL gl, BufferObject<TVertex> vbo, BufferObject<uint> ebo)
         {
             _GL = gl;
             _VertexAttributes = new IVertexAttribute[0];

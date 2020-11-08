@@ -16,7 +16,7 @@ namespace Automata.Engine.Rendering.Meshes
 
         public BufferObject<TVertex> VertexesBuffer { get; }
         public BufferObject<uint> IndexesBuffer { get; }
-        public VertexArrayObject<TVertex, uint> VertexArrayObject { get; }
+        public VertexArrayObject<TVertex> VertexArrayObject { get; }
 
         public uint IndexesLength => IndexesBuffer.Length;
         public uint IndexesByteLength => IndexesBuffer.ByteLength;
@@ -28,7 +28,7 @@ namespace Automata.Engine.Rendering.Meshes
             Layer = layer;
             VertexesBuffer = new BufferObject<TVertex>(GLAPI.Instance.GL);
             IndexesBuffer = new BufferObject<uint>(GLAPI.Instance.GL);
-            VertexArrayObject = new VertexArrayObject<TVertex, uint>(GLAPI.Instance.GL, VertexesBuffer, IndexesBuffer);
+            VertexArrayObject = new VertexArrayObject<TVertex>(GLAPI.Instance.GL, VertexesBuffer, IndexesBuffer);
         }
 
         public void Bind() => VertexArrayObject.Bind();
