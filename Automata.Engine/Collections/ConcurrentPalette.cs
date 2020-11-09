@@ -13,10 +13,10 @@ namespace Automata.Engine.Collections
             get
             {
                 _AccessLock.EnterReadLock();
-                uint lookupIndex = GetValue(index, _IndexBits, _IndexMask, _Palette);
+                T value = base[index];
                 _AccessLock.ExitReadLock();
 
-                return LookupTable[(int)lookupIndex];
+                return value;
             }
             set
             {
