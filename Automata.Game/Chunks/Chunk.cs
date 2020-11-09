@@ -14,9 +14,7 @@ namespace Automata.Game.Chunks
         public Chunk?[] Neighbors { get; } = new Chunk?[6];
 
         public IEnumerable<Palette<ushort>?> NeighborBlocks() => Neighbors.Select(chunk => chunk?.Blocks);
-
-        public GenerationState MinimalNeighborState() => Neighbors?.Min(neighbor => neighbor?.State ?? GenerationState.Finished)
-                                                         ?? GenerationState.Ungenerated;
+        public GenerationState MinimalNeighborState() => Neighbors.Min(neighbor => neighbor?.State ?? GenerationState.Finished);
     }
 
     public enum GenerationState

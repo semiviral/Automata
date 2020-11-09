@@ -9,37 +9,37 @@ namespace Automata.Engine.Collections
 {
     public class Palette<T> : IReadOnlyCollection<T> where T : IEquatable<T>
     {
-        private const byte _UINT_32_BITS = sizeof(uint) * 8;
+        protected const byte UINT_32_BITS = sizeof(uint) * 8;
 
-        private readonly List<T> _LookupTable;
+        protected readonly List<T> LookupTable;
 
-        private byte _IndexBits;
-        private uint _IndexMask;
-        private uint[] _Palette;
+        protected byte _IndexBits;
+        protected uint _IndexMask;
+        protected uint[] _Palette;
 
         public int Count { get; }
 
-        public IReadOnlyList<T> LookupTable => _LookupTable;
+        public IReadOnlyList<T> ReadOnlyLookupTable => LookupTable;
 
-        public T this[int index]
+        public virtual T this[int index]
         {
             get
             {
                 if (index >= Count) throw new IndexOutOfRangeException("Index must be non-negative and less than the size of the collection.");
 
                 uint value = GetValue(index, _IndexBits, _IndexMask, _Palette);
-                return _LookupTable[(int)value];
+                return LookupTable[(int)value];
             }
             set
             {
                 if (index >= Count) throw new IndexOutOfRangeException("Index must be non-negative and less than the size of the collection.");
 
-                int paletteIndex = _LookupTable.IndexOf(value);
+                int paletteIndex = LookupTable.IndexOf(value);
 
                 if (paletteIndex == -1)
                 {
                     AllocateLookupEntry(value);
-                    paletteIndex = _LookupTable.IndexOf(value);
+                    paletteIndex = LookupTable.IndexOf(value);
                 }
 
                 SetValue(index, (uint)paletteIndex, _IndexBits, _IndexMask, _Palette);
@@ -54,7 +54,7 @@ namespace Automata.Engine.Collections
             _IndexBits = 1;
             ComputeMask();
 
-            _LookupTable = new List<T>
+            LookupTable = new List<T>
             {
                 defaultItem
             };
@@ -70,7 +70,7 @@ namespace Automata.Engine.Collections
             Count = length;
             _IndexBits = 1;
             ComputeMask();
-            _LookupTable = new List<T>(lookupTable);
+            LookupTable = new List<T>(lookupTable);
 
             // ensure palette can fit lookup table
             while (_IndexMask < lookupTable.Count) IncreaseIndexBits();
@@ -79,14 +79,14 @@ namespace Automata.Engine.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void AllocateLookupEntry(T item)
+        protected void AllocateLookupEntry(T item)
         {
-            Debug.Assert(!_LookupTable.Contains(item), "Lookup table already contains item. This method should only be called when the item is not present.");
+            Debug.Assert(!LookupTable.Contains(item), "Lookup table already contains item. This method should only be called when the item is not present.");
 
-            _LookupTable.Add(item);
+            LookupTable.Add(item);
 
             // check if lookup table length exceeds palette
-            if (_LookupTable.Count <= _IndexMask) return;
+            if (LookupTable.Count <= _IndexMask) return;
 
             // expand palette
             byte oldBits = _IndexBits;
@@ -108,20 +108,20 @@ namespace Automata.Engine.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void SetValue(int index, uint lookupIndex, byte bits, uint mask, Span<uint> palette)
+        protected static void SetValue(int index, uint lookupIndex, byte bits, uint mask, Span<uint> palette)
         {
-            int paletteIndex = (index * bits) / _UINT_32_BITS;
-            int offset = (index - (paletteIndex * (_UINT_32_BITS / bits))) * bits;
+            int paletteIndex = (index * bits) / UINT_32_BITS;
+            int offset = (index - (paletteIndex * (UINT_32_BITS / bits))) * bits;
             palette[paletteIndex] = (palette[paletteIndex] & ~(mask << offset)) | (lookupIndex << offset);
 
             Debug.Assert(GetValue(index, bits, mask, palette).Equals(lookupIndex), $"{nameof(SetValue)} failed.");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static uint GetValue(int index, byte bits, uint mask, ReadOnlySpan<uint> palette)
+        protected static uint GetValue(int index, byte bits, uint mask, ReadOnlySpan<uint> palette)
         {
-            int paletteIndex = (index * bits) / _UINT_32_BITS;
-            int offset = (index - (paletteIndex * (_UINT_32_BITS / bits))) * bits;
+            int paletteIndex = (index * bits) / UINT_32_BITS;
+            int offset = (index - (paletteIndex * (UINT_32_BITS / bits))) * bits;
 
             return (uint)((palette[paletteIndex] & (mask << offset)) >> offset);
         }
@@ -144,15 +144,15 @@ namespace Automata.Engine.Collections
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static ushort Compute32BitSlices(byte bits, int length) =>
-            (ushort)MathF.Ceiling((bits * length) / (float)_UINT_32_BITS);
+            (ushort)MathF.Ceiling((bits * length) / (float)UINT_32_BITS);
 
         public void Clear(T defaultItem)
         {
             _IndexBits = 1;
             ComputeMask();
 
-            _LookupTable.Clear();
-            _LookupTable.Add(defaultItem);
+            LookupTable.Clear();
+            LookupTable.Add(defaultItem);
             _Palette = ArrayPool<uint>.Shared.Rent(Compute32BitSlices(_IndexBits, Count));
         }
 
@@ -177,9 +177,9 @@ namespace Automata.Engine.Collections
 
             foreach (uint value in _Palette)
             {
-                for (int offset = 0; offset < _UINT_32_BITS; offset += _IndexBits)
+                for (int offset = 0; offset < UINT_32_BITS; offset += _IndexBits)
                 {
-                    yield return _LookupTable[(int)((value >> offset) & _IndexMask)];
+                    yield return LookupTable[(int)((value >> offset) & _IndexMask)];
 
                     if ((index += 1) >= Count) yield break;
                 }

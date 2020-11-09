@@ -28,45 +28,9 @@ namespace Automata.Game
 
             Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(Serilog), "Logger initialized."));
 
-            // FontLibrary library = new FontLibrary();
-            // FontFace fontFace = new FontFace(library, @".\Resources\Fonts\Arial.ttf", 0u);
-            // fontFace.SelectCharmap(FontEncoding.Unicode);
-            // fontFace.SetPixelSize(0u, 12u);
-            // // fontFace.ParseAvailableCharacters();
-            // fontFace.LoadCharacter('a', LoadFlags.Default, LoadTarget.Normal);
-            // Glyph glyph = fontFace.Glyph();
-
             Initialize();
 
             AutomataWindow.Instance.Run();
-        }
-
-        private static void InitializePlayerEntity(World world)
-        {
-            IEntity player = new Entity();
-            world.EntityManager.RegisterEntity(player);
-            world.EntityManager.RegisterComponent<Translation>(player);
-            world.EntityManager.RegisterComponent<Rotation>(player);
-
-            world.EntityManager.RegisterComponent(player, new Camera
-            {
-                Projector = Projector.Perspective
-            });
-
-            world.EntityManager.RegisterComponent(player, new KeyboardListener
-            {
-                Sensitivity = 100f
-            });
-
-            world.EntityManager.RegisterComponent(player, new MouseListener
-            {
-                Sensitivity = 0.5f
-            });
-
-            world.EntityManager.RegisterComponent(player, new ChunkLoader
-            {
-                Radius = Settings.Instance.GenerationRadius
-            });
         }
 
         private static void Initialize()
@@ -95,6 +59,34 @@ namespace Automata.Game
             World.RegisterWorld("core", world);
 
             InitializePlayerEntity(world);
+        }
+
+        private static void InitializePlayerEntity(World world)
+        {
+            IEntity player = new Entity();
+            world.EntityManager.RegisterEntity(player);
+            world.EntityManager.RegisterComponent<Translation>(player);
+            world.EntityManager.RegisterComponent<Rotation>(player);
+
+            world.EntityManager.RegisterComponent(player, new Camera
+            {
+                Projector = Projector.Perspective
+            });
+
+            world.EntityManager.RegisterComponent(player, new KeyboardListener
+            {
+                Sensitivity = 100f
+            });
+
+            world.EntityManager.RegisterComponent(player, new MouseListener
+            {
+                Sensitivity = 0.5f
+            });
+
+            world.EntityManager.RegisterComponent(player, new ChunkLoader
+            {
+                Radius = Settings.Instance.GenerationRadius
+            });
         }
 
         private static void ApplicationCloseCallback(object sender)
