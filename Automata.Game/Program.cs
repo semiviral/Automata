@@ -50,7 +50,7 @@ namespace Automata.Game
             options.Title = "Automata";
             options.Size = new Size(800, 600);
             options.Position = new Point(500, 100);
-            options.VSync = VSyncMode.On;
+            options.VSync = Settings.Instance.VSync ? VSyncMode.On : VSyncMode.Off;
             options.PreferredDepthBufferBits = 24;
 
             AutomataWindow.Instance.CreateWindow(options);

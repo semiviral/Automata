@@ -6,6 +6,9 @@ namespace Automata.Game
 {
     public class Settings : Singleton<Settings>
     {
+        [TomlProperty("Video", false)]
+        public bool VSync { get; set; } = false;
+
         [TomlProperty("WorldGeneration", true)]
         public bool SingleThreadedGeneration { get; set; }
 

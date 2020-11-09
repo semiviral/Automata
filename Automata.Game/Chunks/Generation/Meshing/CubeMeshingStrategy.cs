@@ -159,7 +159,7 @@ namespace Automata.Game.Chunks.Generation.Meshing
                             {
                                 if (blockID != facedBlockID) break;
                             }
-                            else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockID, Block.Attribute.Transparent)) break;
+                            else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockID, BlockDefinitionDefinition.Attribute.Transparent)) break;
                         }
                         else
                         {
@@ -175,7 +175,7 @@ namespace Automata.Game.Chunks.Generation.Meshing
                             {
                                 if (blockID != facedBlockID) break;
                             }
-                            else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockID, Block.Attribute.Transparent))
+                            else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockID, BlockDefinitionDefinition.Attribute.Transparent))
                             {
                                 if (!isNegativeNormal)
                                 {

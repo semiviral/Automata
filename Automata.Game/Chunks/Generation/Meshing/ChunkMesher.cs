@@ -52,7 +52,7 @@ namespace Automata.Game.Chunks.Generation.Meshing
                 int localPosition = x | (y << GenerationConstants.CHUNK_SIZE_SHIFT) | (z << (GenerationConstants.CHUNK_SIZE_SHIFT * 2));
 
                 meshingStrategy.Mesh(blocks, faces, vertexes, indexes, neighbors, index, localPosition, currentBlockID,
-                    blockRegistry.CheckBlockHasProperty(currentBlockID, Block.Attribute.Transparent));
+                    blockRegistry.CheckBlockHasProperty(currentBlockID, BlockDefinitionDefinition.Attribute.Transparent));
             }
 
             return vertexes.Count == 0 ? PendingMesh<PackedVertex>.Empty : new PendingMesh<PackedVertex>(vertexes.Segment, indexes.Segment);
