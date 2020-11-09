@@ -27,9 +27,9 @@ namespace Automata.Game.Chunks.Generation.Meshing
                 ["X"] = new XMeshingStrategy()
             };
 
-        public static PendingMesh<PackedVertex> GeneratePackedMesh(Palette<ushort> blocksCollection, Palette<ushort>?[] neighbors)
+        public static PendingMesh<PackedVertex> GeneratePackedMesh(Palette<ushort> blocksPalette, Palette<ushort>?[] neighbors)
         {
-            if ((blocksCollection.LookupTable.Count == 1) && (blocksCollection.LookupTable[0] == BlockRegistry.AirID)) return PendingMesh<PackedVertex>.Empty;
+            if ((blocksPalette.LookupTable.Count == 1) && (blocksPalette.LookupTable[0] == BlockRegistry.AirID)) return PendingMesh<PackedVertex>.Empty;
 
             BlockRegistry blockRegistry = BlockRegistry.Instance;
             TransparentList<PackedVertex> vertexes = new TransparentList<PackedVertex>(_DEFAULT_VERTEXES_CAPACITY, true);
@@ -38,7 +38,7 @@ namespace Automata.Game.Chunks.Generation.Meshing
             Span<Direction> faces = stackalloc Direction[GenerationConstants.CHUNK_SIZE_CUBED];
             faces.Clear();
 
-            blocksCollection.CopyTo(blocks);
+            blocksPalette.CopyTo(blocks);
 
             for (int index = 0, y = 0; y < GenerationConstants.CHUNK_SIZE; y++)
             for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)

@@ -143,8 +143,7 @@ namespace Automata.Engine.Rendering.GLFW
             }
         }
 
-        private bool CheckWaitForNextMonitorRefresh() => Window.VSync == VSyncMode.On;
-
+        private bool CheckWaitForNextMonitorRefresh() => Window.VSync is VSyncMode.On;
         private void WaitForNextMonitorRefresh(Stopwatch deltaTimer) => Thread.Sleep(Math.Max((_MinimumFrameTime - deltaTimer.Elapsed).Milliseconds, 0));
 
         public GL GetGL() => GL.GetApi(Window.GLContext);

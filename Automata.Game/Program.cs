@@ -72,14 +72,14 @@ namespace Automata.Game
         private static void Initialize()
         {
             BoundedAsyncPool.SetActivePool();
-            BoundedPool.Active.DefaultThreadPoolSize();
+            BoundedPool.Active.DefaultPoolSize();
             BoundedPool.Active.ExceptionOccurred += (_, exception) => Log.Error($"{exception.Message}\r\n{exception.StackTrace}");
 
             WindowOptions options = WindowOptions.Default;
             options.Title = "Automata";
             options.Size = new Size(800, 600);
             options.Position = new Point(500, 100);
-            options.VSync = VSyncMode.Off;
+            options.VSync = VSyncMode.On;
             options.PreferredDepthBufferBits = 24;
 
             AutomataWindow.Instance.CreateWindow(options);

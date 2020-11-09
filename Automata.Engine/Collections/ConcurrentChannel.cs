@@ -27,16 +27,8 @@ namespace Automata.Engine.Collections
         }
 
         public bool TryAdd(T item) => _Writer.TryWrite(item);
-
         public bool TryTake(out T item) => _Reader.TryRead(out item);
-
-        public async ValueTask AddAsync(T item, CancellationToken cancellationToken = default) { await _Writer.WriteAsync(item, cancellationToken); }
-
-        public async ValueTask<T> TakeAsync(bool waitForItems = true, CancellationToken cancellationToken = default)
-        {
-            if (waitForItems && await _Reader.WaitToReadAsync(cancellationToken)) { }
-
-            return await _Reader.ReadAsync(cancellationToken);
-        }
+        public async ValueTask AddAsync(T item, CancellationToken cancellationToken = default) => await _Writer.WriteAsync(item, cancellationToken);
+        public async ValueTask<T> TakeAsync(CancellationToken cancellationToken = default) => await _Reader.ReadAsync(cancellationToken);
     }
 }

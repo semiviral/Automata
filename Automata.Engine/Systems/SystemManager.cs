@@ -30,7 +30,7 @@ namespace Automata.Engine.Systems
 
     public sealed class SystemManager : IDisposable
     {
-        private readonly OrderedList<ComponentSystem> _ComponentSystems;
+        private readonly IOrderedCollection<ComponentSystem> _ComponentSystems;
         private readonly Dictionary<Type, ComponentTypes> _HandledTypes;
 
         public SystemManager()

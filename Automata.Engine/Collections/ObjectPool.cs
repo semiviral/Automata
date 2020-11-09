@@ -19,7 +19,7 @@ namespace Automata.Engine.Collections
             _Pool = new ConcurrentBag<T>();
         }
 
-        public T Rent() => _Pool.TryTake(out T obj) ? obj ?? throw new NullReferenceException() : _ObjectFactory();
-        public void Return(T obj) => _Pool.Add(obj ?? throw new NullReferenceException());
+        public T Rent() => _Pool.TryTake(out T obj) ? obj : _ObjectFactory();
+        public void Return(T obj) => _Pool.Add(obj);
     }
 }
