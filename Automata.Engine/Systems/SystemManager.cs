@@ -156,9 +156,9 @@ namespace Automata.Engine.Systems
         {
             if (_Disposed) return;
 
-            DisposeInternal();
-            GC.SuppressFinalize(this);
             _Disposed = true;
+
+            DisposeInternal();
         }
 
         #endregion

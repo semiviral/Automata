@@ -53,6 +53,7 @@ namespace Automata.Game.Chunks.Generation
         public override void Update(EntityManager entityManager, TimeSpan delta)
         {
             while (_PendingBlocks.TryTake(out (IEntity Entity, Palette<Block> Blocks) pendingBlocks)
+                   && !pendingBlocks.Entity.Destroyed
                    && pendingBlocks.Entity.TryGetComponent(out Chunk? chunk))
             {
                 chunk.Blocks = pendingBlocks.Blocks;
@@ -60,6 +61,7 @@ namespace Automata.Game.Chunks.Generation
             }
 
             while (_PendingMeshes.TryTake(out (IEntity Entity, PendingMesh<PackedVertex> Mesh) pendingMesh)
+                   && !pendingMesh.Entity.Destroyed
                    && pendingMesh.Entity.TryGetComponent(out Chunk? chunk))
             {
                 ApplyMesh(entityManager, pendingMesh.Entity, chunk.ID, pendingMesh.Mesh);
@@ -72,14 +74,14 @@ namespace Automata.Game.Chunks.Generation
 
                 switch (chunk.State)
                 {
-                    case GenerationState.Ungenerated when chunk.MinimalNeighborState() >= GenerationState.Ungenerated:
+                    case GenerationState.Ungenerated when chunk.IsStateLockstep():
                         BoundedPool.Active.QueueWork(() => GenerateBlocks(entity, chunk, Vector3i.FromVector3(translation.Value),
                             new IGenerationStep.Parameters(GenerationConstants.Seed, GenerationConstants.FREQUENCY, GenerationConstants.PERSISTENCE)));
 
                         chunk.State += 1;
                         break;
 
-                    case GenerationState.Unmeshed when chunk.MinimalNeighborState() >= GenerationState.Unmeshed:
+                    case GenerationState.Unmeshed when chunk.IsStateLockstep():
                         BoundedPool.Active.QueueWork(() => GenerateMesh(entity, chunk, Vector3i.FromVector3(translation.Value)));
 
                         chunk.State += 1;
@@ -172,6 +174,7 @@ namespace Automata.Game.Chunks.Generation
 
             mesh.VertexesBuffer.SetBufferData(pendingMesh.Vertexes, BufferDraw.DynamicDraw);
             mesh.IndexesBuffer.SetBufferData(pendingMesh.Indexes, BufferDraw.DynamicDraw);
+
 
             if (Shader.TryLoadWithCache("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl", out Shader? shader))
             {

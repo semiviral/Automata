@@ -13,6 +13,7 @@ namespace Automata.Engine.Entities
     public interface IEntity : IEquatable<IEntity>
     {
         Guid ID { get; }
+        public bool Destroyed { get; }
         IEnumerable<Component> Components { get; }
 
         void AddComponent(Component component);
@@ -27,6 +28,9 @@ namespace Automata.Engine.Entities
         bool TryGetComponent(Type type, [NotNullWhen(true)] out Component? component);
 
         public bool HasComponent<TComponent>() where TComponent : Component;
+        public bool HasComponent(Type type);
+
+        internal void Destroy();
 
         int GetHashCode() => ID.GetHashCode();
     }

@@ -29,12 +29,12 @@ namespace Automata.Game.Blocks
         public static ushort NullID;
 
         public List<IBlockDefinition> Blocks { get; }
-        public Dictionary<string, ushort> BlockNames { get; }
+        public Dictionary<string, ushort> BlocksIndexer { get; }
 
         public BlockRegistry()
         {
             Blocks = new List<IBlockDefinition>();
-            BlockNames = new Dictionary<string, ushort>();
+            BlocksIndexer = new Dictionary<string, ushort>();
 
             List<(string group, string path)> paths = LoadMetadata().ToList();
             TextureAtlas.Instance.Initialize(paths);
@@ -124,7 +124,7 @@ namespace Automata.Game.Blocks
             IBlockDefinition blockDefinition = new BlockDefinitionDefinition(blockID, groupedName, strategyIndex, attributes);
 
             Blocks.Add(blockDefinition);
-            BlockNames.Add(groupedName, blockID);
+            BlocksIndexer.Add(groupedName, blockID);
 
             Log.Debug($"({nameof(BlockRegistry)}) Registered ID {blockID}: \"{groupedName}\"");
 
@@ -135,7 +135,7 @@ namespace Automata.Game.Blocks
         public bool BlockIDExists(ushort blockID) => blockID < Blocks.Count;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ushort GetBlockID(string blockName) => BlockNames[blockName];
+        public ushort GetBlockID(string blockName) => BlocksIndexer[blockName];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string GetBlockName(ushort blockID) => Blocks[blockID].BlockName;

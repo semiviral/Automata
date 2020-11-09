@@ -50,7 +50,7 @@ namespace Automata.Engine.Rendering.OpenGL
         /// </remarks>
         /// <param name="checkForErrors"></param>
         /// <exception cref="OpenGLException"></exception>
-        private static void CheckForErrorsAndThrow(bool checkForErrors)
+        public static void CheckForErrorsAndThrow(bool checkForErrors)
         {
             if (!checkForErrors) return;
 

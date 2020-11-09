@@ -14,6 +14,7 @@ namespace Automata.Engine.Rendering.OpenGL
     {
         private readonly GL _GL;
 
+        private bool _Disposed;
         private IVertexAttribute[] _VertexAttributes;
 
         private uint Handle { get; }
@@ -67,6 +68,12 @@ namespace Automata.Engine.Rendering.OpenGL
         public void Bind() => _GL.BindVertexArray(Handle);
         public void Unbind() => _GL.BindVertexArray(0);
 
-        public void Dispose() => _GL.DeleteVertexArray(Handle);
+        public void Dispose()
+        {
+            if (_Disposed) throw new ObjectDisposedException(ToString());
+
+            _GL.DeleteVertexArray(Handle);
+            _Disposed = true;
+        }
     }
 }

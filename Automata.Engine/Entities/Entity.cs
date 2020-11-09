@@ -16,6 +16,7 @@ namespace Automata.Engine.Entities
         private readonly List<Component> _Components;
 
         public Guid ID { get; }
+        public bool Destroyed { get; private set; }
         public IEnumerable<Component> Components => _Components;
 
         public Entity()
@@ -23,6 +24,7 @@ namespace Automata.Engine.Entities
             _Components = new List<Component>();
 
             ID = Guid.NewGuid();
+            Destroyed = false;
         }
 
         public void AddComponent(Component component)
@@ -96,13 +98,14 @@ namespace Automata.Engine.Entities
         public bool HasComponent<TComponent>() where TComponent : Component => _Components.Any(component => component is TComponent);
         public bool HasComponent(Type type) => _Components.Any(type.IsInstanceOfType);
 
+        void IEntity.Destroy() => Destroyed = true;
+
         public override bool Equals(object? obj) => obj is IEntity entity && Equals(entity);
         public bool Equals(IEntity? other) => other is not null && ID.Equals(other.ID);
 
         public override int GetHashCode() => ID.GetHashCode();
 
         public static bool operator ==(Entity? left, Entity? right) => Equals(left, right);
-
         public static bool operator !=(Entity? left, Entity? right) => !Equals(left, right);
     }
 }

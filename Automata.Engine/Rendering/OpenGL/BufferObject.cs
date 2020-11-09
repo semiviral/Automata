@@ -30,6 +30,8 @@ namespace Automata.Engine.Rendering.OpenGL
     {
         private readonly GL _GL;
 
+        private bool _Disposed;
+
         public uint Handle { get; }
         public uint Length { get; private set; }
         public uint ByteLength { get; private set; }
@@ -47,6 +49,12 @@ namespace Automata.Engine.Rendering.OpenGL
             _GL.NamedBufferData(Handle, ByteLength, data, (VertexBufferObjectUsage)bufferDraw);
         }
 
-        public void Dispose() => _GL.DeleteBuffer(Handle);
+        public void Dispose()
+        {
+            if (_Disposed) throw new ObjectDisposedException(ToString());
+
+            _GL.DeleteBuffer(Handle);
+            _Disposed = true;
+        }
     }
 }
