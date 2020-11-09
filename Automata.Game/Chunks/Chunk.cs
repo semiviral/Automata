@@ -7,7 +7,7 @@ using Automata.Game.Blocks;
 
 namespace Automata.Game.Chunks
 {
-    public class Chunk : IComponent
+    public class Chunk : Component
     {
         public Guid ID { get; } = Guid.NewGuid();
         public GenerationState State { get; set; } = GenerationState.Ungenerated;

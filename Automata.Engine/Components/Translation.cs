@@ -7,7 +7,7 @@ using System.Numerics;
 
 namespace Automata.Engine.Components
 {
-    public class Translation : IComponentChangeable
+    public class Translation : ComponentChangeable
     {
         private Vector3 _Value;
 

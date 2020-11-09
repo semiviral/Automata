@@ -7,7 +7,7 @@ using System.Numerics;
 
 namespace Automata.Engine.Components
 {
-    public class Rotation : IComponentChangeable
+    public class Rotation : ComponentChangeable
     {
         private Vector2 _AccumulatedAngles = Vector2.Zero;
         private Quaternion _Value = Quaternion.Identity;

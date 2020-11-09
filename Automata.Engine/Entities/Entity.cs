@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Automata.Engine.Components;
 
 #endregion
@@ -12,62 +13,88 @@ namespace Automata.Engine.Entities
 {
     public class Entity : IEntity
     {
-        private readonly Dictionary<Type, IComponent> _Components;
+        private readonly List<Component> _Components;
 
         public Guid ID { get; }
-        public IReadOnlyDictionary<Type, IComponent> Components => _Components;
+        public IEnumerable<Component> Components => _Components;
 
         public Entity()
         {
-            _Components = new Dictionary<Type, IComponent>();
+            _Components = new List<Component>();
 
             ID = Guid.NewGuid();
         }
 
-        public void AddComponent(IComponent component) => _Components.Add(component.GetType(), component);
-        public void AddComponent<TComponent>() where TComponent : class, IComponent, new() => _Components.Add(typeof(TComponent), new TComponent());
-
-        public T RemoveComponent<T>() where T : class, IComponent
+        public void AddComponent(Component component)
         {
-            T component = (T)_Components[typeof(T)];
-            _Components.Remove(typeof(T));
+            if (HasComponent(component.GetType())) throw new ArgumentException("Already contains component of given type.");
+            else _Components.Add(component);
+        }
+
+        public void AddComponent<TComponent>() where TComponent : Component, new()
+        {
+            if (HasComponent<TComponent>()) throw new ArgumentException("Already contains component of given type.");
+            else _Components.Add(new TComponent());
+        }
+
+        public TComponent RemoveComponent<TComponent>() where TComponent : Component
+        {
+            TComponent component = GetComponent<TComponent>();
+            _Components.Remove(component);
             return component;
         }
 
-        public IComponent RemoveComponent(Type type)
+        public Component RemoveComponent(Type type)
         {
-            IComponent component = _Components[type];
-            _Components.Remove(type);
+            Component component = GetComponent(type);
+            _Components.Remove(component);
             return component;
         }
 
-        public TComponent GetComponent<TComponent>() where TComponent : class, IComponent => (TComponent)_Components[typeof(TComponent)];
-
-        public bool TryGetComponent<TComponent>([NotNullWhen(true)] out TComponent? component) where TComponent : class, IComponent
+        public TComponent GetComponent<TComponent>() where TComponent : Component
         {
-            if (_Components.TryGetValue(typeof(TComponent), out IComponent? componentBase))
+            foreach (Component component in _Components)
+                if (component is TComponent tComponent)
+                    return tComponent;
+
+            throw new ArgumentException("Entity does not have a component of given type.");
+        }
+
+        public Component GetComponent(Type type)
+        {
+            foreach (Component component in _Components.Where(type.IsInstanceOfType)) return component;
+
+            throw new ArgumentException("Entity does not have a component of given type.");
+        }
+
+        public bool TryGetComponent<TComponent>([NotNullWhen(true)] out TComponent? component) where TComponent : Component
+        {
+            foreach (Component component1 in _Components)
             {
-                component = (TComponent)componentBase;
+                if (component1 is not TComponent tComponent) continue;
+
+                component = tComponent;
                 return true;
             }
-            else
-            {
-                component = null;
-                return false;
-            }
+
+            component = null;
+            return false;
         }
 
-        public bool TryGetComponent(Type type, [NotNullWhen(true)] out IComponent? component) => _Components.TryGetValue(type, out component);
-
-        public IComponent GetComponent(Type componentType)
+        public bool TryGetComponent(Type type, [NotNullWhen(true)] out Component? component)
         {
-            if (!typeof(IComponent).IsAssignableFrom(componentType))
-                throw new ArgumentException($"Type must be assignable from {nameof(IComponent)}.", nameof(componentType));
+            foreach (Component component1 in _Components.Where(type.IsInstanceOfType))
+            {
+                component = component1;
+                return true;
+            }
 
-            return _Components[componentType];
+            component = null;
+            return false;
         }
 
-        public bool HasComponent<TComponent>() where TComponent : class, IComponent => _Components.ContainsKey(typeof(TComponent));
+        public bool HasComponent<TComponent>() where TComponent : Component => _Components.Any(component => component is TComponent);
+        public bool HasComponent(Type type) => _Components.Any(type.IsInstanceOfType);
 
         public override bool Equals(object? obj) => obj is IEntity entity && Equals(entity);
         public bool Equals(IEntity? other) => other is not null && ID.Equals(other.ID);

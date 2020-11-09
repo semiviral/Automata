@@ -8,7 +8,7 @@ using Automata.Engine.Components;
 
 namespace Automata.Engine.Rendering
 {
-    public class Camera : IComponent
+    public class Camera : Component
     {
         public Matrix4x4 View { get; set; } = Matrix4x4.Identity;
         public Layer RenderedLayers { get; set; } = Layer.Mask;

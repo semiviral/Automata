@@ -28,7 +28,7 @@ namespace Automata.Engine.Entities
 
             foreach (Type type in new TEntityComposition().ComposedTypes)
             {
-                IComponent? component = (IComponent?)Activator.CreateInstance(type);
+                Component? component = (Component?)Activator.CreateInstance(type);
 
                 if (component is null) throw new InvalidOperationException("Types used for composition must implement a parameterless constructor.");
 
@@ -44,14 +44,25 @@ namespace Automata.Engine.Entities
         {
             _Entities.Add(entity);
 
-            foreach (Type type in entity.Components.Keys) RegisterComponent(entity, entity.GetComponent(type));
+            foreach (Component component in entity.Components)
+            {
+                Type type = component.GetType();
+
+                if (!_ComponentCountByType.ContainsKey(type)) _ComponentCountByType.Add(type, 1);
+                else _ComponentCountByType[type] += 1;
+            }
         }
 
         private void RemoveEntityInternal(IEntity entity)
         {
             _Entities.Remove(entity);
 
-            foreach (Type type in entity.Components.Keys) RemoveComponent(entity, type);
+            foreach (Component component in entity.Components)
+            {
+                if (component is IDisposable disposable) disposable.Dispose();
+
+                _ComponentCountByType[component.GetType()] -= 1;
+            }
         }
 
 
@@ -67,15 +78,15 @@ namespace Automata.Engine.Entities
         /// <remarks>
         ///     Use this method to ensure <see cref="EntityManager" /> caches remain accurate.
         /// </remarks>
-        public void RemoveComponent<TComponent>(IEntity entity) where TComponent : class, IComponent => RemoveComponentInternal(entity, typeof(TComponent));
+        public void RemoveComponent<TComponent>(IEntity entity) where TComponent : Component => RemoveComponentInternal(entity, typeof(TComponent));
 
         public void RemoveComponent(IEntity entity, Type type) => RemoveComponentInternal(entity, type);
 
         private void RemoveComponentInternal(IEntity entity, Type type)
         {
-            if (!typeof(IComponent).IsAssignableFrom(type)) throw new TypeLoadException($"Component types must be assignable from {nameof(IComponent)}.");
+            if (!typeof(Component).IsAssignableFrom(type)) throw new TypeLoadException($"Component types must be assignable from {nameof(Component)}.");
 
-            IComponent component = entity.RemoveComponent(type);
+            Component component = entity.RemoveComponent(type);
             _ComponentCountByType[type] -= 1;
 
             if (component is IDisposable disposable) disposable.Dispose();
@@ -106,7 +117,7 @@ namespace Automata.Engine.Entities
         /// <remarks>
         ///     Use this method to ensure <see cref="EntityManager" /> caches remain accurate.
         /// </remarks>
-        public void RegisterComponent(IEntity entity, IComponent component) =>
+        public void RegisterComponent(IEntity entity, Component component) =>
             RegisterComponentInternal(entity, component.GetType(), component);
 
         /// <summary>
@@ -117,16 +128,16 @@ namespace Automata.Engine.Entities
         /// <remarks>
         ///     Use this method to ensure <see cref="EntityManager" /> caches remain accurate.
         /// </remarks>
-        public void RegisterComponent<T>(IEntity entity) where T : class, IComponent, new() =>
+        public void RegisterComponent<T>(IEntity entity) where T : Component, new() =>
             RegisterComponentInternal(entity, typeof(T), null);
 
-        private void RegisterComponentInternal(IEntity entity, Type type, IComponent? component)
+        private void RegisterComponentInternal(IEntity entity, Type type, Component? component)
         {
-            if (!typeof(IComponent).IsAssignableFrom(type)) throw new TypeLoadException($"Component types must be assignable from {nameof(IComponent)}.");
+            if (!typeof(Component).IsAssignableFrom(type)) throw new TypeLoadException($"Component types must be assignable from {nameof(Component)}.");
 
-            IComponent? instance = component ?? (IComponent?)Activator.CreateInstance(type);
+            Component? instance = component ?? (Component?)Activator.CreateInstance(type);
 
-            if (instance is null) throw new TypeLoadException($"Failed to initialize {nameof(IComponent)} of type '{type.FullName}'.");
+            if (instance is null) throw new TypeLoadException($"Failed to initialize {nameof(Component)} of type '{type.FullName}'.");
             else if (!entity.TryGetComponent(type, out _)) entity.AddComponent(instance);
 
             if (!_ComponentCountByType.ContainsKey(type)) _ComponentCountByType.Add(type, 0);
@@ -139,45 +150,47 @@ namespace Automata.Engine.Entities
 
         #region Get .. Data
 
-        public IEnumerable<TComponent> GetComponentsAssignableFrom<TComponent>() where TComponent : class, IComponent
+        public IEnumerable<TComponent> GetComponentsExplicit<TComponent>() where TComponent : Component
         {
-            foreach (IComponent component in _Entities.SelectMany(entity => entity.Components.Values))
-                if (component is TComponent componentT)
-                    yield return componentT;
+            foreach (IEntity entity in _Entities)
+            foreach (Component component in entity.Components)
+            {
+                if (component is TComponent tComponent) yield return tComponent;
+            }
         }
 
         /// <summary>
         ///     Returns <see cref="IEnumerable{T}" /> of entities containing component <see cref="T1" />.
         /// </summary>
-        /// <typeparam name="T1"><see cref="IComponent" /> type to retrieve by.</typeparam>
+        /// <typeparam name="T1"><see cref="Component" /> type to retrieve by.</typeparam>
         /// <returns><see cref="IEnumerable{T}" /> of entities containing component <see cref="T1" />.</returns>
         /// <remarks>
-        ///     Be cautious of registering or removing <see cref="IComponent" />s when iterating entities from this function, as
+        ///     Be cautious of registering or removing <see cref="Component" />s when iterating entities from this function, as
         ///     any additions or subtractions from the collection will throw a collection modified exception.
         /// </remarks>
         public IEnumerable<IEntity> GetEntitiesWithComponents<T1>()
-            where T1 : class, IComponent =>
+            where T1 : Component =>
             _Entities.Where(entity => entity.HasComponent<T1>());
 
         public IEnumerable<IEntity> GetEntitiesWithComponents<T1, T2>()
-            where T1 : class, IComponent
-            where T2 : class, IComponent =>
+            where T1 : Component
+            where T2 : Component =>
             GetEntitiesWithComponents<T1>()
                 .Intersect(GetEntitiesWithComponents<T2>());
 
         public IEnumerable<IEntity> GetEntitiesWithComponents<T1, T2, T3>()
-            where T1 : class, IComponent
-            where T2 : class, IComponent
-            where T3 : class, IComponent =>
+            where T1 : Component
+            where T2 : Component
+            where T3 : Component =>
             GetEntitiesWithComponents<T1>()
                 .Intersect(GetEntitiesWithComponents<T2>())
                 .Intersect(GetEntitiesWithComponents<T3>());
 
         public IEnumerable<IEntity> GetEntitiesWithComponents<T1, T2, T3, T4>()
-            where T1 : class, IComponent
-            where T2 : class, IComponent
-            where T3 : class, IComponent
-            where T4 : class, IComponent =>
+            where T1 : Component
+            where T2 : Component
+            where T3 : Component
+            where T4 : Component =>
             GetEntitiesWithComponents<T1>()
                 .Intersect(GetEntitiesWithComponents<T2>())
                 .Intersect(GetEntitiesWithComponents<T3>())
@@ -186,10 +199,10 @@ namespace Automata.Engine.Entities
         /// <summary>
         ///     Returns all instances of components of type <see cref="T1" />
         /// </summary>
-        /// <typeparam name="T1">Type of <see cref="IComponent" /> to return.</typeparam>
-        /// <returns><see cref="IEnumerable{T}" /> of all instances of <see cref="IComponent" /> type <see cref="T1" />.</returns>
+        /// <typeparam name="T1">Type of <see cref="Component" /> to return.</typeparam>
+        /// <returns><see cref="IEnumerable{T}" /> of all instances of <see cref="Component" /> type <see cref="T1" />.</returns>
         public IEnumerable<T1> GetComponents<T1>()
-            where T1 : class, IComponent
+            where T1 : Component
         {
             foreach (IEntity entity in _Entities)
                 if (entity.TryGetComponent(out T1? component))
@@ -197,8 +210,8 @@ namespace Automata.Engine.Entities
         }
 
         public IEnumerable<(T1, T2)> GetComponents<T1, T2>()
-            where T1 : class, IComponent
-            where T2 : class, IComponent
+            where T1 : Component
+            where T2 : Component
         {
             foreach (IEntity entity in _Entities)
             {
@@ -208,9 +221,9 @@ namespace Automata.Engine.Entities
         }
 
         public IEnumerable<(T1, T2, T3)> GetComponents<T1, T2, T3>()
-            where T1 : class, IComponent
-            where T2 : class, IComponent
-            where T3 : class, IComponent
+            where T1 : Component
+            where T2 : Component
+            where T3 : Component
         {
             foreach (IEntity entity in _Entities)
             {
@@ -221,10 +234,10 @@ namespace Automata.Engine.Entities
         }
 
         public IEnumerable<(T1, T2, T3, T4)> GetComponents<T1, T2, T3, T4>()
-            where T1 : class, IComponent
-            where T2 : class, IComponent
-            where T3 : class, IComponent
-            where T4 : class, IComponent
+            where T1 : Component
+            where T2 : Component
+            where T3 : Component
+            where T4 : Component
         {
             foreach (IEntity entity in _Entities)
             {
@@ -235,7 +248,7 @@ namespace Automata.Engine.Entities
             }
         }
 
-        public int GetComponentCount<TComponent>() where TComponent : class, IComponent =>
+        public int GetComponentCount<TComponent>() where TComponent : Component =>
             _ComponentCountByType.TryGetValue(typeof(TComponent), out int count) ? count : 0;
 
         public int GetComponentCount(Type type) => _ComponentCountByType.TryGetValue(type, out int count) ? count : 0;

@@ -8,7 +8,7 @@ using Automata.Engine.Numerics;
 
 namespace Automata.Game.Chunks
 {
-    public class ChunkLoader : IComponentChangeable
+    public class ChunkLoader : ComponentChangeable
     {
         private int _Radius;
 

@@ -9,7 +9,7 @@ using Automata.Engine.Components;
 
 namespace Automata.Engine.Rendering.Meshes
 {
-    public class RenderMesh : IComponentChangeable, IDisposable
+    public class RenderMesh : ComponentChangeable, IDisposable
     {
         private IMesh? _Mesh;
 

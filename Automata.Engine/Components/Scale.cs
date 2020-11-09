@@ -1,6 +1,6 @@
 namespace Automata.Engine.Components
 {
-    public class Scale : IComponentChangeable
+    public class Scale : ComponentChangeable
     {
         public const float DEFAULT = 1f;
 

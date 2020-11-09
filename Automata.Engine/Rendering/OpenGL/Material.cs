@@ -9,7 +9,7 @@ using Automata.Engine.Rendering.OpenGL.Textures;
 
 namespace Automata.Engine.Rendering.OpenGL
 {
-    public class Material : IComponent, IDisposable
+    public class Material : Component, IDisposable
     {
         public Shader Shader { get; set; }
         public Texture?[] Textures { get; }

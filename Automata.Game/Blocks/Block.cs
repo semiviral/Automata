@@ -4,7 +4,6 @@ namespace Automata.Game.Blocks
 {
     public struct Block : IEquatable<Block>
     {
-        public 
         public ushort ID { get; }
         public ushort Color { get; set; }
         public byte LightLevel { get; set; }

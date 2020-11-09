@@ -36,8 +36,8 @@ namespace Automata.Engine.Systems
 
             foreach (Type type in types)
             {
-                if (!typeof(IComponent).IsAssignableFrom(type)) throw new TypeLoadException($"All given types must implement {typeof(IComponent)}.");
-                else if (!_Types.Add(type)) throw new ArgumentException($"Cannot specify the same {nameof(IComponent)} type more than once.");
+                if (!typeof(Component).IsAssignableFrom(type)) throw new TypeLoadException($"All given types must implement {typeof(Component)}.");
+                else if (!_Types.Add(type)) throw new ArgumentException($"Cannot specify the same {nameof(Component)} type more than once.");
                 else
                 {
                     const int prime = 239;

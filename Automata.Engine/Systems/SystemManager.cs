@@ -49,13 +49,10 @@ namespace Automata.Engine.Systems
         public void Update(EntityManager entityManager, TimeSpan deltaTime)
         {
             foreach (ComponentSystem componentSystem in _ComponentSystems)
-            {
-                if (!componentSystem.Enabled || !VerifyHandledTypesExist(entityManager, _HandledTypes[componentSystem.GetType()])) continue;
+                if (componentSystem.Enabled || VerifyHandledTypesExist(entityManager, _HandledTypes[componentSystem.GetType()]))
+                    componentSystem.Update(entityManager, deltaTime);
 
-                componentSystem.Update(entityManager, deltaTime);
-            }
-
-            foreach (IComponentChangeable changeable in entityManager.GetComponentsAssignableFrom<IComponentChangeable>()) changeable.Changed = false;
+            foreach (ComponentChangeable changeable in entityManager.GetComponentsExplicit<ComponentChangeable>()) changeable.Changed = false;
         }
 
         /// <summary>
