@@ -3,7 +3,6 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 using Automata.Engine;
 using Automata.Engine.Collections;
 using Automata.Engine.Components;
@@ -28,8 +27,6 @@ namespace Automata.Game.Chunks.Generation
 {
     public class ChunkGenerationSystem : ComponentSystem
     {
-        private static readonly Mutex _SingleThreadedGenerationMutex = new Mutex(false);
-
         private static readonly IVertexAttribute[] _DefaultAttributes =
         {
             new VertexAttribute<int>(0u, 1u, 0u),
@@ -95,14 +92,6 @@ namespace Automata.Game.Chunks.Generation
 
         private void GenerateBlocks(IEntity entity, Chunk chunk, Vector3i origin, IGenerationStep.Parameters parameters)
         {
-            bool releaseMutex = false;
-
-            if (Settings.Instance.SingleThreadedGeneration)
-            {
-                _SingleThreadedGenerationMutex.WaitOne();
-                releaseMutex = true;
-            }
-
             Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
             stopwatch.Restart();
 
@@ -133,8 +122,6 @@ namespace Automata.Game.Chunks.Generation
                 $"Insertion: '{chunk.ID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms)"));
 
             DiagnosticsSystem.Stopwatches.Return(stopwatch);
-
-            if (releaseMutex) _SingleThreadedGenerationMutex.ReleaseMutex();
         }
 
         private void GenerateMesh(IEntity entity, Chunk chunk, Vector3i origin)
@@ -145,14 +132,6 @@ namespace Automata.Game.Chunks.Generation
                     $"Attempted to mesh chunk {origin}, but it has not generated blocks."));
 
                 return;
-            }
-
-            bool releaseMutex = false;
-
-            if (Settings.Instance.SingleThreadedGeneration)
-            {
-                _SingleThreadedGenerationMutex.WaitOne();
-                releaseMutex = true;
             }
 
             Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
@@ -170,8 +149,6 @@ namespace Automata.Game.Chunks.Generation
                 $"Meshed: '{chunk.ID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms, vertexes {pendingMesh.Vertexes.Length}, indexes {pendingMesh.Indexes.Length})"));
 
             DiagnosticsSystem.Stopwatches.Return(stopwatch);
-
-            if (releaseMutex) _SingleThreadedGenerationMutex.ReleaseMutex();
         }
 
         private static void ApplyMesh(EntityManager entityManager, IEntity entity, Guid chunkID, PendingMesh<PackedVertex> pendingMesh)

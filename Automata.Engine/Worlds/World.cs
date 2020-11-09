@@ -25,8 +25,8 @@ namespace Automata.Engine.Worlds
 
         protected World(bool active)
         {
+            SystemManager = new SystemManager(this);
             EntityManager = new EntityManager();
-            SystemManager = new SystemManager();
 
             Active = active;
         }

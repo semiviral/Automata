@@ -37,8 +37,13 @@ namespace Automata.Game
         {
             Settings.Load();
 
-            BoundedAsyncPool.SetActivePool();
-            BoundedPool.Active.DefaultPoolSize();
+            if (Settings.Instance.SingleThreadedGeneration) SingleWorkerPool.SetActivePool();
+            else
+            {
+                BoundedSemaphorePool.SetActivePool();
+                BoundedPool.Active.DefaultPoolSize();
+            }
+
             BoundedPool.Active.ExceptionOccurred += (_, exception) => Log.Error($"{exception.Message}\r\n{exception.StackTrace}");
 
             WindowOptions options = WindowOptions.Default;
@@ -53,10 +58,13 @@ namespace Automata.Game
 
             BlockRegistry.Instance.LazyInitialize();
 
-            World world = new GameWorld(true);
+            World world = new VoxelWorld(true);
+            world.SystemManager.RegisterSystem<KeyboardMovementSystem, FirstOrderSystem>(SystemRegistrationOrder.Before);
+            world.SystemManager.RegisterSystem<MouseRotationSystem, FirstOrderSystem>(SystemRegistrationOrder.Before);
+            world.SystemManager.RegisterSystem<RenderSystem, LastOrderSystem>(SystemRegistrationOrder.Before);
             world.SystemManager.RegisterSystem<ChunkRegionLoaderSystem, DefaultOrderSystem>(SystemRegistrationOrder.After);
             world.SystemManager.RegisterSystem<ChunkGenerationSystem, ChunkRegionLoaderSystem>(SystemRegistrationOrder.After);
-            World.RegisterWorld("core", world);
+            World.RegisterWorld("Overworld", world);
 
             InitializePlayerEntity(world);
         }

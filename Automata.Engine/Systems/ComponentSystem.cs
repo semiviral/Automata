@@ -2,6 +2,7 @@
 
 using System;
 using Automata.Engine.Entities;
+using Automata.Engine.Worlds;
 
 #endregion
 
@@ -10,6 +11,7 @@ namespace Automata.Engine.Systems
 {
     public abstract class ComponentSystem : IDisposable
     {
+        protected World _CurrentWorld { get; private set; }
         public bool Enabled { get; protected set; }
 
         public ComponentSystem() => Enabled = true;
@@ -24,6 +26,7 @@ namespace Automata.Engine.Systems
         /// </summary>
         public virtual void Update(EntityManager entityManager, TimeSpan delta) { }
 
+        internal void SetCurrentWorld(World currentWorld) => _CurrentWorld = currentWorld;
 
         #region IDisposable
 

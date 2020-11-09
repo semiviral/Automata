@@ -7,6 +7,7 @@ using System.Reflection;
 using Automata.Engine.Collections;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
+using Automata.Engine.Worlds;
 using Serilog;
 
 #endregion
@@ -32,11 +33,13 @@ namespace Automata.Engine.Systems
     {
         private readonly IOrderedCollection<ComponentSystem> _ComponentSystems;
         private readonly Dictionary<Type, ComponentTypes> _HandledTypes;
+        private readonly World _CurrentWorld;
 
-        public SystemManager()
+        public SystemManager(World currentWorld)
         {
             _ComponentSystems = new OrderedList<ComponentSystem>();
             _HandledTypes = new Dictionary<Type, ComponentTypes>();
+            _CurrentWorld = currentWorld;
 
             RegisterSystem<FirstOrderSystem>(SystemRegistrationOrder.Last);
             RegisterSystem<DefaultOrderSystem>(SystemRegistrationOrder.Last);
@@ -84,6 +87,7 @@ namespace Automata.Engine.Systems
             }
 
             RegisterHandledTypes<TSystem>();
+            componentSystem.SetCurrentWorld(_CurrentWorld);
             componentSystem.Registered();
             Log.Debug($"({nameof(SystemManager)}) Registered {nameof(ComponentSystem)}: {typeof(TSystem)}");
         }
