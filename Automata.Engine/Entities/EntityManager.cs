@@ -63,6 +63,8 @@ namespace Automata.Engine.Entities
 
                 _ComponentCountByType[component.GetType()] -= 1;
             }
+
+            entity.Destroy();
         }
 
 
@@ -153,13 +155,9 @@ namespace Automata.Engine.Entities
         public IEnumerable<TComponent> GetComponentsExplicit<TComponent>() where TComponent : Component
         {
             foreach (IEntity entity in _Entities)
-            {
-                foreach (Component component in entity.Components)
-                    if (component is TComponent tComponent)
-                        yield return tComponent;
-
-                entity.Destroy();
-            }
+            foreach (Component component in entity.Components)
+                if (component is TComponent tComponent)
+                    yield return tComponent;
         }
 
         /// <summary>
