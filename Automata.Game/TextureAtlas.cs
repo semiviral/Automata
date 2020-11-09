@@ -37,20 +37,13 @@ namespace Automata.Game
                 if (_TextureDepths.ContainsKey(formattedName)) continue;
 
                 if (_TextureDepths.TryAdd(formattedName, depth))
-                {
-                    Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(TextureAtlas),
-                        $"Registered texture: \"{formattedName}\" depth {depth}"));
-                }
-                else
-                {
-                    Log.Warning(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(TextureAtlas),
-                        $"Failed to register texture: \"{formattedName}\" depth {depth}"));
-                }
+                    Log.Debug(string.Format(_LogFormat, $"Registered texture: \"{formattedName}\" depth {depth}"));
+                else Log.Warning(string.Format(_LogFormat, $"Failed to register texture: \"{formattedName}\" depth {depth}"));
 
                 depth += 1;
             }
 
-            Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(TextureAtlas), $"Registered {_TextureDepths.Count} textures."));
+            Log.Debug(string.Format(_LogFormat, $"Registered {_TextureDepths.Count} textures."));
         }
 
         public int GetTileDepth(string tileName) => _TextureDepths[tileName];

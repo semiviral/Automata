@@ -1,11 +1,17 @@
-using System;
+using System.IO;
 using Automata.Engine;
+using Tomlyn;
 
 namespace Automata.Game
 {
     public class Settings : Singleton<Settings>
     {
-        public bool SingleThreadedGeneration { get; }
-        public TimeSpan AcceptableUpdateTimeSlice { get; } = TimeSpan.FromMilliseconds(1d);
+        [TomlProperty("WorldGeneration", true)]
+        public bool SingleThreadedGeneration { get; set; }
+
+        [TomlProperty("WorldGeneration", true)]
+        public int GenerationRadius { get; set; }
+
+        public static void Load() => AssignInstance(Toml.Parse(File.ReadAllText("Settings.toml")).ToModel<Settings>());
     }
 }

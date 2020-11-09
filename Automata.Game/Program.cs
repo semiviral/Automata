@@ -65,12 +65,14 @@ namespace Automata.Game
 
             world.EntityManager.RegisterComponent(player, new ChunkLoader
             {
-                Radius = 12
+                Radius = Settings.Instance.GenerationRadius
             });
         }
 
         private static void Initialize()
         {
+            Settings.Load();
+
             BoundedAsyncPool.SetActivePool();
             BoundedPool.Active.DefaultPoolSize();
             BoundedPool.Active.ExceptionOccurred += (_, exception) => Log.Error($"{exception.Message}\r\n{exception.StackTrace}");

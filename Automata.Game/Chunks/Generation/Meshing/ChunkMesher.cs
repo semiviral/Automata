@@ -16,14 +16,14 @@ namespace Automata.Game.Chunks.Generation.Meshing
         private const int _DEFAULT_VERTEXES_CAPACITY = 2048;
         private const int _DEFAULT_INDEXES_CAPACITY = 3072;
 
-        public const string DEFAULT_STRATEGY = "Block";
+        public const string DEFAULT_STRATEGY = "Cube";
 
         public static readonly MeshingStrategies MeshingStrategies;
 
         static ChunkMesher() =>
             MeshingStrategies = new MeshingStrategies
             {
-                [DEFAULT_STRATEGY] = new BlockMeshingStrategy(),
+                [DEFAULT_STRATEGY] = new CubeMeshingStrategy(),
                 ["X"] = new XMeshingStrategy()
             };
 

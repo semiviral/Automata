@@ -81,7 +81,7 @@ namespace Automata.Game.Blocks
             }
         }
 
-        private static bool TryParseAttributes(IEnumerable<string> attributes, [MaybeNullWhen(false)] out Block.Attribute result)
+        private bool TryParseAttributes(IEnumerable<string> attributes, [MaybeNullWhen(false)] out Block.Attribute result)
         {
             result = (Block.Attribute)0;
 
@@ -94,8 +94,7 @@ namespace Automata.Game.Blocks
                     if (_AttributeAliases.TryGetValue(aliasName, out Block.Attribute aliasAttribute)) result |= aliasAttribute;
                     else
                     {
-                        Log.Error(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(BlockRegistry),
-                            $"Failed to parse {nameof(Block.Attribute)}: alias \"{aliasName}\" does not exist."));
+                        Log.Error(string.Format(_LogFormat, $"Failed to parse {nameof(Block.Attribute)}: alias \"{aliasName}\" does not exist."));
 
                         return false;
                     }
@@ -103,8 +102,7 @@ namespace Automata.Game.Blocks
                 else if (Enum.TryParse(typeof(Block.Attribute), attribute, true, out object? parsed)) result |= (Block.Attribute)parsed!;
                 else
                 {
-                    Log.Error(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(BlockRegistry),
-                        $"Failed to parse {nameof(Block.Attribute)}: attribute \"{attribute}\" does not exist."));
+                    Log.Error(string.Format(_LogFormat, $"Failed to parse {nameof(Block.Attribute)}: attribute \"{attribute}\" does not exist."));
 
                     return false;
                 }

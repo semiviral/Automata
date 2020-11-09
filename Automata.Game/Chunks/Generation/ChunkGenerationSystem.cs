@@ -4,7 +4,6 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using System.Threading.Channels;
 using Automata.Engine;
 using Automata.Engine.Collections;
 using Automata.Engine.Components;
@@ -30,12 +29,6 @@ namespace Automata.Game.Chunks.Generation
     public class ChunkGenerationSystem : ComponentSystem
     {
         private static readonly Mutex _SingleThreadedGenerationMutex = new Mutex(false);
-
-        private static readonly UnboundedChannelOptions _DefaultOptions = new UnboundedChannelOptions
-        {
-            SingleReader = true,
-            SingleWriter = false
-        };
 
         private static readonly IVertexAttribute[] _DefaultAttributes =
         {

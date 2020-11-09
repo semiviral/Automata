@@ -7,7 +7,7 @@ using Automata.Game.Blocks;
 
 namespace Automata.Game.Chunks.Generation.Meshing
 {
-    public struct BlockMeshingStrategy : IMeshingStrategy
+    public struct CubeMeshingStrategy : IMeshingStrategy
     {
         private static readonly int[][] _PackedVertexesByIteration =
         {

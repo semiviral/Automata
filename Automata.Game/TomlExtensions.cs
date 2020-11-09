@@ -33,14 +33,14 @@ namespace Automata.Game
                     if (attribute.Required && !model.ContainsKey(property.Name))
                         throw new Exception($"Toml file does not have required property '{property.Name}'.");
 
-                    property.SetValue(instance, model[property.Name]);
+                    property.SetValue(instance, Convert.ChangeType(model[property.Name], property.PropertyType));
                 }
                 else
                 {
                     if ((attribute.Required && !model.ContainsKey(attribute.Header)) || !((TomlTable)model[attribute.Header]).ContainsKey(property.Name))
                         throw new Exception($"Toml file does not have required property '{property.Name}'.");
 
-                    property.SetValue(instance, ((TomlTable)model[attribute.Header])[property.Name]);
+                    property.SetValue(instance, Convert.ChangeType(((TomlTable)model[attribute.Header])[property.Name], property.PropertyType));
                 }
             }
 
