@@ -76,8 +76,8 @@ namespace Automata.Game.Chunks.Generation.Meshing
             -GenerationConstants.CHUNK_SIZE
         };
 
-        public void Mesh(Span<ushort> blocks, Span<Direction> faces, ICollection<PackedVertex> vertexes, ICollection<uint> indexes,
-            IReadOnlyList<Palette<ushort>?> neighbors, int index, int localPosition, ushort blockID, bool isTransparent)
+        public void Mesh(Span<Block> blocks, Span<Direction> faces, ICollection<PackedVertex> vertexes, ICollection<uint> indexes,
+            IReadOnlyList<Palette<Block>?> neighbors, int index, int localPosition, Block block, bool isTransparent)
         {
             // iterate once over all 6 faces of given cubic space
             for (int normalIndex = 0; normalIndex < 6; normalIndex++)
@@ -126,7 +126,7 @@ namespace Automata.Game.Chunks.Generation.Meshing
                     for (;
                         (totalTraversalLength < GenerationConstants.CHUNK_SIZE)
                         && !faces[traversalIndex].HasDirection(faceDirection)
-                        && (blocks[traversalIndex] == blockID);
+                        && (blocks[traversalIndex].ID == block.ID);
                         traversalIndex += traversalIndexStep, // increment traversal index
                         totalTraversalLength++, // increment total traversals
                         traversals++) // increment traversals
@@ -153,11 +153,11 @@ namespace Automata.Game.Chunks.Generation.Meshing
                                 (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_SHIFT * 2)) & GenerationConstants.CHUNK_SIZE_MASK,
                                 GenerationConstants.CHUNK_SIZE);
 
-                            ushort facedBlockID = neighbors[normalIndex]?[facedBlockIndex] ?? BlockRegistry.NullID;
+                            ushort facedBlockID = neighbors[normalIndex]?[facedBlockIndex].ID ?? BlockRegistry.NullID;
 
                             if (isTransparent)
                             {
-                                if (blockID != facedBlockID) break;
+                                if (block.ID != facedBlockID) break;
                             }
                             else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockID, BlockDefinitionDefinition.Attribute.Transparent)) break;
                         }
@@ -167,13 +167,13 @@ namespace Automata.Game.Chunks.Generation.Meshing
                             int facedBlockIndex = traversalIndex + _IndexStepByNormalIndex[normalIndex];
 
                             // if so, index into block ids and set facingBlockId
-                            ushort facedBlockID = blocks[facedBlockIndex];
+                            ushort facedBlockID = blocks[facedBlockIndex].ID;
 
                             // if transparent, traverse so long as facing block is not the same block id
                             // if opaque, traverse so long as facing block is transparent
                             if (isTransparent)
                             {
-                                if (blockID != facedBlockID) break;
+                                if (block.ID != facedBlockID) break;
                             }
                             else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockID, BlockDefinitionDefinition.Attribute.Transparent))
                             {
@@ -211,7 +211,7 @@ namespace Automata.Game.Chunks.Generation.Meshing
                     // this ternary solution should probably be temporary. not sure if there's a better way, though.
                     int uvShift = (componentIndex + traversalNormalIndex + ((componentIndex == 1) && (traversalNormalIndex == 2) ? 1 : 0)) % 2;
 
-                    int compressedUV = (TextureAtlas.Instance.GetTileDepth(BlockRegistry.Instance.GetBlockName(blockID))
+                    int compressedUV = (TextureAtlas.Instance.GetTileDepth(BlockRegistry.Instance.GetBlockName(block.ID))
                                         << (GenerationConstants.CHUNK_SIZE_SHIFT * 2)) // z
                                        | (traversals << (GenerationConstants.CHUNK_SIZE_SHIFT * uvShift)) // traversal component
                                        | (1 << (GenerationConstants.CHUNK_SIZE_SHIFT * ((uvShift + 1) % 2))); // opposite component to traversal

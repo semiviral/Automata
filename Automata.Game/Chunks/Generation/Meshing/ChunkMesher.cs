@@ -27,14 +27,14 @@ namespace Automata.Game.Chunks.Generation.Meshing
                 ["X"] = new XMeshingStrategy()
             };
 
-        public static PendingMesh<PackedVertex> GeneratePackedMesh(Palette<ushort> blocksPalette, Palette<ushort>?[] neighbors)
+        public static PendingMesh<PackedVertex> GeneratePackedMesh(Palette<Block> blocksPalette, Palette<Block>?[] neighbors)
         {
-            if ((blocksPalette.ReadOnlyLookupTable.Count == 1) && (blocksPalette.ReadOnlyLookupTable[0] == BlockRegistry.AirID)) return PendingMesh<PackedVertex>.Empty;
+            if ((blocksPalette.ReadOnlyLookupTable.Count == 1) && (blocksPalette.ReadOnlyLookupTable[0].ID == BlockRegistry.AirID)) return PendingMesh<PackedVertex>.Empty;
 
             BlockRegistry blockRegistry = BlockRegistry.Instance;
             TransparentList<PackedVertex> vertexes = new TransparentList<PackedVertex>(_DEFAULT_VERTEXES_CAPACITY, true);
             TransparentList<uint> indexes = new TransparentList<uint>(_DEFAULT_INDEXES_CAPACITY, true);
-            Span<ushort> blocks = stackalloc ushort[GenerationConstants.CHUNK_SIZE_CUBED];
+            Span<Block> blocks = stackalloc Block[GenerationConstants.CHUNK_SIZE_CUBED];
             Span<Direction> faces = stackalloc Direction[GenerationConstants.CHUNK_SIZE_CUBED];
             faces.Clear();
 
@@ -44,15 +44,15 @@ namespace Automata.Game.Chunks.Generation.Meshing
             for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
             for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++, index++)
             {
-                ushort currentBlockID = blocks[index];
+                Block block = blocks[index];
 
-                if (currentBlockID == BlockRegistry.AirID) continue;
+                if (block.ID == BlockRegistry.AirID) continue;
 
-                IMeshingStrategy meshingStrategy = MeshingStrategies[blockRegistry.GetBlockDefinition(currentBlockID).MeshingStrategyIndex];
+                IMeshingStrategy meshingStrategy = MeshingStrategies[blockRegistry.GetBlockDefinition(block.ID).MeshingStrategyIndex];
                 int localPosition = x | (y << GenerationConstants.CHUNK_SIZE_SHIFT) | (z << (GenerationConstants.CHUNK_SIZE_SHIFT * 2));
 
-                meshingStrategy.Mesh(blocks, faces, vertexes, indexes, neighbors, index, localPosition, currentBlockID,
-                    blockRegistry.CheckBlockHasProperty(currentBlockID, BlockDefinitionDefinition.Attribute.Transparent));
+                meshingStrategy.Mesh(blocks, faces, vertexes, indexes, neighbors, index, localPosition, block,
+                    blockRegistry.CheckBlockHasProperty(block.ID, BlockDefinitionDefinition.Attribute.Transparent));
             }
 
             return vertexes.Count == 0 ? PendingMesh<PackedVertex>.Empty : new PendingMesh<PackedVertex>(vertexes.Segment, indexes.Segment);

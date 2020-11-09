@@ -34,7 +34,7 @@ namespace Automata.Game.Chunks.Generation
         };
 
         private readonly IOrderedCollection<IGenerationStep> _BuildSteps;
-        private readonly ConcurrentChannel<(IEntity, Palette<ushort>)> _PendingBlocks;
+        private readonly ConcurrentChannel<(IEntity, Palette<Block>)> _PendingBlocks;
         private readonly ConcurrentChannel<(IEntity, PendingMesh<PackedVertex>)> _PendingMeshes;
 
         private bool _KeysPressed;
@@ -43,7 +43,7 @@ namespace Automata.Game.Chunks.Generation
         {
             _BuildSteps = new OrderedLinkedList<IGenerationStep>();
             _BuildSteps.AddLast(new TerrainGenerationStep());
-            _PendingBlocks = new ConcurrentChannel<(IEntity, Palette<ushort>)>(true, false);
+            _PendingBlocks = new ConcurrentChannel<(IEntity, Palette<Block>)>(true, false);
             _PendingMeshes = new ConcurrentChannel<(IEntity, PendingMesh<PackedVertex>)>(true, false);
 
             DiagnosticsProvider.EnableGroup<ChunkGenerationDiagnosticGroup>();
@@ -52,7 +52,7 @@ namespace Automata.Game.Chunks.Generation
         [HandlesComponents(DistinctionStrategy.All, typeof(Translation), typeof(Chunk))]
         public override void Update(EntityManager entityManager, TimeSpan delta)
         {
-            while (_PendingBlocks.TryTake(out (IEntity Entity, Palette<ushort> Blocks) pendingBlocks)
+            while (_PendingBlocks.TryTake(out (IEntity Entity, Palette<Block> Blocks) pendingBlocks)
                    && pendingBlocks.Entity.TryGetComponent(out Chunk? chunk))
             {
                 chunk.Blocks = pendingBlocks.Blocks;
@@ -108,9 +108,9 @@ namespace Automata.Game.Chunks.Generation
 
             stopwatch.Restart();
 
-            Palette<ushort> palette = new Palette<ushort>(GenerationConstants.CHUNK_SIZE_CUBED, BlockRegistry.AirID);
+            Palette<Block> palette = new Palette<Block>(GenerationConstants.CHUNK_SIZE_CUBED, new Block(BlockRegistry.AirID));
 
-            for (int index = 0; index < GenerationConstants.CHUNK_SIZE_CUBED; index++) palette[index] = blocks[index];
+            for (int index = 0; index < GenerationConstants.CHUNK_SIZE_CUBED; index++) palette[index] = new Block(blocks[index]);
 
             if (!_PendingBlocks.TryAdd((entity, palette))) Log.Error($"Failed to add chunk({origin}) blocks.");
 

@@ -7,10 +7,10 @@ namespace Automata.Game.Chunks.Generation.Meshing
 {
     public class XMeshingStrategy : IMeshingStrategy
     {
-        public void Mesh(Span<ushort> blocks, Span<Direction> faces, ICollection<PackedVertex> vertexes, ICollection<uint> indexes,
-            IReadOnlyList<Palette<ushort>?> neighbors, int index, int localPosition, ushort blockID, bool isTransparent)
+        public void Mesh(Span<Block> blocks, Span<Direction> faces, ICollection<PackedVertex> vertexes, ICollection<uint> indexes,
+            IReadOnlyList<Palette<Block>?> neighbors, int index, int localPosition, Block block, bool isTransparent)
         {
-            int textureDepth = TextureAtlas.Instance.GetTileDepth(BlockRegistry.Instance.GetBlockName(blockID)) << (GenerationConstants.CHUNK_SIZE_SHIFT * 2);
+            int textureDepth = TextureAtlas.Instance.GetTileDepth(BlockRegistry.Instance.GetBlockName(block.ID)) << (GenerationConstants.CHUNK_SIZE_SHIFT * 2);
 
             uint indexesStart = (uint)vertexes.Count;
             indexes.Add(indexesStart + 0u);

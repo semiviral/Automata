@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using Automata.Engine.Collections;
+using Automata.Game.Blocks;
 
 namespace Automata.Game.Chunks.Generation.Meshing
 {
     public interface IMeshingStrategy
     {
-        public void Mesh(Span<ushort> blocks, Span<Direction> faces, ICollection<PackedVertex> vertexes, ICollection<uint> indexes,
-            IReadOnlyList<Palette<ushort>?> neighbors, int index, int localPosition, ushort blockID, bool isTransparent);
+        public void Mesh(Span<Block> blocks, Span<Direction> faces, ICollection<PackedVertex> vertexes, ICollection<uint> indexes,
+            IReadOnlyList<Palette<Block>?> neighbors, int index, int localPosition, Block block, bool isTransparent);
     }
 }
