@@ -14,7 +14,9 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
     {
         public Vector3i Size { get; }
 
-        public Texture3D(Vector3i size, WrapMode wrapMode, FilterMode filterMode, bool mipmap) : base(TextureTarget.Texture3D)
+        public Texture3D(Vector3i size, WrapMode wrapMode, FilterMode filterMode, bool mipmap) : this(GLAPI.Instance.GL, size, wrapMode, filterMode, mipmap) { }
+
+        public Texture3D(GL gl, Vector3i size, WrapMode wrapMode, FilterMode filterMode, bool mipmap) : base(gl, TextureTarget.Texture3D)
         {
             if (Vector3b.Any(size < 0)) throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
 

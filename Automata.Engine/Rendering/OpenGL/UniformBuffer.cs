@@ -1,29 +1,33 @@
 using System;
+using Serilog;
 using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.OpenGL
 {
-    public class UniformBuffer
+    public class UniformBuffer : OpenGLObject
     {
-        private readonly GL _GL;
-
-        public uint Handle { get; }
         public string Name { get; }
         public uint BindingIndex { get; }
 
-        public UniformBuffer(GL gl, string name, uint bindingIndex)
+        public UniformBuffer(GL gl, string name, uint bindingIndex) : base(gl)
         {
-            _GL = gl;
             Name = name;
             BindingIndex = bindingIndex;
-            Handle = _GL.CreateBuffer();
+            Handle = GL.CreateBuffer();
 
-            _GL.NamedBufferData(Handle, 512, Span<byte>.Empty, VertexBufferObjectUsage.StaticDraw);
+            GL.NamedBufferData(Handle, 512, Span<byte>.Empty, VertexBufferObjectUsage.StaticDraw);
         }
 
-        public unsafe void Write<T>(int offset, T data) where T: unmanaged => _GL.NamedBufferSubData(Handle, offset, (uint)sizeof(T), ref data);
+        public unsafe void Write<T>(int offset, T data) where T : unmanaged
+        {
+            if ((offset % 16) != 0)
+                Log.Warning(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(UniformBuffer),
+                    "Offset is not aligned to a multiple of 16. This may be an error."));
 
-        public void Bind() => _GL.BindBufferBase(GLEnum.StaticDraw, BindingIndex, Handle);
-        public void Bind(int offset, uint size) => _GL.BindBufferRange(GLEnum.StaticDraw, BindingIndex, Handle, offset, size);
+            GL.NamedBufferSubData(Handle, offset, (uint)sizeof(T), ref data);
+        }
+
+        public void Bind() => GL.BindBufferBase(GLEnum.StaticDraw, BindingIndex, Handle);
+        public void Bind(int offset, uint size) => GL.BindBufferRange(GLEnum.StaticDraw, BindingIndex, Handle, offset, size);
     }
 }

@@ -9,7 +9,7 @@ using SixLabors.ImageSharp.PixelFormats;
 
 namespace Automata.Engine.Rendering.OpenGL.Textures
 {
-    public abstract class Texture : IDisposable
+    public abstract class Texture : OpenGLObject, IDisposable
     {
         public enum FilterMode
         {
@@ -25,17 +25,12 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             Mirror
         }
 
-        protected readonly GL GL;
-        protected readonly uint Handle;
-
         protected InternalFormat _InternalFormat;
         protected PixelFormat _PixelFormat;
         protected PixelType _PixelType;
 
-        protected unsafe Texture(TextureTarget textureTarget)
+        protected unsafe Texture(GL gl, TextureTarget textureTarget) : base(gl)
         {
-            GL = GLAPI.Instance.GL;
-
             uint handle = 0;
             GL.CreateTextures(textureTarget, 1, &handle);
             Handle = handle;

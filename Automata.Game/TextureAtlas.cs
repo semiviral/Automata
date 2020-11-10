@@ -23,7 +23,7 @@ namespace Automata.Game
         {
             const string group_with_sprite_name_format = "{0}:{1}";
 
-            Blocks = new Texture2DArray<Rgba32>(8u, 8u, (uint)texturePaths.Count, Texture.WrapMode.Repeat, Texture.FilterMode.Point);
+            Blocks = new Texture2DArray<Rgba32>(new Vector3i(8, 8, texturePaths.Count), Texture.WrapMode.Repeat, Texture.FilterMode.Point);
 
             int depth = 0;
 

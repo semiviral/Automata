@@ -9,36 +9,31 @@ using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.OpenGL
 {
-    public class VertexArrayObject<TVertex> : IDisposable
+    public class VertexArrayObject<TVertex> : OpenGLObject, IDisposable
         where TVertex : unmanaged
     {
-        private readonly GL _GL;
-
         private bool _Disposed;
         private IVertexAttribute[] _VertexAttributes;
 
-        private uint Handle { get; }
         public IReadOnlyCollection<IVertexAttribute> VertexAttributes => _VertexAttributes;
 
-        public unsafe VertexArrayObject(GL gl, BufferObject<TVertex> vbo)
+        public unsafe VertexArrayObject(GL gl, BufferObject<TVertex> vbo) : base(gl)
         {
-            _GL = gl;
             _VertexAttributes = new IVertexAttribute[0];
 
-            Handle = _GL.CreateVertexArray();
+            Handle = GL.CreateVertexArray();
 
-            _GL.VertexArrayVertexBuffer(Handle, 0, vbo.Handle, 0, (uint)sizeof(TVertex));
+            GL.VertexArrayVertexBuffer(Handle, 0, vbo.Handle, 0, (uint)sizeof(TVertex));
         }
 
-        public unsafe VertexArrayObject(GL gl, BufferObject<TVertex> vbo, BufferObject<uint> ebo)
+        public unsafe VertexArrayObject(GL gl, BufferObject<TVertex> vbo, BufferObject<uint> ebo) : base(gl)
         {
-            _GL = gl;
             _VertexAttributes = new IVertexAttribute[0];
 
-            Handle = _GL.CreateVertexArray();
+            Handle = GL.CreateVertexArray();
 
-            _GL.VertexArrayVertexBuffer(Handle, 0, vbo.Handle, 0, (uint)sizeof(TVertex));
-            _GL.VertexArrayElementBuffer(Handle, ebo.Handle);
+            GL.VertexArrayVertexBuffer(Handle, 0, vbo.Handle, 0, (uint)sizeof(TVertex));
+            GL.VertexArrayElementBuffer(Handle, ebo.Handle);
         }
 
         public void AllocateVertexAttribute(IVertexAttribute vertexAttribute)
@@ -59,20 +54,20 @@ namespace Automata.Engine.Rendering.OpenGL
         {
             for (uint index = 0; index < _VertexAttributes.Length; index++)
             {
-                _GL.EnableVertexArrayAttrib(Handle, index);
-                _VertexAttributes[index].Commit(_GL, Handle);
-                _GL.VertexArrayAttribBinding(Handle, index, 0u);
+                GL.EnableVertexArrayAttrib(Handle, index);
+                _VertexAttributes[index].Commit(GL, Handle);
+                GL.VertexArrayAttribBinding(Handle, index, 0u);
             }
         }
 
-        public void Bind() => _GL.BindVertexArray(Handle);
-        public void Unbind() => _GL.BindVertexArray(0);
+        public void Bind() => GL.BindVertexArray(Handle);
+        public void Unbind() => GL.BindVertexArray(0);
 
         public void Dispose()
         {
             if (_Disposed) throw new ObjectDisposedException(ToString());
 
-            _GL.DeleteVertexArray(Handle);
+            GL.DeleteVertexArray(Handle);
             _Disposed = true;
         }
     }

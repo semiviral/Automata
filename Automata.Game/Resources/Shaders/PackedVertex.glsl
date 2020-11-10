@@ -5,18 +5,25 @@ out gl_PerVertex { vec4 gl_Position; };
 layout (location = 0) in int vert;
 layout (location = 1) in int uv;
 
-uniform int _componentMask;
-uniform int _componentShift;
-uniform int _normalsShift;
-uniform mat4 _mvp;
-
 layout (location = 0) out fragment
 {
     vec3 uv;
     vec3 color;
 } fragment;
 
-layout (std140)
+layout (std140) uniform matrixes
+{
+    mat4 mvp;
+    mat4 object;
+    mat4 world;
+}
+
+layout (std140) uniform camera
+{
+    vec3 pos;
+    vec4 params;
+    vec4 viewport;
+}
 
 void main()
 {
@@ -50,5 +57,5 @@ void main()
 
     fragment.uv = uncompressedUV;
     fragment.color = vec3(lerpedNormal.x + lerpedNormal.y + lerpedNormal.z);
-    gl_Position = _mvp * uncompressedPosition;
+    gl_Position = matrixes.mvp * uncompressedPosition;
 }

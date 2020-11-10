@@ -8,7 +8,7 @@ using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.OpenGL.Shaders
 {
-    public class ShaderProgram : IEquatable<ShaderProgram>, IDisposable
+    public class ShaderProgram : OpenGLObject, IEquatable<ShaderProgram>, IDisposable
     {
         private static readonly string[] _ReservedUniformNames =
         {
@@ -20,16 +20,13 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
             ProgramRegistry.RESERVED_UNIFORM_NAME_VEC4_VIEWPORT
         };
 
-        private readonly GL _GL;
         private readonly Dictionary<string, int> _CachedUniforms;
 
-        public uint Handle { get; }
         public ShaderType Type { get; }
         public bool HasAutomataUniforms { get; }
 
-        public ShaderProgram(GL gl, ShaderType shaderType, string path)
+        public ShaderProgram(GL gl, ShaderType shaderType, string path) : base(gl)
         {
-            _GL = gl;
             _CachedUniforms = new Dictionary<string, int>();
             Type = shaderType;
 
@@ -39,7 +36,7 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
                 File.ReadAllText(path)
             };
 
-            Handle = _GL.CreateShaderProgram(Type, 1, shader);
+            Handle = GL.CreateShaderProgram(Type, 1, shader);
             CheckShaderInfoLogAndThrow();
 
             CacheUniforms();
@@ -50,19 +47,19 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
 
         private void CacheUniforms()
         {
-            _GL.GetProgram(Handle, ProgramPropertyARB.ActiveUniforms, out int uniformCount);
+            GL.GetProgram(Handle, ProgramPropertyARB.ActiveUniforms, out int uniformCount);
 
             for (uint uniformIndex = 0; uniformIndex < uniformCount; uniformIndex++)
             {
-                string name = _GL.GetActiveUniform(Handle, uniformIndex, out _, out _);
-                int location = _GL.GetUniformLocation(Handle, name);
+                string name = GL.GetActiveUniform(Handle, uniformIndex, out _, out _);
+                int location = GL.GetUniformLocation(Handle, name);
                 _CachedUniforms.Add(name, location);
             }
         }
 
         private void CheckShaderInfoLogAndThrow()
         {
-            string infoLog = _GL.GetProgramInfoLog(Handle);
+            string infoLog = GL.GetProgramInfoLog(Handle);
 
             if (!string.IsNullOrWhiteSpace(infoLog)) throw new ShaderLoadException(Type, infoLog);
         }
@@ -76,7 +73,7 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
         {
             if (TryGetUniformLocation(name, out int location))
             {
-                _GL.ProgramUniform1(Handle, location, value);
+                GL.ProgramUniform1(Handle, location, value);
 
                 return true;
             }
@@ -87,7 +84,7 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
         {
             if (TryGetUniformLocation(name, out int location))
             {
-                _GL.ProgramUniform1(Handle, location, value);
+                GL.ProgramUniform1(Handle, location, value);
 
                 return true;
             }
@@ -98,7 +95,7 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
         {
             if (TryGetUniformLocation(name, out int location))
             {
-                _GL.ProgramUniform3(Handle, location, value);
+                GL.ProgramUniform3(Handle, location, value);
 
                 return true;
             }
@@ -109,7 +106,7 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
         {
             if (TryGetUniformLocation(name, out int location))
             {
-                _GL.ProgramUniform4(Handle, location, value);
+                GL.ProgramUniform4(Handle, location, value);
 
                 return true;
             }
@@ -120,7 +117,7 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
         {
             if (TryGetUniformLocation(name, out int location))
             {
-                _GL.ProgramUniformMatrix4(Handle, location, 1, false, value.Unroll());
+                GL.ProgramUniformMatrix4(Handle, location, 1, false, value.Unroll());
                 return true;
             }
             else return false;
@@ -128,7 +125,7 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
 
         private bool TryGetUniformLocation(string name, out int location) => _CachedUniforms.TryGetValue(name, out location);
 
-        public void Dispose() => _GL.DeleteProgram(Handle);
+        public void Dispose() => GL.DeleteProgram(Handle);
 
         public bool Equals(ShaderProgram? other) => other is not null && (other.Handle == Handle);
         public override bool Equals(object? obj) => obj is ShaderProgram other && Equals(other);

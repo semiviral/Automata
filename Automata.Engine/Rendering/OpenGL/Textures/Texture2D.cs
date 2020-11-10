@@ -17,7 +17,9 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
     {
         public Vector2i Size { get; }
 
-        public Texture2D(Vector2i size, WrapMode wrapMode, FilterMode filterMode, bool mipmap) : base(TextureTarget.Texture2D)
+        public Texture2D(Vector2i size, WrapMode wrapMode, FilterMode filterMode, bool mipmap) : this(GLAPI.Instance.GL, size, wrapMode, filterMode, mipmap) { }
+
+        public Texture2D(GL gl, Vector2i size, WrapMode wrapMode, FilterMode filterMode, bool mipmap) : base(gl, TextureTarget.Texture2D)
         {
             if (Vector2b.Any(size < 0)) throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
 
