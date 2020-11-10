@@ -19,7 +19,7 @@ namespace Automata.Engine.Systems
         /// <summary>
         ///     Method called when the <see cref="SystemManager" /> registers the system.
         /// </summary>
-        public virtual void Registered() { }
+        public virtual void Registered(EntityManager entityManager) { }
 
         /// <summary>
         ///     Method called once per frame.

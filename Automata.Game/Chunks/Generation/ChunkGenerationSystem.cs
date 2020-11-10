@@ -21,6 +21,7 @@ using ConcurrencyPools;
 using DiagnosticsProviderNS;
 using Serilog;
 using Silk.NET.Input.Common;
+using Silk.NET.OpenGL;
 
 #endregion
 
@@ -49,6 +50,15 @@ namespace Automata.Game.Chunks.Generation
             _PendingMeshes = new ConcurrentChannel<(IEntity, PendingMesh<PackedVertex>)>(true, false);
 
             DiagnosticsProvider.EnableGroup<ChunkGenerationDiagnosticGroup>();
+        }
+
+        public override void Registered(EntityManager entityManager)
+        {
+            IEntity entity = new Entity();
+entityManager.RegisterEntity(entity);
+entityManager.RegisterComponent<Translation>(entity);
+entityManager.RegisterComponent(entity, new RenderMesh {Mesh = new });
+GLAPI.Instance.GL.MultiDrawElementsIndirectCount(PrimitiveType.Triangles, DrawElementsType.UnsignedInt, null, );
         }
 
         [HandlesComponents(DistinctionStrategy.All, typeof(Translation), typeof(Chunk))]

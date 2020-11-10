@@ -19,11 +19,8 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             Offset = offset;
         }
 
-        public unsafe void SetBufferData(byte* data, uint length, BufferDraw bufferDraw) =>
-            GL.NamedBufferData(Handle, length, data, (VertexBufferObjectUsage)bufferDraw);
-
-        public void SetBufferData(Span<byte> data, BufferDraw bufferDraw) =>
-            GL.NamedBufferData(Handle, (uint)data.Length, data, (VertexBufferObjectUsage)bufferDraw);
+        public unsafe void SetBufferData(int offset, byte* data, uint length) => GL.NamedBufferSubData(Handle, offset + (int)Offset, length, data);
+        public void SetBufferData(int offset, Span<byte> data) => GL.NamedBufferSubData(Handle, offset + (int)Offset, (uint)data.Length, ref data[0]);
 
         public void Dispose() => _Owner.Return(this);
     }
@@ -51,19 +48,20 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             GL.NamedBufferStorage(Handle, size, Span<byte>.Empty, storage_flags);
         }
 
-        public bool TryRent([NotNullWhen(true)] out Tenant? bufferSlot)
+        public bool TryRent([NotNullWhen(true)] out Tenant? tenant)
         {
-            bufferSlot = null;
+            tenant = null;
 
             if (RentedSlots == _Slots.Length) return false;
 
             uint index = 0;
 
             for (; index < _Slots.Length; index++)
-                if (!_Slots[index])
-                    break;
+            {
+                if (!_Slots[index]) break;
+            }
 
-            bufferSlot = new Tenant(GL, this, index, (uint)(index * SlotSize));
+            tenant = new Tenant(GL, this, index, (uint)(index * SlotSize));
             _Slots[index] = true;
             RentedSlots += 1;
             return true;
