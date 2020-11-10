@@ -52,6 +52,7 @@ namespace Automata.Engine.Rendering
         public override unsafe void Update(EntityManager entityManager, TimeSpan delta)
         {
             _GL.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
+            _Matrixes.Bind();
 
             Vector4 viewport = new Vector4(0f, 0f, AutomataWindow.Instance.Size.X, AutomataWindow.Instance.Size.Y);
             Span<Plane> planes = stackalloc Plane[Frustum.TOTAL_PLANES];

@@ -27,7 +27,7 @@ namespace Automata.Engine.Rendering.OpenGL
             GL.NamedBufferSubData(Handle, offset, (uint)sizeof(T), ref data);
         }
 
-        public void Bind() => GL.BindBufferBase(GLEnum.StaticDraw, BindingIndex, Handle);
-        public void Bind(int offset, uint size) => GL.BindBufferRange(GLEnum.StaticDraw, BindingIndex, Handle, offset, size);
+        public void Bind() => GL.BindBufferBase(BufferTargetARB.UniformBuffer, BindingIndex, Handle);
+        public void Bind(int offset, uint size) => GL.BindBufferRange(BufferTargetARB.UniformBuffer, BindingIndex, Handle, offset, size);
     }
 }
