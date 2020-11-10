@@ -16,7 +16,7 @@ namespace Automata.Game.Chunks
 
         public IEnumerable<Palette<Block>?> NeighborBlocks() => Neighbors.Select(chunk => chunk?.Blocks);
 
-        public bool IsStateLockstep() => Neighbors.All(chunk => chunk is null || chunk.State >= State);
+        public bool IsStateLockstep() => Neighbors.All(chunk => chunk is null || (chunk.State >= State));
     }
 
     public enum GenerationState

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Automata.Engine.Collections
 {
-    public class Registry<T>: Singleton<Registry<T>>
+    public class Registry<T> : Singleton<Registry<T>>
     {
         protected readonly List<(string Name, T Registrant)> Registrants;
         protected readonly Dictionary<string, int> RegistrantNames;

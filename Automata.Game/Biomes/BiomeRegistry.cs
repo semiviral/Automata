@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Automata.Engine;
-using Automata.Engine.Collections;
 
 namespace Automata.Game.Biomes
 {

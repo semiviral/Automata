@@ -84,7 +84,9 @@ namespace Automata.Engine.Rendering
                     };
                 }
 
-                Matrix4x4 viewProjection = (camera.View * camera.Projection?.Matrix) ?? Matrix4x4.Identity;
+                if (camera.Projection is null) continue;
+
+                Matrix4x4 viewProjection = camera.View * camera.Projection.Matrix;
                 Material? currentMaterial = null;
 
                 foreach (IEntity objectEntity in entityManager.GetEntitiesWithComponents<RenderMesh>())

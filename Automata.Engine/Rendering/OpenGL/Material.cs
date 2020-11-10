@@ -1,6 +1,5 @@
 #region
 
-using System;
 using Automata.Engine.Components;
 using Automata.Engine.Rendering.OpenGL.Shaders;
 using Automata.Engine.Rendering.OpenGL.Textures;

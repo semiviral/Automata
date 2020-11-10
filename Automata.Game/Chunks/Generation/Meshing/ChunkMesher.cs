@@ -29,7 +29,8 @@ namespace Automata.Game.Chunks.Generation.Meshing
 
         public static PendingMesh<PackedVertex> GeneratePackedMesh(Palette<Block> blocksPalette, Palette<Block>?[] neighbors)
         {
-            if ((blocksPalette.ReadOnlyLookupTable.Count == 1) && (blocksPalette.ReadOnlyLookupTable[0].ID == BlockRegistry.AirID)) return PendingMesh<PackedVertex>.Empty;
+            if ((blocksPalette.ReadOnlyLookupTable.Count == 1) && (blocksPalette.ReadOnlyLookupTable[0].ID == BlockRegistry.AirID))
+                return PendingMesh<PackedVertex>.Empty;
 
             BlockRegistry blockRegistry = BlockRegistry.Instance;
             TransparentList<PackedVertex> vertexes = new TransparentList<PackedVertex>(_DEFAULT_VERTEXES_CAPACITY, true);

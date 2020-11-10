@@ -6,7 +6,6 @@ using Automata.Engine;
 using Automata.Engine.Noise;
 using Automata.Engine.Numerics;
 using Automata.Game.Blocks;
-using Silk.NET.OpenGL;
 
 #endregion
 
@@ -33,8 +32,7 @@ namespace Automata.Game.Chunks.Generation
 
                     int noiseHeight = heightmap[heightmapIndex];
 
-                    if ((global.Y < 4) && (global.Y <= parameters.SeededRandom.Next(0, 4)))
-                        blocks[index] = BlockRegistry.Instance.GetBlockID("Core:Bedrock");
+                    if ((global.Y < 4) && (global.Y <= parameters.SeededRandom.Next(0, 4))) blocks[index] = BlockRegistry.Instance.GetBlockID("Core:Bedrock");
                     else if ((noiseHeight < origin.Y)
                              || (CalculateCaveNoise(global, parameters.Seed ^ 2, parameters.Seed ^ 3, parameters.Persistence)
                                  < 0.000225f)) blocks[index] = BlockRegistry.AirID;

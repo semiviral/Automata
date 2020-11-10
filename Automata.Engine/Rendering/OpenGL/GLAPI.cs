@@ -63,7 +63,6 @@ namespace Automata.Engine.Rendering.OpenGL
             }
         }
 
-
         public static void UnbindTexture() => Instance.GL.BindTexture(TextureTarget.Texture1D, 0);
         public static void UnbindProgramPipeline() => Instance.GL.BindProgramPipeline(0);
         public static void UnbindVertexArray() => Instance.GL.BindVertexArray(0);

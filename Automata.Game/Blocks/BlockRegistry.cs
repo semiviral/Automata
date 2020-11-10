@@ -20,10 +20,15 @@ namespace Automata.Game.Blocks
 {
     public class BlockRegistry : Singleton<BlockRegistry>
     {
-        private static readonly IReadOnlyDictionary<string, BlockDefinitionDefinition.Attribute> _AttributeAliases = new Dictionary<string, BlockDefinitionDefinition.Attribute>
-        {
-            { "Default", BlockDefinitionDefinition.Attribute.Collectible | BlockDefinitionDefinition.Attribute.Collideable | BlockDefinitionDefinition.Attribute.Destructible }
-        };
+        private static readonly IReadOnlyDictionary<string, BlockDefinitionDefinition.Attribute> _AttributeAliases =
+            new Dictionary<string, BlockDefinitionDefinition.Attribute>
+            {
+                {
+                    "Default", BlockDefinitionDefinition.Attribute.Collectible
+                               | BlockDefinitionDefinition.Attribute.Collideable
+                               | BlockDefinitionDefinition.Attribute.Destructible
+                }
+            };
 
         public static ushort AirID;
         public static ushort NullID;
@@ -94,15 +99,18 @@ namespace Automata.Game.Blocks
                     if (_AttributeAliases.TryGetValue(aliasName, out BlockDefinitionDefinition.Attribute aliasAttribute)) result |= aliasAttribute;
                     else
                     {
-                        Log.Error(string.Format(_LogFormat, $"Failed to parse {nameof(BlockDefinitionDefinition.Attribute)}: alias \"{aliasName}\" does not exist."));
+                        Log.Error(string.Format(_LogFormat,
+                            $"Failed to parse {nameof(BlockDefinitionDefinition.Attribute)}: alias \"{aliasName}\" does not exist."));
 
                         return false;
                     }
                 }
-                else if (Enum.TryParse(typeof(BlockDefinitionDefinition.Attribute), attribute, true, out object? parsed)) result |= (BlockDefinitionDefinition.Attribute)parsed!;
+                else if (Enum.TryParse(typeof(BlockDefinitionDefinition.Attribute), attribute, true, out object? parsed))
+                    result |= (BlockDefinitionDefinition.Attribute)parsed!;
                 else
                 {
-                    Log.Error(string.Format(_LogFormat, $"Failed to parse {nameof(BlockDefinitionDefinition.Attribute)}: attribute \"{attribute}\" does not exist."));
+                    Log.Error(string.Format(_LogFormat,
+                        $"Failed to parse {nameof(BlockDefinitionDefinition.Attribute)}: attribute \"{attribute}\" does not exist."));
 
                     return false;
                 }

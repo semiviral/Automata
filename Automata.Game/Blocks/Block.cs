@@ -16,9 +16,9 @@ namespace Automata.Game.Blocks
         }
 
         public bool Equals(Block other) =>
-            ID == other.ID
-            && Color == other.Color
-            && LightLevel == other.LightLevel;
+            (ID == other.ID)
+            && (Color == other.Color)
+            && (LightLevel == other.LightLevel);
 
         public override bool Equals(object? obj) => obj is Block other && Equals(other);
 

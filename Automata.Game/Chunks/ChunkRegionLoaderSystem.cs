@@ -19,7 +19,7 @@ namespace Automata.Game.Chunks
 {
     public class ChunkRegionLoaderSystem : ComponentSystem
     {
-        private VoxelWorld VoxelWorld => (_CurrentWorld as VoxelWorld) ?? throw new InvalidOperationException("Must be in VoxelWorld.");
+        private VoxelWorld VoxelWorld => _CurrentWorld as VoxelWorld ?? throw new InvalidOperationException("Must be in VoxelWorld.");
 
         [HandlesComponents(DistinctionStrategy.All, typeof(Translation), typeof(ChunkLoader))]
         public override void Update(EntityManager entityManager, TimeSpan delta)
