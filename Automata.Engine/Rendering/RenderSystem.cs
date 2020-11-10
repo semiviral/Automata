@@ -9,6 +9,7 @@ using Automata.Engine.Numerics.Shapes;
 using Automata.Engine.Rendering.GLFW;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
+using Automata.Engine.Rendering.OpenGL.Shaders;
 using Automata.Engine.Systems;
 using Silk.NET.OpenGL;
 using Plane = Automata.Engine.Numerics.Shapes.Plane;
@@ -24,7 +25,6 @@ namespace Automata.Engine.Rendering
         private const bool _ENABLE_FRUSTUM_CULLING = true;
 
         private readonly GL _GL;
-        private readonly UniformBuffer _Matrixes;
 
         private float _NewAspectRatio;
 
@@ -44,15 +44,12 @@ namespace Automata.Engine.Rendering
                 _GL.CullFace(CullFaceMode.Back);
                 _GL.Enable(GLEnum.CullFace);
             }
-
-            _Matrixes = new UniformBuffer(_GL, 0, (uint)sizeof(Matrix4x4) * 3u);
         }
 
         [HandlesComponents(DistinctionStrategy.Any, typeof(Camera), typeof(RenderMesh))]
         public override unsafe void Update(EntityManager entityManager, TimeSpan delta)
         {
             _GL.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
-            _Matrixes.Bind();
 
             Vector4 viewport = new Vector4(0f, 0f, AutomataWindow.Instance.Size.X, AutomataWindow.Instance.Size.Y);
             Span<Plane> planes = stackalloc Plane[Frustum.TOTAL_PLANES];
@@ -105,9 +102,8 @@ namespace Automata.Engine.Rendering
                     }
 
                     Matrix4x4 modelViewProjection = renderMesh.Model * viewProjection;
-                    _Matrixes.Write(0, modelViewProjection);
 
-                    if (!renderMesh.ShouldRender // check if should render at all
+                    if (!renderMesh.ShouldRender
                         || ((camera.RenderedLayers & renderMesh.Mesh!.Layer) != renderMesh.Mesh!.Layer)
                         || !objectEntity.TryGetComponent(out Material? material)
 
@@ -118,20 +114,21 @@ namespace Automata.Engine.Rendering
 
                     if (currentMaterial is null || (material.Pipeline.Handle != currentMaterial.Pipeline.Handle))
                     {
-                        material.Pipeline.Bind();
-
-                        for (int index = 0; index < material.Textures.Length; index++)
-                        {
-                            material.Textures[index]?.Bind(TextureUnit.Texture0 + index);
-                            material.Pipeline.Stage(ShaderType.FragmentShader).TrySetUniform($"_tex{index}", index);
-                        }
-
                         currentMaterial = material;
+                        currentMaterial.Pipeline.Bind();
+                        ShaderProgram fragmentShader = currentMaterial.Pipeline.Stage(ShaderType.FragmentShader);
+
+                        for (int index = 0; index < currentMaterial.Textures.Length; index++)
+                        {
+                            currentMaterial.Textures[index]?.Bind(TextureUnit.Texture0 + index);
+                            fragmentShader.TrySetUniform($"_tex{index}", index);
+                        }
                     }
 
                     Matrix4x4.Invert(renderMesh.Model, out Matrix4x4 modelInverted);
-                    _Matrixes.Write(64, modelInverted); // object
-                    _Matrixes.Write(128, renderMesh.Model); // world
+                    currentMaterial.Pipeline.Stage(ShaderType.VertexShader).TrySetUniform("_mvp", modelViewProjection);
+                    currentMaterial.Pipeline.Stage(ShaderType.VertexShader).TrySetUniform("_object", modelInverted);
+                    currentMaterial.Pipeline.Stage(ShaderType.VertexShader).TrySetUniform("_world", renderMesh.Model);
 
                     renderMesh.Mesh!.Bind();
 

@@ -11,12 +11,7 @@ layout (location = 0) out fragment
     vec3 color;
 } fragment;
 
-layout (std140, binding = 0) uniform matrixes
-{
-    mat4 mvp;
-    mat4 object;
-    mat4 world;
-};
+uniform mat4 _mvp;
 
 void main()
 {
@@ -50,5 +45,5 @@ void main()
 
     fragment.uv = uncompressedUV;
     fragment.color = vec3(lerpedNormal.x + lerpedNormal.y + lerpedNormal.z);
-    gl_Position = mvp * uncompressedPosition;
+    gl_Position = _mvp * uncompressedPosition;
 }
