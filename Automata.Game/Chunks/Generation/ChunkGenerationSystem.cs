@@ -12,6 +12,7 @@ using Automata.Engine.Input;
 using Automata.Engine.Numerics;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
+using Automata.Engine.Rendering.OpenGL.Shaders;
 using Automata.Engine.Systems;
 using Automata.Game.Blocks;
 using Automata.Game.Chunks.Generation.Meshing;
@@ -74,14 +75,14 @@ namespace Automata.Game.Chunks.Generation
 
                 switch (chunk.State)
                 {
-                    case GenerationState.Ungenerated when chunk.IsStateLockstep():
+                    case GenerationState.Ungenerated:
                         BoundedPool.Active.QueueWork(() => GenerateBlocks(entity, chunk, Vector3i.FromVector3(translation.Value),
                             new IGenerationStep.Parameters(GenerationConstants.Seed, GenerationConstants.FREQUENCY, GenerationConstants.PERSISTENCE)));
 
                         chunk.State += 1;
                         break;
 
-                    case GenerationState.Unmeshed when chunk.IsStateLockstep():
+                    case GenerationState.Unmeshed when chunk.IsStateLockstep(): // don't generate mesh until all neighbors are ready
                         BoundedPool.Active.QueueWork(() => GenerateMesh(entity, chunk, Vector3i.FromVector3(translation.Value)));
 
                         chunk.State += 1;
@@ -175,25 +176,17 @@ namespace Automata.Game.Chunks.Generation
             mesh.VertexesBuffer.SetBufferData(pendingMesh.Vertexes, BufferDraw.DynamicDraw);
             mesh.IndexesBuffer.SetBufferData(pendingMesh.Indexes, BufferDraw.DynamicDraw);
 
+            ProgramPipeline programPipeline = ProgramRegistry.Instance.Load("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl");
 
-            if (Shader.TryLoadWithCache("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl", out Shader? shader))
+            if (entity.TryGetComponent(out Material? material))
             {
-                if (entity.TryGetComponent(out Material? material))
-                {
-                    if (material.Shader.ID != shader.ID) material.Shader = shader;
-                }
-                else entityManager.RegisterComponent(entity, material = new Material(shader));
-
-                material.Textures[0] = TextureAtlas.Instance.Blocks;
-
-                shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_INT_COMPONENT_SHIFT, GenerationConstants.CHUNK_SIZE_SHIFT);
-                shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_INT_COMPONENT_MASK, GenerationConstants.CHUNK_SIZE_MASK);
-                shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_INT_NORMAL_SHIFT, 2);
+                if (material.Pipeline.Handle != programPipeline.Handle) material.Pipeline = programPipeline;
             }
-            else Log.Error($"Failed to load a shader for chunk at {entity.GetComponent<Translation>().Value}.");
+            else entityManager.RegisterComponent(entity, material = new Material(programPipeline));
+
+            material.Textures[0] = TextureAtlas.Instance.Blocks;
 
             stopwatch.Stop();
-
             DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new ApplyMeshTime(stopwatch.Elapsed));
             DiagnosticsSystem.Stopwatches.Return(stopwatch);
 

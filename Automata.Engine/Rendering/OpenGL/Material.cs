@@ -2,6 +2,7 @@
 
 using System;
 using Automata.Engine.Components;
+using Automata.Engine.Rendering.OpenGL.Shaders;
 using Automata.Engine.Rendering.OpenGL.Textures;
 
 #endregion
@@ -11,11 +12,11 @@ namespace Automata.Engine.Rendering.OpenGL
 {
     public class Material : Component, IDisposable
     {
-        public Shader Shader { get; set; }
+        public ProgramPipeline Pipeline { get; set; }
         public Texture?[] Textures { get; }
 
-        public Material(Shader value) => (Shader, Textures) = (value, new Texture?[9] /* 9 OGL texture channels */);
+        public Material(ProgramPipeline pipeline) => (Pipeline, Textures) = (pipeline, new Texture?[9] /* 9 OGL texture channels */);
 
-        public void Dispose() => Shader.Dispose();
+        public void Dispose() => Pipeline.Dispose();
     }
 }

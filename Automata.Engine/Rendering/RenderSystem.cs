@@ -9,6 +9,7 @@ using Automata.Engine.Numerics.Shapes;
 using Automata.Engine.Rendering.GLFW;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
+using Automata.Engine.Rendering.OpenGL.Shaders;
 using Automata.Engine.Systems;
 using Silk.NET.OpenGL;
 using Plane = Automata.Engine.Numerics.Shapes.Plane;
@@ -108,35 +109,36 @@ namespace Automata.Engine.Rendering
                             && _ENABLE_FRUSTUM_CULLING
                             && CheckClipFrustumOcclude(bounds, planes, modelViewProjection))) continue;
 
-                    if (currentMaterial is null || (material.Shader.ID != currentMaterial.Shader.ID))
+                    if (currentMaterial is null || (material.Pipeline.Handle != currentMaterial.Pipeline.Handle))
                     {
-                        material.Shader.Use();
+                        material.Pipeline.Bind();
 
                         for (int index = 0; index < material.Textures.Length; index++)
                         {
                             material.Textures[index]?.Bind(TextureUnit.Texture0 + index);
-                            material.Shader.TrySetUniform($"_tex{index}", index);
+                            material.Pipeline.Stage(ShaderType.FragmentShader).TrySetUniform($"_tex{index}", index);
                         }
 
                         currentMaterial = material;
                     }
 
-                    if (material.Shader.HasAutomataUniforms)
+                    if (material.Pipeline.Stage(ShaderType.VertexShader).HasAutomataUniforms)
                     {
                         if (Matrix4x4.Invert(renderMesh.Model, out Matrix4x4 modelInverted))
-                            material.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_OBJECT, modelInverted);
+                            material.Pipeline.Stage(ShaderType.VertexShader).TrySetUniform(ProgramRegistry.RESERVED_UNIFORM_NAME_MATRIX_OBJECT, modelInverted);
 
-                        material.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_WORLD, renderMesh.Model);
-                        material.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_MATRIX_MVP, modelViewProjection);
+                        material.Pipeline.Stage(ShaderType.VertexShader).TrySetUniform(ProgramRegistry.RESERVED_UNIFORM_NAME_MATRIX_WORLD, renderMesh.Model);
+                        material.Pipeline.Stage(ShaderType.VertexShader).TrySetUniform(ProgramRegistry.RESERVED_UNIFORM_NAME_MATRIX_MVP, modelViewProjection);
 
-                        material.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC3_CAMERA_WORLD_POSITION,
+                        material.Pipeline.Stage(ShaderType.VertexShader).TrySetUniform(ProgramRegistry.RESERVED_UNIFORM_NAME_VEC3_CAMERA_WORLD_POSITION,
                             cameraTranslation?.Value ?? Vector3.Zero);
 
-                        material.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_CAMERA_PROJECTION_PARAMS,
+                        material.Pipeline.Stage(ShaderType.VertexShader).TrySetUniform(ProgramRegistry.RESERVED_UNIFORM_NAME_VEC4_CAMERA_PROJECTION_PARAMS,
                             camera.Projection?.Parameters ?? Vector4.Zero);
 
-                        material.Shader.TrySetUniform(Shader.RESERVED_UNIFORM_NAME_VEC4_VIEWPORT, viewport);
+                        material.Pipeline.Stage(ShaderType.VertexShader).TrySetUniform(ProgramRegistry.RESERVED_UNIFORM_NAME_VEC4_VIEWPORT, viewport);
                     }
+
 
                     renderMesh.Mesh!.Bind();
 
