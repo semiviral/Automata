@@ -120,10 +120,9 @@ namespace Automata.Engine.Rendering
                 }
 
                 foreach ((IEntity objectEntity, RenderMesh renderMesh, Material material) in entityManager.GetEntities<RenderMesh, Material>()
+                    .Where(result => result.Component1.ShouldRender && (camera.RenderedLayers & result.Component1.Mesh!.Layer) > 0)
                     .OrderBy(result => result.Component2.Pipeline.Handle))
                 {
-                    if (!renderMesh.ShouldRender || ((camera.RenderedLayers & renderMesh.Mesh!.Layer) != renderMesh.Mesh!.Layer)) continue;
-
                     Matrix4x4 modelViewProjection = renderMesh.Model * viewProjection;
 
                     if (objectEntity.TryGetComponent(out OcclusionBounds? bounds) && CheckClipFrustumOcclude(bounds, planes, modelViewProjection)) continue;
