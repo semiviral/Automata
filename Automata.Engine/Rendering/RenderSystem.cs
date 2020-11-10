@@ -76,12 +76,11 @@ namespace Automata.Engine.Rendering
                 {
                     camera.View = Matrix4x4.Identity;
 
-                    if (cameraScale is not null) camera.View *= Matrix4x4.CreateScale(cameraScale?.Value ?? Scale.DEFAULT);
-                    if (cameraTranslation is not null) camera.View *= Matrix4x4.CreateFromQuaternion(cameraRotation?.Value ?? Quaternion.Identity);
-                    if (cameraRotation is not null) camera.View *= Matrix4x4.CreateTranslation(cameraTranslation?.Value ?? Vector3.Zero);
+                    if (cameraScale is not null) camera.View *= Matrix4x4.CreateScale(cameraScale.Value);
+                    if (cameraRotation is not null) camera.View *= Matrix4x4.CreateFromQuaternion(cameraRotation.Value);
+                    if (cameraTranslation is not null) camera.View *= Matrix4x4.CreateTranslation(cameraTranslation.Value);
+                    if ((camera.View != Matrix4x4.Identity) && Matrix4x4.Invert(camera.View, out Matrix4x4 inverted)) camera.View = inverted;
 
-                    Matrix4x4.Invert(camera.View, out Matrix4x4 inverted);
-                    camera.View = inverted;
                     camera.Uniforms.Write(0, camera.View);
                 }
 
@@ -120,7 +119,7 @@ namespace Automata.Engine.Rendering
                 }
 
                 foreach ((IEntity objectEntity, RenderMesh renderMesh, Material material) in entityManager.GetEntities<RenderMesh, Material>()
-                    .Where(result => result.Component1.ShouldRender && (camera.RenderedLayers & result.Component1.Mesh!.Layer) > 0)
+                    .Where(result => result.Component1.ShouldRender && ((camera.RenderedLayers & result.Component1.Mesh!.Layer) > 0))
                     .OrderBy(result => result.Component2.Pipeline.Handle))
                 {
                     Matrix4x4 modelViewProjection = renderMesh.Model * viewProjection;

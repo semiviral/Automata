@@ -11,7 +11,7 @@ using Serilog;
 #endregion
 
 
-namespace Automata.Engine.Worlds
+namespace Automata.Engine
 {
     public class World : IDisposable
     {

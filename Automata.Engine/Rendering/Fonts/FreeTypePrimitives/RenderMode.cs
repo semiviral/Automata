@@ -1,3 +1,6 @@
+using System;
+using Microsoft.Extensions.DependencyModel;
+
 namespace Automata.Engine.Rendering.Fonts.FreeTypePrimitives
 {
 	/// <summary>
@@ -6,7 +9,7 @@ namespace Automata.Engine.Rendering.Fonts.FreeTypePrimitives
 	///         type of scanline conversion performed on the outline.
 	///     </para>
 	///     <para>
-	///         For bitmap fonts and embedded bitmaps the <see cref="FTBitmap.PixelMode" /> field in the <see cref="GlyphSlot" />
+	///         For bitmap fonts and embedded bitmaps the <see cref="PixelMode" /> field in the <see cref="GlyphSlot" />
 	///         structure gives the format of the returned bitmap.
 	///     </para>
 	///     <para>
@@ -21,7 +24,7 @@ namespace Automata.Engine.Rendering.Fonts.FreeTypePrimitives
 	///     </para>
 	///     <para>
 	///         The selected render mode only affects vector glyphs of a font. Embedded bitmaps often have a different pixel
-	///         mode like <see cref="PixelMode.Mono" />. You can use <see cref="FTBitmap.Convert" /> to transform them into 8-bit
+	///         mode like <see cref="PixelMode.Mono" />. You can use <see cref="Convert" /> to transform them into 8-bit
 	///         pixmaps.
 	///     </para>
 	///     Copied from SharpFont (https://github.com/Robmaister/SharpFont)

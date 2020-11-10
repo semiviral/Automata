@@ -7,7 +7,6 @@ using Automata.Engine.Rendering;
 using Automata.Engine.Rendering.GLFW;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Systems;
-using Automata.Engine.Worlds;
 using Automata.Game.Blocks;
 using Automata.Game.Chunks;
 using Automata.Game.Chunks.Generation;
@@ -59,8 +58,7 @@ namespace Automata.Game
             BlockRegistry.Instance.LazyInitialize();
 
             World world = new VoxelWorld(true);
-            world.SystemManager.RegisterSystem<KeyboardMovementSystem, FirstOrderSystem>(SystemRegistrationOrder.Before);
-            world.SystemManager.RegisterSystem<MouseRotationSystem, FirstOrderSystem>(SystemRegistrationOrder.Before);
+            world.SystemManager.RegisterSystem<InputSystem, FirstOrderSystem>(SystemRegistrationOrder.Before);
             world.SystemManager.RegisterSystem<RenderSystem, LastOrderSystem>(SystemRegistrationOrder.Before);
             world.SystemManager.RegisterSystem<ChunkRegionLoaderSystem, DefaultOrderSystem>(SystemRegistrationOrder.After);
             world.SystemManager.RegisterSystem<ChunkGenerationSystem, ChunkRegionLoaderSystem>(SystemRegistrationOrder.After);

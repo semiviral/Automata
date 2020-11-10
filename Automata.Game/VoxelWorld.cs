@@ -1,6 +1,6 @@
+using Automata.Engine;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
-using Automata.Engine.Worlds;
 using Automata.Game.Chunks;
 
 namespace Automata.Game

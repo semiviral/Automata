@@ -2,7 +2,6 @@
 
 using System;
 using Automata.Engine.Entities;
-using Automata.Engine.Worlds;
 
 #endregion
 
@@ -25,6 +24,9 @@ namespace Automata.Engine.Systems
         ///     Method called once per frame.
         /// </summary>
         public virtual void Update(EntityManager entityManager, TimeSpan delta) { }
+
+        protected TComponentSystem? GetSystem<TComponentSystem>() where TComponentSystem : ComponentSystem =>
+            _CurrentWorld?.SystemManager.GetSystem<TComponentSystem>();
 
         internal void SetCurrentWorld(World currentWorld) => _CurrentWorld = currentWorld;
 

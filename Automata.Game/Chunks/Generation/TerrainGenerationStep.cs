@@ -3,6 +3,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using Automata.Engine;
+using Automata.Engine.Extensions;
 using Automata.Engine.Noise;
 using Automata.Engine.Numerics;
 using Automata.Game.Blocks;
@@ -53,7 +54,7 @@ namespace Automata.Game.Chunks.Generation
         private static float CalculateCaveNoise(Vector3i global, int noiseSeedA, int noiseSeedB, float persistence)
         {
             float currentHeight = (global.Y + (((GenerationConstants.WORLD_HEIGHT / 4f) - (global.Y * 1.25f)) * persistence)) * 0.85f;
-            float heightDampener = AutomataMath.Unlerp(0f, GenerationConstants.WORLD_HEIGHT, currentHeight);
+            float heightDampener = currentHeight.Unlerp(0f, GenerationConstants.WORLD_HEIGHT);
             float noiseA = OpenSimplexSlim.GetSimplex(noiseSeedA, 0.01f, global) * heightDampener;
             float noiseB = OpenSimplexSlim.GetSimplex(noiseSeedB, 0.01f, global) * heightDampener;
             float noiseAPow2 = MathF.Pow(noiseA, 2f);
@@ -66,7 +67,7 @@ namespace Automata.Game.Chunks.Generation
         private static int CalculateHeight(int x, int z, float frequency, float persistence)
         {
             float noise = OpenSimplexSlim.GetSimplex(GenerationConstants.Seed, frequency, x, z);
-            float noiseHeight = AutomataMath.Unlerp(-1f, 1f, noise) * GenerationConstants.WORLD_HEIGHT;
+            float noiseHeight = noise.Unlerp(-1f, 1f) * GenerationConstants.WORLD_HEIGHT;
             float modifiedNoiseHeight = noiseHeight + (((GenerationConstants.WORLD_HEIGHT / 2f) - (noiseHeight * 1.25f)) * persistence);
 
             return (int)modifiedNoiseHeight;

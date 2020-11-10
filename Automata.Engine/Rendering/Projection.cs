@@ -1,4 +1,5 @@
 using System.Numerics;
+using Automata.Engine.Extensions;
 using Automata.Engine.Numerics;
 
 namespace Automata.Engine.Rendering
@@ -22,7 +23,7 @@ namespace Automata.Engine.Rendering
         public Vector4 Parameters { get; }
 
         public PerspectiveProjection(float fieldOfView, float aspectRatio, float nearClippingPlane, float farClippingPlane) => (Matrix, Parameters) = (
-            Matrix4x4.CreatePerspectiveFieldOfView(AutomataMath.ToRadians(fieldOfView), aspectRatio, nearClippingPlane, farClippingPlane),
+            Matrix4x4.CreatePerspectiveFieldOfView(fieldOfView.ToRadians(), aspectRatio, nearClippingPlane, farClippingPlane),
             new Vector4(fieldOfView, aspectRatio, nearClippingPlane, farClippingPlane));
     }
 

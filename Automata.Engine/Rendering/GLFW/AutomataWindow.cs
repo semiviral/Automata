@@ -9,7 +9,6 @@ using Automata.Engine.Collections;
 using Automata.Engine.Input;
 using Automata.Engine.Numerics;
 using Automata.Engine.Rendering.OpenGL;
-using Automata.Engine.Worlds;
 using Serilog;
 using Silk.NET.GLFW;
 using Silk.NET.Input.Common;

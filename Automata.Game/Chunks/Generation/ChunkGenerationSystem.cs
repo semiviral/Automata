@@ -163,11 +163,12 @@ namespace Automata.Game.Chunks.Generation
             if (pendingMesh.IsEmpty)
             {
                 if (hasRenderMesh) renderMesh!.Mesh = null;
+
+                DiagnosticsSystem.Stopwatches.Return(stopwatch);
                 return;
             }
 
             if (!hasRenderMesh) entityManager.RegisterComponent(entity, renderMesh = new RenderMesh());
-
             if (renderMesh!.Mesh is null or not Mesh<PackedVertex>) renderMesh.Mesh = new Mesh<PackedVertex>();
 
             Mesh<PackedVertex> mesh = (renderMesh.Mesh as Mesh<PackedVertex>)!;
