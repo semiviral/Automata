@@ -75,9 +75,10 @@ namespace Automata.Engine.Rendering
                     | (cameraEntity.TryGetComponent(out Rotation? cameraRotation) && cameraRotation.Changed))
                 {
                     camera.View = Matrix4x4.Identity;
-                    camera.View *= Matrix4x4.CreateScale(cameraScale?.Value ?? Scale.DEFAULT);
-                    camera.View *= Matrix4x4.CreateFromQuaternion(cameraRotation?.Value ?? Quaternion.Identity);
-                    camera.View *= Matrix4x4.CreateTranslation(cameraTranslation?.Value ?? Vector3.Zero);
+
+                    if (cameraScale is not null) camera.View *= Matrix4x4.CreateScale(cameraScale?.Value ?? Scale.DEFAULT);
+                    if (cameraTranslation is not null) camera.View *= Matrix4x4.CreateFromQuaternion(cameraRotation?.Value ?? Quaternion.Identity);
+                    if (cameraRotation is not null) camera.View *= Matrix4x4.CreateTranslation(cameraTranslation?.Value ?? Vector3.Zero);
 
                     Matrix4x4.Invert(camera.View, out Matrix4x4 inverted);
                     camera.View = inverted;
@@ -111,9 +112,10 @@ namespace Automata.Engine.Rendering
                         || renderMesh.Changed)
                     {
                         renderMesh.Model = Matrix4x4.Identity;
-                        renderMesh.Model *= Matrix4x4.CreateTranslation(modelTranslation?.Value ?? Vector3.Zero);
-                        renderMesh.Model *= Matrix4x4.CreateFromQuaternion(modelRotation?.Value ?? Quaternion.Identity);
-                        renderMesh.Model *= Matrix4x4.CreateScale(modelScale?.Value ?? Scale.DEFAULT);
+
+                        if (modelTranslation is not null) renderMesh.Model *= Matrix4x4.CreateTranslation(modelTranslation.Value);
+                        if (modelRotation is not null) renderMesh.Model *= Matrix4x4.CreateFromQuaternion(modelRotation.Value);
+                        if (modelScale is not null) renderMesh.Model *= Matrix4x4.CreateScale(modelScale.Value);
                     }
                 }
 
@@ -140,7 +142,6 @@ namespace Automata.Engine.Rendering
                 }
             }
 
-            GLAPI.UnbindVertexArray();
             _NewAspectRatio = 0f;
         }
 
@@ -172,6 +173,7 @@ namespace Automata.Engine.Rendering
             {
                 // bind new pipeline
                 material.Pipeline.Bind();
+
                 // set fragment shader so we can easily bind textures
                 newFragmentShader = material.Pipeline.Stage(ShaderType.FragmentShader);
 
@@ -188,19 +190,22 @@ namespace Automata.Engine.Rendering
 
             // if newFragmentShader is null, then we didn't bind a new pipeline
             newFragmentShader ??= old!.Pipeline.Stage(ShaderType.FragmentShader);
+
             // cache the old texture count, or material count if old is null
             int oldTextureCount = old?.Textures.Count ?? material.Textures.Count;
+
             // this bool indicates whether we updated any textures
             bool updateTextures = false;
 
             for (int index = 0; index < material.Textures.Count; index++)
             {
                 // if textures match, continue to next
-                if (index < oldTextureCount && material.Textures[index].Equals(old?.Textures[index])) continue;
+                if ((index < oldTextureCount) && material.Textures[index].Equals(old?.Textures[index])) continue;
 
                 // textures don't match, so reassign this specific texture channel
                 material.Textures[index].Bind(TextureUnit.Texture0 + index);
                 newFragmentShader.TrySetUniform($"_tex{index}", index);
+
                 // we've updated a texture, so set boolean value
                 updateTextures = true;
             }
