@@ -1,18 +1,21 @@
-#version 330 core
+#version 450 core
 
 uniform sampler2DArray _tex0;
 
-in vec3 texUV;
-in vec3 vertexColor;
+layout (location = 0) in fragment
+{
+    vec3 uv;
+    vec3 color;
+} fragment;
 
 out vec4 color;
 
 void main()
 {
-    vec4 texColor = texture(_tex0, texUV);
+    vec4 tex = texture(_tex0, fragment.uv);
 
-    if (texColor.a == 0.0)
+    if (tex.a == 0.0)
         discard;
 
-    color = texColor * vec4(vertexColor, 1.0);
+    color = tex * vec4(fragment.color, 1.0);
 }

@@ -32,7 +32,6 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
             _GL = gl;
             _CachedUniforms = new Dictionary<string, int>();
             Type = shaderType;
-            HasAutomataUniforms = false;
 
             // this is kinda dumb, right?
             string[] shader =
@@ -46,12 +45,12 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
             CacheUniforms();
             HasAutomataUniforms = _CachedUniforms.Keys.Intersect(_ReservedUniformNames).Any();
 
-            Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ShaderProgram), $"Vertex shader loaded from: {path}"));
+            Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ShaderProgram), $"Loaded ({Type}): {path}"));
         }
 
         private void CacheUniforms()
         {
-            _GL.GetProgram(Handle, GLEnum.ActiveUniforms, out int uniformCount);
+            _GL.GetProgram(Handle, ProgramPropertyARB.ActiveUniforms, out int uniformCount);
 
             for (uint uniformIndex = 0; uniformIndex < uniformCount; uniformIndex++)
             {
@@ -63,9 +62,14 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
 
         private void CheckShaderInfoLogAndThrow()
         {
-            string infoLog = _GL.GetShaderInfoLog(Handle);
+            string infoLog = _GL.GetProgramInfoLog(Handle);
 
             if (!string.IsNullOrWhiteSpace(infoLog)) throw new ShaderLoadException(Type, infoLog);
+        }
+
+        public void BindUniformBuffer(UniformBuffer uniformBuffer)
+        {
+
         }
 
         public bool TrySetUniform(string name, int value)

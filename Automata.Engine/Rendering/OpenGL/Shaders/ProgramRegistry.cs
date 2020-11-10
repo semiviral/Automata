@@ -48,5 +48,12 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
                 return programPipeline;
             }
         }
+
+        ~ProgramRegistry()
+        {
+            foreach ((_, ShaderProgram shaderProgram) in _CachedVertexPrograms) shaderProgram.Dispose();
+            foreach ((_, ShaderProgram shaderProgram) in _CachedFragmentPrograms) shaderProgram.Dispose();
+            foreach ((_, ProgramPipeline programPipeline) in _CachedProgramPipelines) programPipeline.Dispose();
+        }
     }
 }

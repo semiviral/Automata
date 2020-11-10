@@ -23,6 +23,8 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
 
             _GL.UseProgramStages(Handle, (uint)UseProgramStageMask.VertexShaderBit, _VertexShader.Handle);
             _GL.UseProgramStages(Handle, (uint)UseProgramStageMask.FragmentShaderBit, _FragmentShader.Handle);
+
+            CheckShaderInfoLogAndThrow();
         }
 
         public ShaderProgram Stage(ShaderType shaderType) => shaderType switch
@@ -31,6 +33,13 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
             ShaderType.FragmentShader => _FragmentShader,
             _ => throw new ArgumentOutOfRangeException(nameof(shaderType))
         };
+
+        private void CheckShaderInfoLogAndThrow()
+        {
+            _GL.GetProgramPipelineInfoLog(Handle, 2048u, out _, out string infoLog);
+
+            if (!string.IsNullOrWhiteSpace(infoLog)) throw new ShaderLoadException((ShaderType)0, infoLog);
+        }
 
         public void Bind() => _GL.BindProgramPipeline(Handle);
         public void Dispose() => _GL.DeleteProgramPipeline(Handle);
