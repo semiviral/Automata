@@ -14,31 +14,25 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
     {
         public Vector3i Size { get; }
 
-        public Texture3D(Vector3i size, WrapMode wrapMode, FilterMode filterMode, bool mipmap)
+        public Texture3D(Vector3i size, WrapMode wrapMode, FilterMode filterMode, bool mipmap) : base(TextureTarget.Texture3D)
         {
             if (Vector3b.Any(size < 0)) throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
 
             Size = size;
 
-            Bind(TextureUnit.Texture0);
-
             AssignPixelFormats<TPixel>();
+            AssignTextureParameters(GetWrapModeAsGLEnum(wrapMode), GetFilterModeAsGLEnum(filterMode));
+            GL.TextureStorage3D(Handle, 1, _InternalFormat, (uint)size.X, (uint)size.Y, (uint)size.Z);
 
-            AssignTextureParameters(TextureTarget.Texture3D, GetWrapModeAsGLEnum(wrapMode), GetFilterModeAsGLEnum(filterMode));
-            GL.TexStorage3D(TextureTarget.Texture3D, 1, _InternalFormat, (uint)size.X, (uint)size.Y, (uint)size.Z);
-
-            if (mipmap) GL.GenerateMipmap(TextureTarget.Texture3D);
+            if (mipmap) GL.GenerateTextureMipmap(Handle);
         }
 
-        public void SetPixels(Vector3i offset, Vector3i size, ref TPixel firstPixel)
+        public void SetPixels(Vector3i offset, Vector3i size, Span<TPixel> pixels)
         {
             if (Vector3b.Any(offset < 0)) throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
             else if (Vector3b.Any(size < 0)) throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0 and <TexSize");
 
-            Bind(TextureUnit.Texture0);
-
-            GL.TexSubImage3D(TextureTarget.Texture3D, 0, offset.X, offset.Y, offset.Z, (uint)size.X, (uint)size.Y, (uint)size.Z, _PixelFormat, _PixelType,
-                ref firstPixel);
+            GL.TextureSubImage3D(Handle, 0, offset.X, offset.Y, offset.Z, (uint)size.X, (uint)size.Y, (uint)size.Z, _PixelFormat, _PixelType, pixels);
         }
 
         public sealed override void Bind(TextureUnit textureSlot)

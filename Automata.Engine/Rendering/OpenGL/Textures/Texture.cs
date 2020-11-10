@@ -32,18 +32,21 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
         protected PixelFormat _PixelFormat;
         protected PixelType _PixelType;
 
-        protected Texture()
+        protected unsafe Texture(TextureTarget textureTarget)
         {
             GL = GLAPI.Instance.GL;
-            Handle = GL.GenTexture();
+
+            uint handle = 0;
+            GL.CreateTextures(textureTarget, 1, &handle);
+            Handle = handle;
         }
 
-        protected void AssignTextureParameters(TextureTarget textureTarget, GLEnum wrapMode, GLEnum filterMode)
+        protected void AssignTextureParameters(GLEnum wrapMode, GLEnum filterMode)
         {
-            GL.TexParameter(textureTarget, TextureParameterName.TextureWrapS, (int)wrapMode);
-            GL.TexParameter(textureTarget, TextureParameterName.TextureWrapT, (int)wrapMode);
-            GL.TexParameter(textureTarget, TextureParameterName.TextureMinFilter, (int)filterMode);
-            GL.TexParameter(textureTarget, TextureParameterName.TextureMagFilter, (int)filterMode);
+            GL.TextureParameter(Handle, TextureParameterName.TextureWrapS, (int)wrapMode);
+            GL.TextureParameter(Handle, TextureParameterName.TextureWrapT, (int)wrapMode);
+            GL.TextureParameter(Handle, TextureParameterName.TextureMinFilter, (int)filterMode);
+            GL.TextureParameter(Handle, TextureParameterName.TextureMagFilter, (int)filterMode);
         }
 
         protected static GLEnum GetWrapModeAsGLEnum(WrapMode wrapMode) =>

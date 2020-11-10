@@ -141,11 +141,10 @@ namespace Automata.Engine.Rendering
                     renderMesh.Mesh!.Bind();
 
                     _GL.DrawElements(PrimitiveType.Triangles, renderMesh.Mesh!.IndexesLength, DrawElementsType.UnsignedInt, null);
-
-                    renderMesh.Mesh!.Unbind();
                 }
             }
 
+            _GL.BindVertexArray(0);
             _NewAspectRatio = 0f;
         }
 

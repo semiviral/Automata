@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Automata.Engine;
+using Automata.Engine.Extensions;
 using Automata.Engine.Numerics;
 using Automata.Engine.Rendering.OpenGL.Textures;
 using Serilog;
@@ -27,8 +29,7 @@ namespace Automata.Game
 
             foreach ((string group, string path) in texturePaths)
             {
-                Image<Rgba32> sprite = Image.Load<Rgba32>(path);
-                Blocks.SetPixels(new Vector3i(0, 0, depth), new Vector2i(8, 8), ref sprite.GetPixelRowSpan(0)[0]);
+                Blocks.SetPixels(new Vector3i(0, 0, depth), new Vector2i(8, 8), Image.Load<Rgba32>(path).GetPixelSpan());
 
                 string formattedName = string.Format(group_with_sprite_name_format, group, Path.GetFileNameWithoutExtension(path));
 
