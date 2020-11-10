@@ -24,15 +24,13 @@ namespace Automata.Engine.Input
 
             if (movementVector == Vector3.Zero) return;
 
-            foreach (IEntity entity in entityManager.GetEntitiesWithComponents<Translation, KeyboardListener>())
+            foreach ((IEntity entity, Translation translation, KeyboardListener listener) in entityManager.GetEntities<Translation, KeyboardListener>())
             {
                 movementVector = entity.TryGetComponent(out Rotation? rotation)
                     ? Vector3.Transform(movementVector, rotation.Value)
                     : movementVector;
 
-                float sensitivity = entity.GetComponent<KeyboardListener>().Sensitivity;
-                Translation translation = entity.GetComponent<Translation>();
-                translation.Value += sensitivity * movementVector;
+                translation.Value += listener.Sensitivity * movementVector;
             }
         }
 

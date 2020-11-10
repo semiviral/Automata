@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
+using Automata.Engine.Rendering.OpenGL.Buffers;
 using Serilog;
 using Silk.NET.OpenGL;
 

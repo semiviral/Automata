@@ -1,7 +1,7 @@
 using System;
 using Silk.NET.OpenGL;
 
-namespace Automata.Engine.Rendering.OpenGL
+namespace Automata.Engine.Rendering.OpenGL.Buffers
 {
     public interface IVertexAttribute
     {

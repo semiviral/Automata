@@ -7,7 +7,7 @@ using Silk.NET.OpenGL;
 #endregion
 
 
-namespace Automata.Engine.Rendering.OpenGL
+namespace Automata.Engine.Rendering.OpenGL.Buffers
 {
     public class VertexArrayObject<TVertex> : OpenGLObject, IDisposable
         where TVertex : unmanaged

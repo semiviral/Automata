@@ -1,8 +1,9 @@
 #region
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
-using System.Runtime.InteropServices;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
 using Automata.Engine.Numerics;
@@ -10,6 +11,7 @@ using Automata.Engine.Numerics.Shapes;
 using Automata.Engine.Rendering.GLFW;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
+using Automata.Engine.Rendering.OpenGL.Buffers;
 using Automata.Engine.Rendering.OpenGL.Shaders;
 using Automata.Engine.Systems;
 using Silk.NET.OpenGL;
@@ -60,10 +62,8 @@ namespace Automata.Engine.Rendering
 
             _Viewport.Bind();
 
-            foreach (IEntity cameraEntity in entityManager.GetEntitiesWithComponents<Camera>())
+            foreach ((IEntity cameraEntity, Camera camera) in entityManager.GetEntities<Camera>())
             {
-                Camera camera = cameraEntity.GetComponent<Camera>();
-
                 camera.Uniforms ??= new UniformBuffer(_GL, 0, (uint)(sizeof(Matrix4x4) + sizeof(Matrix4x4) + sizeof(Vector4)))
                 {
                     ["view"] = 0,
@@ -104,10 +104,8 @@ namespace Automata.Engine.Rendering
                 Matrix4x4 viewProjection = camera.View * camera.Projection.Matrix;
                 Material? currentMaterial = null;
 
-                foreach (IEntity objectEntity in entityManager.GetEntitiesWithComponents<RenderMesh>())
+                foreach ((IEntity objectEntity, RenderMesh renderMesh) in entityManager.GetEntities<RenderMesh>())
                 {
-                    RenderMesh renderMesh = objectEntity.GetComponent<RenderMesh>();
-
                     if (((objectEntity.TryGetComponent(out Scale? modelScale) && modelScale.Changed)
                          | (objectEntity.TryGetComponent(out Rotation? modelRotation) && modelRotation.Changed)
                          | (objectEntity.TryGetComponent(out Translation? modelTranslation) && modelTranslation.Changed))
@@ -118,17 +116,16 @@ namespace Automata.Engine.Rendering
                         renderMesh.Model *= Matrix4x4.CreateFromQuaternion(modelRotation?.Value ?? Quaternion.Identity);
                         renderMesh.Model *= Matrix4x4.CreateScale(modelScale?.Value ?? Scale.DEFAULT);
                     }
+                }
+
+                foreach ((IEntity objectEntity, RenderMesh renderMesh, Material material) in entityManager.GetEntities<RenderMesh, Material>()
+                    .OrderBy(result => result.Component2.ID))
+                {
+                    if (!renderMesh.ShouldRender || ((camera.RenderedLayers & renderMesh.Mesh!.Layer) != renderMesh.Mesh!.Layer)) continue;
 
                     Matrix4x4 modelViewProjection = renderMesh.Model * viewProjection;
 
-                    if (!renderMesh.ShouldRender // check if should render at all
-                        || ((camera.RenderedLayers & renderMesh.Mesh!.Layer) != renderMesh.Mesh!.Layer)
-                        || !objectEntity.TryGetComponent(out Material? material)
-
-                        // check if occluded by frustum
-                        || (objectEntity.TryGetComponent(out OcclusionBounds? bounds)
-                            && _ENABLE_FRUSTUM_CULLING
-                            && CheckClipFrustumOcclude(bounds, planes, modelViewProjection))) continue;
+                    if (objectEntity.TryGetComponent(out OcclusionBounds? bounds) && CheckClipFrustumOcclude(bounds, planes, modelViewProjection)) continue;
 
                     if (currentMaterial is null || (material.Pipeline.Handle != currentMaterial.Pipeline.Handle))
                     {
@@ -160,6 +157,8 @@ namespace Automata.Engine.Rendering
 
         private static bool CheckClipFrustumOcclude(OcclusionBounds occlusionBounds, Span<Plane> planes, Matrix4x4 mvp)
         {
+            if (!_ENABLE_FRUSTUM_CULLING) return false;
+
             ClipFrustum frustum = new ClipFrustum(planes, mvp);
             Frustum.Intersect intersection = Frustum.Intersect.Outside;
 

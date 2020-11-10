@@ -12,6 +12,7 @@ using Automata.Engine.Input;
 using Automata.Engine.Numerics;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
+using Automata.Engine.Rendering.OpenGL.Buffers;
 using Automata.Engine.Rendering.OpenGL.Shaders;
 using Automata.Engine.Systems;
 using Automata.Game.Blocks;
@@ -69,10 +70,8 @@ namespace Automata.Game.Chunks.Generation
                 chunk.State += 1;
             }
 
-            foreach (IEntity entity in entityManager.GetEntitiesWithComponents<Chunk, Translation>())
+            foreach ((IEntity entity, Chunk chunk, Translation translation) in entityManager.GetEntities<Chunk, Translation>())
             {
-                if (!entity.TryGetComponent(out Chunk? chunk) || !entity.TryGetComponent(out Translation? translation)) continue;
-
                 switch (chunk.State)
                 {
                     case GenerationState.Ungenerated:

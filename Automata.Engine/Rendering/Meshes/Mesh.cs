@@ -2,6 +2,7 @@
 
 using System;
 using Automata.Engine.Rendering.OpenGL;
+using Automata.Engine.Rendering.OpenGL.Buffers;
 
 #endregion
 

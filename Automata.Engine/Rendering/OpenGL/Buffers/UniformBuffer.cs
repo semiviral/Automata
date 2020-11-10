@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Serilog;
 using Silk.NET.OpenGL;
 
-namespace Automata.Engine.Rendering.OpenGL
+namespace Automata.Engine.Rendering.OpenGL.Buffers
 {
     public class UniformBuffer : OpenGLObject, IDisposable
     {

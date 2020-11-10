@@ -1,5 +1,5 @@
 [Video]
-VSync=false
+VSync=true
 
 [WorldGeneration]
 SingleThreadedGeneration=false
