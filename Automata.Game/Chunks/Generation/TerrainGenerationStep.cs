@@ -29,7 +29,7 @@ namespace Automata.Game.Chunks.Generation
                 for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++, heightmapIndex++, index++)
                 {
                     Vector3i global = origin + new Vector3i(x, y, z);
-                    if (y == 0) heightmap[heightmapIndex] = CalculateHeight(origin.X + x, origin.Z + z, parameters.Frequency, parameters.Persistence);
+                    if (y == 0) heightmap[heightmapIndex] = CalculateHeight(global.X, global.Z, parameters.Frequency, parameters.Persistence);
 
                     int noiseHeight = heightmap[heightmapIndex];
 

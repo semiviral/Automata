@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
 using Automata.Engine.Extensions;
-using Automata.Engine.Rendering.OpenGL.Buffers;
 using Serilog;
 using Silk.NET.OpenGL;
 
@@ -52,8 +51,6 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
 
             if (!string.IsNullOrWhiteSpace(infoLog)) throw new ShaderLoadException(Type, infoLog);
         }
-
-        public void BindUniformBuffer(UniformBuffer uniformBuffer) { }
 
         public bool TrySetUniform(string name, int value)
         {
