@@ -9,7 +9,6 @@ namespace Automata.Game.Chunks
 {
     public class Chunk : Component
     {
-        public Guid ID { get; } = Guid.NewGuid();
         public GenerationState State { get; set; } = GenerationState.Ungenerated;
         public Palette<Block>? Blocks { get; set; }
         public Chunk?[] Neighbors { get; } = new Chunk?[6];

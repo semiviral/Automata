@@ -9,7 +9,7 @@ using SixLabors.ImageSharp.PixelFormats;
 
 namespace Automata.Engine.Rendering.OpenGL.Textures
 {
-    public abstract class Texture : OpenGLObject, IDisposable
+    public abstract class Texture : OpenGLObject, IEquatable<Texture>, IDisposable
     {
         public enum FilterMode
         {
@@ -73,8 +73,15 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
         }
 
         public abstract void Bind(TextureUnit textureSlot);
-        public abstract void Unbind(TextureUnit textureSlot);
 
         public void Dispose() => GL.DeleteTexture(Handle);
+
+        public bool Equals(Texture? other) => other is not null && (other.Handle == Handle);
+        public override bool Equals(object? obj) => obj is Texture texture && Equals(texture);
+
+        public override int GetHashCode() => (int)Handle;
+
+        public static bool operator ==(Texture? left, Texture? right) => Equals(left, right);
+        public static bool operator !=(Texture? left, Texture? right) => !Equals(left, right);
     }
 }

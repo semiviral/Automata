@@ -1,7 +1,6 @@
 #region
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Automata.Engine.Components;
@@ -102,7 +101,7 @@ namespace Automata.Engine.Rendering
 
                 camera.Uniforms.Bind();
                 Matrix4x4 viewProjection = camera.View * camera.Projection.Matrix;
-                Material? currentMaterial = null;
+                Material? cachedMaterial = null;
 
                 foreach ((IEntity objectEntity, RenderMesh renderMesh) in entityManager.GetEntities<RenderMesh>())
                 {
@@ -119,7 +118,7 @@ namespace Automata.Engine.Rendering
                 }
 
                 foreach ((IEntity objectEntity, RenderMesh renderMesh, Material material) in entityManager.GetEntities<RenderMesh, Material>()
-                    .OrderBy(result => result.Component2.ID))
+                    .OrderBy(result => result.Component2.Pipeline.Handle))
                 {
                     if (!renderMesh.ShouldRender || ((camera.RenderedLayers & renderMesh.Mesh!.Layer) != renderMesh.Mesh!.Layer)) continue;
 
@@ -127,27 +126,18 @@ namespace Automata.Engine.Rendering
 
                     if (objectEntity.TryGetComponent(out OcclusionBounds? bounds) && CheckClipFrustumOcclude(bounds, planes, modelViewProjection)) continue;
 
-                    if (currentMaterial is null || (material.Pipeline.Handle != currentMaterial.Pipeline.Handle))
-                    {
-                        currentMaterial = material;
-                        currentMaterial.Pipeline.Bind();
-                        ShaderProgram fragmentShader = currentMaterial.Pipeline.Stage(ShaderType.FragmentShader);
-
-                        for (int index = 0; index < currentMaterial.Textures.Length; index++)
-                        {
-                            currentMaterial.Textures[index]?.Bind(TextureUnit.Texture0 + index);
-                            fragmentShader.TrySetUniform($"_tex{index}", index);
-                        }
-                    }
+                    if (cachedMaterial is null) ApplyNewMaterial(material, ref cachedMaterial);
+                    else if (!material.Equals(cachedMaterial)) ApplyNewMaterial(material, ref cachedMaterial);
 
                     Matrix4x4.Invert(renderMesh.Model, out Matrix4x4 modelInverted);
-                    currentMaterial.Pipeline.Stage(ShaderType.VertexShader).TrySetUniform("_mvp", modelViewProjection);
-                    currentMaterial.Pipeline.Stage(ShaderType.VertexShader).TrySetUniform("_object", modelInverted);
-                    currentMaterial.Pipeline.Stage(ShaderType.VertexShader).TrySetUniform("_world", renderMesh.Model);
+                    ShaderProgram vertexShader = cachedMaterial.Pipeline.Stage(ShaderType.VertexShader);
+                    vertexShader.TrySetUniform("_mvp", modelViewProjection);
+                    vertexShader.TrySetUniform("_object", modelInverted);
+                    vertexShader.TrySetUniform("_world", renderMesh.Model);
 
                     renderMesh.Mesh!.Bind();
 
-                    _GL.DrawElements(PrimitiveType.Triangles, renderMesh.Mesh!.IndexesLength, DrawElementsType.UnsignedInt, null);
+                    _GL.DrawElements(PrimitiveType.Triangles, renderMesh.Mesh!.IndexesLength, DrawElementsType.UnsignedInt, (void*)null!);
                 }
             }
 
@@ -171,6 +161,43 @@ namespace Automata.Engine.Rendering
                 || (intersection is not Frustum.Intersect.Inside
                     && (occlusionBounds.Cubic != Cube.Zero)
                     && frustum.Intersects(occlusionBounds.Cubic) is Frustum.Intersect.Outside);
+        }
+
+        private static void ApplyNewMaterial(Material material, ref Material? old)
+        {
+            bool updatePipeline = !material.Pipeline.Equals(old?.Pipeline);
+            ShaderProgram? newFragmentShader = null;
+
+            if (updatePipeline)
+            {
+                material.Pipeline.Bind();
+                newFragmentShader = material.Pipeline.Stage(ShaderType.FragmentShader);
+
+                if (old is not null)
+                {
+                    for (int index = 0; index < old.Textures.Count; index++)
+                    {
+                        old.Textures[index].Bind(TextureUnit.Texture0 + index);
+                        newFragmentShader.TrySetUniform($"_tex{index}", index);
+                    }
+                }
+            }
+
+            // if newFragmentShader is null, then we didn't bind a new pipeline
+            newFragmentShader ??= old!.Pipeline.Stage(ShaderType.FragmentShader);
+            int oldTextureCount = old?.Textures.Count ?? material.Textures.Count;
+            bool updateTextures = false;
+
+            for (int index = 0; index < material.Textures.Count; index++)
+            {
+                if (index < oldTextureCount && material.Textures[index].Equals(old?.Textures[index])) continue;
+
+                material.Textures[index].Bind(TextureUnit.Texture0 + index);
+                newFragmentShader.TrySetUniform($"_tex{index}", index);
+                updateTextures = true;
+            }
+
+            if (updatePipeline || updateTextures) old = material;
         }
 
         private void GameWindowResized(object sender, Vector2i newSize) => _NewAspectRatio = (float)newSize.X / (float)newSize.Y;

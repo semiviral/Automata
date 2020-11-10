@@ -7,7 +7,7 @@ namespace Automata.Game.Biomes
         public Guid Identifier { get; }
         public string Name { get; }
 
-        public Biome(string name) { }
+        public Biome(string name) => Name = name;
 
         public bool Equals(Biome? other) =>
             other is not null && Identifier.Equals(other.Identifier) && Name.Equals(other.Name, StringComparison.InvariantCulture);

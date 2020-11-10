@@ -21,7 +21,6 @@ using ConcurrencyPools;
 using DiagnosticsProviderNS;
 using Serilog;
 using Silk.NET.Input.Common;
-using Silk.NET.OpenGL;
 
 #endregion
 
@@ -50,15 +49,6 @@ namespace Automata.Game.Chunks.Generation
             _PendingMeshes = new ConcurrentChannel<(IEntity, PendingMesh<PackedVertex>)>(true, false);
 
             DiagnosticsProvider.EnableGroup<ChunkGenerationDiagnosticGroup>();
-        }
-
-        public override void Registered(EntityManager entityManager)
-        {
-            IEntity entity = new Entity();
-entityManager.RegisterEntity(entity);
-entityManager.RegisterComponent<Translation>(entity);
-entityManager.RegisterComponent(entity, new RenderMesh {Mesh = new });
-GLAPI.Instance.GL.MultiDrawElementsIndirectCount(PrimitiveType.Triangles, DrawElementsType.UnsignedInt, null, );
         }
 
         [HandlesComponents(DistinctionStrategy.All, typeof(Translation), typeof(Chunk))]
@@ -168,11 +158,17 @@ GLAPI.Instance.GL.MultiDrawElementsIndirectCount(PrimitiveType.Triangles, DrawEl
             Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
             stopwatch.Restart();
 
-            if (pendingMesh.IsEmpty) return;
+            bool hasRenderMesh = entity.TryGetComponent(out RenderMesh? renderMesh);
 
-            if (!entity.TryGetComponent(out RenderMesh? renderMesh)) entityManager.RegisterComponent(entity, renderMesh = new RenderMesh());
+            if (pendingMesh.IsEmpty)
+            {
+                if (hasRenderMesh) renderMesh!.Mesh = null;
+                return;
+            }
 
-            if (renderMesh.Mesh is null or not Mesh<PackedVertex>) renderMesh.Mesh = new Mesh<PackedVertex>();
+            if (!hasRenderMesh) entityManager.RegisterComponent(entity, renderMesh = new RenderMesh());
+
+            if (renderMesh!.Mesh is null or not Mesh<PackedVertex>) renderMesh.Mesh = new Mesh<PackedVertex>();
 
             Mesh<PackedVertex> mesh = (renderMesh.Mesh as Mesh<PackedVertex>)!;
 
@@ -193,7 +189,7 @@ GLAPI.Instance.GL.MultiDrawElementsIndirectCount(PrimitiveType.Triangles, DrawEl
             }
             else entityManager.RegisterComponent(entity, material = new Material(programPipeline));
 
-            material.Textures[0] = TextureAtlas.Instance.Blocks;
+            material.Textures.Add(TextureAtlas.Instance.Blocks ?? throw new NullReferenceException("Blocks texture array not initialized."));
 
             stopwatch.Stop();
             DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new ApplyMeshTime(stopwatch.Elapsed));

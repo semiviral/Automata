@@ -42,7 +42,5 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             GL.ActiveTexture(textureSlot);
             GL.BindTexture(TextureTarget.Texture3D, Handle);
         }
-
-        public sealed override void Unbind(TextureUnit textureSlot) { GL.BindTexture(TextureTarget.Texture3D, 0); }
     }
 }

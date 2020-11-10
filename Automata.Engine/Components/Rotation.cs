@@ -34,7 +34,5 @@ namespace Automata.Engine.Components
 
             Value = yaw * pitch;
         }
-
-        public bool Changed { get; set; }
     }
 }

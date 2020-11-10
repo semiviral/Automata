@@ -17,7 +17,5 @@ namespace Automata.Engine.Components
         }
 
         public Scale() => Value = DEFAULT;
-
-        public bool Changed { get; set; }
     }
 }

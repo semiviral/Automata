@@ -23,6 +23,5 @@ namespace Automata.Game.Chunks
         }
 
         public Vector3i Origin { get; set; } = new Vector3i(int.MaxValue);
-        public bool Changed { get; set; }
     }
 }

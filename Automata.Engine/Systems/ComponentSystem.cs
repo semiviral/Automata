@@ -11,7 +11,7 @@ namespace Automata.Engine.Systems
 {
     public abstract class ComponentSystem : IDisposable
     {
-        protected World _CurrentWorld { get; private set; }
+        protected World? _CurrentWorld { get; private set; }
         public bool Enabled { get; protected set; }
 
         public ComponentSystem() => Enabled = true;

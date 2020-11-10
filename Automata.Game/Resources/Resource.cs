@@ -17,8 +17,8 @@ namespace Automata.Game.Resources
                     public byte B { get; set; }
                 }
 
-                public byte Intensity { get; set; }
-                public LowColor15 Color { get; set; }
+                public byte? Intensity { get; set; }
+                public LowColor15? Color { get; set; }
             }
 
             public string? Name { get; set; }
