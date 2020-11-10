@@ -1,6 +1,5 @@
 #region
 
-using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using Automata.Engine.Extensions;
@@ -26,6 +25,7 @@ namespace Automata.Engine.Noise
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int FastFloor(float f) => f >= 0f ? (int)f : (int)(f - 1f);
 
+
         #region Simplex2D
 
         private static readonly Vector2[] _Grad2D =
@@ -40,13 +40,13 @@ namespace Automata.Engine.Noise
             new Vector2(1f, 0f)
         };
 
-        private const float _F2 = 1.0f / 2.0f;
-        private const float _G2 = 1.0f / 4.0f;
+        private const float _F2 = 1f / 2f;
+        private const float _G2 = 1f / 4f;
 
         private static float Simplex2D(int seed, float frequency, Vector2 xy)
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static float ComponentSubtract(Vector2 a) => a.X - a.Y;
+            static float CalculateT(Vector2 a) => 0.5f - a.X - a.Y;
 
             xy *= frequency;
 
@@ -60,36 +60,35 @@ namespace Automata.Engine.Noise
             Vector2 xy2 = (xy1 - ij1) + new Vector2(_G2);
             Vector2 xy3 = (xy1 - Vector2.One) + new Vector2(_F2);
 
-            float n0, n1, n2;
+            Vector3 n;
+            t = CalculateT(xy1 * xy1);
 
-            t = 0.5f - ComponentSubtract(xy1 * xy1);
-
-            if (t < 0f) n0 = 0f;
+            if (t < 0f) n.X = 0f;
             else
             {
                 t *= t;
-                n0 = t * t * GradCoord2D(seed, Vector2i.FromVector2(ij), xy1);
+                n.X = t * t * GradCoord2D(seed, Vector2i.FromVector2(ij), xy1);
             }
 
-            t = 0.5f - ComponentSubtract(xy2 * xy2);
+            t = CalculateT(xy2 * xy2);
 
-            if (t < 0f) n1 = 0f;
+            if (t < 0f) n.Y = 0f;
             else
             {
                 t *= t;
-                n1 = t * t * GradCoord2D(seed, Vector2i.FromVector2(ij + ij1), xy2);
+                n.Y = t * t * GradCoord2D(seed, Vector2i.FromVector2(ij + ij1), xy2);
             }
 
-            t = 0.5f - ComponentSubtract(xy3 * xy3);
+            t = CalculateT(xy3 * xy3);
 
-            if (t < 0f) n2 = 0f;
+            if (t < 0f) n.Z = 0f;
             else
             {
                 t *= t;
-                n2 = t * t * GradCoord2D(seed, Vector2i.FromVector2(ij + Vector2.One), xy3);
+                n.Z = t * t * GradCoord2D(seed, Vector2i.FromVector2(ij + Vector2.One), xy3);
             }
 
-            return 50f * (n0 + n1 + n2);
+            return 50f * n.Sum();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -104,7 +103,7 @@ namespace Automata.Engine.Noise
 
             Vector2 g = _Grad2D[hash & 7];
 
-            return (xy0.X * g.X) + (xy0.Y * g.Y);
+            return (xy0 * g).Sum();
         }
 
         #endregion
@@ -112,8 +111,8 @@ namespace Automata.Engine.Noise
 
         #region Simplex3D
 
-        private const float _F3 = 1.0f / 3.0f;
-        private const float _G3 = 1.0f / 6.0f;
+        private const float _F3 = 1f / 3f;
+        private const float _G3 = 1f / 6f;
         private const float _G33 = (_G3 * 3f) - 1f;
 
         private static readonly Vector3[] _Grad3D =
@@ -139,7 +138,7 @@ namespace Automata.Engine.Noise
         private static float Simplex3D(int seed, float frequency, Vector3 xyz)
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static float ComponentSubtract(Vector3 a) => a.X - a.Y - a.Z;
+            static float CalculateT(Vector3 a) => 0.6f - a.X - a.Y - a.Z;
 
             xyz *= frequency;
 
@@ -191,45 +190,44 @@ namespace Automata.Engine.Noise
             Vector3 xyz2 = (xyz0 - ijk2) + new Vector3(_F3);
             Vector3 xyz3 = xyz0 + new Vector3(_G33);
 
-            float n0, n1, n2, n3;
+            Vector4 n;
+            t = CalculateT(xyz0 * xyz0);
 
-            t = 0.6f - ComponentSubtract(xyz0 * xyz0);
-
-            if (t < 0f) n0 = 0f;
+            if (t < 0f) n.X = 0f;
             else
             {
                 t *= t;
-                n0 = t * t * GradCoord3D(seed, Vector3i.FromVector3(ijk), xyz0);
+                n.X = t * t * GradCoord3D(seed, Vector3i.FromVector3(ijk), xyz0);
             }
 
-            t = 0.6f - ComponentSubtract(xyz1 * xyz1);
+            t = CalculateT(xyz1 * xyz1);
 
-            if (t < 0f) n1 = 0f;
+            if (t < 0f) n.Y = 0f;
             else
             {
                 t *= t;
-                n1 = t * t * GradCoord3D(seed, Vector3i.FromVector3(ijk + ijk1), xyz1);
+                n.Y = t * t * GradCoord3D(seed, Vector3i.FromVector3(ijk + ijk1), xyz1);
             }
 
-            t = 0.6f - ComponentSubtract(xyz2 * xyz2);
+            t = CalculateT(xyz2 * xyz2);
 
-            if (t < 0f) n2 = 0f;
+            if (t < 0f) n.Z = 0f;
             else
             {
                 t *= t;
-                n2 = t * t * GradCoord3D(seed, Vector3i.FromVector3(ijk + ijk2), xyz2);
+                n.Z = t * t * GradCoord3D(seed, Vector3i.FromVector3(ijk + ijk2), xyz2);
             }
 
-            t = 0.6f - ComponentSubtract(xyz3 * xyz3);
+            t = CalculateT(xyz3 * xyz3);
 
-            if (t < 0f) n3 = 0f;
+            if (t < 0f) n.W = 0f;
             else
             {
                 t *= t;
-                n3 = t * t * GradCoord3D(seed, Vector3i.FromVector3(ijk + Vector3.One), xyz3);
+                n.W = t * t * GradCoord3D(seed, Vector3i.FromVector3(ijk + Vector3.One), xyz3);
             }
 
-            return 32f * (n0 + n1 + n2 + n3);
+            return 32f * n.Sum();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -245,7 +243,7 @@ namespace Automata.Engine.Noise
 
             Vector3 g = _Grad3D[hash & 15];
 
-            return (xyz0.X * g.X) + (xyz0.Y * g.Y) + (xyz0.Z * g.Z);
+            return (xyz0 * g).Sum();
         }
 
         #endregion

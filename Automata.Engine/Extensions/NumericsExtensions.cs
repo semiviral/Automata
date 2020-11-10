@@ -46,5 +46,8 @@ namespace Automata.Engine.Extensions
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Sum(this Vector3 a) => a.X + a.Y + a.Z;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Sum(this Vector4 a) => a.X + a.Y + a.Z + a.W;
     }
 }
