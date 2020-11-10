@@ -29,7 +29,7 @@ namespace Automata.Game.Chunks.Generation
                     int noiseHeight = heightmap[heightmapIndex];
 
                     if ((global.Y < 4) && (global.Y <= parameters.SeededRandom.Next(0, 4))) blocks[index] = BlockRegistry.Instance.GetBlockID("Core:Bedrock");
-                    else if ((noiseHeight < origin.Y) || (CalculateCaveNoise(global, parameters.Seed, parameters.Persistence) < 0.000225f))
+                    else if ((noiseHeight < origin.Y) || (CalculateCaveNoise(global, parameters) < parameters.CaveThreshold))
                         blocks[index] = BlockRegistry.AirID;
                     else if (global.Y == noiseHeight) blocks[index] = BlockRegistry.Instance.GetBlockID("Core:Grass");
                     else if ((global.Y < noiseHeight) && (global.Y >= (noiseHeight - 3))) // lay dirt up to 3 blocks below noise height
@@ -45,16 +45,17 @@ namespace Automata.Game.Chunks.Generation
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static float CalculateCaveNoise(Vector3i global, int seed, float persistence)
+        private static float CalculateCaveNoise(Vector3i global, IGenerationStep.Parameters parameters)
         {
-            float currentHeight = (global.Y + (((GenerationConstants.WORLD_HEIGHT / 4f) - (global.Y * 1.25f)) * persistence)) * 0.85f;
+            float currentHeight = (global.Y + (((GenerationConstants.WORLD_HEIGHT / 4f) - (global.Y * 1.25f)) * parameters.Persistence)) * 0.85f;
             float heightDampener = currentHeight.Unlerp(0f, GenerationConstants.WORLD_HEIGHT);
-            float noiseA = OpenSimplexSlim.GetSimplex(seed ^ 2, 0.01f, global) * heightDampener;
-            float noiseB = OpenSimplexSlim.GetSimplex(seed ^ 3, 0.01f, global) * heightDampener;
-            float noiseAPow2 = MathF.Pow(noiseA, 1.5f);
-            float noiseBPow2 = MathF.Pow(noiseB, 1.5f);
 
-            return noiseAPow2 + noiseBPow2;
+            float sampleA = OpenSimplexSlim.GetSimplex(parameters.Seed ^ 2, parameters.Frequency, global) * heightDampener;
+            float sampleB = OpenSimplexSlim.GetSimplex(parameters.Seed ^ 3, parameters.Frequency, global) * heightDampener;
+            sampleA *= sampleA;
+            sampleB *= sampleB;
+
+            return (sampleA + sampleB) * 0.5f;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

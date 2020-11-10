@@ -75,8 +75,12 @@ namespace Automata.Game.Chunks.Generation
                 switch (chunk.State)
                 {
                     case GenerationState.Ungenerated:
-                        BoundedPool.Active.QueueWork(() => GenerateBlocks(entity, chunk, Vector3i.FromVector3(translation.Value),
-                            new IGenerationStep.Parameters(GenerationConstants.Seed, GenerationConstants.FREQUENCY, GenerationConstants.PERSISTENCE)));
+                        IGenerationStep.Parameters parameters = new IGenerationStep.Parameters(GenerationConstants.Seed)
+                        {
+                            Frequency = 0.008f
+                        };
+
+                        BoundedPool.Active.QueueWork(() => GenerateBlocks(entity, chunk, Vector3i.FromVector3(translation.Value), parameters));
 
                         chunk.State += 1;
                         break;

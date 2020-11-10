@@ -1,29 +1,21 @@
-#region
-
 using System;
 using Automata.Engine.Numerics;
-
-#endregion
 
 
 namespace Automata.Game.Chunks.Generation
 {
     public interface IGenerationStep
     {
-        public class Parameters
+        public record Parameters
         {
             public int Seed { get; }
-            public float Frequency { get; }
-            public float Persistence { get; }
-            public Random SeededRandom { get; }
+            public Random SeededRandom { get; init; }
 
-            public Parameters(int seed, float frequency, float persistence)
-            {
-                Seed = seed;
-                Frequency = frequency;
-                Persistence = persistence;
-                SeededRandom = new Random(seed);
-            }
+            public float Frequency { get; init; } = 0.0075f;
+            public float Persistence { get; init; } = 0.65f;
+            public float CaveThreshold { get; init; } = 0.000225f;
+
+            public Parameters(int seed) => (Seed, SeededRandom) = (seed, new Random(seed));
         }
 
         public void Generate(Vector3i origin, Parameters parameters, Span<ushort> blocks);

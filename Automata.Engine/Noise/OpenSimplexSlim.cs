@@ -45,9 +45,6 @@ namespace Automata.Engine.Noise
 
         private static float Simplex2D(int seed, float frequency, Vector2 xy)
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static float CalculateT(Vector2 a) => 0.5f - a.X - a.Y;
-
             xy *= frequency;
 
             float t = xy.Sum() * _F2;
@@ -59,9 +56,12 @@ namespace Automata.Engine.Noise
             Vector2 ij1 = xy1.X > xy1.Y ? new Vector2(1, 0) : new Vector2(0, 1);
             Vector2 xy2 = (xy1 - ij1) + new Vector2(_G2);
             Vector2 xy3 = (xy1 - Vector2.One) + new Vector2(_F2);
-
             Vector3 n;
-            t = CalculateT(xy1 * xy1);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static float CalculateTImpl(Vector2 a) => 0.5f - a.X - a.Y;
+
+            t = CalculateTImpl(xy1 * xy1);
 
             if (t < 0f) n.X = 0f;
             else
@@ -70,7 +70,7 @@ namespace Automata.Engine.Noise
                 n.X = t * t * GradCoord2D(seed, Vector2i.FromVector2(ij), xy1);
             }
 
-            t = CalculateT(xy2 * xy2);
+            t = CalculateTImpl(xy2 * xy2);
 
             if (t < 0f) n.Y = 0f;
             else
@@ -79,7 +79,7 @@ namespace Automata.Engine.Noise
                 n.Y = t * t * GradCoord2D(seed, Vector2i.FromVector2(ij + ij1), xy2);
             }
 
-            t = CalculateT(xy3 * xy3);
+            t = CalculateTImpl(xy3 * xy3);
 
             if (t < 0f) n.Z = 0f;
             else
@@ -137,9 +137,6 @@ namespace Automata.Engine.Noise
 
         private static float Simplex3D(int seed, float frequency, Vector3 xyz)
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static float CalculateT(Vector3 a) => 0.6f - a.X - a.Y - a.Z;
-
             xyz *= frequency;
 
             float t = xyz.Sum() * _F3;
@@ -189,9 +186,12 @@ namespace Automata.Engine.Noise
             Vector3 xyz1 = (xyz0 - ijk1) + new Vector3(_G3);
             Vector3 xyz2 = (xyz0 - ijk2) + new Vector3(_F3);
             Vector3 xyz3 = xyz0 + new Vector3(_G33);
-
             Vector4 n;
-            t = CalculateT(xyz0 * xyz0);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static float CalculateTImpl(Vector3 a) => 0.6f - a.X - a.Y - a.Z;
+
+            t = CalculateTImpl(xyz0 * xyz0);
 
             if (t < 0f) n.X = 0f;
             else
@@ -200,7 +200,7 @@ namespace Automata.Engine.Noise
                 n.X = t * t * GradCoord3D(seed, Vector3i.FromVector3(ijk), xyz0);
             }
 
-            t = CalculateT(xyz1 * xyz1);
+            t = CalculateTImpl(xyz1 * xyz1);
 
             if (t < 0f) n.Y = 0f;
             else
@@ -209,7 +209,7 @@ namespace Automata.Engine.Noise
                 n.Y = t * t * GradCoord3D(seed, Vector3i.FromVector3(ijk + ijk1), xyz1);
             }
 
-            t = CalculateT(xyz2 * xyz2);
+            t = CalculateTImpl(xyz2 * xyz2);
 
             if (t < 0f) n.Z = 0f;
             else
@@ -218,7 +218,7 @@ namespace Automata.Engine.Noise
                 n.Z = t * t * GradCoord3D(seed, Vector3i.FromVector3(ijk + ijk2), xyz2);
             }
 
-            t = CalculateT(xyz3 * xyz3);
+            t = CalculateTImpl(xyz3 * xyz3);
 
             if (t < 0f) n.W = 0f;
             else
