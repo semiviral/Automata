@@ -126,7 +126,7 @@ namespace Automata.Engine.Rendering
 
                     if (objectEntity.TryGetComponent(out OcclusionBounds? bounds) && CheckClipFrustumOcclude(bounds, planes, modelViewProjection)) continue;
 
-                    if (cachedMaterial is null || !material.Equals(cachedMaterial)) ApplyNewMaterial(material, ref cachedMaterial);
+                    if (cachedMaterial is null || !material.Equals(cachedMaterial)) ApplyMaterial(material, ref cachedMaterial);
 
                     Matrix4x4.Invert(renderMesh.Model, out Matrix4x4 modelInverted);
                     ShaderProgram vertexShader = cachedMaterial!.Pipeline.Stage(ShaderType.VertexShader);
@@ -162,16 +162,20 @@ namespace Automata.Engine.Rendering
                     && frustum.Intersects(occlusionBounds.Cubic) is Frustum.Intersect.Outside);
         }
 
-        private static void ApplyNewMaterial(Material material, ref Material? old)
+        private static void ApplyMaterial(Material material, ref Material? old)
         {
+            // store boolean value for use later
             bool updatePipeline = !material.Pipeline.Equals(old?.Pipeline);
             ShaderProgram? newFragmentShader = null;
 
             if (updatePipeline)
             {
+                // bind new pipeline
                 material.Pipeline.Bind();
+                // set fragment shader so we can easily bind textures
                 newFragmentShader = material.Pipeline.Stage(ShaderType.FragmentShader);
 
+                // if old isn't null, bind the old textures to the new pipeline
                 if (old is not null)
                 {
                     for (int index = 0; index < old.Textures.Count; index++)
@@ -184,18 +188,24 @@ namespace Automata.Engine.Rendering
 
             // if newFragmentShader is null, then we didn't bind a new pipeline
             newFragmentShader ??= old!.Pipeline.Stage(ShaderType.FragmentShader);
+            // cache the old texture count, or material count if old is null
             int oldTextureCount = old?.Textures.Count ?? material.Textures.Count;
+            // this bool indicates whether we updated any textures
             bool updateTextures = false;
 
-            for (int index = 0; index < material.Textures.Count; index++)
+            for (int index = 0; index < oldTextureCount; index++)
             {
-                if (index < oldTextureCount && material.Textures[index].Equals(old?.Textures[index])) continue;
+                // if textures match, continue to next
+                if (material.Textures[index].Equals(old?.Textures[index])) continue;
 
+                // textures don't match, so reassign this specific texture channel
                 material.Textures[index].Bind(TextureUnit.Texture0 + index);
                 newFragmentShader.TrySetUniform($"_tex{index}", index);
+                // we've updated a texture, so set boolean value
                 updateTextures = true;
             }
 
+            // if we've loaded any new material data, replace old material.
             if (updatePipeline || updateTextures) old = material;
         }
 
