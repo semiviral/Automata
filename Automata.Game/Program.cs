@@ -1,4 +1,6 @@
 ﻿using System.Drawing;
+using System.Numerics;
+using System.Runtime.CompilerServices;
 using Automata.Engine;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
