@@ -27,24 +27,24 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
     public class ApartmentBuffer : OpenGLObject, IDisposable
     {
-        private readonly bool[] _Slots;
+        private readonly bool[] _RoomTracker;
 
-        public uint SlotCount { get; }
-        public uint SlotSize { get; }
+        public uint RoomCount { get; }
+        public uint TenantSize { get; }
 
-        public uint RentedSlots { get; private set; }
+        public uint Tenant { get; private set; }
 
-        public ApartmentBuffer(GL gl, uint slotCount, uint slotSize) : base(gl)
+        public ApartmentBuffer(GL gl, uint roomCount, uint tenantSize) : base(gl)
         {
             const uint storage_flags = (uint)BufferStorageMask.DynamicStorageBit | (uint)MapBufferAccessMask.MapWriteBit;
 
-            _Slots = new bool[slotCount];
+            _RoomTracker = new bool[roomCount];
 
-            SlotCount = slotCount;
-            SlotSize = slotSize;
+            RoomCount = roomCount;
+            TenantSize = tenantSize;
             Handle = GL.CreateBuffer();
 
-            uint size = slotCount * slotSize;
+            uint size = roomCount * tenantSize;
             GL.NamedBufferStorage(Handle, size, Span<byte>.Empty, storage_flags);
         }
 
@@ -52,29 +52,29 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
         {
             tenant = null;
 
-            if (RentedSlots == _Slots.Length) return false;
+            if (Tenant == _RoomTracker.Length) return false;
 
             uint index = 0;
 
-            for (; index < _Slots.Length; index++)
+            for (; index < _RoomTracker.Length; index++)
             {
-                if (!_Slots[index]) break;
+                if (!_RoomTracker[index]) break;
             }
 
-            tenant = new Tenant(GL, this, index, (uint)(index * SlotSize));
-            _Slots[index] = true;
-            RentedSlots += 1;
+            tenant = new Tenant(GL, this, index, (uint)(index * TenantSize));
+            _RoomTracker[index] = true;
+            Tenant += 1;
             return true;
         }
 
         internal unsafe void Return(Tenant tenant)
         {
-            if (!_Slots[tenant.Index]) throw new ArgumentException("Slot is not rented.");
+            if (!_RoomTracker[tenant.Index]) throw new ArgumentException("Slot is not rented.");
 
             byte zero = 0;
             GL.ClearNamedBufferData(tenant.Handle, InternalFormat.R8, PixelFormat.Red, PixelType.Byte, (void*)&zero);
-            _Slots[tenant.Index] = false;
-            RentedSlots -= 1;
+            _RoomTracker[tenant.Index] = false;
+            Tenant -= 1;
         }
 
         public void Dispose() => GL.DeleteBuffer(Handle);
