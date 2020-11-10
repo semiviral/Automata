@@ -1,6 +1,7 @@
 #region
 
 using System;
+using System.Numerics;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
@@ -14,6 +15,8 @@ namespace Automata.Engine.Numerics
 {
     public readonly partial struct Vector2i
     {
+        public static Vector2i FromVector2(Vector2 a) => new Vector2i((int)a.X, (int)a.Y);
+
         public static Vector2i Project2D(int index, int bounds)
         {
             int xQuotient = Math.DivRem(index, bounds, out int x);

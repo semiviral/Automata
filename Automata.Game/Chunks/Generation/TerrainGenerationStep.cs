@@ -1,15 +1,10 @@
-#region
-
 using System;
+using System.Numerics;
 using System.Runtime.CompilerServices;
-using Automata.Engine;
 using Automata.Engine.Extensions;
 using Automata.Engine.Noise;
 using Automata.Engine.Numerics;
 using Automata.Game.Blocks;
-
-#endregion
-
 
 namespace Automata.Game.Chunks.Generation
 {
@@ -29,7 +24,7 @@ namespace Automata.Game.Chunks.Generation
                 for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++, heightmapIndex++, index++)
                 {
                     Vector3i global = origin + new Vector3i(x, y, z);
-                    if (y == 0) heightmap[heightmapIndex] = CalculateHeight(global.X, global.Z, parameters.Frequency, parameters.Persistence);
+                    if (y == 0) heightmap[heightmapIndex] = CalculateHeight(new Vector2(global.X, global.Z), parameters.Frequency, parameters.Persistence);
 
                     int noiseHeight = heightmap[heightmapIndex];
 
@@ -64,9 +59,9 @@ namespace Automata.Game.Chunks.Generation
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int CalculateHeight(int x, int z, float frequency, float persistence)
+        private static int CalculateHeight(Vector2 xz, float frequency, float persistence)
         {
-            float noise = OpenSimplexSlim.GetSimplex(GenerationConstants.Seed, frequency, x, z);
+            float noise = OpenSimplexSlim.GetSimplex(GenerationConstants.Seed, frequency, xz);
             float noiseHeight = noise.Unlerp(-1f, 1f) * GenerationConstants.WORLD_HEIGHT;
             float modifiedNoiseHeight = noiseHeight + (((GenerationConstants.WORLD_HEIGHT / 2f) - (noiseHeight * 1.25f)) * persistence);
 
