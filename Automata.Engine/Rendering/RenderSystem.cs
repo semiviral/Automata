@@ -126,11 +126,10 @@ namespace Automata.Engine.Rendering
 
                     if (objectEntity.TryGetComponent(out OcclusionBounds? bounds) && CheckClipFrustumOcclude(bounds, planes, modelViewProjection)) continue;
 
-                    if (cachedMaterial is null) ApplyNewMaterial(material, ref cachedMaterial);
-                    else if (!material.Equals(cachedMaterial)) ApplyNewMaterial(material, ref cachedMaterial);
+                    if (cachedMaterial is null || !material.Equals(cachedMaterial)) ApplyNewMaterial(material, ref cachedMaterial);
 
                     Matrix4x4.Invert(renderMesh.Model, out Matrix4x4 modelInverted);
-                    ShaderProgram vertexShader = cachedMaterial.Pipeline.Stage(ShaderType.VertexShader);
+                    ShaderProgram vertexShader = cachedMaterial!.Pipeline.Stage(ShaderType.VertexShader);
                     vertexShader.TrySetUniform("_mvp", modelViewProjection);
                     vertexShader.TrySetUniform("_object", modelInverted);
                     vertexShader.TrySetUniform("_world", renderMesh.Model);

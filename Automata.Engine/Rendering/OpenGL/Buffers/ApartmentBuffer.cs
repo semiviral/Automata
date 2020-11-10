@@ -8,6 +8,8 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
     {
         private readonly ApartmentBuffer _Owner;
 
+        private bool _Disposed;
+
         public uint Index { get; }
         public uint Offset { get; }
 
@@ -22,7 +24,15 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
         public unsafe void SetBufferData(int offset, byte* data, uint length) => GL.NamedBufferSubData(Handle, offset + (int)Offset, length, data);
         public void SetBufferData(int offset, Span<byte> data) => GL.NamedBufferSubData(Handle, offset + (int)Offset, (uint)data.Length, ref data[0]);
 
-        public void Dispose() => _Owner.Return(this);
+        public void Dispose()
+        {
+            if (_Disposed) return;
+
+            _Owner.Return(this);
+            _Disposed = true;
+        }
+
+        ~Tenant() => Dispose();
     }
 
     public class ApartmentBuffer : OpenGLObject, IDisposable
@@ -57,9 +67,8 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             uint index = 0;
 
             for (; index < _RoomTracker.Length; index++)
-            {
-                if (!_RoomTracker[index]) break;
-            }
+                if (!_RoomTracker[index])
+                    break;
 
             tenant = new Tenant(GL, this, index, (uint)(index * TenantSize));
             _RoomTracker[index] = true;
