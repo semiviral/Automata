@@ -21,6 +21,6 @@ namespace Automata.Engine.Rendering
         Layer13 = 1 << 13,
         Layer14 = 1 << 14,
         Layer15 = 1 << 15,
-        Mask = 0xFFFF
+        All = 0xFFFF
     }
 }

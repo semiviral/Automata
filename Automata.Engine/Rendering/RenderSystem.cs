@@ -2,6 +2,7 @@
 
 using System;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
 using Automata.Engine.Numerics;
@@ -25,6 +26,7 @@ namespace Automata.Engine.Rendering
         private const bool _ENABLE_FRUSTUM_CULLING = true;
 
         private readonly GL _GL;
+        private readonly UniformBuffer _Viewport;
 
         private float _NewAspectRatio;
 
@@ -44,19 +46,30 @@ namespace Automata.Engine.Rendering
                 _GL.CullFace(CullFaceMode.Back);
                 _GL.Enable(GLEnum.CullFace);
             }
+
+            _Viewport = new UniformBuffer(_GL, 1, (uint)sizeof(Vector4));
         }
 
         [HandlesComponents(DistinctionStrategy.Any, typeof(Camera), typeof(RenderMesh))]
         public override unsafe void Update(EntityManager entityManager, TimeSpan delta)
         {
             _GL.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
-
-            Vector4 viewport = new Vector4(0f, 0f, AutomataWindow.Instance.Size.X, AutomataWindow.Instance.Size.Y);
             Span<Plane> planes = stackalloc Plane[Frustum.TOTAL_PLANES];
+
+            if (_NewAspectRatio > 0f) _Viewport.Write(0, new Vector4(0f, 0f, AutomataWindow.Instance.Size.X, AutomataWindow.Instance.Size.Y));
+
+            _Viewport.Bind();
 
             foreach (IEntity cameraEntity in entityManager.GetEntitiesWithComponents<Camera>())
             {
                 Camera camera = cameraEntity.GetComponent<Camera>();
+
+                camera.Uniforms ??= new UniformBuffer(_GL, 0, (uint)(sizeof(Matrix4x4) + sizeof(Matrix4x4) + sizeof(Vector4)))
+                {
+                    ["view"] = 0,
+                    ["projection"] = 64,
+                    ["parameters"] = 128
+                };
 
                 if ((cameraEntity.TryGetComponent(out Scale? cameraScale) && cameraScale.Changed)
                     | (cameraEntity.TryGetComponent(out Translation? cameraTranslation) && cameraTranslation.Changed)
@@ -69,6 +82,7 @@ namespace Automata.Engine.Rendering
 
                     Matrix4x4.Invert(camera.View, out Matrix4x4 inverted);
                     camera.View = inverted;
+                    camera.Uniforms.Write(0, camera.View);
                 }
 
                 if (_NewAspectRatio > 0f)
@@ -79,10 +93,14 @@ namespace Automata.Engine.Rendering
                         Projector.Orthographic => new OrthographicProjection(AutomataWindow.Instance.Size, 0.1f, 1000f),
                         Projector.None or _ => camera.Projection
                     };
+
+                    camera.Uniforms.Write(64, camera.Projection!.Matrix);
+                    camera.Uniforms.Write(128, camera.Projection!.Parameters);
                 }
 
                 if (camera.Projection is null) continue;
 
+                camera.Uniforms.Bind();
                 Matrix4x4 viewProjection = camera.View * camera.Projection.Matrix;
                 Material? currentMaterial = null;
 
@@ -103,7 +121,7 @@ namespace Automata.Engine.Rendering
 
                     Matrix4x4 modelViewProjection = renderMesh.Model * viewProjection;
 
-                    if (!renderMesh.ShouldRender
+                    if (!renderMesh.ShouldRender // check if should render at all
                         || ((camera.RenderedLayers & renderMesh.Mesh!.Layer) != renderMesh.Mesh!.Layer)
                         || !objectEntity.TryGetComponent(out Material? material)
 
