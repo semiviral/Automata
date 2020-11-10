@@ -139,7 +139,6 @@ namespace Automata.Engine.Rendering.GLFW
             catch (Exception ex)
             {
                 Log.Error(string.Format(_LogFormat, $"exception occured: {ex}\r\n{ex.StackTrace}"));
-                throw;
             }
         }
 

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Numerics;
 using Serilog;
 using Silk.NET.OpenGL;
@@ -10,20 +9,9 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
 {
     public class ShaderProgram : OpenGLObject, IEquatable<ShaderProgram>, IDisposable
     {
-        private static readonly string[] _ReservedUniformNames =
-        {
-            ProgramRegistry.RESERVED_UNIFORM_NAME_MATRIX_MVP,
-            ProgramRegistry.RESERVED_UNIFORM_NAME_MATRIX_WORLD,
-            ProgramRegistry.RESERVED_UNIFORM_NAME_MATRIX_OBJECT,
-            ProgramRegistry.RESERVED_UNIFORM_NAME_VEC3_CAMERA_WORLD_POSITION,
-            ProgramRegistry.RESERVED_UNIFORM_NAME_VEC4_CAMERA_PROJECTION_PARAMS,
-            ProgramRegistry.RESERVED_UNIFORM_NAME_VEC4_VIEWPORT
-        };
-
         private readonly Dictionary<string, int> _CachedUniforms;
 
         public ShaderType Type { get; }
-        public bool HasAutomataUniforms { get; }
 
         public ShaderProgram(GL gl, ShaderType shaderType, string path) : base(gl)
         {
@@ -40,7 +28,6 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
             CheckShaderInfoLogAndThrow();
 
             CacheUniforms();
-            HasAutomataUniforms = _CachedUniforms.Keys.Intersect(_ReservedUniformNames).Any();
 
             Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ShaderProgram), $"Loaded ({Type}): {path}"));
         }
@@ -64,10 +51,7 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
             if (!string.IsNullOrWhiteSpace(infoLog)) throw new ShaderLoadException(Type, infoLog);
         }
 
-        public void BindUniformBuffer(UniformBuffer uniformBuffer)
-        {
-
-        }
+        public void BindUniformBuffer(UniformBuffer uniformBuffer) { }
 
         public bool TrySetUniform(string name, int value)
         {

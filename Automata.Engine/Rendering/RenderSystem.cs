@@ -9,7 +9,6 @@ using Automata.Engine.Numerics.Shapes;
 using Automata.Engine.Rendering.GLFW;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
-using Automata.Engine.Rendering.OpenGL.Shaders;
 using Automata.Engine.Systems;
 using Silk.NET.OpenGL;
 using Plane = Automata.Engine.Numerics.Shapes.Plane;
@@ -25,9 +24,11 @@ namespace Automata.Engine.Rendering
         private const bool _ENABLE_FRUSTUM_CULLING = true;
 
         private readonly GL _GL;
+        private readonly UniformBuffer _Matrixes;
+
         private float _NewAspectRatio;
 
-        public RenderSystem()
+        public unsafe RenderSystem()
         {
             GameWindowResized(null!, AutomataWindow.Instance.Size);
             AutomataWindow.Instance.Resized += GameWindowResized;
@@ -43,6 +44,8 @@ namespace Automata.Engine.Rendering
                 _GL.CullFace(CullFaceMode.Back);
                 _GL.Enable(GLEnum.CullFace);
             }
+
+            _Matrixes = new UniformBuffer(_GL, 0, (uint)sizeof(Matrix4x4) * 3u);
         }
 
         [HandlesComponents(DistinctionStrategy.Any, typeof(Camera), typeof(RenderMesh))]
@@ -99,6 +102,7 @@ namespace Automata.Engine.Rendering
                     }
 
                     Matrix4x4 modelViewProjection = renderMesh.Model * viewProjection;
+                    _Matrixes.Write(0, modelViewProjection);
 
                     if (!renderMesh.ShouldRender // check if should render at all
                         || ((camera.RenderedLayers & renderMesh.Mesh!.Layer) != renderMesh.Mesh!.Layer)
@@ -122,23 +126,9 @@ namespace Automata.Engine.Rendering
                         currentMaterial = material;
                     }
 
-                    if (material.Pipeline.Stage(ShaderType.VertexShader).HasAutomataUniforms)
-                    {
-                        if (Matrix4x4.Invert(renderMesh.Model, out Matrix4x4 modelInverted))
-                            material.Pipeline.Stage(ShaderType.VertexShader).TrySetUniform(ProgramRegistry.RESERVED_UNIFORM_NAME_MATRIX_OBJECT, modelInverted);
-
-                        material.Pipeline.Stage(ShaderType.VertexShader).TrySetUniform(ProgramRegistry.RESERVED_UNIFORM_NAME_MATRIX_WORLD, renderMesh.Model);
-                        material.Pipeline.Stage(ShaderType.VertexShader).TrySetUniform(ProgramRegistry.RESERVED_UNIFORM_NAME_MATRIX_MVP, modelViewProjection);
-
-                        material.Pipeline.Stage(ShaderType.VertexShader).TrySetUniform(ProgramRegistry.RESERVED_UNIFORM_NAME_VEC3_CAMERA_WORLD_POSITION,
-                            cameraTranslation?.Value ?? Vector3.Zero);
-
-                        material.Pipeline.Stage(ShaderType.VertexShader).TrySetUniform(ProgramRegistry.RESERVED_UNIFORM_NAME_VEC4_CAMERA_PROJECTION_PARAMS,
-                            camera.Projection?.Parameters ?? Vector4.Zero);
-
-                        material.Pipeline.Stage(ShaderType.VertexShader).TrySetUniform(ProgramRegistry.RESERVED_UNIFORM_NAME_VEC4_VIEWPORT, viewport);
-                    }
-
+                    Matrix4x4.Invert(renderMesh.Model, out Matrix4x4 modelInverted);
+                    _Matrixes.Write(64, modelInverted); // object
+                    _Matrixes.Write(128, renderMesh.Model); // world
 
                     renderMesh.Mesh!.Bind();
 
@@ -146,7 +136,7 @@ namespace Automata.Engine.Rendering
                 }
             }
 
-            _GL.BindVertexArray(0);
+            GLAPI.UnbindVertexArray();
             _NewAspectRatio = 0f;
         }
 

@@ -11,19 +11,12 @@ layout (location = 0) out fragment
     vec3 color;
 } fragment;
 
-layout (std140) uniform matrixes
+layout (std140, binding = 0) uniform matrixes
 {
     mat4 mvp;
     mat4 object;
     mat4 world;
-}
-
-layout (std140) uniform camera
-{
-    vec3 pos;
-    vec4 params;
-    vec4 viewport;
-}
+};
 
 void main()
 {

@@ -6,16 +6,16 @@ namespace Automata.Engine.Rendering.OpenGL
 {
     public class UniformBuffer : OpenGLObject
     {
-        public string Name { get; }
         public uint BindingIndex { get; }
 
-        public UniformBuffer(GL gl, string name, uint bindingIndex) : base(gl)
+        public UniformBuffer(GL gl, uint bindingIndex, uint size) : base(gl)
         {
-            Name = name;
             BindingIndex = bindingIndex;
             Handle = GL.CreateBuffer();
 
-            GL.NamedBufferData(Handle, 512, Span<byte>.Empty, VertexBufferObjectUsage.StaticDraw);
+            if (size > short.MaxValue) throw new ArgumentOutOfRangeException(nameof(size), "Size must be greater than zero and less than 16KB.");
+
+            GL.NamedBufferData(Handle, size, Span<byte>.Empty, VertexBufferObjectUsage.StaticDraw);
         }
 
         public unsafe void Write<T>(int offset, T data) where T : unmanaged

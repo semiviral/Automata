@@ -2,7 +2,7 @@ using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering
 {
-    public class OpenGLObject
+    public abstract class OpenGLObject
     {
         protected readonly GL GL;
 

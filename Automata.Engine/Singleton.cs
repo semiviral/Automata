@@ -4,7 +4,7 @@ namespace Automata.Engine
     {
         public static T Instance { get; private set; } = new T();
 
-        protected string _LogFormat { get; } = string.Format(FormatHelper.DEFAULT_LOGGING, typeof(T), "{0}");
+        protected string _LogFormat { get; } = string.Format(FormatHelper.DEFAULT_LOGGING, typeof(T).Name, "{0}");
 
         /// <summary>
         ///     Use this function to force the lazy-initialization of the singleton.
