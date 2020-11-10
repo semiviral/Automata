@@ -193,10 +193,10 @@ namespace Automata.Engine.Rendering
             // this bool indicates whether we updated any textures
             bool updateTextures = false;
 
-            for (int index = 0; index < oldTextureCount; index++)
+            for (int index = 0; index < material.Textures.Count; index++)
             {
                 // if textures match, continue to next
-                if (material.Textures[index].Equals(old?.Textures[index])) continue;
+                if (index < oldTextureCount && material.Textures[index].Equals(old?.Textures[index])) continue;
 
                 // textures don't match, so reassign this specific texture channel
                 material.Textures[index].Bind(TextureUnit.Texture0 + index);
