@@ -27,7 +27,7 @@ namespace Automata.Engine.Rendering
         private const bool _ENABLE_FRUSTUM_CULLING = true;
 
         private readonly GL _GL;
-        private readonly UniformBuffer _Viewport;
+        private readonly UniformBufferObject _Viewport;
 
         private float _NewAspectRatio;
 
@@ -48,7 +48,7 @@ namespace Automata.Engine.Rendering
                 _GL.Enable(EnableCap.CullFace);
             }
 
-            _Viewport = new UniformBuffer(_GL, 1, (uint)sizeof(Vector4));
+            _Viewport = new UniformBufferObject(_GL, 1, (uint)sizeof(Vector4));
         }
 
         private void CheckUpdateViewportUBOAndBind()
@@ -68,7 +68,7 @@ namespace Automata.Engine.Rendering
 
             foreach ((IEntity cameraEntity, Camera camera) in entityManager.GetEntities<Camera>())
             {
-                camera.Uniforms ??= new UniformBuffer(_GL, 0, (uint)(sizeof(Matrix4x4) + sizeof(Matrix4x4) + sizeof(Vector4)))
+                camera.Uniforms ??= new UniformBufferObject(_GL, 0, (uint)(sizeof(Matrix4x4) + sizeof(Matrix4x4) + sizeof(Vector4)))
                 {
                     ["view"] = 0,
                     ["projection"] = 64,

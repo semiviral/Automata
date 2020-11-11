@@ -6,11 +6,13 @@ using Automata.Engine.Entities;
 using Automata.Engine.Input;
 using Automata.Engine.Rendering;
 using Automata.Engine.Rendering.OpenGL;
+using Automata.Engine.Rendering.OpenGL.Buffers;
 using Automata.Engine.Systems;
 using Automata.Game.Blocks;
 using Automata.Game.Chunks;
 using Automata.Game.Chunks.Generation;
 using Serilog;
+using Silk.NET.OpenGL;
 using Silk.NET.Windowing.Common;
 
 namespace Automata.Game
@@ -27,6 +29,19 @@ namespace Automata.Game
             Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(Serilog), "Logger initialized."));
 
             Initialize();
+
+            IndirectBufferObject bufferObject = new IndirectBufferObject(GL.GetApi(), 5);
+
+            DrawElementsIndirectCommand command = new DrawElementsIndirectCommand
+            {
+                Count = 0u,
+                InstanceCount = 1u,
+                FirstIndexOffset = 6u,
+                BaseVertex = 0u,
+                BaseInstance = 0u,
+            };
+
+            bufferObject.WriteCommand( 0u, command);
 
             AutomataWindow.Instance.Run();
         }

@@ -15,21 +15,21 @@ namespace Automata.Engine.Rendering.Meshes
         public bool Visible { get; }
         public Layer Layer { get; }
 
-        public BufferObject<TVertex> VertexesBuffer { get; }
-        public BufferObject<uint> IndexesBuffer { get; }
+        public BufferObject<TVertex> VertexesBufferObject { get; }
+        public BufferObject<uint> IndexesBufferObject { get; }
         public VertexArrayObject<TVertex> VertexArrayObject { get; }
 
-        public uint IndexesLength => IndexesBuffer.Length;
-        public uint IndexesByteLength => IndexesBuffer.ByteLength;
+        public uint IndexesLength => IndexesBufferObject.Length;
+        public uint IndexesByteLength => IndexesBufferObject.ByteLength;
 
         public Mesh(Layer layer = Layer.Layer0)
         {
             ID = Guid.NewGuid();
             Visible = true;
             Layer = layer;
-            VertexesBuffer = new BufferObject<TVertex>(GLAPI.Instance.GL);
-            IndexesBuffer = new BufferObject<uint>(GLAPI.Instance.GL);
-            VertexArrayObject = new VertexArrayObject<TVertex>(GLAPI.Instance.GL, VertexesBuffer, IndexesBuffer);
+            VertexesBufferObject = new BufferObject<TVertex>(GLAPI.Instance.GL);
+            IndexesBufferObject = new BufferObject<uint>(GLAPI.Instance.GL);
+            VertexArrayObject = new VertexArrayObject<TVertex>(GLAPI.Instance.GL, VertexesBufferObject, IndexesBufferObject);
         }
 
         public void Bind() => VertexArrayObject.Bind();
@@ -37,8 +37,8 @@ namespace Automata.Engine.Rendering.Meshes
 
         public void Dispose()
         {
-            VertexesBuffer.Dispose();
-            IndexesBuffer.Dispose();
+            VertexesBufferObject.Dispose();
+            IndexesBufferObject.Dispose();
             VertexArrayObject.Dispose();
         }
     }

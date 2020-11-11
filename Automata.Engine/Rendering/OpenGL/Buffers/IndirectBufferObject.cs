@@ -3,23 +3,19 @@ using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.OpenGL.Buffers
 {
-    public class DrawIndirectBuffer : OpenGLObject
+    public class IndirectBufferObject : OpenGLObject
     {
-        public uint Size { get; }
+        public uint Count { get; }
 
-        public unsafe DrawIndirectBuffer(GL gl, uint size) : base(gl)
+        public unsafe IndirectBufferObject(GL gl, uint count) : base(gl)
         {
             Handle = GL.CreateBuffer();
-            Size = size;
+            Count = count;
 
-            GL.NamedBufferStorage(Handle, Size, Span<byte>.Empty, (uint)BufferTargetARB.DrawIndirectBuffer);
-            new VertexAttribute<uint>(2, 1, (uint)sizeof(DrawElementsIndirectCommand)).Commit(GL, Handle);
-            GL.VertexArrayAttribBinding(Handle, 2u, 0u);
-            GL.VertexArrayBindingDivisor(Handle, 2u, 1u);
-            GL.EnableVertexArrayAttrib(Handle, 2u);
+            GL.NamedBufferStorage(Handle, Count * (uint)sizeof(DrawElementsIndirectCommand), Span<byte>.Empty, (uint)BufferStorageMask.DynamicStorageBit);
         }
 
-        public unsafe void WriteCommand(DrawElementsIndirectCommand command, uint index) =>
+        public unsafe void WriteCommand(uint index, DrawElementsIndirectCommand command) =>
             GL.NamedBufferSubData(Handle, (int)(index * (uint)sizeof(DrawElementsIndirectCommand)), (uint)sizeof(DrawElementsIndirectCommand), ref command);
 
         public unsafe void WriteCommands(Span<(uint, DrawElementsIndirectCommand)> commands)

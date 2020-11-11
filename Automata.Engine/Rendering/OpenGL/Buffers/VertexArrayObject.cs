@@ -19,7 +19,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
         public unsafe VertexArrayObject(GL gl, BufferObject<TVertex> vbo) : base(gl)
         {
-            _VertexAttributes = new IVertexAttribute[0];
+            _VertexAttributes = Array.Empty<IVertexAttribute>();
 
             Handle = GL.CreateVertexArray();
 
@@ -28,7 +28,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
         public unsafe VertexArrayObject(GL gl, BufferObject<TVertex> vbo, BufferObject<uint> ebo) : base(gl)
         {
-            _VertexAttributes = new IVertexAttribute[0];
+            _VertexAttributes = Array.Empty<IVertexAttribute>();
 
             Handle = GL.CreateVertexArray();
 

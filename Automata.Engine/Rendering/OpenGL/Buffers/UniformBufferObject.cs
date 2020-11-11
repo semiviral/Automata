@@ -5,7 +5,7 @@ using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.OpenGL.Buffers
 {
-    public class UniformBuffer : OpenGLObject, IDisposable
+    public class UniformBufferObject : OpenGLObject, IDisposable
     {
         private const MapBufferAccessMask _MAPPING_FLAGS = MapBufferAccessMask.MapWriteBit;
         private const BufferStorageMask _STORAGE_FLAGS = BufferStorageMask.DynamicStorageBit | (BufferStorageMask)_MAPPING_FLAGS;
@@ -18,7 +18,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             init
             {
                 if ((value % 16) != 0)
-                    Log.Warning(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(UniformBuffer),
+                    Log.Warning(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(UniformBufferObject),
                         "Offset is not aligned to a multiple of 16. This may be an error."));
 
                 if (!_Offsets.ContainsKey(uniform)) _Offsets.Add(uniform, value);
@@ -38,7 +38,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
         public uint Size { get; }
 
-        public UniformBuffer(GL gl, uint bindingIndex, uint size) : base(gl)
+        public UniformBufferObject(GL gl, uint bindingIndex, uint size) : base(gl)
         {
             if (size > short.MaxValue) throw new ArgumentOutOfRangeException(nameof(size), "Size must be greater than zero and less than 16KB.");
 
@@ -54,7 +54,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
         public unsafe void Write<T>(int offset, T data) where T : unmanaged
         {
             if ((offset % 16) != 0)
-                Log.Warning(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(UniformBuffer),
+                Log.Warning(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(UniformBufferObject),
                     "Offset is not aligned to a multiple of 16. This may be an error."));
 
             GL.NamedBufferSubData(Handle, offset, (uint)sizeof(T), ref data);
@@ -66,7 +66,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
         public unsafe void Write<T>(int offset, Span<T> data) where T : unmanaged
         {
             if ((offset % 16) != 0)
-                Log.Warning(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(UniformBuffer),
+                Log.Warning(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(UniformBufferObject),
                     "Offset is not aligned to a multiple of 16. This may be an error."));
 
             GL.NamedBufferSubData(Handle, offset, (uint)(sizeof(T) * data.Length), ref data[0]);

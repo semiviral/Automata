@@ -6,14 +6,14 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 {
     public class Tenant : OpenGLObject, IDisposable
     {
-        private readonly ApartmentBuffer _Owner;
+        private readonly ApartmentBufferObject _Owner;
 
         private bool _Disposed;
 
         public uint Index { get; }
         public uint Offset { get; }
 
-        internal Tenant(GL gl, ApartmentBuffer owner, uint index, uint offset) : base(gl)
+        internal Tenant(GL gl, ApartmentBufferObject owner, uint index, uint offset) : base(gl)
         {
             _Owner = owner;
             Handle = owner.Handle;
@@ -35,7 +35,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
         ~Tenant() => Dispose();
     }
 
-    public class ApartmentBuffer : OpenGLObject, IDisposable
+    public class ApartmentBufferObject : OpenGLObject, IDisposable
     {
         private readonly bool[] _RoomTracker;
 
@@ -44,7 +44,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
         public uint Tenant { get; private set; }
 
-        public ApartmentBuffer(GL gl, uint roomCount, uint tenantSize) : base(gl)
+        public ApartmentBufferObject(GL gl, uint roomCount, uint tenantSize) : base(gl)
         {
             const uint storage_flags = (uint)BufferStorageMask.DynamicStorageBit | (uint)MapBufferAccessMask.MapWriteBit;
 

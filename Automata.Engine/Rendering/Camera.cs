@@ -15,6 +15,6 @@ namespace Automata.Engine.Rendering
         public Layer RenderedLayers { get; set; } = Layer.All;
         public Projector Projector { get; set; }
         public IProjection? Projection { get; set; }
-        public UniformBuffer? Uniforms { get; set; }
+        public UniformBufferObject? Uniforms { get; set; }
     }
 }

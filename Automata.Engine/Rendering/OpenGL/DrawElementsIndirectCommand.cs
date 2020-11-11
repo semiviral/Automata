@@ -3,12 +3,12 @@ using System.Runtime.InteropServices;
 namespace Automata.Engine.Rendering.OpenGL
 {
     [StructLayout(LayoutKind.Sequential)]
-    public readonly struct DrawElementsIndirectCommand
+    public struct DrawElementsIndirectCommand
     {
-        public readonly uint Count;
-        public readonly uint InstanceCount;
-        public readonly uint FirstIndexOffset;
-        public readonly uint BaseVertex;
-        public readonly uint BaseInstance;
+        public uint Count { get; init; }
+        public uint InstanceCount { get; init; }
+        public uint FirstIndexOffset { get; init; }
+        public uint BaseVertex { get; init; }
+        public uint BaseInstance { get; init; }
     }
 }
