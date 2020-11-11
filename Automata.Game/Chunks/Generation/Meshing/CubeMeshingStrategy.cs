@@ -178,10 +178,9 @@ namespace Automata.Game.Chunks.Generation.Meshing
                             else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockID, BlockDefinitionDefinition.Attribute.Transparent))
                             {
                                 if (!isNegativeNormal)
-                                {
+
                                     // we've culled the current face, and faced block is opaque as well, so cull it's face to current.
                                     faces[facedBlockIndex] |= (Direction)(1 << ((normalIndex + 3) % 6));
-                                }
 
                                 break;
                             }

@@ -176,14 +176,12 @@ namespace Automata.Engine.Collections
             int index = 0;
 
             foreach (uint value in _Palette)
-            {
                 for (int offset = 0; offset < UINT_32_BITS; offset += _IndexBits)
                 {
                     yield return LookupTable[(int)((value >> offset) & _IndexMask)];
 
                     if ((index += 1) >= Count) yield break;
                 }
-            }
         }
 
         ~Palette() => ArrayPool<uint>.Shared.Return(_Palette, true);

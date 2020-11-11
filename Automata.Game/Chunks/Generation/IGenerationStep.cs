@@ -1,7 +1,6 @@
 using System;
 using Automata.Engine.Numerics;
 
-
 namespace Automata.Game.Chunks.Generation
 {
     public interface IGenerationStep

@@ -4,7 +4,6 @@ using System;
 using System.Numerics;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
-using Automata.Engine.Rendering.GLFW;
 using Automata.Engine.Systems;
 using Silk.NET.Input.Common;
 
@@ -46,12 +45,10 @@ namespace Automata.Engine.Input
             if (movementVector == Vector3.Zero) return;
 
             foreach ((IEntity entity, Translation translation, KeyboardListener listener) in entityManager.GetEntities<Translation, KeyboardListener>())
-            {
                 translation.Value += listener.Sensitivity
                                      * (entity.TryGetComponent(out Rotation? rotation)
                                          ? Vector3.Transform(movementVector, rotation.Value)
                                          : movementVector);
-            }
         }
 
         private static Vector3 GetMovementVector(float deltaTime)

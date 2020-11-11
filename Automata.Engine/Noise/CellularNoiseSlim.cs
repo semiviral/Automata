@@ -339,82 +339,70 @@ namespace Automata.Engine.Noise
             {
                 case CellularDistanceFunction.Euclidean:
                     for (int xi = xr - 1; xi <= (xr + 1); xi++)
+                    for (int yi = yr - 1; yi <= (yr + 1); yi++)
+                    for (int zi = zr - 1; zi <= (zr + 1); zi++)
                     {
-                        for (int yi = yr - 1; yi <= (yr + 1); yi++)
+                        Vector3 vec = _cell3D[Hash3D(seed, xi, yi, zi) & 255];
+
+                        float vecX = (xi - x) + (vec.X * jitter);
+                        float vecY = (yi - y) + (vec.Y * jitter);
+                        float vecZ = (zi - z) + (vec.Z * jitter);
+
+                        float newDistance = (vecX * vecX) + (vecY * vecY) + (vecZ * vecZ);
+
+                        if (newDistance < distance)
                         {
-                            for (int zi = zr - 1; zi <= (zr + 1); zi++)
-                            {
-                                Vector3 vec = _cell3D[Hash3D(seed, xi, yi, zi) & 255];
-
-                                float vecX = (xi - x) + (vec.X * jitter);
-                                float vecY = (yi - y) + (vec.Y * jitter);
-                                float vecZ = (zi - z) + (vec.Z * jitter);
-
-                                float newDistance = (vecX * vecX) + (vecY * vecY) + (vecZ * vecZ);
-
-                                if (newDistance < distance)
-                                {
-                                    distance = newDistance;
-                                    xc = xi;
-                                    yc = yi;
-                                    zc = zi;
-                                }
-                            }
+                            distance = newDistance;
+                            xc = xi;
+                            yc = yi;
+                            zc = zi;
                         }
                     }
 
                     break;
                 case CellularDistanceFunction.Manhattan:
                     for (int xi = xr - 1; xi <= (xr + 1); xi++)
+                    for (int yi = yr - 1; yi <= (yr + 1); yi++)
+                    for (int zi = zr - 1; zi <= (zr + 1); zi++)
                     {
-                        for (int yi = yr - 1; yi <= (yr + 1); yi++)
+                        Vector3 vec = _cell3D[Hash3D(seed, xi, yi, zi) & 255];
+
+                        float vecX = (xi - x) + (vec.X * jitter);
+                        float vecY = (yi - y) + (vec.Y * jitter);
+                        float vecZ = (zi - z) + (vec.Z * jitter);
+
+                        float newDistance = Math.Abs(vecX) + Math.Abs(vecY) + Math.Abs(vecZ);
+
+                        if (newDistance < distance)
                         {
-                            for (int zi = zr - 1; zi <= (zr + 1); zi++)
-                            {
-                                Vector3 vec = _cell3D[Hash3D(seed, xi, yi, zi) & 255];
-
-                                float vecX = (xi - x) + (vec.X * jitter);
-                                float vecY = (yi - y) + (vec.Y * jitter);
-                                float vecZ = (zi - z) + (vec.Z * jitter);
-
-                                float newDistance = Math.Abs(vecX) + Math.Abs(vecY) + Math.Abs(vecZ);
-
-                                if (newDistance < distance)
-                                {
-                                    distance = newDistance;
-                                    xc = xi;
-                                    yc = yi;
-                                    zc = zi;
-                                }
-                            }
+                            distance = newDistance;
+                            xc = xi;
+                            yc = yi;
+                            zc = zi;
                         }
                     }
 
                     break;
                 case CellularDistanceFunction.Natural:
                     for (int xi = xr - 1; xi <= (xr + 1); xi++)
+                    for (int yi = yr - 1; yi <= (yr + 1); yi++)
+                    for (int zi = zr - 1; zi <= (zr + 1); zi++)
                     {
-                        for (int yi = yr - 1; yi <= (yr + 1); yi++)
+                        Vector3 vec = _cell3D[Hash3D(seed, xi, yi, zi) & 255];
+
+                        float vecX = (xi - x) + (vec.X * jitter);
+                        float vecY = (yi - y) + (vec.Y * jitter);
+                        float vecZ = (zi - z) + (vec.Z * jitter);
+
+                        float newDistance =
+                            Math.Abs(vecX) + Math.Abs(vecY) + Math.Abs(vecZ) + ((vecX * vecX) + (vecY * vecY) + (vecZ * vecZ));
+
+                        if (newDistance < distance)
                         {
-                            for (int zi = zr - 1; zi <= (zr + 1); zi++)
-                            {
-                                Vector3 vec = _cell3D[Hash3D(seed, xi, yi, zi) & 255];
-
-                                float vecX = (xi - x) + (vec.X * jitter);
-                                float vecY = (yi - y) + (vec.Y * jitter);
-                                float vecZ = (zi - z) + (vec.Z * jitter);
-
-                                float newDistance =
-                                    Math.Abs(vecX) + Math.Abs(vecY) + Math.Abs(vecZ) + ((vecX * vecX) + (vecY * vecY) + (vecZ * vecZ));
-
-                                if (newDistance < distance)
-                                {
-                                    distance = newDistance;
-                                    xc = xi;
-                                    yc = yi;
-                                    zc = zi;
-                                }
-                            }
+                            distance = newDistance;
+                            xc = xi;
+                            yc = yi;
+                            zc = zi;
                         }
                     }
 

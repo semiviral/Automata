@@ -77,7 +77,6 @@ namespace Automata.Game.Chunks.Generation
             };
 
             foreach ((IEntity entity, Chunk chunk, Translation translation) in entityManager.GetEntities<Chunk, Translation>())
-            {
                 switch (chunk.State)
                 {
                     case GenerationState.Ungenerated:
@@ -90,7 +89,6 @@ namespace Automata.Game.Chunks.Generation
                         chunk.State += 1;
                         break;
                 }
-            }
 
             DiagnosticsInputCheck();
         }

@@ -111,10 +111,8 @@ namespace Automata.Engine.Rendering
             Frustum.Intersect result = Frustum.Intersect.Inside;
 
             foreach (Plane plane in _Planes)
-            {
                 if (plane.Distance(cube.GreaterSumVertex(plane.Normal)) < 0f) return Frustum.Intersect.Outside;
                 else if (plane.Distance(cube.LesserSumVertex(plane.Normal)) < 0f) result = Frustum.Intersect.Intersect;
-            }
 
             return result;
         }

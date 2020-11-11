@@ -6,7 +6,6 @@ using System.Drawing;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using Automata.Engine.Rendering.GLFW;
 using Silk.NET.Input;
 using Silk.NET.Input.Common;
 using Silk.NET.Windowing.Common;

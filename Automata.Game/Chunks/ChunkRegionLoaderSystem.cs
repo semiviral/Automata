@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Automata.Engine;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
@@ -55,7 +54,6 @@ namespace Automata.Game.Chunks
             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkRegionLoaderSystem),
                 $"Region loading: {totalActivations} activations, {totalDeactivations} deactivations"));
         }
-
 
         private static IEnumerable<Vector3i> GetActiveChunkLoaderRegion(ChunkLoader chunkLoader)
         {

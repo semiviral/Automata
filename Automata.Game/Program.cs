@@ -1,12 +1,10 @@
 ﻿using System.Drawing;
-using System.Threading.Tasks;
 using Automata.Engine;
 using Automata.Engine.Components;
 using Automata.Engine.Concurrency;
 using Automata.Engine.Entities;
 using Automata.Engine.Input;
 using Automata.Engine.Rendering;
-using Automata.Engine.Rendering.GLFW;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Systems;
 using Automata.Game.Blocks;

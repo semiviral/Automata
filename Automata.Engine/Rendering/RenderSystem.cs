@@ -3,12 +3,10 @@
 using System;
 using System.Linq;
 using System.Numerics;
-using System.Threading.Tasks;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
 using Automata.Engine.Numerics;
 using Automata.Engine.Numerics.Shapes;
-using Automata.Engine.Rendering.GLFW;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
@@ -105,7 +103,6 @@ namespace Automata.Engine.Rendering
                 Material? cachedMaterial = null;
 
                 foreach ((IEntity objectEntity, RenderMesh renderMesh) in entityManager.GetEntities<RenderMesh>())
-                {
                     if (((objectEntity.TryGetComponent(out Scale? modelScale) && modelScale.Changed)
                          | (objectEntity.TryGetComponent(out Rotation? modelRotation) && modelRotation.Changed)
                          | (objectEntity.TryGetComponent(out Translation? modelTranslation) && modelTranslation.Changed))
@@ -117,7 +114,6 @@ namespace Automata.Engine.Rendering
                         if (modelRotation is not null) renderMesh.Model *= Matrix4x4.CreateFromQuaternion(modelRotation.Value);
                         if (modelScale is not null) renderMesh.Model *= Matrix4x4.CreateScale(modelScale.Value);
                     }
-                }
 
                 foreach ((IEntity objectEntity, RenderMesh renderMesh, Material material) in entityManager.GetEntities<RenderMesh, Material>()
                     .Where(result => result.Component1.ShouldRender && ((camera.RenderedLayers & result.Component1.Mesh!.Layer) > 0))
@@ -178,13 +174,11 @@ namespace Automata.Engine.Rendering
 
                 // if old isn't null, bind the old textures to the new pipeline
                 if (old is not null)
-                {
                     for (int index = 0; index < old.Textures.Count; index++)
                     {
                         old.Textures[index].Bind(TextureUnit.Texture0 + index);
                         newFragmentShader.TrySetUniform($"_tex{index}", index);
                     }
-                }
             }
 
             // if newFragmentShader is null, then we didn't bind a new pipeline

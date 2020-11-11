@@ -65,7 +65,6 @@ namespace Automata.Game.Blocks
                     ushort id = RegisterBlock(resource.Group, blockDefinition.Name, attributes, blockDefinition.MeshingStrategy);
 
                     if (resource.Group.Equals("Core"))
-                    {
                         switch (blockDefinition.Name)
                         {
                             case "Null":
@@ -75,7 +74,6 @@ namespace Automata.Game.Blocks
                                 AirID = id;
                                 break;
                         }
-                    }
 
                     foreach (string textureName in blockDefinition.Textures ?? Enumerable.Empty<string>())
                     {
@@ -91,7 +89,6 @@ namespace Automata.Game.Blocks
             result = (BlockDefinitionDefinition.Attribute)0;
 
             foreach (string attribute in attributes)
-            {
                 if (attribute.StartsWith("Alias"))
                 {
                     string aliasName = attribute.Substring(attribute.IndexOf(' ') + 1);
@@ -114,7 +111,6 @@ namespace Automata.Game.Blocks
 
                     return false;
                 }
-            }
 
             return true;
         }

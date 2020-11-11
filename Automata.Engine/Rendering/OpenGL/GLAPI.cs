@@ -1,7 +1,6 @@
 #region
 
 using System;
-using Automata.Engine.Rendering.GLFW;
 using Serilog;
 using Silk.NET.Core.Native;
 using Silk.NET.OpenGL;
