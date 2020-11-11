@@ -11,6 +11,7 @@ namespace Automata.Game.Chunks
         public GenerationState State { get; set; } = GenerationState.Ungenerated;
         public Palette<Block>? Blocks { get; set; }
         public Chunk?[] Neighbors { get; } = new Chunk?[6];
+        public ConcurrentChannel<ChunkModification> Modifications { get; } = new ConcurrentChannel<ChunkModification>(true, false);
 
         public IEnumerable<Palette<Block>?> NeighborBlocks() => Neighbors.Select(chunk => chunk?.Blocks);
 

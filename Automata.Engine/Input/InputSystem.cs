@@ -39,7 +39,9 @@ namespace Automata.Engine.Input
         private static void HandleMouseListeners(EntityManager entityManager, TimeSpan delta)
         {
             Vector2 relativeMousePosition = InputManager.Instance.GetMousePositionCenterRelative(0) * (float)delta.TotalSeconds;
-            relativeMousePosition.X = -relativeMousePosition.X; // invert y axis for proper rotation
+            // invert axis for proper rotation
+            // without this line, the x-axis rotation will be backwards
+            relativeMousePosition.X = -relativeMousePosition.X;
 
             if (relativeMousePosition == Vector2.Zero) return;
 

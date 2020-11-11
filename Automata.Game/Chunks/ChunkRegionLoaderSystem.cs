@@ -43,13 +43,13 @@ namespace Automata.Game.Chunks
             HashSet<Vector3i> withinLoaderRange = new HashSet<Vector3i>(components.SelectMany(loader =>
                 GetActiveChunkLoaderRegion(loader.ChunkLoader)));
 
-            IEnumerable<Vector3i> activations = withinLoaderRange.Except(VoxelWorld.Chunks.Active);
-            IEnumerable<Vector3i> deactivations = VoxelWorld.Chunks.Active.Except(withinLoaderRange);
+            IEnumerable<Vector3i> activations = withinLoaderRange.Except(VoxelWorld.Chunks.Origins);
+            IEnumerable<Vector3i> deactivations = VoxelWorld.Chunks.Origins.Except(withinLoaderRange);
 
             int totalActivations = activations.Count(origin => VoxelWorld.Chunks.TryAdd(entityManager, origin, out IEntity? _));
             int totalDeactivations = deactivations.Count(origin => VoxelWorld.Chunks.TryRemove(entityManager, origin, out IEntity? _));
 
-            VoxelWorld.Chunks.RecalculateAllNeighbors();
+            VoxelWorld.Chunks.RecalculateAllChunkNeighbors();
 
             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkRegionLoaderSystem),
                 $"Region loading: {totalActivations} activations, {totalDeactivations} deactivations"));

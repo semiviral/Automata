@@ -23,12 +23,27 @@ namespace Automata.Game.Chunks
 
         private readonly Dictionary<Vector3i, IEntity> _Chunks;
 
-        public Dictionary<Vector3i, IEntity>.KeyCollection Active => _Chunks.Keys;
+        public Dictionary<Vector3i, IEntity>.KeyCollection Origins => _Chunks.Keys;
+        public Dictionary<Vector3i, IEntity>.ValueCollection Chunks => _Chunks.Values;
 
         public ChunkMap() => _Chunks = new Dictionary<Vector3i, IEntity>();
 
         public bool TryAdd(EntityManager entityManager, Vector3i origin, [NotNullWhen(true)] out IEntity? chunk)
         {
+            static IEntity ComposeChunkImpl(Vector3i origin)
+            {
+                IEntity chunk = new Entity();
+                chunk.AddComponent<Chunk>();
+                chunk.AddComponent(_ChunkOcclusionBounds);
+
+                chunk.AddComponent(new Translation
+                {
+                    Value = origin
+                });
+
+                return chunk;
+            }
+
             if (_Chunks.ContainsKey(origin))
             {
                 chunk = null;
@@ -36,7 +51,7 @@ namespace Automata.Game.Chunks
             }
             else
             {
-                chunk = ComposeChunk(origin);
+                chunk = ComposeChunkImpl(origin);
                 entityManager.RegisterEntity(chunk);
                 _Chunks.Add(origin, chunk);
 
@@ -51,20 +66,6 @@ namespace Automata.Game.Chunks
             }
         }
 
-        private static IEntity ComposeChunk(Vector3i origin)
-        {
-            IEntity chunk = new Entity();
-            chunk.AddComponent<Chunk>();
-            chunk.AddComponent(_ChunkOcclusionBounds);
-
-            chunk.AddComponent(new Translation
-            {
-                Value = origin
-            });
-
-            return chunk;
-        }
-
         public bool TryRemove(EntityManager entityManager, Vector3i origin, out IEntity? chunks)
         {
             if (_Chunks.Remove(origin, out chunks))
@@ -75,7 +76,7 @@ namespace Automata.Game.Chunks
             else return false;
         }
 
-        public void RecalculateAllNeighbors()
+        public void RecalculateAllChunkNeighbors()
         {
             foreach ((Vector3i origin, IEntity entity) in _Chunks)
             {
