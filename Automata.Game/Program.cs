@@ -1,8 +1,7 @@
 ﻿using System.Drawing;
-using System.Numerics;
-using System.Runtime.CompilerServices;
 using Automata.Engine;
 using Automata.Engine.Components;
+using Automata.Engine.Concurrency;
 using Automata.Engine.Entities;
 using Automata.Engine.Input;
 using Automata.Engine.Rendering;
@@ -12,7 +11,6 @@ using Automata.Engine.Systems;
 using Automata.Game.Blocks;
 using Automata.Game.Chunks;
 using Automata.Game.Chunks.Generation;
-using ConcurrencyPools;
 using Serilog;
 using Silk.NET.Windowing.Common;
 
@@ -38,14 +36,10 @@ namespace Automata.Game
         {
             Settings.Load();
 
-            if (Settings.Instance.SingleThreadedGeneration) SingleWorkerPool.SetActivePool();
-            else
-            {
-                BoundedSemaphorePool.SetActivePool();
-                BoundedPool.Active.DefaultPoolSize();
-            }
+            if (Settings.Instance.SingleThreadedGeneration) BoundedSemaphorePool.Instance.ModifyPoolSize(1);
+            else BoundedSemaphorePool.Instance.DefaultPoolSize();
 
-            BoundedPool.Active.ExceptionOccurred += (_, exception) => Log.Error($"{exception.Message}\r\n{exception.StackTrace}");
+            BoundedSemaphorePool.Instance.ExceptionOccurred += (_, exception) => Log.Error($"{exception.Message}\r\n{exception.StackTrace}");
 
             WindowOptions options = WindowOptions.Default;
             options.Title = "Automata";
@@ -99,7 +93,7 @@ namespace Automata.Game
 
         private static void ApplicationCloseCallback(object sender)
         {
-            BoundedPool.Active.Stop();
+            BoundedSemaphorePool.Instance.Cancel();
             GLAPI.Instance.GL.Dispose();
         }
     }

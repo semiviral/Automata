@@ -3,9 +3,11 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Automata.Engine;
 using Automata.Engine.Collections;
 using Automata.Engine.Components;
+using Automata.Engine.Concurrency;
 using Automata.Engine.Diagnostics;
 using Automata.Engine.Entities;
 using Automata.Engine.Input;
@@ -17,7 +19,6 @@ using Automata.Engine.Rendering.OpenGL.Shaders;
 using Automata.Engine.Systems;
 using Automata.Game.Blocks;
 using Automata.Game.Chunks.Generation.Meshing;
-using ConcurrencyPools;
 using DiagnosticsProviderNS;
 using Serilog;
 using Silk.NET.Input.Common;
@@ -66,7 +67,7 @@ namespace Automata.Game.Chunks.Generation
                    && !pendingMesh.Entity.Destroyed
                    && pendingMesh.Entity.TryGetComponent(out Chunk? chunk))
             {
-                ApplyMesh(entityManager, pendingMesh.Entity, chunk.ID, pendingMesh.Mesh);
+                PrepareChunkForRendering(entityManager, pendingMesh.Entity, pendingMesh.Mesh);
                 chunk.State += 1;
             }
 
@@ -75,18 +76,17 @@ namespace Automata.Game.Chunks.Generation
                 switch (chunk.State)
                 {
                     case GenerationState.Ungenerated:
-                        IGenerationStep.Parameters parameters = new IGenerationStep.Parameters(GenerationConstants.Seed)
-                        {
-                            Frequency = 0.008f
-                        };
-
-                        BoundedPool.Active.QueueWork(() => GenerateBlocks(entity, chunk, Vector3i.FromVector3(translation.Value), parameters));
+                        BoundedSemaphorePool.Instance.Enqueue(GenerateBlocks(entity, Vector3i.FromVector3(translation.Value),
+                            new IGenerationStep.Parameters(GenerationConstants.Seed)
+                            {
+                                Frequency = 0.008f
+                            }));
 
                         chunk.State += 1;
                         break;
 
                     case GenerationState.Unmeshed when chunk.IsStateLockstep(): // don't generate mesh until all neighbors are ready
-                        BoundedPool.Active.QueueWork(() => GenerateMesh(entity, chunk, Vector3i.FromVector3(translation.Value)));
+                        BoundedSemaphorePool.Instance.Enqueue(GenerateMesh(entity, chunk, Vector3i.FromVector3(translation.Value)));
 
                         chunk.State += 1;
                         break;
@@ -96,47 +96,38 @@ namespace Automata.Game.Chunks.Generation
             DiagnosticsInputCheck();
         }
 
-        private void GenerateBlocks(IEntity entity, Chunk chunk, Vector3i origin, IGenerationStep.Parameters parameters)
+        private async ValueTask GenerateBlocks(IEntity entity, Vector3i origin, IGenerationStep.Parameters parameters)
         {
             Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
             stopwatch.Restart();
 
-            Span<ushort> blocks = stackalloc ushort[GenerationConstants.CHUNK_SIZE_CUBED];
+            Palette<Block> GenerateTerrainAndBuildPalette()
+            {
+                // block ids for generating
+                Span<ushort> data = stackalloc ushort[GenerationConstants.CHUNK_SIZE_CUBED];
 
-            foreach (IGenerationStep generationStep in _BuildSteps) generationStep.Generate(origin, parameters, blocks);
+                foreach (IGenerationStep generationStep in _BuildSteps) generationStep.Generate(origin, parameters, data);
 
-            stopwatch.Stop();
+                DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new BuildingTime(stopwatch.Elapsed));
+                stopwatch.Restart();
 
-            DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new BuildingTime(stopwatch.Elapsed));
+                Palette<Block> palette = new Palette<Block>(GenerationConstants.CHUNK_SIZE_CUBED, new Block(BlockRegistry.AirID));
+                for (int index = 0; index < GenerationConstants.CHUNK_SIZE_CUBED; index++) palette[index] = new Block(data[index]);
 
-            Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
-                $"Built: '{chunk.ID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms)"));
+                DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new InsertionTime(stopwatch.Elapsed));
+                return palette;
+            }
 
-            stopwatch.Restart();
-
-            Palette<Block> palette = new Palette<Block>(GenerationConstants.CHUNK_SIZE_CUBED, new Block(BlockRegistry.AirID));
-
-            for (int index = 0; index < GenerationConstants.CHUNK_SIZE_CUBED; index++) palette[index] = new Block(blocks[index]);
-
-            if (!_PendingBlocks.TryAdd((entity, palette))) Log.Error($"Failed to add chunk({origin}) blocks.");
-
-            stopwatch.Stop();
-
-            DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new InsertionTime(stopwatch.Elapsed));
-
-            Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
-                $"Insertion: '{chunk.ID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms)"));
-
+            Palette<Block> blocks = GenerateTerrainAndBuildPalette();
+            await _PendingBlocks.AddAsync((entity, blocks));
             DiagnosticsSystem.Stopwatches.Return(stopwatch);
         }
 
-        private void GenerateMesh(IEntity entity, Chunk chunk, Vector3i origin)
+        private async ValueTask GenerateMesh(IEntity entity, Chunk chunk, Vector3i origin)
         {
             if (chunk.Blocks is null)
             {
-                Log.Warning(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
-                    $"Attempted to mesh chunk {origin}, but it has not generated blocks."));
-
+                Log.Error(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem), $"Cannot build chunk; it has no blocks ({origin})."));
                 return;
             }
 
@@ -144,8 +135,7 @@ namespace Automata.Game.Chunks.Generation
             stopwatch.Restart();
 
             PendingMesh<PackedVertex> pendingMesh = ChunkMesher.GeneratePackedMesh(chunk.Blocks, chunk.NeighborBlocks().ToArray());
-
-            if (!_PendingMeshes.TryAdd((entity, pendingMesh))) Log.Error($"Failed to add chunk({origin}) mesh.");
+            await _PendingMeshes.AddAsync((entity, pendingMesh));
 
             stopwatch.Stop();
 
@@ -157,19 +147,32 @@ namespace Automata.Game.Chunks.Generation
             DiagnosticsSystem.Stopwatches.Return(stopwatch);
         }
 
-        private static void ApplyMesh(EntityManager entityManager, IEntity entity, Guid chunkID, PendingMesh<PackedVertex> pendingMesh)
+        private static void PrepareChunkForRendering(EntityManager entityManager, IEntity entity, PendingMesh<PackedVertex> pendingMesh)
         {
             Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
             stopwatch.Restart();
 
+            if (!ApplyMesh(entityManager, entity, pendingMesh))
+            {
+                DiagnosticsSystem.Stopwatches.Return(stopwatch);
+                return;
+            }
+
+            ConfigureMaterial(entityManager, entity);
+
+            stopwatch.Stop();
+            DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new ApplyMeshTime(stopwatch.Elapsed));
+            DiagnosticsSystem.Stopwatches.Return(stopwatch);
+        }
+
+        private static bool ApplyMesh(EntityManager entityManager, IEntity entity, PendingMesh<PackedVertex> pendingMesh)
+        {
             bool hasRenderMesh = entity.TryGetComponent(out RenderMesh? renderMesh);
 
             if (pendingMesh.IsEmpty)
             {
                 if (hasRenderMesh) renderMesh!.Mesh = null;
-
-                DiagnosticsSystem.Stopwatches.Return(stopwatch);
-                return;
+                return false;
             }
 
             if (!hasRenderMesh) entityManager.RegisterComponent(entity, renderMesh = new RenderMesh());
@@ -185,7 +188,11 @@ namespace Automata.Game.Chunks.Generation
 
             mesh.VertexesBuffer.SetBufferData(pendingMesh.Vertexes, BufferDraw.DynamicDraw);
             mesh.IndexesBuffer.SetBufferData(pendingMesh.Indexes, BufferDraw.DynamicDraw);
+            return true;
+        }
 
+        private static void ConfigureMaterial(EntityManager entityManager, IEntity entity)
+        {
             ProgramPipeline programPipeline = ProgramRegistry.Instance.Load("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl");
 
             if (entity.TryGetComponent(out Material? material))
@@ -195,13 +202,6 @@ namespace Automata.Game.Chunks.Generation
             else entityManager.RegisterComponent(entity, material = new Material(programPipeline));
 
             material.Textures.Add(TextureAtlas.Instance.Blocks ?? throw new NullReferenceException("Blocks texture array not initialized."));
-
-            stopwatch.Stop();
-            DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new ApplyMeshTime(stopwatch.Elapsed));
-            DiagnosticsSystem.Stopwatches.Return(stopwatch);
-
-            Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
-                $"Applied mesh: '{chunkID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms)"));
         }
 
         private void DiagnosticsInputCheck()
