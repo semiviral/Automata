@@ -64,15 +64,15 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
         }
 
         public void Bind(BufferTargetARB target) => GL.BindBuffer(target, Handle);
+        public void Unbind(BufferTargetARB target) => GL.BindBuffer(target, 0);
 
         public void Dispose()
         {
             if (_Disposed) throw new ObjectDisposedException(ToString());
 
+            GC.SuppressFinalize(this);
             GL.DeleteBuffer(Handle);
             _Disposed = true;
-
-            GC.SuppressFinalize(this);
         }
     }
 }

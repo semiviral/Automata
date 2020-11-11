@@ -26,13 +26,12 @@ namespace Automata.Engine.Rendering.OpenGL
             // configure debug callback
             GL.GetInteger(GetPName.ContextFlags, out int flags);
 
-            if (((ContextFlags)flags).HasFlag(ContextFlags.Debug))
-            {
-                GL.Enable(EnableCap.DebugOutput);
-                GL.Enable(EnableCap.DebugOutputSynchronous);
-                GL.DebugMessageCallback(DebugOutputCallback, (void*)null!);
-                GL.DebugMessageControl(DebugSource.DontCare, DebugType.DontCare, DebugSeverity.DontCare, 0, (uint*)null!, true);
-            }
+            if (!((ContextFlags)flags).HasFlag(ContextFlags.Debug)) return;
+
+            GL.Enable(EnableCap.DebugOutput);
+            GL.Enable(EnableCap.DebugOutputSynchronous);
+            GL.DebugMessageCallback(DebugOutputCallback, (void*)null!);
+            GL.DebugMessageControl(DebugSource.DontCare, DebugType.DontCare, DebugSeverity.DontCare, 0, (uint*)null!, true);
         }
 
         /// <summary>
@@ -44,7 +43,7 @@ namespace Automata.Engine.Rendering.OpenGL
         ///     </p>
         ///     <p>
         ///         Thus, try to rely on the default debug context exception handling. This should
-        ///         only be used when that functionality is failing.
+        ///         only be used when that functionality is insufficient or failing.
         ///     </p>
         /// </remarks>
         /// <param name="checkForErrors"></param>

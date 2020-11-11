@@ -1,6 +1,7 @@
 #region
 
 using System;
+using System.Linq;
 using System.Numerics;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
@@ -17,12 +18,22 @@ namespace Automata.Engine.Input
         public override void Registered(EntityManager entityManager) =>
             AutomataWindow.Instance.FocusChanged += (_, focused) => Enabled = focused;
 
-        [HandledComponents(DistinctionStrategy.All, typeof(Rotation), typeof(MouseListener))]
-        [HandledComponents(DistinctionStrategy.All, typeof(Translation), typeof(KeyboardListener))]
+        [HandledComponents(DistinctionStrategy.All, typeof(Rotation), typeof(MouseListener)),
+         HandledComponents(DistinctionStrategy.All, typeof(Translation), typeof(KeyboardListener))]
         public override void Update(EntityManager entityManager, TimeSpan delta)
         {
             HandleMouseListeners(entityManager, delta);
             HandleKeyboardListeners(entityManager, delta);
+
+            foreach (InputAction inputAction in entityManager.GetComponents<InputAction>())
+                if (inputAction.KeyCombination.All(InputManager.Instance.IsKeyPressed))
+                {
+                    if (inputAction.Active) continue;
+
+                    inputAction.Active = true;
+                    inputAction.Action.Invoke();
+                }
+                else inputAction.Active = false;
         }
 
         private static void HandleMouseListeners(EntityManager entityManager, TimeSpan delta)

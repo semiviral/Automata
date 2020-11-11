@@ -3,6 +3,7 @@
 using System;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
+using Silk.NET.OpenGL;
 
 #endregion
 
@@ -22,14 +23,14 @@ namespace Automata.Engine.Rendering.Meshes
         public uint IndexesLength => IndexesBufferObject.Length;
         public uint IndexesByteLength => IndexesBufferObject.ByteLength;
 
-        public Mesh(Layer layer = Layer.Layer0)
+        public Mesh(GL gl, Layer layer = Layer.Layer0)
         {
             ID = Guid.NewGuid();
             Visible = true;
             Layer = layer;
-            VertexesBufferObject = new BufferObject<TVertex>(GLAPI.Instance.GL);
-            IndexesBufferObject = new BufferObject<uint>(GLAPI.Instance.GL);
-            VertexArrayObject = new VertexArrayObject<TVertex>(GLAPI.Instance.GL, VertexesBufferObject, IndexesBufferObject);
+            VertexesBufferObject = new BufferObject<TVertex>(gl);
+            IndexesBufferObject = new BufferObject<uint>(gl);
+            VertexArrayObject = new VertexArrayObject<TVertex>(gl, VertexesBufferObject, IndexesBufferObject);
         }
 
         public void Bind() => VertexArrayObject.Bind();
@@ -37,6 +38,7 @@ namespace Automata.Engine.Rendering.Meshes
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             VertexesBufferObject.Dispose();
             IndexesBufferObject.Dispose();
             VertexArrayObject.Dispose();

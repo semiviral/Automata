@@ -40,8 +40,6 @@ namespace Automata.Game.Chunks.Generation
         private readonly ConcurrentChannel<(IEntity, Palette<Block>)> _PendingBlocks;
         private readonly ConcurrentChannel<(IEntity, PendingMesh<PackedVertex>)> _PendingMeshes;
 
-        private bool _KeysPressed;
-
         public ChunkGenerationSystem()
         {
             _BuildSteps = new OrderedLinkedList<IGenerationStep>();
@@ -50,6 +48,18 @@ namespace Automata.Game.Chunks.Generation
             _PendingMeshes = new ConcurrentChannel<(IEntity, PendingMesh<PackedVertex>)>(true, false);
 
             DiagnosticsProvider.EnableGroup<ChunkGenerationDiagnosticGroup>();
+        }
+
+        public override void Registered(EntityManager entityManager)
+        {
+            IEntity entity = new Entity();
+            entityManager.RegisterEntity(entity);
+
+            entityManager.RegisterComponent(entity, new InputAction(() =>
+            {
+                Log.Information(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(DiagnosticsSystem),
+                    $"Average generation times: {DiagnosticsProvider.GetGroup<ChunkGenerationDiagnosticGroup>()}"));
+            }, Key.ShiftLeft, Key.B));
         }
 
         [HandledComponents(DistinctionStrategy.All, typeof(Translation), typeof(Chunk))]
@@ -89,8 +99,6 @@ namespace Automata.Game.Chunks.Generation
                         chunk.State += 1;
                         break;
                 }
-
-            DiagnosticsInputCheck();
         }
 
         private async ValueTask GenerateBlocks(IEntity entity, Vector3i origin, IGenerationStep.Parameters parameters)
@@ -173,7 +181,7 @@ namespace Automata.Game.Chunks.Generation
             }
 
             if (!hasRenderMesh) entityManager.RegisterComponent(entity, renderMesh = new RenderMesh());
-            if (renderMesh!.Mesh is null or not Mesh<PackedVertex>) renderMesh.Mesh = new Mesh<PackedVertex>();
+            if (renderMesh!.Mesh is null or not Mesh<PackedVertex>) renderMesh.Mesh = new Mesh<PackedVertex>(GLAPI.Instance.GL);
 
             Mesh<PackedVertex> mesh = (renderMesh.Mesh as Mesh<PackedVertex>)!;
 
@@ -199,21 +207,6 @@ namespace Automata.Game.Chunks.Generation
             else entityManager.RegisterComponent(entity, material = new Material(programPipeline));
 
             material.Textures.Add(TextureAtlas.Instance.Blocks ?? throw new NullReferenceException("Blocks texture array not initialized."));
-        }
-
-        private void DiagnosticsInputCheck()
-        {
-            if (!InputManager.Instance.IsKeyPressed(Key.ShiftLeft) || !InputManager.Instance.IsKeyPressed(Key.B))
-            {
-                _KeysPressed = false;
-                return;
-            }
-            else if (_KeysPressed) return;
-
-            _KeysPressed = true;
-
-            Log.Information(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(DiagnosticsSystem),
-                $"Average generation times: {DiagnosticsProvider.GetGroup<ChunkGenerationDiagnosticGroup>()}"));
         }
     }
 }

@@ -17,12 +17,12 @@ namespace Automata.Engine.Rendering.Meshes
         public BufferObject<byte> DataBuffer { get; }
         public VertexArrayObject<byte> VertexArrayObject { get; }
 
-        public DrawIndirectMesh()
+        public DrawIndirectMesh(GL gl)
         {
             ID = new Guid();
-            DrawCommandBuffer = new BufferObject<DrawElementsIndirectCommand>(GLAPI.Instance.GL);
-            DataBuffer = new BufferObject<byte>(GLAPI.Instance.GL);
-            VertexArrayObject = new VertexArrayObject<byte>(GLAPI.Instance.GL, DataBuffer, sizeof(uint) * 6, DataBuffer);
+            DrawCommandBuffer = new BufferObject<DrawElementsIndirectCommand>(gl);
+            DataBuffer = new BufferObject<byte>(gl);
+            VertexArrayObject = new VertexArrayObject<byte>(gl, DataBuffer, sizeof(uint) * 6, DataBuffer);
         }
 
         public void Bind()
@@ -33,8 +33,8 @@ namespace Automata.Engine.Rendering.Meshes
 
         public void Unbind()
         {
-            GLAPI.UnbindBuffer(BufferTargetARB.DrawIndirectBuffer);
-            GLAPI.UnbindVertexArray();
+            DrawCommandBuffer.Unbind(BufferTargetARB.DrawIndirectBuffer);
+            VertexArrayObject.Unbind();
         }
 
         public void Dispose() => GC.SuppressFinalize(this);
