@@ -52,7 +52,7 @@ namespace Automata.Game.Chunks.Generation
             DiagnosticsProvider.EnableGroup<ChunkGenerationDiagnosticGroup>();
         }
 
-        [HandlesComponents(DistinctionStrategy.All, typeof(Translation), typeof(Chunk))]
+        [HandledComponents(DistinctionStrategy.All, typeof(Translation), typeof(Chunk))]
         public override void Update(EntityManager entityManager, TimeSpan delta)
         {
             while (_PendingBlocks.TryTake(out (IEntity Entity, Palette<Block> Blocks) pendingBlocks)

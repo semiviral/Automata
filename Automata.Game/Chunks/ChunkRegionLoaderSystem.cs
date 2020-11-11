@@ -21,7 +21,7 @@ namespace Automata.Game.Chunks
     {
         private VoxelWorld VoxelWorld => _CurrentWorld as VoxelWorld ?? throw new InvalidOperationException("Must be in VoxelWorld.");
 
-        [HandlesComponents(DistinctionStrategy.All, typeof(Translation), typeof(ChunkLoader))]
+        [HandledComponents(DistinctionStrategy.All, typeof(Translation), typeof(ChunkLoader))]
         public override void Update(EntityManager entityManager, TimeSpan delta)
         {
             bool recalculateChunkRegions = false;

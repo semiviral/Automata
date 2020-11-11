@@ -39,7 +39,7 @@ namespace Automata.Engine.Rendering
             _GL = GLAPI.Instance.GL;
             _GL.ClearColor(Color.DimGray);
             _GL.Enable(EnableCap.DepthTest);
-            
+
             if (_ENABLE_BACK_FACE_CULLING)
             {
                 // enable and configure face culling
@@ -58,7 +58,7 @@ namespace Automata.Engine.Rendering
             _Viewport.Bind();
         }
 
-        [HandlesComponents(DistinctionStrategy.Any, typeof(Camera), typeof(RenderMesh))]
+        [HandledComponents(DistinctionStrategy.Any, typeof(Camera), typeof(RenderMesh))]
         public override unsafe void Update(EntityManager entityManager, TimeSpan delta)
         {
             _GL.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));

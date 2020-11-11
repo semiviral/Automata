@@ -31,13 +31,13 @@ namespace Automata.Engine.Systems
     public sealed class SystemManager : IDisposable
     {
         private readonly IOrderedCollection<ComponentSystem> _ComponentSystems;
-        private readonly Dictionary<Type, ComponentTypes> _HandledTypes;
+        private readonly Dictionary<Type, ComponentTypes[]> _HandledTypes;
         private readonly World _CurrentWorld;
 
         public SystemManager(World currentWorld)
         {
             _ComponentSystems = new OrderedList<ComponentSystem>();
-            _HandledTypes = new Dictionary<Type, ComponentTypes>();
+            _HandledTypes = new Dictionary<Type, ComponentTypes[]>();
             _CurrentWorld = currentWorld;
 
             RegisterSystem<FirstOrderSystem>(SystemRegistrationOrder.Last);
@@ -48,7 +48,7 @@ namespace Automata.Engine.Systems
         public void Update(EntityManager entityManager, TimeSpan deltaTime)
         {
             foreach (ComponentSystem componentSystem in _ComponentSystems)
-                if (componentSystem.Enabled || VerifyHandledTypesExist(entityManager, _HandledTypes[componentSystem.GetType()]))
+                if (componentSystem.Enabled && VerifyHandledComponentsExistForSystem(entityManager, componentSystem))
                     componentSystem.Update(entityManager, deltaTime);
 
             foreach (ComponentChangeable changeable in entityManager.GetComponentsExplicit<ComponentChangeable>()) changeable.Changed = false;
@@ -85,6 +85,7 @@ namespace Automata.Engine.Systems
             RegisterHandledTypes<TSystem>();
             componentSystem.SetCurrentWorld(_CurrentWorld);
             componentSystem.Registered(_CurrentWorld.EntityManager);
+
             Log.Information($"({nameof(SystemManager)}) Registered {nameof(ComponentSystem)}: {typeof(TSystem)}");
         }
 
@@ -103,18 +104,28 @@ namespace Automata.Engine.Systems
             }
 
             RegisterHandledTypes<TSystem>();
+            componentSystem.SetCurrentWorld(_CurrentWorld);
             componentSystem.Registered(_CurrentWorld.EntityManager);
+
             Log.Information($"({nameof(SystemManager)}) Registered {nameof(ComponentSystem)}: {typeof(TSystem)}");
         }
 
-        private void RegisterHandledTypes<TSystem>() where TSystem : ComponentSystem, new() =>
-            _HandledTypes.Add(typeof(TSystem), GetHandledTypesFromComponentSystem<TSystem>());
-
-        private static ComponentTypes GetHandledTypesFromComponentSystem<TSystem>() where TSystem : ComponentSystem, new()
+        private void RegisterHandledTypes<TSystem>() where TSystem : ComponentSystem, new()
         {
-            MethodBase? updateMethodBase = typeof(TSystem).GetMethod(nameof(ComponentSystem.Update));
-            HandlesComponents? handlesComponents = updateMethodBase?.GetCustomAttribute<HandlesComponents>();
-            return handlesComponents is null ? ComponentTypes.Empty : handlesComponents.Types;
+            IEnumerable<ComponentTypes> handledComponents = GetHandledTypes<TSystem>();
+
+            _HandledTypes.Add(typeof(TSystem), handledComponents.Any()
+                ? handledComponents.ToArray()
+                : Array.Empty<ComponentTypes>());
+        }
+
+        private static IEnumerable<ComponentTypes> GetHandledTypes<TSystem>() where TSystem : ComponentSystem, new()
+        {
+            MethodBase? methodBase = typeof(TSystem).GetMethod(nameof(ComponentSystem.Update));
+
+            return methodBase is not null
+                ? methodBase.GetCustomAttributes<HandledComponents>().Select(handlesComponents => handlesComponents.Types)
+                : Enumerable.Empty<ComponentTypes>();
         }
 
         /// <summary>
@@ -130,14 +141,22 @@ namespace Automata.Engine.Systems
 
         #region Helper Methods
 
-        private static bool VerifyHandledTypesExist(EntityManager entityManager, ComponentTypes types) =>
-            types.Strategy switch
-            {
-                DistinctionStrategy.None => types.All(type => entityManager.GetComponentCount(type) == 0),
-                DistinctionStrategy.All => types.All(type => entityManager.GetComponentCount(type) > 0),
-                DistinctionStrategy.Any => types.Any(type => entityManager.GetComponentCount(type) > 0),
-                _ => throw new ArgumentOutOfRangeException()
-            };
+        private bool VerifyHandledComponentsExistForSystem(EntityManager entityManager, ComponentSystem componentSystem)
+        {
+            if (!_HandledTypes.TryGetValue(componentSystem.GetType(), out ComponentTypes[]? handledTypesArray)) return false;
+            else if (handledTypesArray.Length == 0) return true;
+
+            foreach (ComponentTypes handledTypes in handledTypesArray)
+                switch (handledTypes.Strategy)
+                {
+                    case DistinctionStrategy.None when handledTypes.All(type => entityManager.GetComponentCount(type) == 0):
+                    case DistinctionStrategy.Any when handledTypes.Any(type => entityManager.GetComponentCount(type) > 0):
+                    case DistinctionStrategy.All when handledTypes.All(type => entityManager.GetComponentCount(type) > 0): return true;
+                    default: continue;
+                }
+
+            return false;
+        }
 
         #endregion
 

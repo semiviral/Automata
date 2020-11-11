@@ -15,9 +15,10 @@ namespace Automata.Engine.Input
     public class InputSystem : ComponentSystem
     {
         public override void Registered(EntityManager entityManager) =>
-            AutomataWindow.Instance.FocusChanged += (sender, focused) => Enabled = focused;
+            AutomataWindow.Instance.FocusChanged += (_, focused) => Enabled = focused;
 
-        [HandlesComponents(DistinctionStrategy.All, typeof(Rotation), typeof(MouseListener))]
+        [HandledComponents(DistinctionStrategy.All, typeof(Rotation), typeof(MouseListener))]
+        [HandledComponents(DistinctionStrategy.All, typeof(Translation), typeof(KeyboardListener))]
         public override void Update(EntityManager entityManager, TimeSpan delta)
         {
             HandleMouseListeners(entityManager, delta);
@@ -35,7 +36,7 @@ namespace Automata.Engine.Input
                 rotation.AccumulateAngles(relativeMousePosition * mouseListener.Sensitivity);
 
             // reset mouse position to center of screen
-            InputManager.Instance.SetMousePositionRelative(0, Vector2.Zero);
+            InputManager.Instance.SetMousePositionCenterRelative(0, Vector2.Zero);
         }
 
         private static void HandleKeyboardListeners(EntityManager entityManager, TimeSpan delta)

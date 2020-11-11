@@ -1,0 +1,17 @@
+#region
+
+using System;
+
+#endregion
+
+
+namespace Automata.Engine.Systems
+{
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+    public class HandledComponents : Attribute
+    {
+        public ComponentTypes Types { get; }
+
+        public HandledComponents(DistinctionStrategy strategy, params Type[] types) => Types = new ComponentTypes(strategy, types);
+    }
+}

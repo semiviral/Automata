@@ -81,7 +81,7 @@ namespace Automata.Engine.Input
         /// <exception cref="IndexOutOfRangeException"></exception>
         public Vector2 GetMousePositionCenterRelative(int mouseIndex) => GetMousePosition(mouseIndex) - (Vector2)AutomataWindow.Instance.Center;
 
-        public void SetMousePositionRelative(int mouseIndex, Vector2 position)
+        public void SetMousePositionCenterRelative(int mouseIndex, Vector2 position)
         {
             if ((mouseIndex < 0) || (mouseIndex >= _Mice.Count)) throw new IndexOutOfRangeException(nameof(mouseIndex));
 
