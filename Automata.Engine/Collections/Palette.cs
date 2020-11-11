@@ -79,7 +79,7 @@ namespace Automata.Engine.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void AllocateLookupEntry(T item)
+        private void AllocateLookupEntry(T item)
         {
             Debug.Assert(!LookupTable.Contains(item), "Lookup table already contains item. This method should only be called when the item is not present.");
 
@@ -145,16 +145,6 @@ namespace Automata.Engine.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static ushort Compute32BitSlices(byte bits, int length) =>
             (ushort)MathF.Ceiling((bits * length) / (float)UINT_32_BITS);
-
-        public void Clear(T defaultItem)
-        {
-            _IndexBits = 1;
-            ComputeMask();
-
-            LookupTable.Clear();
-            LookupTable.Add(defaultItem);
-            _Palette = ArrayPool<uint>.Shared.Rent(Compute32BitSlices(_IndexBits, Count));
-        }
 
         public void CopyTo(Span<T> destination)
         {

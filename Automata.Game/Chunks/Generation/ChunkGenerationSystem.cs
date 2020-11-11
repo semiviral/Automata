@@ -19,6 +19,7 @@ using Automata.Engine.Rendering.OpenGL.Shaders;
 using Automata.Engine.Systems;
 using Automata.Game.Blocks;
 using Automata.Game.Chunks.Generation.Meshing;
+using Automata.Game.Chunks.Generation.Structures;
 using DiagnosticsProviderNS;
 using Serilog;
 using Silk.NET.Input.Common;
@@ -38,6 +39,7 @@ namespace Automata.Game.Chunks.Generation
 
         private readonly IOrderedCollection<IGenerationStep> _BuildSteps;
         private readonly ConcurrentChannel<(IEntity, Palette<Block>)> _PendingBlocks;
+        private readonly ConcurrentChannel<IEntity> _PendingStructured;
         private readonly ConcurrentChannel<(IEntity, PendingMesh<PackedVertex>)> _PendingMeshes;
 
         public ChunkGenerationSystem()
@@ -45,6 +47,7 @@ namespace Automata.Game.Chunks.Generation
             _BuildSteps = new OrderedLinkedList<IGenerationStep>();
             _BuildSteps.AddLast(new TerrainGenerationStep());
             _PendingBlocks = new ConcurrentChannel<(IEntity, Palette<Block>)>(true, false);
+            _PendingStructured = new ConcurrentChannel<IEntity>(true, false);
             _PendingMeshes = new ConcurrentChannel<(IEntity, PendingMesh<PackedVertex>)>(true, false);
 
             DiagnosticsProvider.EnableGroup<ChunkGenerationDiagnosticGroup>();
@@ -73,6 +76,10 @@ namespace Automata.Game.Chunks.Generation
                 chunk.State += 1;
             }
 
+            while (_PendingStructured.TryTake(out IEntity? entity)
+                   && !entity.Destroyed
+                   && entity.TryGetComponent(out Chunk? chunk)) chunk.State += 1;
+
             while (_PendingMeshes.TryTake(out (IEntity Entity, PendingMesh<PackedVertex> Mesh) pendingMesh)
                    && !pendingMesh.Entity.Destroyed
                    && pendingMesh.Entity.TryGetComponent(out Chunk? chunk))
@@ -81,24 +88,49 @@ namespace Automata.Game.Chunks.Generation
                 chunk.State += 1;
             }
 
-            IGenerationStep.Parameters parameters = new IGenerationStep.Parameters(GenerationConstants.Seed)
-            {
-                Frequency = 0.008f
-            };
-
             foreach ((IEntity entity, Chunk chunk, Translation translation) in entityManager.GetEntities<Chunk, Translation>())
+            {
+                if ((chunk.State >= GenerationState.GenerateMesh) && chunk.Blocks is not null)
+                    while (chunk.Modifications.TryTake(out ChunkModification? modification))
+                    {
+                        int index = Vector3i.Project1D(modification.Local, GenerationConstants.CHUNK_SIZE);
+
+                        if (!chunk.Blocks[index].ID.Equals(modification.BlockID))
+                        {
+                            chunk.Blocks[index] = new Block(modification.BlockID);
+                            chunk.State = GenerationState.GenerateMesh;
+                        }
+                    }
+
                 switch (chunk.State)
                 {
-                    case GenerationState.Ungenerated:
-                        BoundedInvocationPool.Instance.Enqueue(_ => GenerateBlocks(entity, Vector3i.FromVector3(translation.Value), parameters));
+                    case GenerationState.GenerateTerrain:
+                        BoundedInvocationPool.Instance.Enqueue(_ =>
+                        {
+                            Vector3i origin = Vector3i.FromVector3(translation.Value);
+
+                            IGenerationStep.Parameters parameters = new IGenerationStep.Parameters(origin.GetHashCode())
+                            {
+                                Frequency = 0.008f
+                            };
+
+                            return GenerateBlocks(entity, origin, parameters);
+                        });
+
                         chunk.State += 1;
                         break;
 
-                    case GenerationState.Unmeshed when chunk.IsStateLockstep(false): // don't generate mesh until all neighbors are ready
-                        BoundedInvocationPool.Instance.Enqueue(_ => GenerateMesh(entity, chunk, Vector3i.FromVector3(translation.Value)));
+                    case GenerationState.GenerateStructures:
+                        BoundedInvocationPool.Instance.Enqueue(_ => GenerateStructures(entity, chunk, Vector3i.FromVector3(translation.Value)));
+                        chunk.State += 1;
+                        break;
+
+                    case GenerationState.GenerateMesh when chunk.IsStateLockstep(false): // don't generate mesh until all neighbors are ready
+                        BoundedInvocationPool.Instance.Enqueue(_ => GenerateMesh(entity, chunk));
                         chunk.State += 1;
                         break;
                 }
+            }
 
             return ValueTask.CompletedTask;
         }
@@ -118,7 +150,7 @@ namespace Automata.Game.Chunks.Generation
                 DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new BuildingTime(stopwatch.Elapsed));
                 stopwatch.Restart();
 
-                Palette<Block> palette = new Palette<Block>(GenerationConstants.CHUNK_SIZE_CUBED, new Block(BlockRegistry.AirID));
+                Palette<Block> palette = new ConcurrentPalette<Block>(GenerationConstants.CHUNK_SIZE_CUBED, new Block(BlockRegistry.AirID));
                 for (int index = 0; index < GenerationConstants.CHUNK_SIZE_CUBED; index++) palette[index] = new Block(data[index]);
 
                 DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new InsertionTime(stopwatch.Elapsed));
@@ -130,11 +162,36 @@ namespace Automata.Game.Chunks.Generation
             DiagnosticsSystem.Stopwatches.Return(stopwatch);
         }
 
-        private async ValueTask GenerateMesh(IEntity entity, Chunk chunk, Vector3i origin)
+        private async ValueTask GenerateStructures(IEntity entity, Chunk chunk, Vector3i origin)
+        {
+            Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
+
+            if (chunk.Blocks is null)
+            {
+                Log.Error(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem), "Chunk has no blocks."));
+                return;
+            }
+
+            IStructure testStructure = new TestStructure();
+            Random random = new Random(origin.GetHashCode());
+            int index = 0;
+
+            for (int y = 0; y < GenerationConstants.CHUNK_SIZE; y++)
+            for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
+            for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++, index++)
+                if (testStructure.CheckPlaceStructureAt(random, origin))
+                    await (_CurrentWorld as VoxelWorld)!.Chunks.AllocateChunkModifications(origin + new Vector3i(x, y, z), testStructure.StructureBlocks);
+
+            await _PendingStructured.AddAsync(entity);
+
+            DiagnosticsSystem.Stopwatches.Return(stopwatch);
+        }
+
+        private async ValueTask GenerateMesh(IEntity entity, Chunk chunk)
         {
             if (chunk.Blocks is null)
             {
-                Log.Error(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem), $"Cannot build chunk; it has no blocks ({origin})."));
+                Log.Error(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem), "Chunk has no blocks."));
                 return;
             }
 

@@ -63,7 +63,7 @@ namespace Automata.Game.Chunks
                 foreach (IEntity? entity in GetOriginNeighbors(origin).Where(entity => entity is not null))
                 {
                     Chunk neighborChunk = entity!.GetComponent<Chunk>();
-                    neighborChunk.State = (GenerationState)Math.Min((int)neighborChunk.State, (int)GenerationState.Unmeshed);
+                    neighborChunk.State = (GenerationState)Math.Min((int)neighborChunk.State, (int)GenerationState.GenerateMesh);
                 }
 
                 return true;
@@ -95,6 +95,22 @@ namespace Automata.Game.Chunks
                     Local = global - origin,
                     BlockID = blockID
                 });
+        }
+
+        public async ValueTask AllocateChunkModifications(Vector3i global, IEnumerable<(Vector3i, ushort)> modifications)
+        {
+            foreach ((Vector3i local, ushort blockID) in modifications)
+            {
+                Vector3i modificationGlobal = global + local;
+                Vector3i modificationOrigin = Vector3i.RoundBy(modificationGlobal, GenerationConstants.CHUNK_SIZE);
+
+                if (_Chunks.TryGetValue(modificationOrigin, out IEntity? entity) && entity.TryGetComponent(out Chunk? chunk))
+                    await chunk.Modifications.AddAsync(new ChunkModification
+                    {
+                        Local = Vector3i.Abs(modificationGlobal - modificationOrigin),
+                        BlockID = blockID
+                    });
+            }
         }
 
         #endregion

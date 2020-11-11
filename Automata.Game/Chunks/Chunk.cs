@@ -8,7 +8,7 @@ namespace Automata.Game.Chunks
 {
     public class Chunk : Component
     {
-        public GenerationState State { get; set; } = GenerationState.Ungenerated;
+        public GenerationState State { get; set; } = GenerationState.GenerateTerrain;
         public Palette<Block>? Blocks { get; set; }
         public Chunk?[] Neighbors { get; } = new Chunk?[6];
         public ConcurrentChannel<ChunkModification> Modifications { get; } = new ConcurrentChannel<ChunkModification>(true, false);
@@ -22,10 +22,12 @@ namespace Automata.Game.Chunks
     public enum GenerationState
     {
         Deactivated,
-        Ungenerated,
-        AwaitingBuilding,
-        Unmeshed,
-        AwaitingMeshing,
+        GenerateTerrain,
+        AwaitingTerrain,
+        GenerateStructures,
+        AwaitingStructures,
+        GenerateMesh,
+        AwaitingMesh,
         Finished
     }
 }
