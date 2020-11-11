@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Serilog;
 
 namespace Automata.Engine.Concurrency
 {
@@ -25,70 +26,53 @@ namespace Automata.Engine.Concurrency
 
         public void Enqueue(Task task)
         {
+            async Task Dispatch()
+            {
+                try
+                {
+                    if (_CancellationTokenSource.IsCancellationRequested) return;
+
+                    await _Semaphore.WaitAsync(CancellationToken).ConfigureAwait(false);
+                    await task.ConfigureAwait(false);
+                    _Semaphore.Release(1);
+                }
+                catch (Exception exception) when (exception is not OperationCanceledException)
+                {
+                    ExceptionOccurred?.Invoke(this, exception);
+                }
+            }
+
             // ensure the worker group isn't being modified
             _ModifyPoolReset.Wait(CancellationToken);
 
-            if (Size == 0)
-            {
-                throw new InvalidOperationException(
-                    $"{nameof(BoundedSemaphorePool)} has no active workers. Call {nameof(DefaultPoolSize)}() or {nameof(ModifyPoolSize)}().");
-            }
-            else
-            {
-                async Task WorkDispatch()
-                {
-                    try
-                    {
-                        // wait to enter semaphore
-                        await _Semaphore.WaitAsync(CancellationToken).ConfigureAwait(false);
-
-                        // if we're not cancelled, execute work
-                        if (!CancellationToken.IsCancellationRequested) await task.ConfigureAwait(false);
-
-                        // check cancellation again, in case we cancelled while work finished
-                        // if not, release semaphore slot
-                        if (!CancellationToken.IsCancellationRequested) _Semaphore.Release(1);
-                    }
-                    catch (Exception exception) when (exception is not OperationCanceledException)
-                    {
-                        ExceptionOccurred?.Invoke(this, exception);
-                    }
-                }
-
-                Task.Run(WorkDispatch, CancellationToken);
-            }
+            if (Size == 0) throw new InvalidOperationException($"Pool is empty. Call {nameof(DefaultPoolSize)}() or {nameof(ModifyPoolSize)}().");
+            else Task.Run(Dispatch, CancellationToken);
         }
 
-        public void Enqueue(ValueTask task)
+        public void Enqueue(ValueTask valueTask)
         {
+            async ValueTask Dispatch()
+            {
+                try
+                {
+                    if (_CancellationTokenSource.IsCancellationRequested) return;
+
+                    await _Semaphore.WaitAsync(CancellationToken).ConfigureAwait(false);
+                    await valueTask.ConfigureAwait(false);
+                    _Semaphore.Release(1);
+                }
+                catch (Exception exception) when (exception is not OperationCanceledException)
+                {
+                    ExceptionOccurred?.Invoke(this, exception);
+                    Log.Information("ssss");
+                }
+            }
+
             // ensure the worker group isn't being modified
             _ModifyPoolReset.Wait(CancellationToken);
 
-            if (Size == 0)
-            {
-                throw new InvalidOperationException(
-                    $"{nameof(BoundedSemaphorePool)} has no active workers. Call {nameof(DefaultPoolSize)}() or {nameof(ModifyPoolSize)}().");
-            }
-            else
-            {
-                async Task WorkDispatch()
-                {
-                    try
-                    {
-                        if (_CancellationTokenSource.IsCancellationRequested) return;
-
-                        await _Semaphore.WaitAsync(CancellationToken).ConfigureAwait(false);
-                        await task.ConfigureAwait(false);
-                        _Semaphore.Release(1);
-                    }
-                    catch (Exception exception) when (exception is not OperationCanceledException)
-                    {
-                        ExceptionOccurred?.Invoke(this, exception);
-                    }
-                }
-
-                Task.Run(WorkDispatch, CancellationToken);
-            }
+            if (Size == 0) throw new InvalidOperationException($"Pool is empty. Call {nameof(DefaultPoolSize)}() or {nameof(ModifyPoolSize)}().");
+            else Task.Run(Dispatch, CancellationToken);
         }
 
         public void DefaultPoolSize() => ModifyPoolSize((uint)Math.Max(1, Environment.ProcessorCount - 2));

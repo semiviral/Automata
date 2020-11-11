@@ -15,11 +15,12 @@ namespace Automata.Engine.Input
 {
     public class InputSystem : ComponentSystem
     {
+        public override void Registered(EntityManager entityManager) =>
+            AutomataWindow.Instance.FocusChanged += (sender, focused) => Enabled = focused;
+
         [HandlesComponents(DistinctionStrategy.All, typeof(Rotation), typeof(MouseListener))]
         public override void Update(EntityManager entityManager, TimeSpan delta)
         {
-            if (!AutomataWindow.Instance.Focused) return;
-
             HandleMouseListeners(entityManager, delta);
             HandleKeyboardListeners(entityManager, delta);
         }

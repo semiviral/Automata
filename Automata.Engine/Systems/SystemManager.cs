@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Automata.Engine.Collections;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;

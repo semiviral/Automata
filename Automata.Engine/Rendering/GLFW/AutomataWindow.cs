@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Automata.Engine.Collections;
 using Automata.Engine.Input;
 using Automata.Engine.Numerics;

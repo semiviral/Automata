@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 using Automata.Engine;
 using Automata.Engine.Collections;
@@ -71,23 +72,22 @@ namespace Automata.Game.Chunks.Generation
                 chunk.State += 1;
             }
 
+            IGenerationStep.Parameters parameters = new IGenerationStep.Parameters(GenerationConstants.Seed)
+            {
+                Frequency = 0.008f
+            };
+
             foreach ((IEntity entity, Chunk chunk, Translation translation) in entityManager.GetEntities<Chunk, Translation>())
             {
                 switch (chunk.State)
                 {
                     case GenerationState.Ungenerated:
-                        BoundedSemaphorePool.Instance.Enqueue(GenerateBlocks(entity, Vector3i.FromVector3(translation.Value),
-                            new IGenerationStep.Parameters(GenerationConstants.Seed)
-                            {
-                                Frequency = 0.008f
-                            }));
-
+                        BoundedSemaphorePool.Instance.Enqueue(GenerateBlocks(entity, Vector3i.FromVector3(translation.Value), parameters));
                         chunk.State += 1;
                         break;
 
                     case GenerationState.Unmeshed when chunk.IsStateLockstep(): // don't generate mesh until all neighbors are ready
                         BoundedSemaphorePool.Instance.Enqueue(GenerateMesh(entity, chunk, Vector3i.FromVector3(translation.Value)));
-
                         chunk.State += 1;
                         break;
                 }
@@ -119,7 +119,7 @@ namespace Automata.Game.Chunks.Generation
             }
 
             Palette<Block> blocks = GenerateTerrainAndBuildPalette();
-            await _PendingBlocks.AddAsync((entity, blocks));
+            await _PendingBlocks.AddAsync((entity, blocks)).ConfigureAwait(false);
             DiagnosticsSystem.Stopwatches.Return(stopwatch);
         }
 
@@ -135,7 +135,7 @@ namespace Automata.Game.Chunks.Generation
             stopwatch.Restart();
 
             PendingMesh<PackedVertex> pendingMesh = ChunkMesher.GeneratePackedMesh(chunk.Blocks, chunk.NeighborBlocks().ToArray());
-            await _PendingMeshes.AddAsync((entity, pendingMesh));
+            await _PendingMeshes.AddAsync((entity, pendingMesh)).ConfigureAwait(false);
 
             stopwatch.Stop();
 
