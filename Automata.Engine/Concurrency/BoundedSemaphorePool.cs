@@ -1,10 +1,13 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Serilog;
 
 namespace Automata.Engine.Concurrency
 {
+    public delegate Task AsyncReferenceInvocation(CancellationToken cancellationToken);
+
+    public delegate ValueTask AsyncValueInvocation(CancellationToken cancellationToken);
+
     public class BoundedSemaphorePool : Singleton<BoundedSemaphorePool>
     {
         private readonly CancellationTokenSource _CancellationTokenSource;
@@ -24,7 +27,7 @@ namespace Automata.Engine.Concurrency
             _Semaphore = new SemaphoreSlim(0);
         }
 
-        public void Enqueue(Task task)
+        public void Enqueue(AsyncReferenceInvocation invocation)
         {
             async Task Dispatch()
             {
@@ -33,7 +36,7 @@ namespace Automata.Engine.Concurrency
                     if (_CancellationTokenSource.IsCancellationRequested) return;
 
                     await _Semaphore.WaitAsync(CancellationToken).ConfigureAwait(false);
-                    await task.ConfigureAwait(false);
+                    await invocation.Invoke(CancellationToken).ConfigureAwait(false);
                     _Semaphore.Release(1);
                 }
                 catch (Exception exception) when (exception is not OperationCanceledException)
@@ -49,22 +52,21 @@ namespace Automata.Engine.Concurrency
             else Task.Run(Dispatch, CancellationToken);
         }
 
-        public void Enqueue(ValueTask valueTask)
+        public void Enqueue(AsyncValueInvocation invocation)
         {
-            async ValueTask Dispatch()
+            async Task Dispatch()
             {
                 try
                 {
                     if (_CancellationTokenSource.IsCancellationRequested) return;
 
                     await _Semaphore.WaitAsync(CancellationToken).ConfigureAwait(false);
-                    await valueTask.ConfigureAwait(false);
+                    await invocation.Invoke(CancellationToken).ConfigureAwait(false);
                     _Semaphore.Release(1);
                 }
                 catch (Exception exception) when (exception is not OperationCanceledException)
                 {
                     ExceptionOccurred?.Invoke(this, exception);
-                    Log.Information("ssss");
                 }
             }
 
@@ -114,6 +116,7 @@ namespace Automata.Engine.Concurrency
         {
             if (!abort) return;
 
+            _CancellationTokenSource.Cancel();
             _ModifyPoolReset.Wait(CancellationToken);
             _ModifyPoolReset.Reset();
 

@@ -3,7 +3,6 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 using Automata.Engine;
 using Automata.Engine.Collections;
@@ -82,12 +81,12 @@ namespace Automata.Game.Chunks.Generation
                 switch (chunk.State)
                 {
                     case GenerationState.Ungenerated:
-                        BoundedSemaphorePool.Instance.Enqueue(GenerateBlocks(entity, Vector3i.FromVector3(translation.Value), parameters));
+                        BoundedSemaphorePool.Instance.Enqueue(_ => GenerateBlocks(entity, Vector3i.FromVector3(translation.Value), parameters));
                         chunk.State += 1;
                         break;
 
                     case GenerationState.Unmeshed when chunk.IsStateLockstep(): // don't generate mesh until all neighbors are ready
-                        BoundedSemaphorePool.Instance.Enqueue(GenerateMesh(entity, chunk, Vector3i.FromVector3(translation.Value)));
+                        BoundedSemaphorePool.Instance.Enqueue(_ => GenerateMesh(entity, chunk, Vector3i.FromVector3(translation.Value)));
                         chunk.State += 1;
                         break;
                 }
