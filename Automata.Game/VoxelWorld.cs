@@ -20,11 +20,5 @@ namespace Automata.Game
             Chunks = new ChunkMap();
             // ChunkAllocator = new ApartmentBufferObject(GLAPI.Instance.GL, 8 * 8 * 8, slot_size);
         }
-
-        public void AllocateChunkModification(Vector3i global, ushort newID)
-        {
-            Vector3i origin = Vector3i.RoundBy(global, GenerationConstants.CHUNK_SIZE);
-            Chunks[]
-        }
     }
 }

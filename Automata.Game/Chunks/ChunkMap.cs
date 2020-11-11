@@ -23,10 +23,13 @@ namespace Automata.Game.Chunks
 
         private readonly Dictionary<Vector3i, IEntity> _Chunks;
 
-        public Dictionary<Vector3i, IEntity>.KeyCollection Origins => _Chunks.Keys;
-        public Dictionary<Vector3i, IEntity>.ValueCollection Chunks => _Chunks.Values;
+        public ICollection<Vector3i> Origins => _Chunks.Keys;
+        public ICollection<IEntity> Chunks => _Chunks.Values;
 
         public ChunkMap() => _Chunks = new Dictionary<Vector3i, IEntity>();
+
+
+        #region Chunk Addition / Removal
 
         public bool TryAdd(EntityManager entityManager, Vector3i origin, [NotNullWhen(true)] out IEntity? chunk)
         {
@@ -75,6 +78,23 @@ namespace Automata.Game.Chunks
             }
             else return false;
         }
+
+        #endregion
+
+
+        #region Chunk Modifications
+
+        public void AllocateChunkModification(Vector3i global, ushort blockID)
+        {
+            Vector3i origin = Vector3i.RoundBy(global, GenerationConstants.CHUNK_SIZE);
+
+            if (_Chunks.TryGetValue(origin, out IEntity? entity) && entity.TryGetComponent(out Chunk? chunk))
+            {
+                chunk.Modifications.TryAdd()
+            }
+        }
+
+        #endregion
 
         public void RecalculateAllChunkNeighbors()
         {
