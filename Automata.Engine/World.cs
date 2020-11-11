@@ -16,21 +16,9 @@ namespace Automata.Engine
 {
     public class World : IDisposable
     {
+        #region Static
+
         private static Dictionary<string, World> Worlds { get; }
-
-        public EntityManager EntityManager { get; }
-        public SystemManager SystemManager { get; }
-        public bool Active { get; set; }
-
-        static World() => Worlds = new Dictionary<string, World>();
-
-        protected World(bool active)
-        {
-            SystemManager = new SystemManager(this);
-            EntityManager = new EntityManager();
-
-            Active = active;
-        }
 
         public static void RegisterWorld(string name, World world)
         {
@@ -46,6 +34,23 @@ namespace Automata.Engine
         public static async ValueTask GlobalUpdate(TimeSpan deltaTime)
         {
             foreach ((string _, World world) in Worlds.Where(world => world.Value.Active)) await world.Update(deltaTime);
+        }
+
+        #endregion
+
+
+        public EntityManager EntityManager { get; }
+        public SystemManager SystemManager { get; }
+        public bool Active { get; set; }
+
+        static World() => Worlds = new Dictionary<string, World>();
+
+        protected World(bool active)
+        {
+            SystemManager = new SystemManager(this);
+            EntityManager = new EntityManager();
+
+            Active = active;
         }
 
         protected virtual async ValueTask Update(TimeSpan deltaTime) => await SystemManager.Update(EntityManager, deltaTime);

@@ -1,7 +1,6 @@
 #region
 
 using System;
-using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
 using Silk.NET.OpenGL;
 

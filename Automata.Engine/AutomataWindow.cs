@@ -133,7 +133,6 @@ namespace Automata.Engine
                     Window.DoEvents();
                     Window.SwapBuffers();
 
-                    // todo spinwait to increase wait resolution
                     if (CheckWaitForNextMonitorRefresh()) WaitForNextMonitorRefresh(deltaTimer);
                 }
             }
@@ -144,6 +143,7 @@ namespace Automata.Engine
         }
 
         private bool CheckWaitForNextMonitorRefresh() => Window.VSync is VSyncMode.On;
+
         private void WaitForNextMonitorRefresh(Stopwatch deltaTimer)
         {
             bool MinimumFrameTimeElapsed() => deltaTimer.Elapsed >= _MinimumFrameTime;

@@ -11,6 +11,5 @@ namespace Automata.Engine.Input
         public bool Active { get; set; }
 
         public InputAction(Action action, params Key[] keyCombination) => (Action, KeyCombination) = (action, keyCombination);
-
     }
 }

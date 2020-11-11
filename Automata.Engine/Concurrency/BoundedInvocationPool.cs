@@ -5,21 +5,21 @@ using System.Threading.Tasks;
 namespace Automata.Engine.Concurrency
 {
     /// <summary>
-    ///     Used to safely wrap a Task-returning method onto the <see cref="BoundedInvocationPool"/>.
+    ///     Used to safely wrap a Task-returning method onto the <see cref="BoundedInvocationPool" />.
     /// </summary>
-    /// <param name="cancellationToken"><see cref="CancellationToken"/> that the <see cref="BoundedInvocationPool"/> uses.</param>
+    /// <param name="cancellationToken"><see cref="CancellationToken" /> that the <see cref="BoundedInvocationPool" /> uses.</param>
     public delegate Task AsyncReferenceInvocation(CancellationToken cancellationToken);
 
     /// <summary>
-    ///     Used to safely wrap a Task-returning method onto the <see cref="BoundedInvocationPool"/>.
+    ///     Used to safely wrap a Task-returning method onto the <see cref="BoundedInvocationPool" />.
     /// </summary>
-    /// <param name="cancellationToken"><see cref="CancellationToken"/> that the <see cref="BoundedInvocationPool"/> uses.</param>
+    /// <param name="cancellationToken"><see cref="CancellationToken" /> that the <see cref="BoundedInvocationPool" /> uses.</param>
     public delegate ValueTask AsyncValueInvocation(CancellationToken cancellationToken);
 
     public class BoundedInvocationPool : Singleton<BoundedInvocationPool>
     {
         /// <summary>
-        ///     Source for the <see cref="CancellationToken"/> that the pool observes.
+        ///     Source for the <see cref="CancellationToken" /> that the pool observes.
         /// </summary>
         private readonly CancellationTokenSource _CancellationTokenSource;
 
@@ -44,7 +44,7 @@ namespace Automata.Engine.Concurrency
         public event EventHandler<Exception>? ExceptionOccurred;
 
         /// <summary>
-        ///     <see cref="CancellationToken"/> that is observed by internal methods.
+        ///     <see cref="CancellationToken" /> that is observed by internal methods.
         /// </summary>
         public CancellationToken CancellationToken => _CancellationTokenSource.Token;
 
@@ -92,11 +92,12 @@ namespace Automata.Engine.Concurrency
 
             // ensure the pool is actually accepting invocations
             if (Size == 0) throw new InvalidOperationException($"Pool is empty. Call {nameof(DefaultPoolSize)}() or {nameof(ModifyPoolSize)}().");
+
             // dispatch work to ThreadPool
             else Task.Run(Dispatch, CancellationToken);
         }
 
-        /// <inheritdoc cref="Enqueue(Automata.Engine.Concurrency.AsyncReferenceInvocation)"/>
+        /// <inheritdoc cref="Enqueue(Automata.Engine.Concurrency.AsyncReferenceInvocation)" />
         public void Enqueue(AsyncValueInvocation invocation)
         {
             // dispatch method used to wrap invocations
@@ -124,12 +125,13 @@ namespace Automata.Engine.Concurrency
 
             // ensure the pool is actually accepting invocations
             if (Size == 0) throw new InvalidOperationException($"Pool is empty. Call {nameof(DefaultPoolSize)}() or {nameof(ModifyPoolSize)}().");
+
             // dispatch work to ThreadPool
             else Task.Run(Dispatch, CancellationToken);
         }
 
         /// <summary>
-        ///     Modifies pool size to <see cref="Environment.ProcessorCount"/> - 2.
+        ///     Modifies pool size to <see cref="Environment.ProcessorCount" /> - 2.
         /// </summary>
         public void DefaultPoolSize() => ModifyPoolSize((uint)Math.Max(1, Environment.ProcessorCount - 2));
 
@@ -144,18 +146,19 @@ namespace Automata.Engine.Concurrency
 
             // wait on modification synchronization object
             _ModifyPoolReset.Wait(CancellationToken);
+
             // reset object so waits will block
             _ModifyPoolReset.Reset();
 
             if (Size > 0)
-            {
+
                 // if pool was accepting any invocations, wait until all
                 // semaphore slots are freed (and thus, all invocation complete).
                 //
                 // we can be sure no NEW work will be added, since we locked the
                 // modification synchronization object.
-                while (_Semaphore.CurrentCount < Size) Thread.Sleep(1);
-            }
+                while (_Semaphore.CurrentCount < Size)
+                    Thread.Sleep(1);
 
             // dispose old semaphore
             _Semaphore.Dispose();
@@ -166,6 +169,7 @@ namespace Automata.Engine.Concurrency
 
             // atomic write new size value
             Interlocked.Exchange(ref _Size, (int)size);
+
             // set pool so dispatches can be queued again
             _ModifyPoolReset.Set();
         }
