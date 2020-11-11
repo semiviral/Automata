@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using System.Reflection.Metadata;
 using Automata.Engine;
 using Automata.Engine.Components;
 using Automata.Engine.Concurrency;
@@ -19,7 +20,7 @@ namespace Automata.Game
 {
     public class Program
     {
-        private static void Main()
+        private static unsafe void Main()
         {
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
@@ -31,7 +32,6 @@ namespace Automata.Game
             Initialize();
 
             BufferObject<DrawElementsIndirectCommand> commands = new BufferObject<DrawElementsIndirectCommand>(GLAPI.Instance.GL);
-            commands.WriteCommand(0u, command);
             DrawElementsIndirectCommand command = new DrawElementsIndirectCommand
             {
                 Count = 0u,
@@ -40,10 +40,11 @@ namespace Automata.Game
                 BaseVertex = 0u,
                 BaseInstance = 0u,
             };
+            commands.SetBufferData(1u, (uint)sizeof(DrawElementsIndirectCommand), (void*)&command, BufferDraw.DynamicDraw);
 
-            BufferObject bufferObject = new BufferObject(GLAPI.Instance.GL);
-            VertexArrayObject<byte> vao = new VertexArrayObject<byte>()
-
+            BufferObject<byte> bufferObject = new BufferObject<byte>(GLAPI.Instance.GL);
+            VertexArrayObject<byte> vao = new VertexArrayObject<byte>(GLAPI.Instance.GL, bufferObject, sizeof(uint) * 6, bufferObject);
+            vao.AllocateVertexAttribute(new VertexAttribute<uint>(2u, 1u, (uint)sizeof(DrawElementsIndirectCommand), 1));
 
             AutomataWindow.Instance.Run();
         }

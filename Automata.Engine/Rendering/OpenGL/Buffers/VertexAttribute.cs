@@ -6,6 +6,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
     public interface IVertexAttribute
     {
         public uint Index { get; }
+        public uint Divisor { get; }
 
         public void Commit(GL gl, uint vao);
     }
@@ -17,9 +18,10 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
         private readonly bool _Normalized;
 
         public uint Index { get; }
+        public uint Divisor { get; }
 
-        public VertexAttribute(uint index, uint dimensions, uint offset, bool normalized = false) =>
-            (Index, _Dimensions, _Offset, _Normalized) = (index, (int)dimensions, offset, normalized);
+        public VertexAttribute(uint index, uint dimensions, uint offset, uint divisor = 0, bool normalized = false) =>
+            (Index, _Dimensions, _Offset, Divisor, _Normalized) = (index, (int)dimensions, offset, divisor, normalized);
 
         public void Commit(GL gl, uint vao)
         {
@@ -32,6 +34,8 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             else if (typeof(TComponent) == typeof(float)) gl.VertexArrayAttribFormat(vao, Index, _Dimensions, VertexAttribType.Float, _Normalized, _Offset);
             else if (typeof(TComponent) == typeof(double)) gl.VertexArrayAttribLFormat(vao, Index, _Dimensions, VertexAttribLType.Double, _Offset);
             else throw new NotSupportedException($"{nameof(TComponent)} is of unsupported type '{typeof(TComponent)}'. Must be a primitive.");
+
+            if (Divisor > 0) gl.VertexArrayBindingDivisor(vao, Index, Divisor);
         }
 
         public bool Equals(VertexAttribute<TComponent>? other) =>

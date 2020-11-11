@@ -36,6 +36,16 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             GL.VertexArrayElementBuffer(Handle, ebo.Handle);
         }
 
+        public unsafe VertexArrayObject(GL gl, OpenGLObject vbo, int vertexOffset, OpenGLObject ebo) : base(gl)
+        {
+            _VertexAttributes = Array.Empty<IVertexAttribute>();
+
+            Handle = GL.CreateVertexArray();
+
+            GL.VertexArrayVertexBuffer(Handle, 0, vbo.Handle, vertexOffset, (uint)sizeof(TVertex));
+            GL.VertexArrayElementBuffer(Handle, ebo.Handle);
+        }
+
         public void AllocateVertexAttribute(IVertexAttribute vertexAttribute)
         {
             if (_VertexAttributes.Length < vertexAttribute.Index)

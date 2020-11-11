@@ -37,12 +37,6 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
         public unsafe void SetBufferData(Span<TData> data, BufferDraw bufferDraw)
         {
-            // todo
-            // new VertexAttribute<uint>(2, 1, (uint)sizeof(DrawElementsIndirectCommand)).Commit(GL, Handle);
-            // GL.VertexArrayAttribBinding(Handle, 2u, 0u);
-            // GL.VertexArrayBindingDivisor(Handle, 2u, 1u);
-            // GL.EnableVertexArrayAttrib(Handle, 2u);
-
             Length = (uint)data.Length;
             ByteLength = Length * (uint)sizeof(TData);
             GL.NamedBufferData(Handle, ByteLength, data, (VertexBufferObjectUsage)bufferDraw);
