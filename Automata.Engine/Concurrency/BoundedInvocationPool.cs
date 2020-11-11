@@ -91,7 +91,7 @@ namespace Automata.Engine.Concurrency
                 }
             }
 
-            // ensure the worker group isn't being modified
+            // ensure the pool size
             _ModifyPoolReset.Wait(CancellationToken);
 
             // ensure the pool is actually accepting invocations
@@ -131,7 +131,7 @@ namespace Automata.Engine.Concurrency
                 }
             }
 
-            // ensure the worker group isn't being modified
+            // ensure the pool size
             _ModifyPoolReset.Wait(CancellationToken);
 
             // ensure the pool is actually accepting invocations
