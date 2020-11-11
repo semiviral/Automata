@@ -30,8 +30,8 @@ namespace Automata.Game
 
             Initialize();
 
-            IndirectBufferObject bufferObject = new IndirectBufferObject(GL.GetApi(), 5);
-
+            BufferObject<DrawElementsIndirectCommand> commands = new BufferObject<DrawElementsIndirectCommand>(GLAPI.Instance.GL);
+            commands.WriteCommand(0u, command);
             DrawElementsIndirectCommand command = new DrawElementsIndirectCommand
             {
                 Count = 0u,
@@ -41,7 +41,9 @@ namespace Automata.Game
                 BaseInstance = 0u,
             };
 
-            bufferObject.WriteCommand( 0u, command);
+            BufferObject bufferObject = new BufferObject(GLAPI.Instance.GL);
+            VertexArrayObject<byte> vao = new VertexArrayObject<byte>()
+
 
             AutomataWindow.Instance.Run();
         }
