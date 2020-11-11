@@ -37,10 +37,10 @@ namespace Automata.Game
         {
             Settings.Load();
 
-            if (Settings.Instance.SingleThreadedGeneration) BoundedSemaphorePool.Instance.ModifyPoolSize(1);
-            else BoundedSemaphorePool.Instance.DefaultPoolSize();
+            if (Settings.Instance.SingleThreadedGeneration) BoundedInvocationPool.Instance.ModifyPoolSize(1);
+            else BoundedInvocationPool.Instance.DefaultPoolSize();
 
-            BoundedSemaphorePool.Instance.ExceptionOccurred += (_, exception) => Log.Error($"{exception.Message}\r\n{exception.StackTrace}");
+            BoundedInvocationPool.Instance.ExceptionOccurred += (_, exception) => Log.Error($"{exception.Message}\r\n{exception.StackTrace}");
 
             WindowOptions options = WindowOptions.Default;
             options.Title = "Automata";
@@ -94,7 +94,7 @@ namespace Automata.Game
 
         private static void ApplicationCloseCallback(object sender)
         {
-            BoundedSemaphorePool.Instance.Cancel();
+            BoundedInvocationPool.Instance.Cancel();
             GLAPI.Instance.GL.Dispose();
         }
     }

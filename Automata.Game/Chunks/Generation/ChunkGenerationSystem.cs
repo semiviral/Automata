@@ -81,12 +81,12 @@ namespace Automata.Game.Chunks.Generation
                 switch (chunk.State)
                 {
                     case GenerationState.Ungenerated:
-                        BoundedSemaphorePool.Instance.Enqueue(_ => GenerateBlocks(entity, Vector3i.FromVector3(translation.Value), parameters));
+                        BoundedInvocationPool.Instance.Enqueue(_ => GenerateBlocks(entity, Vector3i.FromVector3(translation.Value), parameters));
                         chunk.State += 1;
                         break;
 
                     case GenerationState.Unmeshed when chunk.IsStateLockstep(): // don't generate mesh until all neighbors are ready
-                        BoundedSemaphorePool.Instance.Enqueue(_ => GenerateMesh(entity, chunk, Vector3i.FromVector3(translation.Value)));
+                        BoundedInvocationPool.Instance.Enqueue(_ => GenerateMesh(entity, chunk, Vector3i.FromVector3(translation.Value)));
                         chunk.State += 1;
                         break;
                 }

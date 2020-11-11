@@ -8,7 +8,7 @@ namespace Automata.Engine.Concurrency
 
     public delegate ValueTask AsyncValueInvocation(CancellationToken cancellationToken);
 
-    public class BoundedSemaphorePool : Singleton<BoundedSemaphorePool>
+    public class BoundedInvocationPool : Singleton<BoundedInvocationPool>
     {
         private readonly CancellationTokenSource _CancellationTokenSource;
         private readonly ManualResetEventSlim _ModifyPoolReset;
@@ -20,7 +20,7 @@ namespace Automata.Engine.Concurrency
         public CancellationToken CancellationToken => _CancellationTokenSource.Token;
         public int Size => _Size;
 
-        public BoundedSemaphorePool()
+        public BoundedInvocationPool()
         {
             _CancellationTokenSource = new CancellationTokenSource();
             _ModifyPoolReset = new ManualResetEventSlim(true);
@@ -126,6 +126,6 @@ namespace Automata.Engine.Concurrency
             _ModifyPoolReset.Set();
         }
 
-        ~BoundedSemaphorePool() => _Semaphore.Dispose();
+        ~BoundedInvocationPool() => _Semaphore.Dispose();
     }
 }
