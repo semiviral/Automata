@@ -84,7 +84,7 @@ namespace Automata.Game.Chunks.Generation
                         chunk.State += 1;
                         break;
 
-                    case GenerationState.Unmeshed when chunk.IsStateLockstep(): // don't generate mesh until all neighbors are ready
+                    case GenerationState.Unmeshed when chunk.IsStateLockstep(false): // don't generate mesh until all neighbors are ready
                         BoundedInvocationPool.Instance.Enqueue(_ => GenerateMesh(entity, chunk, Vector3i.FromVector3(translation.Value)));
                         chunk.State += 1;
                         break;
