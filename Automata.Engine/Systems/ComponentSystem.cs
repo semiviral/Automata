@@ -1,6 +1,7 @@
 #region
 
 using System;
+using System.Threading.Tasks;
 using Automata.Engine.Entities;
 
 #endregion
@@ -23,7 +24,7 @@ namespace Automata.Engine.Systems
         /// <summary>
         ///     Method called once per frame.
         /// </summary>
-        public virtual void Update(EntityManager entityManager, TimeSpan delta) { }
+        public virtual ValueTask Update(EntityManager entityManager, TimeSpan delta) => ValueTask.CompletedTask;
 
         protected TComponentSystem? GetSystem<TComponentSystem>() where TComponentSystem : ComponentSystem =>
             _CurrentWorld?.SystemManager.GetSystem<TComponentSystem>();

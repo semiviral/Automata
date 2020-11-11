@@ -1,29 +1,24 @@
 ﻿using System.Drawing;
-using System.Numerics;
-using System.Reflection.Metadata;
-using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Automata.Engine;
 using Automata.Engine.Components;
 using Automata.Engine.Concurrency;
 using Automata.Engine.Entities;
 using Automata.Engine.Input;
 using Automata.Engine.Rendering;
-using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
-using Automata.Engine.Rendering.OpenGL.Buffers;
 using Automata.Engine.Systems;
 using Automata.Game.Blocks;
 using Automata.Game.Chunks;
 using Automata.Game.Chunks.Generation;
 using Serilog;
-using Silk.NET.OpenGL;
 using Silk.NET.Windowing.Common;
 
 namespace Automata.Game
 {
     public class Program
     {
-        private static unsafe void Main()
+        private static async Task Main()
         {
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
@@ -34,7 +29,7 @@ namespace Automata.Game
 
             Initialize();
 
-            AutomataWindow.Instance.Run();
+            await AutomataWindow.Instance.Run();
         }
 
         private static void Initialize()

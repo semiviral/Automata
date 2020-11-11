@@ -63,7 +63,7 @@ namespace Automata.Game.Chunks.Generation
         }
 
         [HandledComponents(DistinctionStrategy.All, typeof(Translation), typeof(Chunk))]
-        public override void Update(EntityManager entityManager, TimeSpan delta)
+        public override ValueTask Update(EntityManager entityManager, TimeSpan delta)
         {
             while (_PendingBlocks.TryTake(out (IEntity Entity, Palette<Block> Blocks) pendingBlocks)
                    && !pendingBlocks.Entity.Destroyed
@@ -99,6 +99,8 @@ namespace Automata.Game.Chunks.Generation
                         chunk.State += 1;
                         break;
                 }
+
+            return ValueTask.CompletedTask;
         }
 
         private async ValueTask GenerateBlocks(IEntity entity, Vector3i origin, IGenerationStep.Parameters parameters)

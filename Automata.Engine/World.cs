@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading.Tasks;
 using Automata.Engine.Entities;
 using Automata.Engine.Systems;
 using Serilog;
@@ -42,12 +43,12 @@ namespace Automata.Engine
 
         public static bool TryGetWorld(string name, [NotNullWhen(true)] out World? world) => Worlds.TryGetValue(name, out world);
 
-        public static void GlobalUpdate(TimeSpan deltaTime)
+        public static async ValueTask GlobalUpdate(TimeSpan deltaTime)
         {
-            foreach ((string _, World world) in Worlds.Where(world => world.Value.Active)) world.Update(deltaTime);
+            foreach ((string _, World world) in Worlds.Where(world => world.Value.Active)) await world.Update(deltaTime);
         }
 
-        protected virtual void Update(TimeSpan deltaTime) => SystemManager.Update(EntityManager, deltaTime);
+        protected virtual async ValueTask Update(TimeSpan deltaTime) => await SystemManager.Update(EntityManager, deltaTime);
 
 
         #region IDisposable

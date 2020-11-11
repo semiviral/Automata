@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Automata.Engine.Collections;
 using Automata.Engine.Input;
 using Automata.Engine.Numerics;
@@ -108,31 +109,32 @@ namespace Automata.Engine
             Log.Information(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(AutomataWindow), $"VSync framerate configured to {refreshRate} FPS."));
         }
 
-        public void Run()
+        public async Task Run()
         {
             try
             {
                 Stopwatch deltaTimer = new Stopwatch();
-                TimeSpan deltaTime = TimeSpan.Zero;
                 BoundedConcurrentQueue<double> fps = new BoundedConcurrentQueue<double>(60);
+                fps.Enqueue(0d); // so we don't get a 'Sequence contains no elements' exception.
 
                 while (!Window.IsClosing)
                 {
+                    TimeSpan deltaTime = deltaTimer.Elapsed;
+                    fps.Enqueue(1d / deltaTime.TotalSeconds);
+                    Title = $"Automata {fps.Average():0.00} FPS";
+
                     deltaTimer.Restart();
                     Window.DoEvents();
 
                     if (InputManager.Instance.IsKeyPressed(Key.Escape)) Window.Close();
 
-                    if (!Window.IsClosing) World.GlobalUpdate(deltaTime);
+                    if (!Window.IsClosing) await World.GlobalUpdate(deltaTime);
 
                     Window.DoEvents();
                     Window.SwapBuffers();
 
+                    // todo spinwait to increase wait resolution
                     if (CheckWaitForNextMonitorRefresh()) WaitForNextMonitorRefresh(deltaTimer);
-
-                    deltaTime = deltaTimer.Elapsed;
-                    fps.Enqueue(1d / deltaTime.TotalSeconds);
-                    Title = $"Automata {fps.Average():0.00} FPS";
                 }
             }
             catch (Exception ex)
@@ -142,7 +144,11 @@ namespace Automata.Engine
         }
 
         private bool CheckWaitForNextMonitorRefresh() => Window.VSync is VSyncMode.On;
-        private void WaitForNextMonitorRefresh(Stopwatch deltaTimer) => Thread.Sleep(Math.Max((_MinimumFrameTime - deltaTimer.Elapsed).Milliseconds, 0));
+        private void WaitForNextMonitorRefresh(Stopwatch deltaTimer)
+        {
+            bool MinimumFrameTimeElapsed() => deltaTimer.Elapsed >= _MinimumFrameTime;
+            SpinWait.SpinUntil(MinimumFrameTimeElapsed);
+        }
 
         public GL GetGL() => GL.GetApi(Window.GLContext);
 

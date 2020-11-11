@@ -3,6 +3,7 @@
 using System;
 using System.Linq;
 using System.Numerics;
+using System.Threading.Tasks;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
 using Automata.Engine.Systems;
@@ -20,7 +21,7 @@ namespace Automata.Engine.Input
 
         [HandledComponents(DistinctionStrategy.All, typeof(Rotation), typeof(MouseListener)),
          HandledComponents(DistinctionStrategy.All, typeof(Translation), typeof(KeyboardListener))]
-        public override void Update(EntityManager entityManager, TimeSpan delta)
+        public override ValueTask Update(EntityManager entityManager, TimeSpan delta)
         {
             HandleMouseListeners(entityManager, delta);
             HandleKeyboardListeners(entityManager, delta);
@@ -34,6 +35,8 @@ namespace Automata.Engine.Input
                     inputAction.Action.Invoke();
                 }
                 else inputAction.Active = false;
+
+            return ValueTask.CompletedTask;
         }
 
         private static void HandleMouseListeners(EntityManager entityManager, TimeSpan delta)

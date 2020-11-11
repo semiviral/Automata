@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Automata.Engine;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
@@ -22,7 +23,7 @@ namespace Automata.Game.Chunks
         private VoxelWorld VoxelWorld => _CurrentWorld as VoxelWorld ?? throw new InvalidOperationException("Must be in VoxelWorld.");
 
         [HandledComponents(DistinctionStrategy.All, typeof(Translation), typeof(ChunkLoader))]
-        public override void Update(EntityManager entityManager, TimeSpan delta)
+        public override ValueTask Update(EntityManager entityManager, TimeSpan delta)
         {
             bool recalculateChunkRegions = false;
             IEnumerable<(Translation Translation, ChunkLoader ChunkLoader)> components = entityManager.GetComponents<Translation, ChunkLoader>();
@@ -38,21 +39,24 @@ namespace Automata.Game.Chunks
                 recalculateChunkRegions = true;
             }
 
-            if (!recalculateChunkRegions) return;
+            if (recalculateChunkRegions)
+            {
+                HashSet<Vector3i> withinLoaderRange = new HashSet<Vector3i>(components.SelectMany(loader =>
+                    GetActiveChunkLoaderRegion(loader.ChunkLoader)));
 
-            HashSet<Vector3i> withinLoaderRange = new HashSet<Vector3i>(components.SelectMany(loader =>
-                GetActiveChunkLoaderRegion(loader.ChunkLoader)));
+                IEnumerable<Vector3i> activations = withinLoaderRange.Except(VoxelWorld.Chunks.Origins);
+                IEnumerable<Vector3i> deactivations = VoxelWorld.Chunks.Origins.Except(withinLoaderRange);
 
-            IEnumerable<Vector3i> activations = withinLoaderRange.Except(VoxelWorld.Chunks.Origins);
-            IEnumerable<Vector3i> deactivations = VoxelWorld.Chunks.Origins.Except(withinLoaderRange);
+                int totalActivations = activations.Count(origin => VoxelWorld.Chunks.TryAdd(entityManager, origin, out IEntity? _));
+                int totalDeactivations = deactivations.Count(origin => VoxelWorld.Chunks.TryRemove(entityManager, origin, out IEntity? _));
 
-            int totalActivations = activations.Count(origin => VoxelWorld.Chunks.TryAdd(entityManager, origin, out IEntity? _));
-            int totalDeactivations = deactivations.Count(origin => VoxelWorld.Chunks.TryRemove(entityManager, origin, out IEntity? _));
+                VoxelWorld.Chunks.RecalculateAllChunkNeighbors();
 
-            VoxelWorld.Chunks.RecalculateAllChunkNeighbors();
+                Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkRegionLoaderSystem),
+                    $"Region loading: {totalActivations} activations, {totalDeactivations} deactivations"));
+            }
 
-            Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkRegionLoaderSystem),
-                $"Region loading: {totalActivations} activations, {totalDeactivations} deactivations"));
+            return ValueTask.CompletedTask;
         }
 
         private static IEnumerable<Vector3i> GetActiveChunkLoaderRegion(ChunkLoader chunkLoader)

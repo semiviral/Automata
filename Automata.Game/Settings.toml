@@ -1,6 +1,6 @@
 [Video]
-VSync=false
+VSync=true
 
 [WorldGeneration]
 SingleThreadedGeneration=false
-GenerationRadius=4
+GenerationRadius=12

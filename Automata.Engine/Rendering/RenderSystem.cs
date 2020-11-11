@@ -4,6 +4,7 @@ using System;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
+using System.Threading.Tasks;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
 using Automata.Engine.Numerics;
@@ -59,7 +60,7 @@ namespace Automata.Engine.Rendering
         }
 
         [HandledComponents(DistinctionStrategy.All, typeof(Camera), typeof(RenderMesh), typeof(Material))]
-        public override unsafe void Update(EntityManager entityManager, TimeSpan delta)
+        public override unsafe ValueTask Update(EntityManager entityManager, TimeSpan delta)
         {
             _GL.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
             Span<Plane> planes = stackalloc Plane[Frustum.TOTAL_PLANES];
@@ -154,6 +155,8 @@ namespace Automata.Engine.Rendering
 
             // by this point we should've updated all of the projection matrixes, so reset the value to 0.
             _NewAspectRatio = 0f;
+
+            return ValueTask.CompletedTask;
         }
 
         private static bool CheckClipFrustumOcclude(OcclusionBounds occlusionBounds, Span<Plane> planes, Matrix4x4 mvp)

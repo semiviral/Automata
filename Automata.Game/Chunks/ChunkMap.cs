@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Numerics;
+using System.Threading.Tasks;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
 using Automata.Engine.Extensions;
@@ -84,17 +85,20 @@ namespace Automata.Game.Chunks
 
         #region Chunk Modifications
 
-        public void AllocateChunkModification(Vector3i global, ushort blockID)
+        public async ValueTask AllocateChunkModification(Vector3i global, ushort blockID)
         {
             Vector3i origin = Vector3i.RoundBy(global, GenerationConstants.CHUNK_SIZE);
 
             if (_Chunks.TryGetValue(origin, out IEntity? entity) && entity.TryGetComponent(out Chunk? chunk))
-            {
-                chunk.Modifications.TryAdd()
-            }
+                await chunk.Modifications.AddAsync(new ChunkModification
+                {
+                    Local = global - origin,
+                    BlockID = blockID
+                });
         }
 
         #endregion
+
 
         public void RecalculateAllChunkNeighbors()
         {

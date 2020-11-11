@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Automata.Engine.Collections;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
@@ -45,11 +46,11 @@ namespace Automata.Engine.Systems
             RegisterSystem<LastOrderSystem>(SystemRegistrationOrder.Last);
         }
 
-        public void Update(EntityManager entityManager, TimeSpan deltaTime)
+        public async ValueTask Update(EntityManager entityManager, TimeSpan deltaTime)
         {
             foreach (ComponentSystem componentSystem in _ComponentSystems)
                 if (componentSystem.Enabled && VerifyHandledComponentsExistForSystem(entityManager, componentSystem))
-                    componentSystem.Update(entityManager, deltaTime);
+                    await componentSystem.Update(entityManager, deltaTime);
 
             foreach (ComponentChangeable changeable in entityManager.GetComponentsExplicit<ComponentChangeable>()) changeable.Changed = false;
         }
