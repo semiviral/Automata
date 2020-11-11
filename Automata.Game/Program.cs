@@ -1,5 +1,7 @@
 ﻿using System.Drawing;
+using System.Numerics;
 using System.Reflection.Metadata;
+using System.Runtime.InteropServices;
 using Automata.Engine;
 using Automata.Engine.Components;
 using Automata.Engine.Concurrency;
@@ -44,7 +46,14 @@ namespace Automata.Game
 
             BufferObject<byte> bufferObject = new BufferObject<byte>(GLAPI.Instance.GL);
             VertexArrayObject<byte> vao = new VertexArrayObject<byte>(GLAPI.Instance.GL, bufferObject, sizeof(uint) * 6, bufferObject);
-            vao.AllocateVertexAttribute(new VertexAttribute<uint>(2u, 1u, (uint)sizeof(DrawElementsIndirectCommand), 1));
+            vao.AllocateVertexAttribute(new VertexAttribute<uint>(2u, 1u, (uint)sizeof(DrawElementsIndirectCommand), 1u));
+            vao.AllocateVertexAttributes(new IVertexAttribute[]
+            {
+                new VertexAttribute<float>(3u + 0u, 4u, (uint)Marshal.OffsetOf<Matrix4x4>(nameof(Matrix4x4.M11)), 1u),
+                new VertexAttribute<float>(3u + 1u, 4u, (uint)Marshal.OffsetOf<Matrix4x4>(nameof(Matrix4x4.M21)), 1u),
+                new VertexAttribute<float>(3u + 2u, 4u, (uint)Marshal.OffsetOf<Matrix4x4>(nameof(Matrix4x4.M31)), 1u),
+                new VertexAttribute<float>(3u + 3u, 4u, (uint)Marshal.OffsetOf<Matrix4x4>(nameof(Matrix4x4.M41)), 1u),
+            });
 
             AutomataWindow.Instance.Run();
         }
