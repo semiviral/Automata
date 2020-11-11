@@ -58,7 +58,7 @@ namespace Automata.Engine.Rendering
             _Viewport.Bind();
         }
 
-        [HandledComponents(DistinctionStrategy.Any, typeof(Camera), typeof(RenderMesh))]
+        [HandledComponents(DistinctionStrategy.All, typeof(Camera), typeof(RenderMesh), typeof(Material))]
         public override unsafe void Update(EntityManager entityManager, TimeSpan delta)
         {
             _GL.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
