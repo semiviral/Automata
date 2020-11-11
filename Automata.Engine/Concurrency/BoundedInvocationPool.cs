@@ -74,14 +74,10 @@ namespace Automata.Engine.Concurrency
             {
                 try
                 {
-                    // observe cancellation token
                     if (_CancellationTokenSource.IsCancellationRequested) return;
 
-                    // wait for a semaphore slot
                     await _Semaphore.WaitAsync(CancellationToken).ConfigureAwait(false);
-                    // execute invocation
                     await invocation.Invoke(CancellationToken).ConfigureAwait(false);
-                    // release current held semaphore slot
                     _Semaphore.Release(1);
                 }
                 catch (Exception exception) when (exception is not OperationCanceledException)
@@ -91,7 +87,7 @@ namespace Automata.Engine.Concurrency
                 }
             }
 
-            // ensure the pool size
+            // ensure the pool size isn't being modified
             _ModifyPoolReset.Wait(CancellationToken);
 
             // ensure the pool is actually accepting invocations
@@ -100,11 +96,7 @@ namespace Automata.Engine.Concurrency
             else Task.Run(Dispatch, CancellationToken);
         }
 
-        /// <summary>
-        ///     Queues an invocation to the pool.
-        /// </summary>
-        /// <param name="invocation">Invocation to execute.</param>
-        /// <exception cref="InvalidOperationException">Thrown when the pool size is 0.</exception>
+        /// <inheritdoc cref="Enqueue(Automata.Engine.Concurrency.AsyncReferenceInvocation)"/>
         public void Enqueue(AsyncValueInvocation invocation)
         {
             // dispatch method used to wrap invocations
@@ -114,14 +106,10 @@ namespace Automata.Engine.Concurrency
             {
                 try
                 {
-                    // observe cancellation token
                     if (_CancellationTokenSource.IsCancellationRequested) return;
 
-                    // wait for a semaphore slot
                     await _Semaphore.WaitAsync(CancellationToken).ConfigureAwait(false);
-                    // execute invocation
                     await invocation.Invoke(CancellationToken).ConfigureAwait(false);
-                    // release current held semaphore slot
                     _Semaphore.Release(1);
                 }
                 catch (Exception exception) when (exception is not OperationCanceledException)
@@ -131,7 +119,7 @@ namespace Automata.Engine.Concurrency
                 }
             }
 
-            // ensure the pool size
+            // ensure the pool size isn't being modified
             _ModifyPoolReset.Wait(CancellationToken);
 
             // ensure the pool is actually accepting invocations
@@ -173,6 +161,7 @@ namespace Automata.Engine.Concurrency
             _Semaphore.Dispose();
 
             // if size is greater than zero, we create a new semaphore
+            // if not, then there's no point since it would be empty.
             if (size > 0) _Semaphore = new SemaphoreSlim((int)size);
 
             // atomic write new size value
@@ -198,13 +187,8 @@ namespace Automata.Engine.Concurrency
             if (!abort) return;
 
             _CancellationTokenSource.Cancel();
-            _ModifyPoolReset.Wait(CancellationToken);
-            _ModifyPoolReset.Reset();
 
             ModifyPoolSize(0);
-
-            // allow any errant waiters to fire so the pool can be cleaned up
-            _ModifyPoolReset.Set();
         }
 
         ~BoundedInvocationPool() => _Semaphore.Dispose();
