@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using Automata.Engine.Collections;
 using Automata.Engine.Input;
 using Automata.Engine.Numerics;
@@ -20,7 +19,7 @@ using ErrorCode = Silk.NET.GLFW.ErrorCode;
 #endregion
 
 
-namespace Automata.Engine.Rendering.GLFW
+namespace Automata.Engine
 {
     public delegate void WindowResizedEventHandler(object sender, Vector2i newSize);
 
