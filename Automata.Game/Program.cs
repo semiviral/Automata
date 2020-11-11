@@ -36,10 +36,10 @@ namespace Automata.Game
             BufferObject<DrawElementsIndirectCommand> commands = new BufferObject<DrawElementsIndirectCommand>(GLAPI.Instance.GL);
             DrawElementsIndirectCommand command = new DrawElementsIndirectCommand
             {
-                Count = 0u,
+                VertexCount = 0u,
                 InstanceCount = 1u,
-                FirstIndexOffset = 6u,
-                BaseVertex = 0u,
+                AbsoluteVertexOffset = 6u,
+                RelativeVertexOffset = 0u,
                 BaseInstance = 0u,
             };
             commands.SetBufferData(1u, (uint)sizeof(DrawElementsIndirectCommand), (void*)&command, BufferDraw.DynamicDraw);

@@ -63,6 +63,8 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             GL.NamedBufferSubData(Handle, offset, ByteLength, data);
         }
 
+        public void Bind(BufferTargetARB target) => GL.BindBuffer(target, Handle);
+
         public void Dispose()
         {
             if (_Disposed) throw new ObjectDisposedException(ToString());

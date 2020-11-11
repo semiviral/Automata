@@ -27,6 +27,10 @@ namespace Automata.Engine.Rendering.Meshes
 
         public Matrix4x4 Model { get; set; } = Matrix4x4.Identity;
 
-        public void Dispose() => _Mesh?.Dispose();
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+            _Mesh?.Dispose();
+        }
     }
 }

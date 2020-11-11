@@ -65,6 +65,7 @@ namespace Automata.Engine.Rendering.OpenGL
         public static void UnbindTexture() => Instance.GL.BindTexture(TextureTarget.Texture1D, 0);
         public static void UnbindProgramPipeline() => Instance.GL.BindProgramPipeline(0);
         public static void UnbindVertexArray() => Instance.GL.BindVertexArray(0);
+        public static void UnbindBuffer(BufferTargetARB target) => Instance.GL.BindBuffer(target, 0);
 
         private static void DebugOutputCallback(GLEnum source, GLEnum type, int id, GLEnum severity, int length, IntPtr messagePtr, IntPtr userParamPtr)
         {
