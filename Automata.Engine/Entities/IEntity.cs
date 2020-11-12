@@ -21,6 +21,7 @@ namespace Automata.Engine.Entities
         TComponent Remove<TComponent>() where TComponent : Component;
         TComponent? Find<TComponent>() where TComponent : Component;
         bool Contains<TComponent>() where TComponent : Component;
+        bool Contains(Type type);
 
         bool TryFind<TComponent>([NotNullWhen(true)] out TComponent? component) where TComponent : Component;
         bool TryFind(Type type, [NotNullWhen(true)] out Component? component);

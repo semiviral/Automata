@@ -34,13 +34,7 @@ namespace Automata.Engine.Entities
 
         public int Count => _Components.Count;
 
-        public Entity()
-        {
-            _Components = new List<Component>();
-
-            ID = Guid.NewGuid();
-            Destroyed = false;
-        }
+        public Entity() => (ID, Destroyed, _Components) = (Guid.NewGuid(), false, new List<Component>());
 
         public void Add<TComponent>() where TComponent : Component, new()
         {

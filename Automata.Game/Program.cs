@@ -61,35 +61,29 @@ namespace Automata.Game
             world.SystemManager.RegisterSystem<ChunkModificationsSystem, ChunkGenerationSystem>(SystemRegistrationOrder.Before);
             World.RegisterWorld("Overworld", world);
 
-            InitializePlayerEntity(world);
-        }
+            IEntity player = new Entity
+            {
+                new Translation(),
+                new Rotation(),
+                new Camera
+                {
+                    Projector = Projector.Perspective
+                },
+                new KeyboardListener
+                {
+                    Sensitivity = 100f
+                },
+                new MouseListener
+                {
+                    Sensitivity = 0.5f
+                },
+                new ChunkLoader
+                {
+                    Radius = Settings.Instance.GenerationRadius
+                }
+            };
 
-        private static void InitializePlayerEntity(World world)
-        {
-            IEntity player = new Entity();
             world.EntityManager.RegisterEntity(player);
-            world.EntityManager.RegisterComponent<Translation>(player);
-            world.EntityManager.RegisterComponent<Rotation>(player);
-
-            world.EntityManager.RegisterComponent(player, new Camera
-            {
-                Projector = Projector.Perspective
-            });
-
-            world.EntityManager.RegisterComponent(player, new KeyboardListener
-            {
-                Sensitivity = 100f
-            });
-
-            world.EntityManager.RegisterComponent(player, new MouseListener
-            {
-                Sensitivity = 0.5f
-            });
-
-            world.EntityManager.RegisterComponent(player, new ChunkLoader
-            {
-                Radius = Settings.Instance.GenerationRadius
-            });
         }
 
         private static void ApplicationCloseCallback(object sender)

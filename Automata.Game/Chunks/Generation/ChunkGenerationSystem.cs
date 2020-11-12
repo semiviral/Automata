@@ -49,14 +49,16 @@ namespace Automata.Game.Chunks.Generation
 
         public override void Registered(EntityManager entityManager)
         {
-            IEntity entity = new Entity();
-            entityManager.RegisterEntity(entity);
-
-            entityManager.RegisterComponent(entity, new InputAction(() =>
+            IEntity entity = new Entity
             {
-                Log.Information(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(DiagnosticsSystem),
-                    $"Average generation times: {DiagnosticsProvider.GetGroup<ChunkGenerationDiagnosticGroup>()}"));
-            }, Key.ShiftLeft, Key.B));
+                new InputAction(() =>
+                {
+                    Log.Information(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(DiagnosticsSystem),
+                        $"Average generation times: {DiagnosticsProvider.GetGroup<ChunkGenerationDiagnosticGroup>()}"));
+                }, Key.ShiftLeft, Key.B)
+            };
+
+            entityManager.RegisterEntity(entity);
         }
 
         [HandledComponents(DistinctionStrategy.All, typeof(Translation), typeof(Chunk))]
