@@ -83,7 +83,7 @@ namespace Automata.Game.Chunks.Generation
             }
 
             // iterate over each valid chunk and process the generateable states
-            foreach ((IEntity entity, Chunk chunk, Translation translation) in entityManager.GetEntities<Chunk, Translation>())
+            foreach ((IEntity entity, Chunk chunk, Translation translation) in entityManager.GetEntitiesWithComponents<Chunk, Translation>())
                 switch (chunk.State)
                 {
                     case GenerationState.AwaitingTerrain:

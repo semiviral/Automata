@@ -22,24 +22,6 @@ namespace Automata.Engine.Entities
             _ComponentCountByType = new Dictionary<Type, int>();
         }
 
-        public IEntity ComposeEntity<TEntityComposition>(bool autoRegister) where TEntityComposition : IEntityComposition, new()
-        {
-            IEntity entity = new Entity();
-
-            foreach (Type type in new TEntityComposition().ComposedTypes)
-            {
-                Component? component = (Component?)Activator.CreateInstance(type);
-
-                if (component is null) throw new InvalidOperationException("Types used for composition must implement a parameterless constructor.");
-
-                entity.Add(component);
-            }
-
-            if (autoRegister) RegisterEntity(entity);
-
-            return entity;
-        }
-
         private void AddEntityInternal(IEntity entity)
         {
             _Entities.Add(entity);
@@ -170,35 +152,35 @@ namespace Automata.Engine.Entities
         ///     Be cautious of registering or removing <see cref="Component" />s when iterating entities from this function, as
         ///     any additions or subtractions from the collection will throw a collection modified exception.
         /// </remarks>
-        public IEnumerable<IEntity> GetEntitiesWithComponents<T1>()
+        public IEnumerable<IEntity> GetEntities<T1>()
             where T1 : Component =>
             _Entities.Where(entity => entity.Contains<T1>());
 
-        public IEnumerable<IEntity> GetEntitiesWithComponents<T1, T2>()
+        public IEnumerable<IEntity> GetEntities<T1, T2>()
             where T1 : Component
             where T2 : Component =>
-            GetEntitiesWithComponents<T1>()
-                .Intersect(GetEntitiesWithComponents<T2>());
+            GetEntities<T1>()
+                .Intersect(GetEntities<T2>());
 
-        public IEnumerable<IEntity> GetEntitiesWithComponents<T1, T2, T3>()
+        public IEnumerable<IEntity> GetEntities<T1, T2, T3>()
             where T1 : Component
             where T2 : Component
             where T3 : Component =>
-            GetEntitiesWithComponents<T1>()
-                .Intersect(GetEntitiesWithComponents<T2>())
-                .Intersect(GetEntitiesWithComponents<T3>());
+            GetEntities<T1>()
+                .Intersect(GetEntities<T2>())
+                .Intersect(GetEntities<T3>());
 
-        public IEnumerable<IEntity> GetEntitiesWithComponents<T1, T2, T3, T4>()
+        public IEnumerable<IEntity> GetEntities<T1, T2, T3, T4>()
             where T1 : Component
             where T2 : Component
             where T3 : Component
             where T4 : Component =>
-            GetEntitiesWithComponents<T1>()
-                .Intersect(GetEntitiesWithComponents<T2>())
-                .Intersect(GetEntitiesWithComponents<T3>())
-                .Intersect(GetEntitiesWithComponents<T4>());
+            GetEntities<T1>()
+                .Intersect(GetEntities<T2>())
+                .Intersect(GetEntities<T3>())
+                .Intersect(GetEntities<T4>());
 
-        public IEnumerable<(IEntity Entity, T1 Component1)> GetEntities<T1>()
+        public IEnumerable<(IEntity Entity, T1 Component1)> GetEntitiesWithComponents<T1>()
             where T1 : Component
         {
             foreach (IEntity entity in _Entities)
@@ -206,7 +188,7 @@ namespace Automata.Engine.Entities
                     yield return (entity, component1);
         }
 
-        public IEnumerable<(IEntity Entity, T1 Component1, T2 Component2)> GetEntities<T1, T2>()
+        public IEnumerable<(IEntity Entity, T1 Component1, T2 Component2)> GetEntitiesWithComponents<T1, T2>()
             where T1 : Component
             where T2 : Component
         {

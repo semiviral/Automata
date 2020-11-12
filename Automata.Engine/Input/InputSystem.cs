@@ -63,7 +63,7 @@ namespace Automata.Engine.Input
 
             if (movementVector == Vector3.Zero) return;
 
-            foreach ((IEntity entity, Translation translation, KeyboardListener listener) in entityManager.GetEntities<Translation, KeyboardListener>())
+            foreach ((IEntity entity, Translation translation, KeyboardListener listener) in entityManager.GetEntitiesWithComponents<Translation, KeyboardListener>())
                 translation.Value += listener.Sensitivity
                                      * (entity.TryFind(out Rotation? rotation)
                                          ? Vector3.Transform(movementVector, rotation.Value)

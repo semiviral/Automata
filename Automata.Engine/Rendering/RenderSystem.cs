@@ -67,7 +67,7 @@ namespace Automata.Engine.Rendering
 
             CheckUpdateViewportUBOAndBind();
 
-            foreach ((IEntity cameraEntity, Camera camera) in entityManager.GetEntities<Camera>())
+            foreach ((IEntity cameraEntity, Camera camera) in entityManager.GetEntitiesWithComponents<Camera>())
             {
                 camera.Uniforms ??= new UniformBufferObject(_GL, 0, (uint)(sizeof(Matrix4x4) + sizeof(Matrix4x4) + sizeof(Vector4)))
                 {
@@ -114,7 +114,7 @@ namespace Automata.Engine.Rendering
                 Material? cachedMaterial = null;
 
                 // iterate each RenderMesh and check if the model matrix needs to be recalculated
-                foreach ((IEntity objectEntity, RenderMesh renderMesh) in entityManager.GetEntities<RenderMesh>())
+                foreach ((IEntity objectEntity, RenderMesh renderMesh) in entityManager.GetEntitiesWithComponents<RenderMesh>())
                     if (((objectEntity.TryFind(out Scale? modelScale) && modelScale.Changed)
                          | (objectEntity.TryFind(out Rotation? modelRotation) && modelRotation.Changed)
                          | (objectEntity.TryFind(out Translation? modelTranslation) && modelTranslation.Changed))
@@ -129,7 +129,7 @@ namespace Automata.Engine.Rendering
 
                 // iterate every valid entity and try to render it
                 // we also sort the entities by their render pipeline ID, so we can avoid doing a ton of rebinding
-                foreach ((IEntity objectEntity, RenderMesh renderMesh, Material material) in entityManager.GetEntities<RenderMesh, Material>()
+                foreach ((IEntity objectEntity, RenderMesh renderMesh, Material material) in entityManager.GetEntitiesWithComponents<RenderMesh, Material>()
                     .Where(result => result.Component1.ShouldRender && ((camera.RenderedLayers & result.Component1.Mesh!.Layer) > 0))
                     .OrderBy(result => result.Component2.Pipeline.Handle))
                 {
