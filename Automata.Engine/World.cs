@@ -33,7 +33,7 @@ namespace Automata.Engine
 
         public static async ValueTask GlobalUpdate(TimeSpan deltaTime)
         {
-            foreach ((string _, World world) in Worlds.Where(world => world.Value.Active)) await world.Update(deltaTime);
+            foreach (World world in Worlds.Values.Where(world => world.Active)) await world.Update(deltaTime);
         }
 
         #endregion

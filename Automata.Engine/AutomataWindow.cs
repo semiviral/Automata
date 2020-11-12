@@ -120,8 +120,6 @@ namespace Automata.Engine
                 while (!Window.IsClosing)
                 {
                     TimeSpan deltaTime = deltaTimer.Elapsed;
-                    fps.Enqueue(1d / deltaTime.TotalSeconds);
-                    Title = $"Automata {fps.Average():0.00} FPS";
 
                     deltaTimer.Restart();
                     Window.DoEvents();
@@ -134,6 +132,9 @@ namespace Automata.Engine
                     Window.SwapBuffers();
 
                     if (CheckWaitForNextMonitorRefresh()) WaitForNextMonitorRefresh(deltaTimer);
+
+                    fps.Enqueue(1d / deltaTimer.Elapsed.TotalSeconds);
+                    Title = $"Automata {fps.Average():0.00} FPS";
                 }
             }
             catch (Exception ex)

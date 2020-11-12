@@ -21,7 +21,7 @@ namespace Automata.Engine.Input
 
         [HandledComponents(DistinctionStrategy.All, typeof(Rotation), typeof(MouseListener)),
          HandledComponents(DistinctionStrategy.All, typeof(Translation), typeof(KeyboardListener)),
-         HandledComponents(DistinctionStrategy.All, typeof(InputAction))]
+        HandledComponents(DistinctionStrategy.All, typeof(InputAction))]
         public override ValueTask Update(EntityManager entityManager, TimeSpan delta)
         {
             HandleMouseListeners(entityManager, delta);
