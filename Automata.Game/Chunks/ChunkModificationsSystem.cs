@@ -15,7 +15,7 @@ namespace Automata.Game.Chunks
         [HandledComponents(DistinctionStrategy.All, typeof(Chunk))]
         public override ValueTask Update(EntityManager entityManager, TimeSpan delta)
         {
-            foreach (Chunk chunk in entityManager.GetComponents<Chunk>().Where(chunk => chunk.ThreadSafeState && chunk.IsStateLockstep(true)))
+            foreach (Chunk chunk in entityManager.GetComponents<Chunk>().Where(chunk => chunk.InsertionSafeState && chunk.IsStateLockstep(true)))
             {
                 Debug.Assert(chunk.Blocks is not null, $"Blocks should not be null when state is {nameof(GenerationState.Finished)}.");
 

@@ -10,7 +10,7 @@ namespace Automata.Game.Chunks
     public class Chunk : Component
     {
         public GenerationState State { get; set; } = GenerationState.AwaitingTerrain;
-        public bool ThreadSafeState => State is GenerationState.Finished or GenerationState.AwaitingMesh;
+        public bool InsertionSafeState => State is GenerationState.Finished or GenerationState.AwaitingMesh;
         public Palette<Block>? Blocks { get; set; }
         public Chunk?[] Neighbors { get; } = new Chunk?[6];
         public ConcurrentChannel<ChunkModification> Modifications { get; } = new ConcurrentChannel<ChunkModification>(true, false);
@@ -28,7 +28,7 @@ namespace Automata.Game.Chunks
         public void RemeshNeighbors()
         {
             foreach (Chunk? chunk in Neighbors)
-                if (chunk?.ThreadSafeState is true)
+                if (chunk?.InsertionSafeState is true)
                     chunk.State = GenerationState.AwaitingMesh;
         }
     }
