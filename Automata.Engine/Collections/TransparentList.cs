@@ -12,19 +12,35 @@ namespace Automata.Engine.Collections
         private readonly bool _Pooled;
 
         private T[] _InternalArray;
+        private Memory<T> _InternalMemory;
 
         public int Count { get; private set; }
-        public bool IsReadOnly => false;
-        public T[] Segment => _InternalArray[..Count];
-        public Memory<T> Memory => Segment;
-        public Span<T> Span => Segment;
 
-        public T this[int index] { get => Segment[index]; set => Segment[index] = value; }
+        public bool IsReadOnly => false;
+        public Memory<T> Segment => _InternalMemory.Slice(0, Count);
+
+        public T this[int index]
+        {
+            get
+            {
+                if (index >= _InternalArray.Length) throw new IndexOutOfRangeException("Index must be non-zero and less than the size of the collection.");
+                else return _InternalArray[index];
+            }
+            set
+            {
+                if (index >= _InternalArray.Length) throw new IndexOutOfRangeException("Index must be non-zero and less than the size of the collection.");
+                else _InternalArray[index] = value;
+            }
+        }
 
         public TransparentList(bool pooled = false) : this(_DEFAULT_SIZE, pooled) { }
 
-        public TransparentList(int capacity, bool pooled = false) =>
-            (_Pooled, _InternalArray) = (pooled, pooled ? ArrayPool<T>.Shared.Rent(capacity) : new T[capacity]);
+        public TransparentList(int capacity, bool pooled = false)
+        {
+            _Pooled = pooled;
+            _InternalArray = pooled ? ArrayPool<T>.Shared.Rent(capacity) : new T[capacity];
+            _InternalMemory = _InternalArray;
+        }
 
         public bool Contains(T item) => (Count != 0) && (IndexOf(item) != -1);
 
@@ -64,6 +80,7 @@ namespace Automata.Engine.Collections
             T[] newArray = new T[newCapacity];
             Array.Copy(_InternalArray, newArray, _InternalArray.Length);
             _InternalArray = newArray;
+            _InternalMemory = _InternalArray;
         }
 
         public bool Remove(T item)
@@ -78,10 +95,11 @@ namespace Automata.Engine.Collections
 
         public void RemoveAt(int index)
         {
-            if (index > Count) throw new ArgumentOutOfRangeException(nameof(index), "Must be non-negative and less than the size of the collection.");
+            if (index >= Count) throw new ArgumentOutOfRangeException(nameof(index), "Must be non-negative and less than the size of the collection.");
 
             Count -= 1;
 
+            // copies all elements from after index to the index itself, overwriting it
             if (index < Count) Array.Copy(_InternalArray, index + 1, _InternalArray, index, Count - index);
 
             _InternalArray[Count] = default!;
@@ -95,11 +113,14 @@ namespace Automata.Engine.Collections
             Count = 0;
         }
 
-        public void CopyTo(T[] array, int arrayIndex) => Array.Copy(Segment, 0, array, arrayIndex, Segment.Length);
+        public void CopyTo(T[] array, int arrayIndex) => Array.Copy(_InternalArray, 0, array, arrayIndex, Count);
+        public int IndexOf(T item) => Array.IndexOf(_InternalArray, item, 0, Count);
 
-        public int IndexOf(T item) => Array.IndexOf(Segment, item);
+        public IEnumerator<T> GetEnumerator()
+        {
+            for (int index = 0; index < Count; index++) yield return _InternalArray[index];
+        }
 
-        public IEnumerator<T> GetEnumerator() => Segment.GetEnumerator() as IEnumerator<T> ?? throw new NullReferenceException();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         ~TransparentList()

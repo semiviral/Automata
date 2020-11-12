@@ -102,12 +102,10 @@ namespace Automata.Game.Chunks.Generation
                         chunk.State += 1;
                         break;
 
-                    case GenerationState.AwaitingStructures:
-                        BoundedInvocationPool.Instance.Enqueue(_ => GenerateStructures(chunk, Vector3i.FromVector3(translation.Value)));
-                        chunk.State += 1;
-                        break;
-
-                    //                                          don't generate mesh until world is ready
+                    // case GenerationState.AwaitingStructures:
+                    //     BoundedInvocationPool.Instance.Enqueue(_ => GenerateStructures(chunk, Vector3i.FromVector3(translation.Value)));
+                    //     chunk.State += 1;
+                    //     break;
                     case GenerationState.AwaitingMesh when chunk.IsStateLockstep(false):
                         BoundedInvocationPool.Instance.Enqueue(_ => GenerateMesh(entity, chunk));
                         chunk.State += 1;
@@ -120,10 +118,11 @@ namespace Automata.Game.Chunks.Generation
         private async ValueTask GenerateBlocks(IEntity entity, Vector3i origin, IGenerationStep.Parameters parameters)
         {
             Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
-            stopwatch.Restart();
 
             Palette<Block> GenerateTerrainAndBuildPalette()
             {
+                stopwatch.Restart();
+
                 // block ids for generating
                 Span<ushort> data = stackalloc ushort[GenerationConstants.CHUNK_SIZE_CUBED];
 
@@ -243,8 +242,8 @@ namespace Automata.Game.Chunks.Generation
                 mesh.VertexArrayObject.CommitVertexAttributes();
             }
 
-            mesh.VertexesBufferObject.SetBufferData(pendingMesh.Vertexes, BufferDraw.DynamicDraw);
-            mesh.IndexesBufferObject.SetBufferData(pendingMesh.Indexes, BufferDraw.DynamicDraw);
+            mesh.VertexesBufferObject.SetBufferData(pendingMesh.Vertexes.Span, BufferDraw.DynamicDraw);
+            mesh.IndexesBufferObject.SetBufferData(pendingMesh.Indexes.Span, BufferDraw.DynamicDraw);
             return true;
         }
 

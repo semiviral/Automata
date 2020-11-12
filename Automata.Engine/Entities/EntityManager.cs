@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Automata.Engine.Components;
 using Serilog;
@@ -13,13 +14,13 @@ namespace Automata.Engine.Entities
 {
     public sealed class EntityManager
     {
-        private readonly Dictionary<Type, int> _ComponentCountByType;
+        private readonly Dictionary<Type, int> _ComponentCounts;
         private readonly List<IEntity> _Entities;
 
         public EntityManager()
         {
             _Entities = new List<IEntity>();
-            _ComponentCountByType = new Dictionary<Type, int>();
+            _ComponentCounts = new Dictionary<Type, int>();
         }
 
         private void AddEntityInternal(IEntity entity)
@@ -30,8 +31,8 @@ namespace Automata.Engine.Entities
             {
                 Type type = component.GetType();
 
-                if (!_ComponentCountByType.ContainsKey(type)) _ComponentCountByType.Add(type, 1);
-                else _ComponentCountByType[type] += 1;
+                if (!_ComponentCounts.ContainsKey(type)) _ComponentCounts.Add(type, 1);
+                else _ComponentCounts[type] += 1;
             }
         }
 
@@ -43,7 +44,9 @@ namespace Automata.Engine.Entities
             {
                 if (component is IDisposable disposable) disposable.Dispose();
 
-                _ComponentCountByType[component.GetType()] -= 1;
+                _ComponentCounts[component.GetType()] -= 1;
+
+                Debug.Assert(_ComponentCounts[component.GetType()] >= 0, $"Component counts less than zero indicate state has been corrupted.");
             }
 
             entity.Destroy();
@@ -73,7 +76,7 @@ namespace Automata.Engine.Entities
             if (entity.TryFind(type, out Component? component) && entity.Remove(component))
             {
                 if (component is IDisposable disposable) disposable.Dispose();
-                _ComponentCountByType[type] -= 1;
+                _ComponentCounts[type] -= 1;
             }
         }
 
@@ -125,9 +128,9 @@ namespace Automata.Engine.Entities
             if (instance is null) throw new TypeLoadException($"Failed to initialize {nameof(Component)} of type '{type.FullName}'.");
             else if (!entity.TryFind(type, out _)) entity.Add(instance);
 
-            if (!_ComponentCountByType.ContainsKey(type)) _ComponentCountByType.Add(type, 0);
+            if (!_ComponentCounts.ContainsKey(type)) _ComponentCounts.Add(type, 0);
 
-            _ComponentCountByType[type] += 1;
+            _ComponentCounts[type] += 1;
         }
 
         #endregion
@@ -248,9 +251,9 @@ namespace Automata.Engine.Entities
         }
 
         public int GetComponentCount<TComponent>() where TComponent : Component =>
-            _ComponentCountByType.TryGetValue(typeof(TComponent), out int count) ? count : 0;
+            _ComponentCounts.TryGetValue(typeof(TComponent), out int count) ? count : 0;
 
-        public int GetComponentCount(Type type) => _ComponentCountByType.TryGetValue(type, out int count) ? count : 0;
+        public int GetComponentCount(Type type) => _ComponentCounts.TryGetValue(type, out int count) ? count : 0;
 
         #endregion
     }
