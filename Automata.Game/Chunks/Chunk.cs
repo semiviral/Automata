@@ -13,9 +13,8 @@ namespace Automata.Game.Chunks
         public bool InsertionSafeState => State is GenerationState.Finished or GenerationState.AwaitingMesh;
         public Palette<Block>? Blocks { get; set; }
         public Chunk?[] Neighbors { get; } = new Chunk?[6];
+        public IEnumerable<Palette<Block>?> NeighborBlocks => Neighbors.Select(chunk => chunk?.Blocks);
         public ConcurrentChannel<ChunkModification> Modifications { get; } = new ConcurrentChannel<ChunkModification>(true, false);
-
-        public IEnumerable<Palette<Block>?> NeighborBlocks() => Neighbors.Select(chunk => chunk?.Blocks);
 
         public bool IsStateLockstep(bool exact)
         {

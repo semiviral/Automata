@@ -34,20 +34,6 @@ namespace Automata.Game.Chunks
 
         public bool TryAdd(EntityManager entityManager, Vector3i origin, [NotNullWhen(true)] out IEntity? chunk)
         {
-            static IEntity ComposeChunkImpl(Vector3i origin)
-            {
-                IEntity chunk = new Entity();
-                chunk.AddComponent<Chunk>();
-                chunk.AddComponent(_ChunkOcclusionBounds);
-
-                chunk.AddComponent(new Translation
-                {
-                    Value = origin
-                });
-
-                return chunk;
-            }
-
             if (_Chunks.ContainsKey(origin))
             {
                 chunk = null;
@@ -55,16 +41,23 @@ namespace Automata.Game.Chunks
             }
             else
             {
-                chunk = ComposeChunkImpl(origin);
+                chunk = new Entity
+                {
+                    new Chunk(),
+                    _ChunkOcclusionBounds,
+                    new Translation
+                    {
+                        Value = origin
+                    }
+                };
+
                 entityManager.RegisterEntity(chunk);
                 _Chunks.Add(origin, chunk);
 
                 // update adjacent chunk meshes
                 foreach (IEntity? entity in GetOriginNeighbors(origin).Where(entity => entity is not null))
-                {
-                    Chunk neighborChunk = entity!.GetComponent<Chunk>();
-                    neighborChunk.State = (GenerationState)Math.Min((int)neighborChunk.State, (int)GenerationState.AwaitingMesh);
-                }
+                    if (entity!.TryFind(out Chunk? neighborChunk))
+                        neighborChunk.State = (GenerationState)Math.Min((int)neighborChunk.State, (int)GenerationState.AwaitingMesh);
 
                 return true;
             }
@@ -89,7 +82,7 @@ namespace Automata.Game.Chunks
         {
             Vector3i origin = Vector3i.RoundBy(global, GenerationConstants.CHUNK_SIZE);
 
-            if (_Chunks.TryGetValue(origin, out IEntity? entity) && entity.TryGetComponent(out Chunk? chunk))
+            if (_Chunks.TryGetValue(origin, out IEntity? entity) && entity.TryFind(out Chunk? chunk))
                 await chunk.Modifications.AddAsync(new ChunkModification
                 {
                     Local = Vector3i.Abs(global - origin),
@@ -104,7 +97,7 @@ namespace Automata.Game.Chunks
                 Vector3i modificationGlobal = global + local;
                 Vector3i modificationOrigin = Vector3i.RoundBy(modificationGlobal, GenerationConstants.CHUNK_SIZE);
 
-                if (_Chunks.TryGetValue(modificationOrigin, out IEntity? entity) && entity.TryGetComponent(out Chunk? chunk))
+                if (_Chunks.TryGetValue(modificationOrigin, out IEntity? entity) && entity.TryFind(out Chunk? chunk))
                     await chunk.Modifications.AddAsync(new ChunkModification
                     {
                         Local = Vector3i.Abs(modificationGlobal - modificationOrigin),
@@ -119,7 +112,7 @@ namespace Automata.Game.Chunks
         public bool IsStateLockstep(GenerationState state, bool exact)
         {
             foreach (IEntity entity in Chunks)
-                if (entity.TryGetComponent(out Chunk? chunk)
+                if (entity.TryFind(out Chunk? chunk)
                     && ((exact && (chunk.State != state)) || (!exact && (chunk.State < state))))
                     return false;
 
@@ -129,16 +122,16 @@ namespace Automata.Game.Chunks
         public void RecalculateAllChunkNeighbors()
         {
             foreach ((Vector3i origin, IEntity entity) in _Chunks)
-            {
-                Chunk chunk = entity.GetComponent<Chunk>();
-                int normalIndex = 0;
-
-                foreach (IEntity? neighbor in GetOriginNeighbors(origin))
+                if (entity.TryFind(out Chunk? chunk))
                 {
-                    chunk.Neighbors[normalIndex] = neighbor?.GetComponent<Chunk>();
-                    normalIndex += 1;
+                    int normalIndex = 0;
+
+                    foreach (IEntity? neighbor in GetOriginNeighbors(origin))
+                    {
+                        if (neighbor is not null) chunk.Neighbors[normalIndex] = neighbor.Find<Chunk>();
+                        normalIndex += 1;
+                    }
                 }
-            }
         }
 
         private IEnumerable<IEntity?> GetOriginNeighbors(Vector3i origin)

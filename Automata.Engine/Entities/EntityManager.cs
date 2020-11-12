@@ -32,7 +32,7 @@ namespace Automata.Engine.Entities
 
                 if (component is null) throw new InvalidOperationException("Types used for composition must implement a parameterless constructor.");
 
-                entity.AddComponent(component);
+                entity.Add(component);
             }
 
             if (autoRegister) RegisterEntity(entity);
@@ -44,7 +44,7 @@ namespace Automata.Engine.Entities
         {
             _Entities.Add(entity);
 
-            foreach (Component component in entity.Components)
+            foreach (Component component in entity)
             {
                 Type type = component.GetType();
 
@@ -57,7 +57,7 @@ namespace Automata.Engine.Entities
         {
             _Entities.Remove(entity);
 
-            foreach (Component component in entity.Components)
+            foreach (Component component in entity)
             {
                 if (component is IDisposable disposable) disposable.Dispose();
 
@@ -88,10 +88,11 @@ namespace Automata.Engine.Entities
         {
             if (!typeof(Component).IsAssignableFrom(type)) throw new TypeLoadException($"Component types must be assignable from {nameof(Component)}.");
 
-            Component component = entity.RemoveComponent(type);
-            _ComponentCountByType[type] -= 1;
-
-            if (component is IDisposable disposable) disposable.Dispose();
+            if (entity.TryFind(type, out Component? component) && entity.Remove(component))
+            {
+                if (component is IDisposable disposable) disposable.Dispose();
+                _ComponentCountByType[type] -= 1;
+            }
         }
 
         #endregion
@@ -140,7 +141,7 @@ namespace Automata.Engine.Entities
             Component? instance = component ?? (Component?)Activator.CreateInstance(type);
 
             if (instance is null) throw new TypeLoadException($"Failed to initialize {nameof(Component)} of type '{type.FullName}'.");
-            else if (!entity.TryGetComponent(type, out _)) entity.AddComponent(instance);
+            else if (!entity.TryFind(type, out _)) entity.Add(instance);
 
             if (!_ComponentCountByType.ContainsKey(type)) _ComponentCountByType.Add(type, 0);
 
@@ -155,7 +156,7 @@ namespace Automata.Engine.Entities
         public IEnumerable<TComponent> GetComponentsExplicit<TComponent>() where TComponent : Component
         {
             foreach (IEntity entity in _Entities)
-            foreach (Component component in entity.Components)
+            foreach (Component component in entity)
                 if (component is TComponent tComponent)
                     yield return tComponent;
         }
@@ -171,7 +172,7 @@ namespace Automata.Engine.Entities
         /// </remarks>
         public IEnumerable<IEntity> GetEntitiesWithComponents<T1>()
             where T1 : Component =>
-            _Entities.Where(entity => entity.HasComponent<T1>());
+            _Entities.Where(entity => entity.Contains<T1>());
 
         public IEnumerable<IEntity> GetEntitiesWithComponents<T1, T2>()
             where T1 : Component
@@ -201,7 +202,7 @@ namespace Automata.Engine.Entities
             where T1 : Component
         {
             foreach (IEntity entity in _Entities)
-                if (entity.TryGetComponent(out T1? component1))
+                if (entity.TryFind(out T1? component1))
                     yield return (entity, component1);
         }
 
@@ -210,8 +211,8 @@ namespace Automata.Engine.Entities
             where T2 : Component
         {
             foreach (IEntity entity in _Entities)
-                if (entity.TryGetComponent(out T1? component1)
-                    && entity.TryGetComponent(out T2? component2))
+                if (entity.TryFind(out T1? component1)
+                    && entity.TryFind(out T2? component2))
                     yield return (entity, component1, component2);
         }
 
@@ -224,7 +225,7 @@ namespace Automata.Engine.Entities
             where T1 : Component
         {
             foreach (IEntity entity in _Entities)
-                if (entity.TryGetComponent(out T1? component))
+                if (entity.TryFind(out T1? component))
                     yield return component;
         }
 
@@ -233,8 +234,8 @@ namespace Automata.Engine.Entities
             where T2 : Component
         {
             foreach (IEntity entity in _Entities)
-                if (entity.TryGetComponent(out T1? component)
-                    && entity.TryGetComponent(out T2? component2))
+                if (entity.TryFind(out T1? component)
+                    && entity.TryFind(out T2? component2))
                     yield return (component, component2);
         }
 
@@ -244,9 +245,9 @@ namespace Automata.Engine.Entities
             where T3 : Component
         {
             foreach (IEntity entity in _Entities)
-                if (entity.TryGetComponent(out T1? component)
-                    && entity.TryGetComponent(out T2? component2)
-                    && entity.TryGetComponent(out T3? component3))
+                if (entity.TryFind(out T1? component)
+                    && entity.TryFind(out T2? component2)
+                    && entity.TryFind(out T3? component3))
                     yield return (component, component2, component3);
         }
 
@@ -257,10 +258,10 @@ namespace Automata.Engine.Entities
             where T4 : Component
         {
             foreach (IEntity entity in _Entities)
-                if (entity.TryGetComponent(out T1? component)
-                    && entity.TryGetComponent(out T2? component2)
-                    && entity.TryGetComponent(out T3? component3)
-                    && entity.TryGetComponent(out T4? component4))
+                if (entity.TryFind(out T1? component)
+                    && entity.TryFind(out T2? component2)
+                    && entity.TryFind(out T3? component3)
+                    && entity.TryFind(out T4? component4))
                     yield return (component, component2, component3, component4);
         }
 

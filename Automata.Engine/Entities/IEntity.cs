@@ -10,25 +10,20 @@ using Automata.Engine.Components;
 
 namespace Automata.Engine.Entities
 {
-    public interface IEntity : IEquatable<IEntity>
+    public interface IEntity : IEquatable<IEntity>, ICollection<Component>
     {
         Guid ID { get; }
-        public bool Destroyed { get; }
-        IEnumerable<Component> Components { get; }
+        bool Destroyed { get; }
 
-        void AddComponent(Component component);
-        void AddComponent<TComponent>() where TComponent : Component, new();
+        Component this[Type type] { get; init; }
 
-        TComponent RemoveComponent<TComponent>() where TComponent : Component;
-        Component RemoveComponent(Type type);
+        void Add<TComponent>() where TComponent : Component, new();
+        TComponent Remove<TComponent>() where TComponent : Component;
+        TComponent? Find<TComponent>() where TComponent : Component;
+        bool Contains<TComponent>() where TComponent : Component;
 
-        TComponent GetComponent<TComponent>() where TComponent : Component;
-        Component GetComponent(Type type);
-        bool TryGetComponent<TComponent>([NotNullWhen(true)] out TComponent? component) where TComponent : Component;
-        bool TryGetComponent(Type type, [NotNullWhen(true)] out Component? component);
-
-        public bool HasComponent<TComponent>() where TComponent : Component;
-        public bool HasComponent(Type type);
+        bool TryFind<TComponent>([NotNullWhen(true)] out TComponent? component) where TComponent : Component;
+        bool TryFind(Type type, [NotNullWhen(true)] out Component? component);
 
         internal void Destroy();
 

@@ -1,5 +1,3 @@
-#region
-
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -23,8 +21,6 @@ using Automata.Game.Chunks.Generation.Structures;
 using DiagnosticsProviderNS;
 using Serilog;
 using Silk.NET.Input.Common;
-
-#endregion
 
 
 namespace Automata.Game.Chunks.Generation
@@ -66,22 +62,25 @@ namespace Automata.Game.Chunks.Generation
         [HandledComponents(DistinctionStrategy.All, typeof(Translation), typeof(Chunk))]
         public override ValueTask Update(EntityManager entityManager, TimeSpan delta)
         {
+            // empty channel of any pending blocks
             while (_PendingBlocks.TryTake(out (IEntity Entity, Palette<Block> Blocks) pendingBlocks)
                    && !pendingBlocks.Entity.Destroyed
-                   && pendingBlocks.Entity.TryGetComponent(out Chunk? chunk))
+                   && pendingBlocks.Entity.TryFind(out Chunk? chunk))
             {
                 chunk.Blocks = pendingBlocks.Blocks;
                 chunk.State += 1;
             }
 
+            // empty channel of any pending meshes, apply the meshes, and update the material
             while (_PendingMeshes.TryTake(out (IEntity Entity, PendingMesh<PackedVertex> Mesh) pendingMesh)
                    && !pendingMesh.Entity.Destroyed
-                   && pendingMesh.Entity.TryGetComponent(out Chunk? chunk))
+                   && pendingMesh.Entity.TryFind(out Chunk? chunk))
             {
                 PrepareChunkForRendering(entityManager, pendingMesh.Entity, pendingMesh.Mesh);
                 chunk.State += 1;
             }
 
+            // iterate over each valid chunk and process the generateable states
             foreach ((IEntity entity, Chunk chunk, Translation translation) in entityManager.GetEntities<Chunk, Translation>())
                 switch (chunk.State)
                 {
@@ -196,7 +195,7 @@ namespace Automata.Game.Chunks.Generation
             Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
             stopwatch.Restart();
 
-            PendingMesh<PackedVertex> pendingMesh = ChunkMesher.GeneratePackedMesh(chunk.Blocks, chunk.NeighborBlocks().ToArray());
+            PendingMesh<PackedVertex> pendingMesh = ChunkMesher.GeneratePackedMesh(chunk.Blocks, chunk.NeighborBlocks.ToArray());
             await _PendingMeshes.AddAsync((entity, pendingMesh)).ConfigureAwait(false);
 
             DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new MeshingTime(stopwatch.Elapsed));
@@ -223,7 +222,7 @@ namespace Automata.Game.Chunks.Generation
 
         private static bool ApplyMesh(EntityManager entityManager, IEntity entity, PendingMesh<PackedVertex> pendingMesh)
         {
-            bool hasRenderMesh = entity.TryGetComponent(out RenderMesh? renderMesh);
+            bool hasRenderMesh = entity.TryFind(out RenderMesh? renderMesh);
 
             if (pendingMesh.IsEmpty)
             {
@@ -251,7 +250,7 @@ namespace Automata.Game.Chunks.Generation
         {
             ProgramPipeline programPipeline = ProgramRegistry.Instance.Load("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl");
 
-            if (entity.TryGetComponent(out Material? material))
+            if (entity.TryFind(out Material? material))
             {
                 if (material.Pipeline.Handle != programPipeline.Handle) material.Pipeline = programPipeline;
             }

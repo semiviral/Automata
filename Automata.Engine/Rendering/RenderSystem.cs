@@ -77,9 +77,9 @@ namespace Automata.Engine.Rendering
                 };
 
                 // check for changes and update current camera's view matrix & UBO data
-                if ((cameraEntity.TryGetComponent(out Scale? cameraScale) && cameraScale.Changed)
-                    | (cameraEntity.TryGetComponent(out Translation? cameraTranslation) && cameraTranslation.Changed)
-                    | (cameraEntity.TryGetComponent(out Rotation? cameraRotation) && cameraRotation.Changed))
+                if ((cameraEntity.TryFind(out Scale? cameraScale) && cameraScale.Changed)
+                    | (cameraEntity.TryFind(out Translation? cameraTranslation) && cameraTranslation.Changed)
+                    | (cameraEntity.TryFind(out Rotation? cameraRotation) && cameraRotation.Changed))
                 {
                     camera.View = Matrix4x4.Identity;
 
@@ -115,9 +115,9 @@ namespace Automata.Engine.Rendering
 
                 // iterate each RenderMesh and check if the model matrix needs to be recalculated
                 foreach ((IEntity objectEntity, RenderMesh renderMesh) in entityManager.GetEntities<RenderMesh>())
-                    if (((objectEntity.TryGetComponent(out Scale? modelScale) && modelScale.Changed)
-                         | (objectEntity.TryGetComponent(out Rotation? modelRotation) && modelRotation.Changed)
-                         | (objectEntity.TryGetComponent(out Translation? modelTranslation) && modelTranslation.Changed))
+                    if (((objectEntity.TryFind(out Scale? modelScale) && modelScale.Changed)
+                         | (objectEntity.TryFind(out Rotation? modelRotation) && modelRotation.Changed)
+                         | (objectEntity.TryFind(out Translation? modelTranslation) && modelTranslation.Changed))
                         || renderMesh.Changed)
                     {
                         renderMesh.Model = Matrix4x4.Identity;
@@ -135,7 +135,7 @@ namespace Automata.Engine.Rendering
                 {
                     Matrix4x4 modelViewProjection = renderMesh.Model * viewProjection;
 
-                    if (objectEntity.TryGetComponent(out OcclusionBounds? bounds) && CheckClipFrustumOcclude(bounds, planes, modelViewProjection)) continue;
+                    if (objectEntity.TryFind(out OcclusionBounds? bounds) && CheckClipFrustumOcclude(bounds, planes, modelViewProjection)) continue;
 
                     // conditionally update the currentMaterial if it doesn't match this entity's
                     if (cachedMaterial is null || !material.Equals(cachedMaterial)) ApplyMaterial(material, ref cachedMaterial);

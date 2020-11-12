@@ -1,9 +1,9 @@
 #region
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using Automata.Engine.Components;
 
 #endregion
@@ -17,7 +17,22 @@ namespace Automata.Engine.Entities
 
         public Guid ID { get; }
         public bool Destroyed { get; private set; }
-        public IEnumerable<Component> Components => _Components;
+
+        public Component? this[Type type]
+        {
+            get => _Components.Find(type.IsInstanceOfType);
+            init
+            {
+                if (value is null) throw new NullReferenceException("Value cannot be null.");
+
+                int index = _Components.FindIndex(type.IsInstanceOfType);
+
+                if (index > -1) _Components[index] = value;
+                else _Components.Add(value);
+            }
+        }
+
+        public int Count => _Components.Count;
 
         public Entity()
         {
@@ -27,78 +42,62 @@ namespace Automata.Engine.Entities
             Destroyed = false;
         }
 
-        public void AddComponent(Component component)
+        public void Add<TComponent>() where TComponent : Component, new()
         {
-            if (HasComponent(component.GetType())) throw new ArgumentException("Already contains component of given type.");
-            else _Components.Add(component);
-        }
-
-        public void AddComponent<TComponent>() where TComponent : Component, new()
-        {
-            if (HasComponent<TComponent>()) throw new ArgumentException("Already contains component of given type.");
+            if (Contains<TComponent>()) throw new ArgumentException("Already contains component of given type.");
             else _Components.Add(new TComponent());
         }
 
-        public TComponent RemoveComponent<TComponent>() where TComponent : Component
+        public TComponent Remove<TComponent>() where TComponent : Component
         {
-            TComponent component = GetComponent<TComponent>();
+            TComponent component = this[typeof(TComponent)] as TComponent ?? throw new ArgumentException("Entity does not have component of type.");
             _Components.Remove(component);
             return component;
         }
 
-        public Component RemoveComponent(Type type)
+        public TComponent? Find<TComponent>() where TComponent : Component => _Components.Find(typeof(TComponent).IsInstanceOfType) as TComponent;
+
+        public bool TryFind<TComponent>([NotNullWhen(true)] out TComponent? component) where TComponent : Component
         {
-            Component component = GetComponent(type);
-            _Components.Remove(component);
-            return component;
+            component = this[typeof(TComponent)] as TComponent;
+            return component is not null;
         }
 
-        public TComponent GetComponent<TComponent>() where TComponent : Component
+        public bool TryFind(Type type, [NotNullWhen(true)] out Component? component)
         {
-            foreach (Component component in _Components)
-                if (component is TComponent tComponent)
-                    return tComponent;
-
-            throw new ArgumentException("Entity does not have a component of given type.");
+            component = this[type];
+            return component is not null;
         }
 
-        public Component GetComponent(Type type)
-        {
-            foreach (Component component in _Components.Where(type.IsInstanceOfType)) return component;
-
-            throw new ArgumentException("Entity does not have a component of given type.");
-        }
-
-        public bool TryGetComponent<TComponent>([NotNullWhen(true)] out TComponent? component) where TComponent : Component
-        {
-            foreach (Component component1 in _Components)
-            {
-                if (component1 is not TComponent tComponent) continue;
-
-                component = tComponent;
-                return true;
-            }
-
-            component = null;
-            return false;
-        }
-
-        public bool TryGetComponent(Type type, [NotNullWhen(true)] out Component? component)
-        {
-            foreach (Component component1 in _Components.Where(type.IsInstanceOfType))
-            {
-                component = component1;
-                return true;
-            }
-
-            component = null;
-            return false;
-        }
-
-        public bool HasComponent<TComponent>() where TComponent : Component => _Components.Any(component => component is TComponent);
-        public bool HasComponent(Type type) => _Components.Any(type.IsInstanceOfType);
+        public bool Contains<TComponent>() where TComponent : Component => this[typeof(TComponent)] is not null;
+        public bool Contains(Type type) => this[type] is not null;
 
         void IEntity.Destroy() => Destroyed = true;
+
+        public bool Contains(Component item) => _Components.IndexOf(item) > 0;
+        public void CopyTo(Component[] array, int arrayIndex) => _Components.CopyTo(array, arrayIndex);
+
+
+        #region ICollection
+
+        bool ICollection<Component>.IsReadOnly => (_Components as ICollection<Component>).IsReadOnly;
+
+        public void Add(Component component)
+        {
+            if (Contains(component.GetType())) throw new ArgumentException("Already contains component of given type.");
+            else _Components.Add(component);
+        }
+
+        public bool Remove(Component item) => _Components.Remove(item);
+
+        void ICollection<Component>.Clear() => _Components.Clear();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        public IEnumerator<Component> GetEnumerator() => _Components.GetEnumerator();
+
+        #endregion
+
+
+        #region IEquatable
 
         public override bool Equals(object? obj) => obj is IEntity entity && Equals(entity);
         public bool Equals(IEntity? other) => other is not null && ID.Equals(other.ID);
@@ -107,5 +106,7 @@ namespace Automata.Engine.Entities
 
         public static bool operator ==(Entity? left, Entity? right) => Equals(left, right);
         public static bool operator !=(Entity? left, Entity? right) => !Equals(left, right);
+
+        #endregion
     }
 }

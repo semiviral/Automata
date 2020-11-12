@@ -64,7 +64,7 @@ namespace Automata.Engine.Input
 
             foreach ((IEntity entity, Translation translation, KeyboardListener listener) in entityManager.GetEntities<Translation, KeyboardListener>())
                 translation.Value += listener.Sensitivity
-                                     * (entity.TryGetComponent(out Rotation? rotation)
+                                     * (entity.TryFind(out Rotation? rotation)
                                          ? Vector3.Transform(movementVector, rotation.Value)
                                          : movementVector);
         }
