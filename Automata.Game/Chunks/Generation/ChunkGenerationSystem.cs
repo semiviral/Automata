@@ -180,6 +180,7 @@ namespace Automata.Game.Chunks.Generation
                     }
                 }
 
+            DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new MeshingTime(stopwatch.Elapsed));
             DiagnosticsSystem.Stopwatches.Return(stopwatch);
             chunk.State += 1;
         }
@@ -198,13 +199,7 @@ namespace Automata.Game.Chunks.Generation
             PendingMesh<PackedVertex> pendingMesh = ChunkMesher.GeneratePackedMesh(chunk.Blocks, chunk.NeighborBlocks().ToArray());
             await _PendingMeshes.AddAsync((entity, pendingMesh)).ConfigureAwait(false);
 
-            stopwatch.Stop();
-
             DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new MeshingTime(stopwatch.Elapsed));
-
-            Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem),
-                $"Meshed: '{chunk.ID}' ({stopwatch.Elapsed.TotalMilliseconds:0.00}ms, vertexes {pendingMesh.Vertexes.Length}, indexes {pendingMesh.Indexes.Length})"));
-
             DiagnosticsSystem.Stopwatches.Return(stopwatch);
         }
 

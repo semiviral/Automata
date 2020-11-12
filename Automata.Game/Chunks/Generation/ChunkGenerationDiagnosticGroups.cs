@@ -21,6 +21,11 @@ namespace Automata.Game.Chunks.Generation
         public InsertionTime(TimeSpan data) : base(data) { }
     }
 
+    public class StructuresTime : TimeSpanDiagnosticData
+    {
+        public StructuresTime(TimeSpan data) : base(data) { }
+    }
+
     public class MeshingTime : TimeSpanDiagnosticData
     {
         public MeshingTime(TimeSpan data) : base(data) { }
@@ -35,31 +40,39 @@ namespace Automata.Game.Chunks.Generation
     {
         private readonly BoundedConcurrentQueue<ApplyMeshTime> _ApplyMeshTimes;
         private readonly BoundedConcurrentQueue<BuildingTime> _BuildingTimes;
+        private readonly BoundedConcurrentQueue<StructuresTime> _StructuresTimes;
         private readonly BoundedConcurrentQueue<InsertionTime> _InsertionTimes;
         private readonly BoundedConcurrentQueue<MeshingTime> _MeshingTimes;
 
         public IEnumerable<BuildingTime> BuildingTimes => _BuildingTimes;
         public IEnumerable<InsertionTime> InsertionTimes => _InsertionTimes;
+        public IEnumerable<StructuresTime> StructuresTimes => _StructuresTimes;
         public IEnumerable<MeshingTime> MeshingTimes => _MeshingTimes;
         public IEnumerable<ApplyMeshTime> ApplyMeshTimes => _ApplyMeshTimes;
 
         public ChunkGenerationDiagnosticGroup()
         {
-            _BuildingTimes = new BoundedConcurrentQueue<BuildingTime>(300);
-            _InsertionTimes = new BoundedConcurrentQueue<InsertionTime>(300);
-            _MeshingTimes = new BoundedConcurrentQueue<MeshingTime>(300);
-            _ApplyMeshTimes = new BoundedConcurrentQueue<ApplyMeshTime>(300);
+            const int resolution = 300;
+            _BuildingTimes = new BoundedConcurrentQueue<BuildingTime>(resolution);
+            _InsertionTimes = new BoundedConcurrentQueue<InsertionTime>(resolution);
+            _StructuresTimes = new BoundedConcurrentQueue<StructuresTime>(resolution);
+            _MeshingTimes = new BoundedConcurrentQueue<MeshingTime>(resolution);
+            _ApplyMeshTimes = new BoundedConcurrentQueue<ApplyMeshTime>(resolution);
         }
 
         public override string ToString()
         {
             double buildingTime = BuildingTimes.DefaultIfEmpty().Average(time => ((TimeSpan)time).TotalMilliseconds);
             double insertionTimes = InsertionTimes.DefaultIfEmpty().Average(time => ((TimeSpan)time).TotalMilliseconds);
+            double structuresTimes = StructuresTimes.DefaultIfEmpty().Average(time => ((TimeSpan)time).TotalMilliseconds);
             double meshingTime = MeshingTimes.DefaultIfEmpty().Average(time => ((TimeSpan)time).TotalMilliseconds);
             double applyMeshTime = ApplyMeshTimes.DefaultIfEmpty().Average(time => ((TimeSpan)time).TotalMilliseconds);
 
-            return
-                $"({nameof(BuildingTime)} {buildingTime:0.00}ms, {nameof(InsertionTime)} {insertionTimes:0.00}ms, {nameof(MeshingTime)} {meshingTime:0.00}ms, {nameof(ApplyMeshTime)} {applyMeshTime:0.00}ms)";
+            return $"{nameof(BuildingTime)} {buildingTime:0.00}ms, "
+                   + $"{nameof(InsertionTime)} {insertionTimes:0.00}ms, "
+                   + $"{nameof(StructuresTime)} {structuresTimes:0.00}ms, "
+                   + $"{nameof(MeshingTime)} {meshingTime:0.00}ms, "
+                   + $"{nameof(ApplyMeshTime)} {applyMeshTime:0.00}ms";
         }
 
         public void CommitData<TDataType>(IDiagnosticData<TDataType> data)
@@ -71,6 +84,9 @@ namespace Automata.Game.Chunks.Generation
                     break;
                 case InsertionTime insertionTime:
                     _InsertionTimes.Enqueue(insertionTime);
+                    break;
+                case StructuresTime structuresTime:
+                    _StructuresTimes.Enqueue(structuresTime);
                     break;
                 case MeshingTime meshingTime:
                     _MeshingTimes.Enqueue(meshingTime);
