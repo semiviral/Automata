@@ -58,6 +58,7 @@ namespace Automata.Game
             world.SystemManager.RegisterSystem<RenderSystem, LastOrderSystem>(SystemRegistrationOrder.Before);
             world.SystemManager.RegisterSystem<ChunkRegionLoaderSystem, DefaultOrderSystem>(SystemRegistrationOrder.After);
             world.SystemManager.RegisterSystem<ChunkGenerationSystem, ChunkRegionLoaderSystem>(SystemRegistrationOrder.After);
+            world.SystemManager.RegisterSystem<ChunkModificationsSystem, ChunkGenerationSystem>(SystemRegistrationOrder.Before);
             World.RegisterWorld("Overworld", world);
 
             InitializePlayerEntity(world);

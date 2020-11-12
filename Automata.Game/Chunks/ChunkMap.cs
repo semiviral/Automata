@@ -63,7 +63,7 @@ namespace Automata.Game.Chunks
                 foreach (IEntity? entity in GetOriginNeighbors(origin).Where(entity => entity is not null))
                 {
                     Chunk neighborChunk = entity!.GetComponent<Chunk>();
-                    neighborChunk.State = (GenerationState)Math.Min((int)neighborChunk.State, (int)GenerationState.GenerateMesh);
+                    neighborChunk.State = (GenerationState)Math.Min((int)neighborChunk.State, (int)GenerationState.AwaitingMesh);
                 }
 
                 return true;
@@ -92,7 +92,7 @@ namespace Automata.Game.Chunks
             if (_Chunks.TryGetValue(origin, out IEntity? entity) && entity.TryGetComponent(out Chunk? chunk))
                 await chunk.Modifications.AddAsync(new ChunkModification
                 {
-                    Local = global - origin,
+                    Local = Vector3i.Abs(global - origin),
                     BlockID = blockID
                 });
         }
@@ -115,6 +115,16 @@ namespace Automata.Game.Chunks
 
         #endregion
 
+
+        public bool IsStateLockstep(GenerationState state, bool exact)
+        {
+            foreach (IEntity entity in Chunks)
+                if (entity.TryGetComponent(out Chunk? chunk)
+                    && ((exact && (chunk.State != state)) || (!exact && (chunk.State < state))))
+                    return false;
+
+            return true;
+        }
 
         public void RecalculateAllChunkNeighbors()
         {

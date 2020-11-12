@@ -3,4 +3,4 @@ VSync=true
 
 [WorldGeneration]
 SingleThreadedGeneration=false
-GenerationRadius=3
+GenerationRadius=6

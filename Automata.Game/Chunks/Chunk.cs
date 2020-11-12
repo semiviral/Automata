@@ -8,7 +8,7 @@ namespace Automata.Game.Chunks
 {
     public class Chunk : Component
     {
-        public GenerationState State { get; set; } = GenerationState.GenerateTerrain;
+        public GenerationState State { get; set; } = GenerationState.AwaitingTerrain;
         public Palette<Block>? Blocks { get; set; }
         public Chunk?[] Neighbors { get; } = new Chunk?[6];
         public ConcurrentChannel<ChunkModification> Modifications { get; } = new ConcurrentChannel<ChunkModification>(true, false);
@@ -17,17 +17,24 @@ namespace Automata.Game.Chunks
 
         public bool IsStateLockstep(bool exact) => Neighbors.All(chunk => chunk is null || StateCompare(State, chunk.State, exact));
         private static bool StateCompare(GenerationState self, GenerationState other, bool exact) => (exact && (other == self)) || (!exact && (other >= self));
+
+        public void RemeshNeighbors()
+        {
+            foreach (Chunk? chunk in Neighbors.Where(chunk => chunk is not null))
+                if (chunk!.State >= State)
+                    chunk.State = GenerationState.AwaitingMesh;
+        }
     }
 
     public enum GenerationState
     {
         Deactivated,
-        GenerateTerrain,
         AwaitingTerrain,
-        GenerateStructures,
+        GeneratingTerrain,
         AwaitingStructures,
-        GenerateMesh,
+        GeneratingStructures,
         AwaitingMesh,
+        GeneratingMesh,
         Finished
     }
 }
