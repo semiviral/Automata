@@ -1,6 +1,7 @@
 #region
 
 using System;
+using System.Runtime.CompilerServices;
 using Automata.Engine.Collections;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Game.Blocks;
@@ -27,7 +28,8 @@ namespace Automata.Game.Chunks.Generation.Meshing
                 ["X"] = new XMeshingStrategy()
             };
 
-        public static PendingMesh<PackedVertex> GeneratePackedMesh(Palette<Block> blocksPalette, Palette<Block>?[] neighbors)
+        [SkipLocalsInit]
+        public static unsafe PendingMesh<PackedVertex> GeneratePackedMesh(Palette<Block> blocksPalette, Palette<Block>?[] neighbors)
         {
             if ((blocksPalette.ReadOnlyLookupTable.Count == 1) && (blocksPalette.ReadOnlyLookupTable[0].ID == BlockRegistry.AirID))
                 return PendingMesh<PackedVertex>.Empty;
@@ -47,7 +49,7 @@ namespace Automata.Game.Chunks.Generation.Meshing
             {
                 Block block = blocks[index];
 
-                if (block.ID == BlockRegistry.AirID) continue;
+                if (block.ID == BlockRegistry.AirID || block.ID == BlockRegistry.NullID) continue;
 
                 IMeshingStrategy meshingStrategy = MeshingStrategies[blockRegistry.GetBlockDefinition(block.ID).MeshingStrategyIndex];
                 int localPosition = x | (y << GenerationConstants.CHUNK_SIZE_SHIFT) | (z << (GenerationConstants.CHUNK_SIZE_SHIFT * 2));

@@ -1,6 +1,6 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -32,16 +32,12 @@ namespace Automata.Game.Chunks
 
         #region Chunk Addition / Removal
 
-        public bool TryAdd(EntityManager entityManager, Vector3i origin, [NotNullWhen(true)] out IEntity? chunk)
+        public bool Allocate(EntityManager entityManager, Vector3i origin)
         {
-            if (_Chunks.ContainsKey(origin))
-            {
-                chunk = null;
-                return false;
-            }
+            if (_Chunks.ContainsKey(origin)) return false;
             else
             {
-                chunk = new Entity
+                IEntity chunk = new Entity
                 {
                     new Chunk(),
                     _ChunkOcclusionBounds,
@@ -63,11 +59,11 @@ namespace Automata.Game.Chunks
             }
         }
 
-        public bool TryRemove(EntityManager entityManager, Vector3i origin, out IEntity? chunks)
+        public bool Deallocate(EntityManager entityManager, Vector3i origin)
         {
-            if (_Chunks.Remove(origin, out chunks))
+            if (_Chunks.Remove(origin, out IEntity? chunk))
             {
-                entityManager.RemoveEntity(chunks);
+                entityManager.RemoveEntity(chunk);
                 return true;
             }
             else return false;
@@ -128,7 +124,7 @@ namespace Automata.Game.Chunks
 
                     foreach (IEntity? neighbor in GetOriginNeighbors(origin))
                     {
-                        if (neighbor is not null) chunk.Neighbors[normalIndex] = neighbor.Find<Chunk>();
+                        chunk.Neighbors[normalIndex] = neighbor?.Find<Chunk>();
                         normalIndex += 1;
                     }
                 }

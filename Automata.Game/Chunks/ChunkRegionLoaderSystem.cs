@@ -4,14 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Automata.Engine;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
 using Automata.Engine.Extensions;
 using Automata.Engine.Numerics;
 using Automata.Engine.Systems;
 using Automata.Game.Chunks.Generation;
-using Serilog;
 
 #endregion
 
@@ -26,34 +24,35 @@ namespace Automata.Game.Chunks
         public override ValueTask Update(EntityManager entityManager, TimeSpan delta)
         {
             bool recalculateChunkRegions = false;
-            IEnumerable<(Translation Translation, ChunkLoader ChunkLoader)> components = entityManager.GetComponents<Translation, ChunkLoader>();
+            IEnumerable<(Translation Translation, ChunkLoader ChunkLoader)> enumerable = entityManager.GetComponents<Translation, ChunkLoader>();
 
-            foreach ((Translation translation, ChunkLoader chunkLoader) in components)
+            foreach ((Translation translation, ChunkLoader chunkLoader) in enumerable)
             {
+                // remove y-component of translation
                 Vector3i translationInt32 = Vector3i.FromVector3(translation.Value).SetComponent(1, 0);
                 Vector3i difference = Vector3i.Abs(translationInt32 - chunkLoader.Origin);
 
                 if (!chunkLoader.Changed && Vector3b.All(difference < GenerationConstants.CHUNK_SIZE)) continue;
 
-                chunkLoader.Origin = chunkLoader.Origin = Vector3i.RoundBy(translationInt32, GenerationConstants.CHUNK_SIZE);
+                chunkLoader.Origin = Vector3i.RoundBy(translationInt32, GenerationConstants.CHUNK_SIZE);
                 recalculateChunkRegions = true;
             }
 
             if (recalculateChunkRegions)
             {
-                HashSet<Vector3i> withinLoaderRange = new HashSet<Vector3i>(components.SelectMany(loader =>
-                    GetActiveChunkLoaderRegion(loader.ChunkLoader)));
+                static IEnumerable<Vector3i> GetOriginsWithinLoaderRanges(IEnumerable<(Translation, ChunkLoader)> enumerable)
+                {
+                    foreach ((_, ChunkLoader chunkLoader) in enumerable)
+                    foreach (Vector3i origin in GetActiveChunkLoaderRegion(chunkLoader))
+                        yield return origin;
+                }
 
-                IEnumerable<Vector3i> activations = withinLoaderRange.Except(VoxelWorld.Chunks.Origins);
-                IEnumerable<Vector3i> deactivations = VoxelWorld.Chunks.Origins.Except(withinLoaderRange);
+                HashSet<Vector3i> withinLoaderRange = new HashSet<Vector3i>(GetOriginsWithinLoaderRanges(enumerable));
 
-                int totalActivations = activations.Count(origin => VoxelWorld.Chunks.TryAdd(entityManager, origin, out IEntity? _));
-                int totalDeactivations = deactivations.Count(origin => VoxelWorld.Chunks.TryRemove(entityManager, origin, out IEntity? _));
+                foreach (Vector3i origin in withinLoaderRange.Except(VoxelWorld.Chunks.Origins)) VoxelWorld.Chunks.Allocate(entityManager, origin);
+                foreach (Vector3i origin in VoxelWorld.Chunks.Origins.Except(withinLoaderRange)) VoxelWorld.Chunks.Deallocate(entityManager, origin);
 
                 VoxelWorld.Chunks.RecalculateAllChunkNeighbors();
-
-                Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkRegionLoaderSystem),
-                    $"Region loading: {totalActivations} activations, {totalDeactivations} deactivations"));
             }
 
             return ValueTask.CompletedTask;

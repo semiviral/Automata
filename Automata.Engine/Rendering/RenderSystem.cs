@@ -25,7 +25,7 @@ namespace Automata.Engine.Rendering
     public class RenderSystem : ComponentSystem
     {
         private const bool _ENABLE_BACK_FACE_CULLING = true;
-        private const bool _ENABLE_FRUSTUM_CULLING = true;
+        private const bool _ENABLE_FRUSTUM_CULLING = false;
 
         private readonly GL _GL;
         private readonly UniformBufferObject _Viewport;
@@ -59,7 +59,7 @@ namespace Automata.Engine.Rendering
             _Viewport.Bind();
         }
 
-        [HandledComponents(DistinctionStrategy.All, typeof(Camera), typeof(RenderMesh), typeof(Material))]
+        [HandledComponents(DistinctionStrategy.All, typeof(Camera))]
         public override unsafe ValueTask Update(EntityManager entityManager, TimeSpan delta)
         {
             _GL.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
@@ -69,6 +69,7 @@ namespace Automata.Engine.Rendering
 
             foreach ((IEntity cameraEntity, Camera camera) in entityManager.GetEntitiesWithComponents<Camera>())
             {
+                // allocate camera UBO if one doesn't exist
                 camera.Uniforms ??= new UniformBufferObject(_GL, 0, (uint)(sizeof(Matrix4x4) + sizeof(Matrix4x4) + sizeof(Vector4)))
                 {
                     ["view"] = 0,
@@ -81,12 +82,14 @@ namespace Automata.Engine.Rendering
                     | (cameraEntity.TryFind(out Translation? cameraTranslation) && cameraTranslation.Changed)
                     | (cameraEntity.TryFind(out Rotation? cameraRotation) && cameraRotation.Changed))
                 {
-                    camera.View = Matrix4x4.Identity;
+                    Matrix4x4 view = Matrix4x4.Identity;
 
-                    if (cameraScale is not null) camera.View *= Matrix4x4.CreateScale(cameraScale.Value);
-                    if (cameraRotation is not null) camera.View *= Matrix4x4.CreateFromQuaternion(cameraRotation.Value);
-                    if (cameraTranslation is not null) camera.View *= Matrix4x4.CreateTranslation(cameraTranslation.Value);
-                    if ((camera.View != Matrix4x4.Identity) && Matrix4x4.Invert(camera.View, out Matrix4x4 inverted)) camera.View = inverted;
+                    if (cameraScale is not null) view *= Matrix4x4.CreateScale(cameraScale.Value);
+                    if (cameraRotation is not null) view *= Matrix4x4.CreateFromQuaternion(cameraRotation.Value);
+                    if (cameraTranslation is not null) view *= Matrix4x4.CreateTranslation(cameraTranslation.Value);
+
+                    // if we've calculated a new matrix, invert it and apply to camera
+                    if ((view != Matrix4x4.Identity) && Matrix4x4.Invert(view, out Matrix4x4 inverted)) camera.View = inverted;
 
                     camera.Uniforms.Write(0, camera.View);
                 }
@@ -186,7 +189,7 @@ namespace Automata.Engine.Rendering
             {
                 material.Pipeline.Bind();
 
-                // set fragment shader so we can easily bind textures
+                // set fragment shader so we can bind textures quicker
                 newFragmentShader = material.Pipeline.Stage(ShaderType.FragmentShader);
 
                 // if old isn't null, bind the old textures to the new pipeline

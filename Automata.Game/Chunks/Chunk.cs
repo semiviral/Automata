@@ -1,6 +1,6 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Automata.Engine.Collections;
 using Automata.Engine.Components;
 using Automata.Game.Blocks;
@@ -16,13 +16,15 @@ namespace Automata.Game.Chunks
         public IEnumerable<Palette<Block>?> NeighborBlocks => Neighbors.Select(chunk => chunk?.Blocks);
         public ConcurrentChannel<ChunkModification> Modifications { get; } = new ConcurrentChannel<ChunkModification>(true, false);
 
-        public bool IsStateLockstep(bool exact)
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static bool StateCompare(GenerationState self, GenerationState other, bool exact) => (exact && (other == self)) || (!exact && (other >= self));
-
-            return Neighbors.All(chunk => chunk is null || StateCompare(State, chunk.State, exact));
-        }
+        public bool IsStateLockstep(ComparisonMode comparisonMode) => Neighbors.All(chunk => chunk is null
+                                                                                             || comparisonMode switch
+                                                                                             {
+                                                                                                 ComparisonMode.EqualOrGreaterThan => chunk.State >= State,
+                                                                                                 ComparisonMode.EqualOrLessThan => chunk.State <= State,
+                                                                                                 ComparisonMode.Equal => chunk.State == State,
+                                                                                                 _ => throw new ArgumentOutOfRangeException(
+                                                                                                     nameof(comparisonMode))
+                                                                                             });
 
         public void RemeshNeighbors()
         {

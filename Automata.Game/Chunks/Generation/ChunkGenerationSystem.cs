@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,7 +22,6 @@ using Automata.Game.Chunks.Generation.Structures;
 using DiagnosticsProviderNS;
 using Serilog;
 using Silk.NET.Input.Common;
-
 
 namespace Automata.Game.Chunks.Generation
 {
@@ -91,6 +91,8 @@ namespace Automata.Game.Chunks.Generation
                         {
                             Vector3i origin = Vector3i.FromVector3(translation.Value);
 
+                            Debug.Assert(Vector3b.All((origin % 32) == 0), "Origin should be a multiple of chunk size.");
+
                             IGenerationStep.Parameters parameters = new IGenerationStep.Parameters(origin.GetHashCode())
                             {
                                 Frequency = 0.008f
@@ -106,7 +108,8 @@ namespace Automata.Game.Chunks.Generation
                     //     BoundedInvocationPool.Instance.Enqueue(_ => GenerateStructures(chunk, Vector3i.FromVector3(translation.Value)));
                     //     chunk.State += 1;
                     //     break;
-                    case GenerationState.AwaitingMesh when chunk.IsStateLockstep(false):
+
+                    case GenerationState.AwaitingMesh when chunk.IsStateLockstep(ComparisonMode.EqualOrGreaterThan):
                         BoundedInvocationPool.Instance.Enqueue(_ => GenerateMesh(entity, chunk));
                         chunk.State += 1;
                         break;
