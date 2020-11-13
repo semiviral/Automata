@@ -51,7 +51,9 @@ namespace Automata.Game.Chunks
 
             State = GenerationState.AwaitingMesh;
 
-            foreach (Chunk? neighbor in Neighbors.Where(neighbor => neighbor is not null)) neighbor!.State = GenerationState.AwaitingMesh;
+            foreach (Chunk? neighbor in Neighbors)
+                if (neighbor is not null)
+                    neighbor.State = GenerationState.AwaitingMesh;
         }
 
         //public override string ToString() => $"chunk({State}, {InsertionSafeState}, {IsStateLockstep(ComparisonMode.Equal)}, {Neighbors.Count(neighbor => neighbor is null)}";

@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using Automata.Engine;
 using Automata.Engine.Components;
 using Automata.Engine.Concurrency;
@@ -23,6 +24,8 @@ InitializeWorld(out World world);
 InitializePlayer(out IEntity player);
 world.EntityManager.RegisterEntity(player);
 await AutomataWindow.Instance.Run();
+
+
 
 static void ApplicationCloseCallback(object sender)
 {
@@ -95,7 +98,11 @@ static void InitializePlayer(out IEntity player)
         },
         new ChunkLoader
         {
+#if DEBUG
+            Radius = 4
+#else
             Radius = Settings.Instance.GenerationRadius
+#endif
         }
     };
 }

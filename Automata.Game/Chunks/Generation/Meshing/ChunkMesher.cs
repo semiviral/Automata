@@ -35,8 +35,8 @@ namespace Automata.Game.Chunks.Generation.Meshing
                 return PendingMesh<PackedVertex>.Empty;
 
             BlockRegistry blockRegistry = BlockRegistry.Instance;
-            TransparentList<PackedVertex> vertexes = new TransparentList<PackedVertex>(_DEFAULT_VERTEXES_CAPACITY, true);
-            TransparentList<uint> indexes = new TransparentList<uint>(_DEFAULT_INDEXES_CAPACITY, true);
+            MemoryList<PackedVertex> vertexes = new MemoryList<PackedVertex>(_DEFAULT_VERTEXES_CAPACITY, false);
+            MemoryList<uint> indexes = new MemoryList<uint>(_DEFAULT_INDEXES_CAPACITY, false);
             Span<Block> blocks = stackalloc Block[GenerationConstants.CHUNK_SIZE_CUBED];
             Span<Direction> faces = stackalloc Direction[GenerationConstants.CHUNK_SIZE_CUBED];
             faces.Clear();

@@ -5,14 +5,24 @@ using System.Collections.Generic;
 
 namespace Automata.Engine.Collections
 {
-    public class TransparentList<T> : IList<T>
+    public class MemoryList<T> : IList<T>
     {
         private const int _DEFAULT_SIZE = 8;
 
         private readonly bool _Pooled;
 
-        private T[] _InternalArray;
-        private Memory<T> _InternalMemory;
+        private T[] _InternalArray = null!;
+        private Memory<T> _InternalMemory = null!;
+
+        private T[] InternalArray
+        {
+            get => _InternalArray;
+            set
+            {
+                _InternalArray = value;
+                _InternalMemory = _InternalArray;
+            }
+        }
 
         public int Count { get; private set; }
 
@@ -23,38 +33,39 @@ namespace Automata.Engine.Collections
         {
             get
             {
-                if (index >= _InternalArray.Length) throw new IndexOutOfRangeException("Index must be non-zero and less than the size of the collection.");
-                else return _InternalArray[index];
+                if (index >= InternalArray.Length) throw new IndexOutOfRangeException("Index must be non-zero and less than the size of the collection.");
+                else return InternalArray[index];
             }
             set
             {
-                if (index >= _InternalArray.Length) throw new IndexOutOfRangeException("Index must be non-zero and less than the size of the collection.");
-                else _InternalArray[index] = value;
+                if (index >= InternalArray.Length) throw new IndexOutOfRangeException("Index must be non-zero and less than the size of the collection.");
+                else InternalArray[index] = value;
             }
         }
 
-        public TransparentList(bool pooled = false) : this(_DEFAULT_SIZE, pooled) { }
+        public MemoryList(bool pooled = false) : this(_DEFAULT_SIZE, pooled) { }
 
-        public TransparentList(int capacity, bool pooled = false)
+        public MemoryList(int capacity, bool pooled = false)
         {
             _Pooled = pooled;
-            _InternalArray = pooled ? ArrayPool<T>.Shared.Rent(capacity) : new T[capacity];
-            _InternalMemory = _InternalArray;
+            InternalArray = RetrieveNewArray(capacity);
         }
+
+        private T[] RetrieveNewArray(int capacity) => _Pooled ? ArrayPool<T>.Shared.Rent(capacity) : new T[capacity];
 
         public bool Contains(T item) => (Count != 0) && (IndexOf(item) != -1);
 
         public void Add(T item)
         {
-            if (Count < _InternalArray.Length)
+            if (Count < InternalArray.Length)
             {
-                _InternalArray[Count] = item;
+                InternalArray[Count] = item;
                 Count += 1;
             }
             else
             {
                 EnsureCapacityOrResize(Count + 1);
-                _InternalArray[Count] = item;
+                InternalArray[Count] = item;
                 Count += 1;
             }
         }
@@ -63,21 +74,21 @@ namespace Automata.Engine.Collections
         {
             if (index > Count) throw new ArgumentOutOfRangeException(nameof(index), "Must be non-negative and less than the size of the collection.");
             else if (index == Count) EnsureCapacityOrResize(Count + 1);
-            else if (index < Count) Array.Copy(_InternalArray, index, _InternalArray, index + 1, Count - index);
+            else if (index < Count) Array.Copy(InternalArray, index, InternalArray, index + 1, Count - index);
 
-            _InternalArray[index] = item;
+            InternalArray[index] = item;
             Count += 1;
         }
 
         private void EnsureCapacityOrResize(int minimumCapacity)
         {
-            if (_InternalArray.Length >= minimumCapacity) return;
+            if (InternalArray.Length >= minimumCapacity) return;
 
-            int newCapacity = _InternalArray.Length == 0 ? _DEFAULT_SIZE : _InternalArray.Length * 2;
+            int newCapacity = _InternalArray.Length == 0 ? _DEFAULT_SIZE : InternalArray.Length * 2;
 
             if (newCapacity < minimumCapacity) newCapacity = minimumCapacity;
 
-            T[] newArray = new T[newCapacity];
+            T[] newArray = _Pooled ? ;
             Array.Copy(_InternalArray, newArray, _InternalArray.Length);
             _InternalArray = newArray;
             _InternalMemory = _InternalArray;
@@ -123,7 +134,7 @@ namespace Automata.Engine.Collections
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        ~TransparentList()
+        ~MemoryList()
         {
             if (_Pooled) ArrayPool<T>.Shared.Return(_InternalArray);
         }

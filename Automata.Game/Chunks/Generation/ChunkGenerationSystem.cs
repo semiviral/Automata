@@ -49,12 +49,14 @@ namespace Automata.Game.Chunks.Generation
 
         public override void Registered(EntityManager entityManager)
         {
+            // prints average chunk generation times
             InputManager.Instance.InputActions.Add(new InputAction(() =>
             {
                 Log.Information(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(DiagnosticsSystem),
                     $"Average generation times: {DiagnosticsProvider.GetGroup<ChunkGenerationDiagnosticGroup>()}"));
             }, Key.ShiftLeft, Key.B));
 
+            // prints all chunk states
             InputManager.Instance.InputActions.Add(new InputAction(() =>
             {
                 IEnumerable<GenerationState> states = entityManager.GetComponents<Chunk>().Select(chunk => chunk.State);
