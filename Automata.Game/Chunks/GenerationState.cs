@@ -2,7 +2,7 @@ namespace Automata.Game.Chunks
 {
     public enum GenerationState
     {
-        Deactivated,
+        Inactive,
         AwaitingTerrain,
         GeneratingTerrain,
         AwaitingStructures,

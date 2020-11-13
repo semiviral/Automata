@@ -34,9 +34,7 @@ namespace Automata.Game.Chunks
 
                 if (!modified) continue;
 
-                chunk.State = GenerationState.AwaitingMesh;
-
-                foreach (Chunk? neighbor in chunk.Neighbors.Where(neighbor => neighbor is not null)) neighbor!.State = GenerationState.AwaitingMesh;
+                chunk.RemeshNeighborhood(true);
 
                 Debug.Assert(chunk.Neighbors.All(neighbor => neighbor?.State is null or GenerationState.AwaitingMesh),
                     "Neighbors should all be awaiting remesh.");

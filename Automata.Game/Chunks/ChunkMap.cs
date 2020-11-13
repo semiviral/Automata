@@ -1,12 +1,10 @@
-using System;
-using System.Buffers;
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Threading.Tasks;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
-using Automata.Engine.Extensions;
 using Automata.Engine.Numerics;
 using Automata.Engine.Numerics.Shapes;
 using Automata.Engine.Rendering;
@@ -14,7 +12,7 @@ using Automata.Game.Chunks.Generation;
 
 namespace Automata.Game.Chunks
 {
-    public class ChunkMap
+    public class ChunkMap : IEnumerable<(Vector3i, IEntity)>
     {
         private static readonly OcclusionBounds _ChunkOcclusionBounds = new OcclusionBounds
         {
@@ -25,9 +23,11 @@ namespace Automata.Game.Chunks
         private readonly Dictionary<Vector3i, IEntity> _Chunks;
 
         public ICollection<Vector3i> Origins => _Chunks.Keys;
-        public ICollection<IEntity> Chunks => _Chunks.Values;
+        public ICollection<IEntity> Entities => _Chunks.Values;
 
         public ChunkMap() => _Chunks = new Dictionary<Vector3i, IEntity>();
+
+        public bool TryGetEntity(Vector3i origin, [NotNullWhen(true)] out IEntity? entity) => _Chunks.TryGetValue(origin, out entity);
 
 
         #region Chunk Addition / Removal
@@ -49,11 +49,6 @@ namespace Automata.Game.Chunks
 
                 entityManager.RegisterEntity(chunk);
                 _Chunks.Add(origin, chunk);
-
-                // update adjacent chunk meshes
-                foreach (IEntity? entity in GetOriginNeighbors(origin).Where(entity => entity is not null))
-                    if (entity!.TryFind(out Chunk? neighborChunk))
-                        neighborChunk.State = (GenerationState)Math.Min((int)neighborChunk.State, (int)GenerationState.AwaitingMesh);
 
                 return true;
             }
@@ -105,43 +100,15 @@ namespace Automata.Game.Chunks
         #endregion
 
 
-        public bool IsStateLockstep(GenerationState state, bool exact)
-        {
-            foreach (IEntity entity in Chunks)
-                if (entity.TryFind(out Chunk? chunk)
-                    && ((exact && (chunk.State != state)) || (!exact && (chunk.State < state))))
-                    return false;
+        #region IEnumerator
 
-            return true;
+        public IEnumerator<(Vector3i, IEntity)> GetEnumerator()
+        {
+            foreach ((Vector3i origin, var entity) in _Chunks) yield return (origin, entity);
         }
 
-        public void RecalculateAllChunkNeighbors()
-        {
-            foreach ((Vector3i origin, IEntity entity) in _Chunks)
-                if (entity.TryFind(out Chunk? chunk))
-                {
-                    int normalIndex = 0;
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-                    foreach (IEntity? neighbor in GetOriginNeighbors(origin))
-                    {
-                        chunk.Neighbors[normalIndex] = neighbor?.Find<Chunk>();
-                        normalIndex += 1;
-                    }
-                }
-        }
-
-        private IEnumerable<IEntity?> GetOriginNeighbors(Vector3i origin)
-        {
-            for (int normalIndex = 0; normalIndex < 6; normalIndex++)
-            {
-                int sign = (normalIndex - 3) >= 0 ? -1 : 1;
-                int componentIndex = normalIndex % 3;
-                Vector3i component = Vector3i.One.WithComponent<Vector3i, int>(componentIndex) * sign;
-                Vector3i neighborOrigin = origin + (component * GenerationConstants.CHUNK_SIZE);
-
-                _Chunks.TryGetValue(neighborOrigin, out IEntity? neighbor);
-                yield return neighbor;
-            }
-        }
+        #endregion
     }
 }

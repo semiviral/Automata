@@ -68,9 +68,10 @@ namespace Automata.Game.Chunks.Generation
             // empty channel of any pending blocks
             while (_PendingBlocks.TryTake(out (IEntity Entity, Palette<Block> Blocks) pendingBlocks)
                    && !pendingBlocks.Entity.Destroyed
-                   && pendingBlocks.Entity.TryFind(out Chunk? chunk)
-                   && chunk.State is GenerationState.GeneratingTerrain)
+                   && pendingBlocks.Entity.TryFind(out Chunk? chunk))
             {
+                Debug.Assert(chunk.State is GenerationState.GeneratingTerrain);
+
                 chunk.Blocks = pendingBlocks.Blocks;
                 chunk.State += 1;
             }
@@ -78,9 +79,10 @@ namespace Automata.Game.Chunks.Generation
             // empty channel of any pending meshes, apply the meshes, and update the material
             while (_PendingMeshes.TryTake(out (IEntity Entity, PendingMesh<PackedVertex> Mesh) pendingMesh)
                    && !pendingMesh.Entity.Destroyed
-                   && pendingMesh.Entity.TryFind(out Chunk? chunk)
-                   && chunk.State is GenerationState.GeneratingMesh)
+                   && pendingMesh.Entity.TryFind(out Chunk? chunk))
             {
+                Debug.Assert(chunk.State is GenerationState.GeneratingMesh);
+
                 PrepareChunkForRendering(entityManager, pendingMesh.Entity, pendingMesh.Mesh);
                 chunk.State += 1;
             }
