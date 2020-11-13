@@ -15,3 +15,20 @@
         - Modifies With:
             - Includes Neighbors: Yes
             - `Chunk.State` becomes `GenerationState.AwaitingMesh`
+    
+## ChunkGenerationSystem `[Automata.Game.Chunks.Generation]`
+- Neighborhood Dependent: Maybe
+    - Only Runs When
+        - `Chunk.State` is `GenerationState.AwaitingTerrain` or `GenerationState.AwaitingStructures`
+        - `Chunk.State` is `GenerationState.AwaitingMesh`
+        - and
+        - `Chunk.Neighbors` all have state `GenerationState.AwaitingMesh` or `GenerationState.Finished`
+
+
+- Modifies Chunk State: Yes
+  
+      |            |        Starts        |      Completes     |
+      |-----------:|:--------------------:|:------------------:|
+      |    Terrain |   GeneratingTerrain  | AwaitingStructures |
+      | Structures | GeneratingStructures |    AwaitingMesh    |
+      |       Mesh |    GeneratingMesh    |      Finished      |
