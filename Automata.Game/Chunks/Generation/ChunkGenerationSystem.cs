@@ -109,7 +109,7 @@ namespace Automata.Game.Chunks.Generation
                         chunk.State += 1;
                         break;
 
-                    case GenerationState.AwaitingMesh when chunk.NeighborhoodState(GenerationState.AwaitingMesh, GenerationState.Finished):
+                    case GenerationState.AwaitingMesh when chunk.NeighborState(GenerationState.AwaitingMesh, ComparisonMode.EqualOrGreaterThan):
                         BoundedInvocationPool.Instance.Enqueue(_ => GenerateMesh(entity, chunk));
                         chunk.State += 1;
                         break;
@@ -230,7 +230,7 @@ namespace Automata.Game.Chunks.Generation
 
             if (pendingMesh.IsEmpty)
             {
-                if (hasRenderMesh && renderMesh!.Mesh is not null) renderMesh!.Mesh.Dispose();
+                if (hasRenderMesh) entityManager.RemoveComponent<RenderMesh>(entity);
 
                 return false;
             }

@@ -30,8 +30,8 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
     {
         private bool _Disposed;
 
-        public uint Length { get; protected set; }
-        public uint ByteLength { get; protected set; }
+        public uint Length { get; private set; }
+        public uint ByteLength { get; private set; }
 
         public BufferObject(GL gl) : base(gl) => Handle = GL.CreateBuffer();
 
@@ -44,9 +44,9 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
         public unsafe void SetBufferData(int offset, Span<TData> data) => GL.NamedBufferSubData(Handle, data.Length * sizeof(TData), ByteLength, ref data[0]);
 
-        public unsafe void SetBufferData(Span<(int, TData)> datas)
+        public unsafe void SetBufferData(Span<(int, TData)> data)
         {
-            foreach ((int offset, TData data) in datas) GL.NamedBufferSubData(Handle, offset, (uint)sizeof(TData), &data);
+            foreach ((int offset, TData datum) in data) GL.NamedBufferSubData(Handle, offset, (uint)sizeof(TData), &datum);
         }
 
         public unsafe void SetBufferData(uint length, uint indexSize, void* data, BufferDraw bufferDraw)
@@ -68,7 +68,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
         public void Dispose()
         {
-            if (_Disposed) throw new ObjectDisposedException(ToString());
+            if (_Disposed) return;
 
             GC.SuppressFinalize(this);
             GL.DeleteBuffer(Handle);

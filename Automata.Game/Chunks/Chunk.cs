@@ -36,6 +36,15 @@ namespace Automata.Game.Chunks
             return true;
         }
 
+        public bool NeighborState(GenerationState state1, ComparisonMode comparisonMode) =>
+            comparisonMode switch
+            {
+                ComparisonMode.EqualOrGreaterThan => Neighbors.All(neighbor => neighbor is null || (neighbor.State >= state1)),
+                ComparisonMode.EqualOrLessThan => Neighbors.All(neighbor => neighbor is null || (neighbor.State <= state1)),
+                ComparisonMode.Equal => Neighbors.All(neighbor => neighbor is null || (neighbor.State == state1)),
+                _ => false
+            };
+
         public void RemeshNeighborhood(bool remesh)
         {
             if (!remesh) return;

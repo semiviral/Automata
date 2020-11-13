@@ -32,37 +32,31 @@ namespace Automata.Game.Chunks
 
         #region Chunk Addition / Removal
 
-        public bool Allocate(EntityManager entityManager, Vector3i origin)
+        public bool TryAllocate(Vector3i origin, [NotNullWhen(true)] out IEntity? entity)
         {
-            if (_Chunks.ContainsKey(origin)) return false;
+            if (_Chunks.ContainsKey(origin))
+            {
+                entity = null;
+                return false;
+            }
             else
             {
-                IEntity chunk = new Entity
+                entity = new Entity
                 {
                     new Chunk(),
-                    _ChunkOcclusionBounds,
                     new Translation
                     {
                         Value = origin
-                    }
+                    },
+                    _ChunkOcclusionBounds
                 };
 
-                entityManager.RegisterEntity(chunk);
-                _Chunks.Add(origin, chunk);
-
+                _Chunks.Add(origin, entity);
                 return true;
             }
         }
 
-        public bool Deallocate(EntityManager entityManager, Vector3i origin)
-        {
-            if (_Chunks.Remove(origin, out IEntity? chunk))
-            {
-                entityManager.RemoveEntity(chunk);
-                return true;
-            }
-            else return false;
-        }
+        public bool TryDeallocate(Vector3i origin, [NotNullWhen(true)] out IEntity? entity) => _Chunks.Remove(origin, out entity);
 
         #endregion
 
