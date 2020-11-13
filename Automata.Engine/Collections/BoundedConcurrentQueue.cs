@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-
 namespace Automata.Engine.Collections
 {
     public class BoundedConcurrentQueue<T> : IReadOnlyCollection<T>

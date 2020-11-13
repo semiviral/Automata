@@ -3,7 +3,7 @@ using Automata.Engine.Collections;
 
 namespace Automata.Engine.Rendering.Meshes
 {
-    public record NonAllocatingMeshData<TVertex>: IDisposable where TVertex : unmanaged, IEquatable<TVertex>
+    public record NonAllocatingMeshData<TVertex> : IDisposable where TVertex : unmanaged, IEquatable<TVertex>
     {
         public static readonly NonAllocatingMeshData<TVertex> Empty = new NonAllocatingMeshData<TVertex>(MemoryList<TVertex>.Empty, MemoryList<uint>.Empty);
 

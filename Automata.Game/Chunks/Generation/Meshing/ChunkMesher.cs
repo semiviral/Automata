@@ -49,7 +49,7 @@ namespace Automata.Game.Chunks.Generation.Meshing
             {
                 Block block = blocks[index];
 
-                if (block.ID == BlockRegistry.AirID || block.ID == BlockRegistry.NullID) continue;
+                if ((block.ID == BlockRegistry.AirID) || (block.ID == BlockRegistry.NullID)) continue;
 
                 IMeshingStrategy meshingStrategy = MeshingStrategies[blockRegistry.GetBlockDefinition(block.ID).MeshingStrategyIndex];
                 int localPosition = x | (y << GenerationConstants.CHUNK_SIZE_SHIFT) | (z << (GenerationConstants.CHUNK_SIZE_SHIFT * 2));

@@ -95,7 +95,6 @@ namespace Automata.Engine.Input
             _Mice[mouseIndex].Position = Unsafe.As<Vector2, PointF>(ref position);
         }
 
-
         public void CheckAndExecuteInputActions()
         {
             foreach (InputAction inputAction in InputActions)
@@ -108,6 +107,7 @@ namespace Automata.Engine.Input
                 }
                 else inputAction.Active = false;
         }
+
 
         #region Keyboard Events
 

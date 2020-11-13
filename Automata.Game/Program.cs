@@ -1,5 +1,4 @@
-﻿using System;
-using System.Drawing;
+﻿using System.Drawing;
 using Automata.Engine;
 using Automata.Engine.Components;
 using Automata.Engine.Concurrency;
@@ -24,8 +23,6 @@ InitializeWorld(out World world);
 InitializePlayer(out IEntity player);
 world.EntityManager.RegisterEntity(player);
 await AutomataWindow.Instance.Run();
-
-
 
 static void ApplicationCloseCallback(object sender)
 {

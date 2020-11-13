@@ -44,7 +44,7 @@ namespace Automata.Engine.Entities
             {
                 _ComponentCounts[component.GetType()] -= 1;
 
-                Debug.Assert(_ComponentCounts[component.GetType()] >= 0, $"Component counts less than zero indicate state has been corrupted.");
+                Debug.Assert(_ComponentCounts[component.GetType()] >= 0, "Component counts less than zero indicate state has been corrupted.");
             }
 
             entity.Dispose();

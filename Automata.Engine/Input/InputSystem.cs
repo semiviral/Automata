@@ -1,7 +1,6 @@
 #region
 
 using System;
-using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Automata.Engine.Components;
@@ -52,7 +51,8 @@ namespace Automata.Engine.Input
 
             if (movementVector == Vector3.Zero) return;
 
-            foreach ((IEntity entity, Translation translation, KeyboardListener listener) in entityManager.GetEntitiesWithComponents<Translation, KeyboardListener>())
+            foreach ((IEntity entity, Translation translation, KeyboardListener listener) in entityManager
+                .GetEntitiesWithComponents<Translation, KeyboardListener>())
                 translation.Value += listener.Sensitivity
                                      * (entity.TryFind(out Rotation? rotation)
                                          ? Vector3.Transform(movementVector, rotation.Value)

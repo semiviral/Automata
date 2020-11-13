@@ -1,5 +1,4 @@
 using System;
-using Automata.Engine.Components;
 using Silk.NET.Input.Common;
 
 namespace Automata.Engine.Input

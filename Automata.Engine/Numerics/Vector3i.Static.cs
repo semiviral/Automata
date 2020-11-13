@@ -1,11 +1,9 @@
 #region
 
 using System;
-using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
-using Automata.Engine.Extensions;
 
 // ReSharper disable UnusedMember.Global
 // ReSharper disable InconsistentNaming

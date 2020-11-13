@@ -22,7 +22,6 @@ namespace Automata.Game
         [TomlProperty("Diagnostic", false)]
         public int DebugDataBufferSize { get; init; } = 120;
 
-
         public static void Load() => AssignInstance(Toml.Parse(File.ReadAllText("Settings.toml")).ToModel<Settings>());
     }
 }

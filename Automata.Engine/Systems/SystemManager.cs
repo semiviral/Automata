@@ -50,6 +50,7 @@ namespace Automata.Engine.Systems
         {
             foreach (ComponentSystem componentSystem in _ComponentSystems)
                 if (componentSystem.Enabled && VerifyHandledComponentsExistForSystem(entityManager, componentSystem))
+
                     // we can ConfigureAwait(false) because we're still effectively synchronous
                     // after we loop, we'll return to the main thread anyway so long as the parent world doesn't ConfigureAwait(false)
                     await componentSystem.Update(entityManager, deltaTime).ConfigureAwait(false);
