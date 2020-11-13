@@ -94,9 +94,7 @@ namespace Automata.Game.Chunks
             // here we update neighbors, and allocate (in a stack) all chunks that will require remeshing
             foreach ((Vector3i origin, IEntity entity) in VoxelWorld.Chunks)
             {
-                Chunk? chunk = entity.Find<Chunk>();
-
-                Debug.Assert(chunk is not null, "All entities within VoxelWorld.Chunks should have Chunk component.");
+                if (!entity.TryFind(out Chunk? chunk)) continue;
 
                 // here we assign this chunk's neighbors
                 //
