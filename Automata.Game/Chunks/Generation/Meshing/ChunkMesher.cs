@@ -29,14 +29,14 @@ namespace Automata.Game.Chunks.Generation.Meshing
             };
 
         [SkipLocalsInit]
-        public static unsafe PendingMesh<PackedVertex> GeneratePackedMesh(Palette<Block> blocksPalette, Palette<Block>?[] neighbors)
+        public static unsafe NonAllocatingMeshData<PackedVertex> GeneratePackedMeshData(Palette<Block> blocksPalette, Palette<Block>?[] neighbors)
         {
             if ((blocksPalette.ReadOnlyLookupTable.Count == 1) && (blocksPalette.ReadOnlyLookupTable[0].ID == BlockRegistry.AirID))
-                return PendingMesh<PackedVertex>.Empty;
+                return NonAllocatingMeshData<PackedVertex>.Empty;
 
             BlockRegistry blockRegistry = BlockRegistry.Instance;
-            MemoryList<PackedVertex> vertexes = new MemoryList<PackedVertex>(_DEFAULT_VERTEXES_CAPACITY, false);
-            MemoryList<uint> indexes = new MemoryList<uint>(_DEFAULT_INDEXES_CAPACITY, false);
+            MemoryList<PackedVertex> vertexes = new MemoryList<PackedVertex>(_DEFAULT_VERTEXES_CAPACITY);
+            MemoryList<uint> indexes = new MemoryList<uint>(_DEFAULT_INDEXES_CAPACITY);
             Span<Block> blocks = stackalloc Block[GenerationConstants.CHUNK_SIZE_CUBED];
             Span<Direction> faces = stackalloc Direction[GenerationConstants.CHUNK_SIZE_CUBED];
             faces.Clear();
@@ -58,7 +58,7 @@ namespace Automata.Game.Chunks.Generation.Meshing
                     blockRegistry.CheckBlockHasProperty(block.ID, BlockDefinitionDefinition.Attribute.Transparent));
             }
 
-            return vertexes.Count == 0 ? PendingMesh<PackedVertex>.Empty : new PendingMesh<PackedVertex>(vertexes.Segment, indexes.Segment);
+            return new NonAllocatingMeshData<PackedVertex>(vertexes, indexes);
         }
     }
 }

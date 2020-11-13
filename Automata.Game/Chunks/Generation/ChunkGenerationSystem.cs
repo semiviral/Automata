@@ -35,14 +35,14 @@ namespace Automata.Game.Chunks.Generation
 
         private readonly IOrderedCollection<IGenerationStep> _BuildSteps;
         private readonly ConcurrentChannel<(IEntity, Palette<Block>)> _PendingBlocks;
-        private readonly ConcurrentChannel<(IEntity, PendingMesh<PackedVertex>)> _PendingMeshes;
+        private readonly ConcurrentChannel<(IEntity, NonAllocatingMeshData<PackedVertex>)> _PendingMeshes;
 
         public ChunkGenerationSystem()
         {
             _BuildSteps = new OrderedLinkedList<IGenerationStep>();
             _BuildSteps.AddLast(new TerrainGenerationStep());
             _PendingBlocks = new ConcurrentChannel<(IEntity, Palette<Block>)>(true, false);
-            _PendingMeshes = new ConcurrentChannel<(IEntity, PendingMesh<PackedVertex>)>(true, false);
+            _PendingMeshes = new ConcurrentChannel<(IEntity, NonAllocatingMeshData<PackedVertex>)>(true, false);
 
             DiagnosticsProvider.EnableGroup<ChunkGenerationDiagnosticGroup>();
         }
@@ -79,13 +79,14 @@ namespace Automata.Game.Chunks.Generation
             }
 
             // empty channel of any pending meshes, apply the meshes, and update the material
-            while (_PendingMeshes.TryTake(out (IEntity Entity, PendingMesh<PackedVertex> Mesh) pendingMesh)
+            while (_PendingMeshes.TryTake(out (IEntity Entity, NonAllocatingMeshData<PackedVertex> Data) pendingMesh)
                    && !pendingMesh.Entity.Destroyed
                    && pendingMesh.Entity.TryFind(out Chunk? chunk))
             {
                 Debug.Assert(chunk.State is GenerationState.GeneratingMesh);
 
-                PrepareChunkForRendering(entityManager, pendingMesh.Entity, pendingMesh.Mesh);
+                PrepareChunkForRendering(entityManager, pendingMesh.Entity, pendingMesh.Data);
+                pendingMesh.Data.Dispose();
                 chunk.State += 1;
             }
 
@@ -201,14 +202,14 @@ namespace Automata.Game.Chunks.Generation
             Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
             stopwatch.Restart();
 
-            PendingMesh<PackedVertex> pendingMesh = ChunkMesher.GeneratePackedMesh(chunk.Blocks, chunk.NeighborBlocks.ToArray());
+            NonAllocatingMeshData<PackedVertex> pendingMesh = ChunkMesher.GeneratePackedMeshData(chunk.Blocks, chunk.NeighborBlocks.ToArray());
             await _PendingMeshes.AddAsync((entity, pendingMesh)).ConfigureAwait(false);
 
             DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new MeshingTime(stopwatch.Elapsed));
             DiagnosticsSystem.Stopwatches.Return(stopwatch);
         }
 
-        private static void PrepareChunkForRendering(EntityManager entityManager, IEntity entity, PendingMesh<PackedVertex> pendingMesh)
+        private static void PrepareChunkForRendering(EntityManager entityManager, IEntity entity, NonAllocatingMeshData<PackedVertex> pendingMesh)
         {
             Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
             stopwatch.Restart();
@@ -226,7 +227,7 @@ namespace Automata.Game.Chunks.Generation
             DiagnosticsSystem.Stopwatches.Return(stopwatch);
         }
 
-        private static bool ApplyMesh(EntityManager entityManager, IEntity entity, PendingMesh<PackedVertex> pendingMesh)
+        private static bool ApplyMesh(EntityManager entityManager, IEntity entity, NonAllocatingMeshData<PackedVertex> pendingMesh)
         {
             bool hasRenderMesh = entity.TryFind(out RenderMesh? renderMesh);
 
@@ -248,8 +249,8 @@ namespace Automata.Game.Chunks.Generation
                 mesh.VertexArrayObject.CommitVertexAttributes();
             }
 
-            mesh.VertexesBufferObject.SetBufferData(pendingMesh.Vertexes.Span, BufferDraw.DynamicDraw);
-            mesh.IndexesBufferObject.SetBufferData(pendingMesh.Indexes.Span, BufferDraw.DynamicDraw);
+            mesh.VertexesBufferObject.SetBufferData(pendingMesh.Vertexes.Segment.Span, BufferDraw.DynamicDraw);
+            mesh.IndexesBufferObject.SetBufferData(pendingMesh.Indexes.Segment.Span, BufferDraw.DynamicDraw);
             return true;
         }
 

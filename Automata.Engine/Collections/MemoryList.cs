@@ -5,93 +5,89 @@ using System.Collections.Generic;
 
 namespace Automata.Engine.Collections
 {
-    public class MemoryList<T> : IList<T>
+    public class MemoryList<T> : IList<T>, IDisposable where T : IEquatable<T>
     {
         private const int _DEFAULT_SIZE = 8;
 
-        private readonly bool _Pooled;
+        public static readonly MemoryList<T> Empty = new MemoryList<T>(0);
 
-        private T[] _InternalArray = null!;
-        private Memory<T> _InternalMemory = null!;
+        private IMemoryOwner<T> _MemoryOwner;
+        private Memory<T> _InternalMemory;
 
-        private T[] InternalArray
-        {
-            get => _InternalArray;
-            set
-            {
-                _InternalArray = value;
-                _InternalMemory = _InternalArray;
-            }
-        }
-
-        public int Count { get; private set; }
+        private Span<T> Span => _InternalMemory.Span;
 
         public bool IsReadOnly => false;
+        public bool IsEmpty => Count <= 0;
         public Memory<T> Segment => _InternalMemory.Slice(0, Count);
+
+        public int Count { get; private set; }
 
         public T this[int index]
         {
             get
             {
-                if (index >= InternalArray.Length) throw new IndexOutOfRangeException("Index must be non-zero and less than the size of the collection.");
-                else return InternalArray[index];
+                if (index >= Count) throw new IndexOutOfRangeException("Index must be non-zero and less than the size of the collection.");
+                else return Span[index];
             }
             set
             {
-                if (index >= InternalArray.Length) throw new IndexOutOfRangeException("Index must be non-zero and less than the size of the collection.");
-                else InternalArray[index] = value;
+                if (index >= Count) throw new IndexOutOfRangeException("Index must be non-zero and less than the size of the collection.");
+                else Span[index] = value;
             }
         }
 
-        public MemoryList(bool pooled = false) : this(_DEFAULT_SIZE, pooled) { }
-
-        public MemoryList(int capacity, bool pooled = false)
+        public MemoryList(int capacity)
         {
-            _Pooled = pooled;
-            InternalArray = RetrieveNewArray(capacity);
+            _MemoryOwner = MemoryPool<T>.Shared.Rent(capacity);
+            _InternalMemory = _MemoryOwner.Memory;
         }
-
-        private T[] RetrieveNewArray(int capacity) => _Pooled ? ArrayPool<T>.Shared.Rent(capacity) : new T[capacity];
 
         public bool Contains(T item) => (Count != 0) && (IndexOf(item) != -1);
 
         public void Add(T item)
         {
-            if (Count < InternalArray.Length)
+            if (Count < _InternalMemory.Length)
             {
-                InternalArray[Count] = item;
+                Span[Count] = item;
                 Count += 1;
             }
             else
             {
                 EnsureCapacityOrResize(Count + 1);
-                InternalArray[Count] = item;
+                Span[Count] = item;
                 Count += 1;
             }
         }
 
         public void Insert(int index, T item)
         {
+            Span<T> span = Span;
+
             if (index > Count) throw new ArgumentOutOfRangeException(nameof(index), "Must be non-negative and less than the size of the collection.");
             else if (index == Count) EnsureCapacityOrResize(Count + 1);
-            else if (index < Count) Array.Copy(InternalArray, index, InternalArray, index + 1, Count - index);
 
-            InternalArray[index] = item;
+            // this copies everything from index..Count to index + 1
+            else if (index < Count) span.Slice(index, Count - index).CopyTo(span.Slice(index + 1));
+
+            span[index] = item;
             Count += 1;
         }
 
         private void EnsureCapacityOrResize(int minimumCapacity)
         {
-            if (InternalArray.Length >= minimumCapacity) return;
+            if (_InternalMemory.Length >= minimumCapacity) return;
 
-            int newCapacity = _InternalArray.Length == 0 ? _DEFAULT_SIZE : InternalArray.Length * 2;
+            int newCapacity = _InternalMemory.Length == 0 ? _DEFAULT_SIZE : _InternalMemory.Length * 2;
 
             if (newCapacity < minimumCapacity) newCapacity = minimumCapacity;
 
-            T[] newArray = _Pooled ? ;
-            Array.Copy(_InternalArray, newArray, _InternalArray.Length);
-            _InternalArray = newArray;
-            _InternalMemory = _InternalArray;
+            IMemoryOwner<T> memoryOwner = MemoryPool<T>.Shared.Rent(newCapacity);
+            Memory<T> memory = memoryOwner.Memory;
+            _InternalMemory.CopyTo(memory);
+            _MemoryOwner.Dispose();
+
+            _MemoryOwner = memoryOwner;
+            _InternalMemory = memory;
         }
 
         public bool Remove(T item)
@@ -109,34 +105,51 @@ namespace Automata.Engine.Collections
             if (index >= Count) throw new ArgumentOutOfRangeException(nameof(index), "Must be non-negative and less than the size of the collection.");
 
             Count -= 1;
+            Span<T> span = Span;
 
             // copies all elements from after index to the index itself, overwriting it
-            if (index < Count) Array.Copy(_InternalArray, index + 1, _InternalArray, index, Count - index);
+            if (index < Count) span.Slice(index + 1).CopyTo(span.Slice(index));
 
-            _InternalArray[Count] = default!;
+            span[Count] = default!;
         }
 
         public void Clear()
         {
             if (Count == 0) return;
 
-            Array.Clear(_InternalArray, 0, Count);
+            Span.Slice(0, Count).Clear();
             Count = 0;
         }
 
-        public void CopyTo(T[] array, int arrayIndex) => Array.Copy(_InternalArray, 0, array, arrayIndex, Count);
-        public int IndexOf(T item) => Array.IndexOf(_InternalArray, item, 0, Count);
+        public void CopyTo(T[] array, int arrayIndex) => Span.CopyTo(new Span<T>(array).Slice(arrayIndex));
+        public int IndexOf(T item) => Span.IndexOf(item);
+
+
+        #region IEnumerable
 
         public IEnumerator<T> GetEnumerator()
         {
-            for (int index = 0; index < Count; index++) yield return _InternalArray[index];
+            for (int index = 0; index < Count; index++) yield return Span[index];
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        ~MemoryList()
+        #endregion
+
+
+        #region IDisposable
+
+        private void Dispose(bool disposing)
         {
-            if (_Pooled) ArrayPool<T>.Shared.Return(_InternalArray);
+            if (disposing) _MemoryOwner.Dispose();
         }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
     }
 }

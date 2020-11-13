@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 
 namespace Automata.Engine.Collections
 {
-    public class Palette<T> : IReadOnlyCollection<T> where T : IEquatable<T>
+    public class Palette<T> : IReadOnlyCollection<T>, IDisposable where T : IEquatable<T>
     {
         private const byte _UINT_32_BITS = sizeof(uint) * 8;
 
@@ -183,9 +183,11 @@ namespace Automata.Engine.Collections
                 }
         }
 
-        ~Palette()
+        public void Dispose()
         {
             if (_Palette is not null) ArrayPool<uint>.Shared.Return(_Palette);
+
+            GC.SuppressFinalize(this);
         }
     }
 }
