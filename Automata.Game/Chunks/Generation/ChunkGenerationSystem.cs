@@ -69,7 +69,7 @@ namespace Automata.Game.Chunks.Generation
         {
             // empty channel of any pending blocks
             while (_PendingBlocks.TryTake(out (IEntity Entity, Palette<Block> Blocks) pendingBlocks)
-                   && !pendingBlocks.Entity.Destroyed
+                   && !pendingBlocks.Entity.Disposed
                    && pendingBlocks.Entity.TryFind(out Chunk? chunk))
             {
                 Debug.Assert(chunk.State is GenerationState.GeneratingTerrain);
@@ -80,7 +80,7 @@ namespace Automata.Game.Chunks.Generation
 
             // empty channel of any pending meshes, apply the meshes, and update the material
             while (_PendingMeshes.TryTake(out (IEntity Entity, NonAllocatingMeshData<PackedVertex> Data) pendingMesh)
-                   && !pendingMesh.Entity.Destroyed
+                   && !pendingMesh.Entity.Disposed
                    && pendingMesh.Entity.TryFind(out Chunk? chunk))
             {
                 Debug.Assert(chunk.State is GenerationState.GeneratingMesh);
@@ -96,14 +96,11 @@ namespace Automata.Game.Chunks.Generation
                 switch (chunk.State)
                 {
                     case GenerationState.AwaitingTerrain:
-                        Vector3i origin = Vector3i.FromVector3(translation.Value);
-
-                        IGenerationStep.Parameters parameters = new IGenerationStep.Parameters(GenerationConstants.Seed, origin.GetHashCode())
-                        {
-                            Frequency = 0.008f
-                        };
-
-                        BoundedInvocationPool.Instance.Enqueue(_ => GenerateBlocks(entity, origin, parameters));
+                        BoundedInvocationPool.Instance.Enqueue(_ => GenerateBlocks(entity, Vector3i.FromVector3(translation.Value),
+                            new IGenerationStep.Parameters(GenerationConstants.Seed, Vector3i.FromVector3(translation.Value).GetHashCode())
+                            {
+                                Frequency = 0.008f
+                            }));
 
                         chunk.State += 1;
                         break;
@@ -163,9 +160,9 @@ namespace Automata.Game.Chunks.Generation
             IStructure testStructure = new TestStructure();
             Random random = new Random(origin.GetHashCode());
 
-            for (int y = 0; y < GenerationConstants.CHUNK_SIZE; y++)
+            for (int y = 0, index = 0; y < GenerationConstants.CHUNK_SIZE; y++)
             for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
-            for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++)
+            for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++, index++)
                 if (testStructure.CheckPlaceStructureAt(random, origin))
                 {
                     Vector3i offset = new Vector3i(x, y, z);
@@ -178,7 +175,7 @@ namespace Automata.Game.Chunks.Generation
                         if (Vector3b.All(modificationOffset >= 0) && Vector3b.All(modificationOffset < GenerationConstants.CHUNK_SIZE))
                             await chunk.Modifications.AddAsync(new ChunkModification
                             {
-                                BlockIndex = Vector3i.Project1D(modificationOffset, GenerationConstants.CHUNK_SIZE),
+                                BlockIndex = index,
                                 BlockID = blockID
                             }).ConfigureAwait(false);
 

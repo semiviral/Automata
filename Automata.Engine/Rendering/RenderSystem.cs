@@ -25,7 +25,7 @@ namespace Automata.Engine.Rendering
     public class RenderSystem : ComponentSystem
     {
         private const bool _ENABLE_BACK_FACE_CULLING = true;
-        private const bool _ENABLE_FRUSTUM_CULLING = false;
+        private const bool _ENABLE_FRUSTUM_CULLING = true;
 
         private readonly GL _GL;
         private readonly UniformBufferObject _Viewport;

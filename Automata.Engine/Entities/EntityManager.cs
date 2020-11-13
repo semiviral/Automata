@@ -42,14 +42,12 @@ namespace Automata.Engine.Entities
 
             foreach (Component component in entity)
             {
-                if (component is IDisposable disposable) disposable.Dispose();
-
                 _ComponentCounts[component.GetType()] -= 1;
 
                 Debug.Assert(_ComponentCounts[component.GetType()] >= 0, $"Component counts less than zero indicate state has been corrupted.");
             }
 
-            entity.Destroy();
+            entity.Dispose();
         }
 
 

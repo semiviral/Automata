@@ -8,16 +8,20 @@ namespace Automata.Game
     public class Settings : Singleton<Settings>
     {
         [TomlProperty("Video", false)]
-        public bool VSync { get; set; } = false;
+        public bool VSync { get; init; } = false;
 
         [TomlProperty("WorldGeneration", true)]
-        public bool SingleThreadedGeneration { get; set; }
+        public bool SingleThreadedGeneration { get; init; }
 
         [TomlProperty("WorldGeneration", true)]
-        public int GenerationRadius { get; set; }
+        public int GenerationRadius { get; init; }
 
         [TomlProperty("Diagnostic", false)]
-        public int DebugDataBufferSize { get; set; } = 120;
+        public bool DisableTemporalDiagnostics { get; init; } = false;
+
+        [TomlProperty("Diagnostic", false)]
+        public int DebugDataBufferSize { get; init; } = 120;
+
 
         public static void Load() => AssignInstance(Toml.Parse(File.ReadAllText("Settings.toml")).ToModel<Settings>());
     }

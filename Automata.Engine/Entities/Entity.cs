@@ -1,40 +1,50 @@
-#region
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Automata.Engine.Collections;
 using Automata.Engine.Components;
 
-#endregion
-
+// ReSharper disable ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
+// ReSharper disable ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
 
 namespace Automata.Engine.Entities
 {
     public class Entity : IEntity
     {
-        private readonly List<Component> _Components;
+        private readonly MemoryList<Component> _Components;
 
         public Guid ID { get; }
-        public bool Destroyed { get; private set; }
+        public bool Disposed { get; private set; }
 
         public Component? this[Type type]
         {
-            get => _Components.Find(type.IsInstanceOfType);
+            get => Find(type);
             init
             {
-                if (value is null) throw new NullReferenceException("Value cannot be null.");
+                static int FindIndex(IEnumerable<Component> components, Type type)
+                {
+                    int index = 0;
 
-                int index = _Components.FindIndex(type.IsInstanceOfType);
+                    foreach (Component component in components)
+                        if (type.IsInstanceOfType(component)) return index;
+                        else index += 1;
 
-                if (index > -1) _Components[index] = value;
-                else _Components.Add(value);
+                    return -1;
+                }
+
+                if (value is null) ThrowHelper.ThrowNullReferenceException("Value cannot be null.");
+
+                int index = FindIndex(_Components, type);
+
+                if (index > -1) _Components[index] = value!;
+                else _Components.Add(value!);
             }
         }
 
         public int Count => _Components.Count;
 
-        public Entity() => (ID, Destroyed, _Components) = (Guid.NewGuid(), false, new List<Component>());
+        public Entity() => (ID, Disposed, _Components) = (Guid.NewGuid(), false, new MemoryList<Component>(1));
 
         public void Add<TComponent>() where TComponent : Component, new()
         {
@@ -49,26 +59,61 @@ namespace Automata.Engine.Entities
             return component;
         }
 
-        public TComponent? Find<TComponent>() where TComponent : Component => _Components.Find(typeof(TComponent).IsInstanceOfType) as TComponent;
+        public TComponent? Find<TComponent>() where TComponent : Component
+        {
+            foreach (Component component in _Components)
+                if (component is TComponent componentT)
+                    return componentT;
+
+            return null;
+        }
+
+        public Component? Find(Type type)
+        {
+            foreach (Component component in _Components)
+                if (type.IsInstanceOfType(component))
+                    return component;
+
+            return null;
+        }
 
         public bool TryFind<TComponent>([NotNullWhen(true)] out TComponent? component) where TComponent : Component
         {
-            component = this[typeof(TComponent)] as TComponent;
-            return component is not null;
+            foreach (Component component1 in _Components)
+                if (component1 is TComponent componentT)
+                {
+                    component = componentT;
+                    return true;
+                }
+
+            component = null;
+            return false;
         }
 
         public bool TryFind(Type type, [NotNullWhen(true)] out Component? component)
         {
-            component = this[type];
-            return component is not null;
+            foreach (Component component1 in _Components)
+                if (type.IsInstanceOfType(component1))
+                {
+                    component = component1;
+                    return true;
+                }
+
+            component = null;
+            return false;
         }
 
-        public bool Contains<TComponent>() where TComponent : Component => this[typeof(TComponent)] is not null;
+        public bool Contains<TComponent>() where TComponent : Component
+        {
+            foreach (Component component1 in _Components)
+                if (component1 is TComponent)
+                    return true;
+
+            return false;
+        }
+
         public bool Contains(Type type) => this[type] is not null;
 
-        void IEntity.Destroy() => Destroyed = true;
-
-        public bool Contains(Component item) => _Components.IndexOf(item) > 0;
         public void CopyTo(Component[] array, int arrayIndex) => _Components.CopyTo(array, arrayIndex);
 
 
@@ -84,6 +129,7 @@ namespace Automata.Engine.Entities
 
         public bool Remove(Component item) => _Components.Remove(item);
 
+        bool ICollection<Component>.Contains(Component item) => _Components.IndexOf(item) > 0;
         void ICollection<Component>.Clear() => _Components.Clear();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         public IEnumerator<Component> GetEnumerator() => _Components.GetEnumerator();
@@ -93,13 +139,28 @@ namespace Automata.Engine.Entities
 
         #region IEquatable
 
-        public override bool Equals(object? obj) => obj is IEntity entity && Equals(entity);
         public bool Equals(IEntity? other) => other is not null && ID.Equals(other.ID);
 
         public override int GetHashCode() => ID.GetHashCode();
 
-        public static bool operator ==(Entity? left, Entity? right) => Equals(left, right);
-        public static bool operator !=(Entity? left, Entity? right) => !Equals(left, right);
+        #endregion
+
+
+        #region IDisposable
+
+        public void Dispose()
+        {
+            if (Disposed) return;
+
+            foreach (Component component in _Components)
+                if (component is IDisposable disposable)
+                    disposable.Dispose();
+
+            _Components.Dispose();
+
+            Disposed = true;
+            GC.SuppressFinalize(this);
+        }
 
         #endregion
     }

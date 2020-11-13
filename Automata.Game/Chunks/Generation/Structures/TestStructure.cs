@@ -10,7 +10,7 @@ namespace Automata.Game.Chunks.Generation.Structures
         public string Name { get; } = "Test";
         public IEnumerable<(Vector3i, ushort)> StructureBlocks { get; } = GetStructureBlocks();
 
-        public bool CheckPlaceStructureAt(Random seeded, Vector3i _) => seeded.Next(0, 800) == 0;
+        public bool CheckPlaceStructureAt(Random seeded, Vector3i _) => seeded.Next(0, 80000) == 0;
 
         private static IEnumerable<(Vector3i Local, ushort BlockID)> GetStructureBlocks()
         {
