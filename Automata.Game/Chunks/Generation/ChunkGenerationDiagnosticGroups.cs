@@ -36,7 +36,7 @@ namespace Automata.Game.Chunks.Generation
         public ApplyMeshTime(TimeSpan data) : base(data) { }
     }
 
-    public class ChunkGenerationDiagnosticGroup : IDiagnosticGroup
+    public sealed class ChunkGenerationDiagnosticGroup : IDiagnosticGroup
     {
         private readonly BoundedConcurrentQueue<ApplyMeshTime> _ApplyMeshTimes;
         private readonly BoundedConcurrentQueue<BuildingTime> _BuildingTimes;
@@ -52,7 +52,7 @@ namespace Automata.Game.Chunks.Generation
 
         public ChunkGenerationDiagnosticGroup()
         {
-            const int resolution = 300;
+            int resolution = Settings.Instance.DebugDataBufferSize;
             _BuildingTimes = new BoundedConcurrentQueue<BuildingTime>(resolution);
             _InsertionTimes = new BoundedConcurrentQueue<InsertionTime>(resolution);
             _StructuresTimes = new BoundedConcurrentQueue<StructuresTime>(resolution);

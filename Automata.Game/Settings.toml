@@ -4,3 +4,6 @@ VSync=false
 [WorldGeneration]
 SingleThreadedGeneration=false
 GenerationRadius=12
+
+[Diagnostic]
+DebugDataBufferSize=300

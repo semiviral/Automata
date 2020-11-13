@@ -5,12 +5,18 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Automata.Engine;
 using Automata.Engine.Components;
+using Automata.Engine.Diagnostics;
 using Automata.Engine.Entities;
 using Automata.Engine.Extensions;
+using Automata.Engine.Input;
 using Automata.Engine.Numerics;
 using Automata.Engine.Systems;
 using Automata.Game.Chunks.Generation;
+using DiagnosticsProviderNS;
+using Serilog;
+using Silk.NET.Input.Common;
 
 #endregion
 
@@ -25,11 +31,23 @@ namespace Automata.Game.Chunks
 
         public ChunkRegionLoaderSystem() => _PendingRemeshingDueToNeighborUpdatesQueue = new Queue<Chunk>();
 
+        public override void Registered(EntityManager entityManager)
+        {
+            DiagnosticsProvider.EnableGroup<ChunkRegionLoadingDiagnosticGroup>();
+
+
+            InputManager.Instance.InputActions.Add(new InputAction(() => Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkRegionLoaderSystem),
+                $"Average update time: {DiagnosticsProvider.GetGroup<ChunkRegionLoadingDiagnosticGroup>().Average():0.00}ms")), Key.ShiftLeft, Key.X));
+        }
+
         [HandledComponents(DistinctionStrategy.All, typeof(Translation), typeof(ChunkLoader))]
         public override ValueTask Update(EntityManager entityManager, TimeSpan delta)
         {
+            Stopwatch stopwatch = DiagnosticsPool.Stopwatches.Rent();
+            stopwatch.Restart();
+
             // attempt to state change any neighbors requiring remesh
-            while (_PendingRemeshingDueToNeighborUpdatesQueue.TryPeek(out Chunk? chunk) && chunk.State is GenerationState.Finished)
+            while (_PendingRemeshingDueToNeighborUpdatesQueue.TryPeek(out Chunk? chunk) && chunk?.State is GenerationState.Finished)
             {
                 _PendingRemeshingDueToNeighborUpdatesQueue.Dequeue();
                 chunk.State = GenerationState.AwaitingMesh;
@@ -51,6 +69,9 @@ namespace Automata.Game.Chunks
             }
 
             if (recalculateChunkRegions) RecalculateChunkRegions(entityManager);
+
+            DiagnosticsProvider.CommitData<ChunkRegionLoadingDiagnosticGroup, TimeSpan>(new RegionLoadingTime(stopwatch.Elapsed));
+            DiagnosticsPool.Stopwatches.Return(stopwatch);
 
             return ValueTask.CompletedTask;
         }

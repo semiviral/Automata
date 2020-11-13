@@ -52,7 +52,7 @@ namespace Automata.Game.Chunks.Generation
             // prints average chunk generation times
             InputManager.Instance.InputActions.Add(new InputAction(() =>
             {
-                Log.Information(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(DiagnosticsSystem),
+                Log.Information(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(DiagnosticsPool),
                     $"Average generation times: {DiagnosticsProvider.GetGroup<ChunkGenerationDiagnosticGroup>()}"));
             }, Key.ShiftLeft, Key.B));
 
@@ -60,7 +60,7 @@ namespace Automata.Game.Chunks.Generation
             InputManager.Instance.InputActions.Add(new InputAction(() =>
             {
                 IEnumerable<(GenerationState, int)> states = entityManager.GetComponents<Chunk>().Select(chunk => (chunk.State, chunk.TimesMeshed));
-                Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(DiagnosticsSystem), string.Join(", ", states)));
+                Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(DiagnosticsPool), string.Join(", ", states)));
             }, Key.ShiftLeft, Key.V));
         }
 
@@ -124,7 +124,7 @@ namespace Automata.Game.Chunks.Generation
 
         private async Task GenerateBlocks(IEntity entity, Vector3i origin, IGenerationStep.Parameters parameters)
         {
-            Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
+            Stopwatch stopwatch = DiagnosticsPool.Stopwatches.Rent();
 
             Palette<Block> GenerateTerrainAndBuildPalette()
             {
@@ -147,12 +147,12 @@ namespace Automata.Game.Chunks.Generation
 
             Palette<Block> blocks = GenerateTerrainAndBuildPalette();
             await _PendingBlocks.AddAsync((entity, blocks)).ConfigureAwait(false);
-            DiagnosticsSystem.Stopwatches.Return(stopwatch);
+            DiagnosticsPool.Stopwatches.Return(stopwatch);
         }
 
         private async Task GenerateStructures(Chunk chunk, Vector3i origin)
         {
-            Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
+            Stopwatch stopwatch = DiagnosticsPool.Stopwatches.Rent();
 
             if (chunk.Blocks is null)
             {
@@ -187,8 +187,8 @@ namespace Automata.Game.Chunks.Generation
                     }
                 }
 
-            DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new MeshingTime(stopwatch.Elapsed));
-            DiagnosticsSystem.Stopwatches.Return(stopwatch);
+            DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new StructuresTime(stopwatch.Elapsed));
+            DiagnosticsPool.Stopwatches.Return(stopwatch);
             chunk.State += 1;
         }
 
@@ -200,24 +200,24 @@ namespace Automata.Game.Chunks.Generation
                 return;
             }
 
-            Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
+            Stopwatch stopwatch = DiagnosticsPool.Stopwatches.Rent();
             stopwatch.Restart();
 
             NonAllocatingMeshData<PackedVertex> pendingMesh = ChunkMesher.GeneratePackedMeshData(chunk.Blocks, chunk.NeighborBlocks.ToArray());
             await _PendingMeshes.AddAsync((entity, pendingMesh)).ConfigureAwait(false);
 
             DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new MeshingTime(stopwatch.Elapsed));
-            DiagnosticsSystem.Stopwatches.Return(stopwatch);
+            DiagnosticsPool.Stopwatches.Return(stopwatch);
         }
 
         private static void PrepareChunkForRendering(EntityManager entityManager, IEntity entity, NonAllocatingMeshData<PackedVertex> pendingMesh)
         {
-            Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
+            Stopwatch stopwatch = DiagnosticsPool.Stopwatches.Rent();
             stopwatch.Restart();
 
             if (!ApplyMesh(entityManager, entity, pendingMesh))
             {
-                DiagnosticsSystem.Stopwatches.Return(stopwatch);
+                DiagnosticsPool.Stopwatches.Return(stopwatch);
                 return;
             }
 
@@ -225,7 +225,7 @@ namespace Automata.Game.Chunks.Generation
 
             stopwatch.Stop();
             DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new ApplyMeshTime(stopwatch.Elapsed));
-            DiagnosticsSystem.Stopwatches.Return(stopwatch);
+            DiagnosticsPool.Stopwatches.Return(stopwatch);
         }
 
         private static bool ApplyMesh(EntityManager entityManager, IEntity entity, NonAllocatingMeshData<PackedVertex> pendingMesh)

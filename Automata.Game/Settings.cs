@@ -16,6 +16,9 @@ namespace Automata.Game
         [TomlProperty("WorldGeneration", true)]
         public int GenerationRadius { get; set; }
 
+        [TomlProperty("Diagnostic", false)]
+        public int DebugDataBufferSize { get; set; } = 120;
+
         public static void Load() => AssignInstance(Toml.Parse(File.ReadAllText("Settings.toml")).ToModel<Settings>());
     }
 }
