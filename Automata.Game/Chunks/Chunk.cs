@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Automata.Engine.Collections;
@@ -6,7 +7,7 @@ using Automata.Game.Blocks;
 
 namespace Automata.Game.Chunks
 {
-    public class Chunk : Component
+    public class Chunk : Component, IDisposable
     {
         public GenerationState State { get; set; }
         public Palette<Block>? Blocks { get; set; }
@@ -56,6 +57,12 @@ namespace Automata.Game.Chunks
                     neighbor.State = GenerationState.AwaitingMesh;
         }
 
-        //public override string ToString() => $"chunk({State}, {InsertionSafeState}, {IsStateLockstep(ComparisonMode.Equal)}, {Neighbors.Count(neighbor => neighbor is null)}";
+        public void Dispose()
+        {
+            // todo not disposing this causes a memory leak
+            // to fix it, need to stop meshing jobs from accessing it before disposing
+            // Blocks?.Dispose();
+            GC.SuppressFinalize(this);
+        }
     }
 }
