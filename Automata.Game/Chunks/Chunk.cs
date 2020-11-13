@@ -11,6 +11,7 @@ namespace Automata.Game.Chunks
     {
         public GenerationState State { get; set; }
         public Palette<Block>? Blocks { get; set; }
+        public int TimesMeshed { get; set; }
         public Chunk?[] Neighbors { get; } = new Chunk?[6];
         public IEnumerable<Palette<Block>?> NeighborBlocks => Neighbors.Select(chunk => chunk?.Blocks);
         public ConcurrentChannel<ChunkModification> Modifications { get; } = new ConcurrentChannel<ChunkModification>(true, false);
@@ -53,7 +54,7 @@ namespace Automata.Game.Chunks
             State = GenerationState.AwaitingMesh;
 
             foreach (Chunk? neighbor in Neighbors)
-                if (neighbor is not null)
+                if (neighbor?.State is not null and not GenerationState.AwaitingMesh)
                     neighbor.State = GenerationState.AwaitingMesh;
         }
 

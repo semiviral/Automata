@@ -1,11 +1,6 @@
-#region
-
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-
-#endregion
-
 
 namespace Automata.Engine.Collections
 {
@@ -13,6 +8,10 @@ namespace Automata.Engine.Collections
     {
         private readonly ChannelReader<T> _Reader;
         private readonly ChannelWriter<T> _Writer;
+
+        private long _Count;
+
+        public long Count => Interlocked.Read(ref _Count);
 
         public ConcurrentChannel(bool singleReader, bool singleWriter)
         {
@@ -26,9 +25,36 @@ namespace Automata.Engine.Collections
             _Writer = channel.Writer;
         }
 
-        public bool TryAdd(T item) => _Writer.TryWrite(item);
-        public bool TryTake(out T item) => _Reader.TryRead(out item);
-        public async ValueTask AddAsync(T item, CancellationToken cancellationToken = default) => await _Writer.WriteAsync(item, cancellationToken);
-        public async ValueTask<T> TakeAsync(CancellationToken cancellationToken = default) => await _Reader.ReadAsync(cancellationToken);
+        public bool TryAdd(T item)
+        {
+            if (_Writer.TryWrite(item))
+            {
+                Interlocked.Increment(ref _Count);
+                return true;
+            }
+            else return false;
+        }
+
+        public bool TryTake(out T item)
+        {
+            if (_Reader.TryRead(out item))
+            {
+                Interlocked.Decrement(ref _Count);
+                return true;
+            }
+            else return false;
+        }
+
+        public async ValueTask AddAsync(T item, CancellationToken cancellationToken = default)
+        {
+            Interlocked.Increment(ref _Count);
+            await _Writer.WriteAsync(item, cancellationToken);
+        }
+
+        public async ValueTask<T> TakeAsync(CancellationToken cancellationToken = default)
+        {
+            Interlocked.Decrement(ref _Count);
+            return await _Reader.ReadAsync(cancellationToken);
+        }
     }
 }

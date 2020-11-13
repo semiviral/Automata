@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.CompilerServices;
 using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.OpenGL.Buffers
@@ -13,7 +12,6 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
         public BufferObject(GL gl) : base(gl) => Handle = GL.CreateBuffer();
 
-        [SkipLocalsInit]
         public unsafe void SetBufferData(Span<TData> data, BufferDraw bufferDraw)
         {
             Length = (uint)data.Length;
@@ -21,7 +19,8 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             GL.NamedBufferData(Handle, ByteLength, data, (VertexBufferObjectUsage)bufferDraw);
         }
 
-        public unsafe void SetBufferData(int offset, Span<TData> data) => GL.NamedBufferSubData(Handle, data.Length * sizeof(TData), ByteLength, ref data[0]);
+        public unsafe void SetBufferData(int offset, Span<TData> data) =>
+            GL.NamedBufferSubData(Handle, offset * sizeof(TData), (uint)(data.Length * sizeof(TData)), ref data[0]);
 
         public unsafe void SetBufferData(Span<(int, TData)> data)
         {

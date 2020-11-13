@@ -1,12 +1,7 @@
-#region
-
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-
-#endregion
-
 
 namespace Automata.Engine.Collections
 {

@@ -2,9 +2,9 @@ using Automata.Engine.Numerics;
 
 namespace Automata.Game.Chunks
 {
-    public record ChunkModification
+    public sealed record ChunkModification
     {
-        public Vector3i Local { get; init; }
+        public int BlockIndex { get; init; }
         public ushort BlockID { get; init; }
     }
 }

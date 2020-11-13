@@ -59,7 +59,7 @@ namespace Automata.Game.Chunks.Generation
             // prints all chunk states
             InputManager.Instance.InputActions.Add(new InputAction(() =>
             {
-                IEnumerable<GenerationState> states = entityManager.GetComponents<Chunk>().Select(chunk => chunk.State);
+                IEnumerable<(GenerationState, int)> states = entityManager.GetComponents<Chunk>().Select(chunk => (chunk.State, chunk.TimesMeshed));
                 Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(DiagnosticsSystem), string.Join(", ", states)));
             }, Key.ShiftLeft, Key.V));
         }
@@ -86,6 +86,7 @@ namespace Automata.Game.Chunks.Generation
                 Debug.Assert(chunk.State is GenerationState.GeneratingMesh);
 
                 PrepareChunkForRendering(entityManager, pendingMesh.Entity, pendingMesh.Data);
+                chunk.TimesMeshed += 1;
                 pendingMesh.Data.Dispose();
                 chunk.State += 1;
             }
@@ -112,7 +113,8 @@ namespace Automata.Game.Chunks.Generation
                         chunk.State += 1;
                         break;
 
-                    case GenerationState.AwaitingMesh when chunk.NeighborState(GenerationState.AwaitingMesh, ComparisonMode.EqualOrGreaterThan):
+                    case GenerationState.AwaitingMesh when chunk.NeighborState(GenerationState.AwaitingMesh, ComparisonMode.EqualOrGreaterThan)
+                                                           && (chunk.Modifications.Count == 0):
                         BoundedInvocationPool.Instance.Enqueue(_ => GenerateMesh(entity, chunk));
                         chunk.State += 1;
                         break;
@@ -177,7 +179,7 @@ namespace Automata.Game.Chunks.Generation
                         if (Vector3b.All(modificationOffset >= 0) && Vector3b.All(modificationOffset < GenerationConstants.CHUNK_SIZE))
                             await chunk.Modifications.AddAsync(new ChunkModification
                             {
-                                Local = modificationOffset,
+                                BlockIndex = Vector3i.Project1D(modificationOffset, GenerationConstants.CHUNK_SIZE),
                                 BlockID = blockID
                             }).ConfigureAwait(false);
 

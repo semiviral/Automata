@@ -50,48 +50,63 @@ namespace Automata.Game.Chunks
                 recalculateChunkRegions = true;
             }
 
-            if (recalculateChunkRegions)
-            {
-                // this calculates new chunk allocations and current chunk deallocations
-                HashSet<Vector3i> withinLoaderRange = new HashSet<Vector3i>(GetOriginsWithinLoaderRanges(entityManager.GetComponents<ChunkLoader>()));
-
-                // process chunk allocations
-                foreach (Vector3i origin in withinLoaderRange.Except(VoxelWorld.Chunks.Origins))
-                    if (VoxelWorld.Chunks.TryAllocate(origin, out IEntity? entity))
-                        entityManager.RegisterEntity(entity);
-
-                // process chunk deallocations
-                foreach (Vector3i origin in VoxelWorld.Chunks.Origins.Except(withinLoaderRange))
-                    if (VoxelWorld.Chunks.TryDeallocate(origin, out IEntity? entity))
-                        entityManager.RemoveEntity(entity);
-
-                // here we update neighbors, and allocate (in a stack) all chunks that will require remeshing
-                foreach ((Vector3i origin, IEntity entity) in VoxelWorld.Chunks)
-                {
-                    Chunk? chunk = entity.Find<Chunk>();
-
-                    Debug.Assert(chunk is not null, "All entities within VoxelWorld.Chunks should have Chunk component.");
-
-                    // here we assign this chunk's neighbors
-                    //
-                    // in addition, if this chunk is inactive (i.e. a new allocation) then
-                    // we also enqueue each neighbor the a queue, signifying that once the neighbor
-                    // enter the 'GenerationState.Finished' state, it needs to be remeshed.
-                    int neighborIndex = 0;
-                    bool isNewChunk = chunk.State is GenerationState.Inactive;
-                    if (isNewChunk) chunk.State += 1; // chunk is being processed, so is not inactive
-
-                    foreach (Chunk? neighbor in GetNeighborsOfOrigin(origin))
-                    {
-                        if (isNewChunk && neighbor is not null) _PendingRemeshingDueToNeighborUpdatesQueue.Enqueue(neighbor);
-
-                        chunk.Neighbors[neighborIndex] = neighbor;
-                        neighborIndex += 1;
-                    }
-                }
-            }
+            if (recalculateChunkRegions) RecalculateChunkRegions(entityManager);
 
             return ValueTask.CompletedTask;
+        }
+
+        private void RecalculateChunkRegions(EntityManager entityManager)
+        {
+            // this calculates new chunk allocations and current chunk deallocations
+            HashSet<Vector3i> withinLoaderRange = new HashSet<Vector3i>(GetOriginsWithinLoaderRanges(entityManager.GetComponents<ChunkLoader>()));
+
+            // process chunk allocations
+            foreach (Vector3i origin in withinLoaderRange.Except(VoxelWorld.Chunks.Origins))
+                if (VoxelWorld.Chunks.TryAllocate(origin, out IEntity? entity))
+                    entityManager.RegisterEntity(entity);
+
+            // process chunk deallocations
+            foreach (Vector3i origin in VoxelWorld.Chunks.Origins.Except(withinLoaderRange))
+                if (VoxelWorld.Chunks.TryDeallocate(origin, out IEntity? entity))
+                    entityManager.RemoveEntity(entity);
+
+            // here we update neighbors, and allocate (in a stack) all chunks that will require remeshing
+            foreach ((Vector3i origin, IEntity entity) in VoxelWorld.Chunks)
+            {
+                Chunk? chunk = entity.Find<Chunk>();
+
+                Debug.Assert(chunk is not null, "All entities within VoxelWorld.Chunks should have Chunk component.");
+
+                // here we assign this chunk's neighbors
+                //
+                // in addition, if this chunk is inactive (i.e. a new allocation) then
+                // we also enqueue each neighbor the a queue, signifying that once the neighbor
+                // enter the 'GenerationState.Finished' state, it needs to be remeshed.
+                int neighborIndex = 0;
+                bool isNewChunk = chunk.State is GenerationState.Inactive;
+                if (isNewChunk) chunk.State += 1; // chunk is being processed, so is not inactive
+
+                foreach (Chunk? neighbor in GetNeighborsOfOrigin(origin))
+                {
+                    if (isNewChunk && neighbor is not null) _PendingRemeshingDueToNeighborUpdatesQueue.Enqueue(neighbor);
+
+                    chunk.Neighbors[neighborIndex] = neighbor;
+                    neighborIndex += 1;
+                }
+            }
+        }
+
+        private static IEnumerable<Vector3i> GetOriginsWithinLoaderRanges(IEnumerable<ChunkLoader> enumerable)
+        {
+            foreach (ChunkLoader chunkLoader in enumerable)
+            {
+                Vector3i chunkLoaderOriginYAdjusted = new Vector3i(chunkLoader.Origin.X, 0, chunkLoader.Origin.Z);
+
+                for (int y = 0; y < GenerationConstants.WORLD_HEIGHT_IN_CHUNKS; y++)
+                for (int z = -chunkLoader.Radius; z < (chunkLoader.Radius + 1); z++)
+                for (int x = -chunkLoader.Radius; x < (chunkLoader.Radius + 1); x++)
+                    yield return chunkLoaderOriginYAdjusted + (new Vector3i(x, y, z) * GenerationConstants.CHUNK_SIZE);
+            }
         }
 
         private IEnumerable<Chunk?> GetNeighborsOfOrigin(Vector3i origin)
@@ -106,23 +121,6 @@ namespace Automata.Game.Chunks
                 VoxelWorld.Chunks.TryGetEntity(neighborOrigin, out IEntity? neighbor);
                 yield return neighbor?.Find<Chunk>();
             }
-        }
-
-        private static IEnumerable<Vector3i> GetOriginsWithinLoaderRanges(IEnumerable<ChunkLoader> enumerable)
-        {
-            static IEnumerable<Vector3i> GetActiveChunkLoaderRegionImpl(ChunkLoader chunkLoader)
-            {
-                Vector3i chunkLoaderOriginYAdjusted = new Vector3i(chunkLoader.Origin.X, 0, chunkLoader.Origin.Z);
-
-                for (int y = 0; y < GenerationConstants.WORLD_HEIGHT_IN_CHUNKS; y++)
-                for (int z = -chunkLoader.Radius; z < (chunkLoader.Radius + 1); z++)
-                for (int x = -chunkLoader.Radius; x < (chunkLoader.Radius + 1); x++)
-                    yield return chunkLoaderOriginYAdjusted + (new Vector3i(x, y, z) * GenerationConstants.CHUNK_SIZE);
-            }
-
-            foreach (ChunkLoader chunkLoader in enumerable)
-            foreach (Vector3i origin in GetActiveChunkLoaderRegionImpl(chunkLoader))
-                yield return origin;
         }
     }
 }
