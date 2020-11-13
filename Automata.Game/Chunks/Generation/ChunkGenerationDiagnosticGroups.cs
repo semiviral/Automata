@@ -11,27 +11,27 @@ using DiagnosticsProviderNS;
 
 namespace Automata.Game.Chunks.Generation
 {
-    public class BuildingTime : TimeSpanDiagnosticData
+    public record BuildingTime : TimeSpanDiagnosticData
     {
         public BuildingTime(TimeSpan data) : base(data) { }
     }
 
-    public class InsertionTime : TimeSpanDiagnosticData
+    public record InsertionTime : TimeSpanDiagnosticData
     {
         public InsertionTime(TimeSpan data) : base(data) { }
     }
 
-    public class StructuresTime : TimeSpanDiagnosticData
+    public record StructuresTime : TimeSpanDiagnosticData
     {
         public StructuresTime(TimeSpan data) : base(data) { }
     }
 
-    public class MeshingTime : TimeSpanDiagnosticData
+    public record MeshingTime : TimeSpanDiagnosticData
     {
         public MeshingTime(TimeSpan data) : base(data) { }
     }
 
-    public class ApplyMeshTime : TimeSpanDiagnosticData
+    public record ApplyMeshTime : TimeSpanDiagnosticData
     {
         public ApplyMeshTime(TimeSpan data) : base(data) { }
     }

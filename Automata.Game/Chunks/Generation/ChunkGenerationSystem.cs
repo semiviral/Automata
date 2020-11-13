@@ -113,8 +113,7 @@ namespace Automata.Game.Chunks.Generation
                         chunk.State += 1;
                         break;
 
-                    case GenerationState.AwaitingMesh when chunk.NeighborState(GenerationState.AwaitingMesh, ComparisonMode.EqualOrGreaterThan)
-                                                           && (chunk.Modifications.Count == 0):
+                    case GenerationState.AwaitingMesh when chunk.NeighborState(GenerationState.AwaitingMesh, ComparisonMode.EqualOrGreaterThan):
                         BoundedInvocationPool.Instance.Enqueue(_ => GenerateMesh(entity, chunk));
                         chunk.State += 1;
                         break;

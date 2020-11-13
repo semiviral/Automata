@@ -10,12 +10,12 @@ using Automata.Engine.Components;
 
 namespace Automata.Engine.Entities
 {
-    public interface IEntity : IEquatable<IEntity>, ICollection<Component>
+    public interface IEntity : ICollection<Component>, IEquatable<IEntity>
     {
         Guid ID { get; }
         bool Destroyed { get; }
 
-        Component this[Type type] { get; init; }
+        Component? this[Type type] { get; init; }
 
         void Add<TComponent>() where TComponent : Component, new();
         TComponent Remove<TComponent>() where TComponent : Component;

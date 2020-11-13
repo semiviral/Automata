@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
@@ -32,6 +33,6 @@ namespace Automata.Game.Resources
         public string? RelativeTexturesPath { get; set; }
         public List<BlockDefinition>? BlockDefinitions { get; set; }
 
-        public static Resource Load(string path) => JsonSerializer.Deserialize<Resource>(File.ReadAllText(path));
+        public static Resource Load(string path) => JsonSerializer.Deserialize<Resource>(File.ReadAllText(path)) ?? throw new NullReferenceException();
     }
 }
