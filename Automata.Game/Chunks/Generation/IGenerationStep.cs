@@ -14,7 +14,7 @@ namespace Automata.Game.Chunks.Generation
             public float Persistence { get; init; } = 0.65f;
             public float CaveThreshold { get; init; } = 0.000225f;
 
-            public Parameters(int seed) => (Seed, SeededRandom) = (seed, new Random(seed));
+            public Parameters(int seed, int randomSeed) => (Seed, SeededRandom) = (seed, new Random(randomSeed));
         }
 
         public void Generate(Vector3i origin, Parameters parameters, Span<ushort> blocks);

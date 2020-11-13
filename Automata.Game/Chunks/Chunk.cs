@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Automata.Engine.Collections;
@@ -10,27 +9,35 @@ namespace Automata.Game.Chunks
     public class Chunk : Component
     {
         public GenerationState State { get; set; } = GenerationState.AwaitingTerrain;
-        public bool InsertionSafeState => State is GenerationState.Finished or GenerationState.AwaitingMesh;
         public Palette<Block>? Blocks { get; set; }
         public Chunk?[] Neighbors { get; } = new Chunk?[6];
         public IEnumerable<Palette<Block>?> NeighborBlocks => Neighbors.Select(chunk => chunk?.Blocks);
         public ConcurrentChannel<ChunkModification> Modifications { get; } = new ConcurrentChannel<ChunkModification>(true, false);
 
-        public bool IsStateLockstep(ComparisonMode comparisonMode) => Neighbors.All(chunk => chunk is null
-                                                                                             || comparisonMode switch
-                                                                                             {
-                                                                                                 ComparisonMode.EqualOrGreaterThan => chunk.State >= State,
-                                                                                                 ComparisonMode.EqualOrLessThan => chunk.State <= State,
-                                                                                                 ComparisonMode.Equal => chunk.State == State,
-                                                                                                 _ => throw new ArgumentOutOfRangeException(
-                                                                                                     nameof(comparisonMode))
-                                                                                             });
+        //public bool IsStateLockstep(params GenerationState[] states) => Neighbors.All(neighbor => neighbor is null || states.Any(state => neighbor.State == state));
 
-        public void RemeshNeighbors()
+        public bool NeighborhoodState(GenerationState state1)
         {
-            foreach (Chunk? chunk in Neighbors)
-                if (chunk?.InsertionSafeState is true)
-                    chunk.State = GenerationState.AwaitingMesh;
+            if (State != state1) return false;
+
+            foreach (Chunk? neighbor in Neighbors)
+                if (neighbor is not null && (neighbor.State != state1))
+                    return false;
+
+            return true;
         }
+
+        public bool NeighborhoodState(GenerationState state1, GenerationState state2)
+        {
+            if ((State != state1) && (State != state2)) return false;
+
+            foreach (Chunk? neighbor in Neighbors)
+                if (neighbor is not null && (neighbor.State != state1) && (neighbor.State != state2))
+                    return false;
+
+            return true;
+        }
+
+        //public override string ToString() => $"chunk({State}, {InsertionSafeState}, {IsStateLockstep(ComparisonMode.Equal)}, {Neighbors.Count(neighbor => neighbor is null)}";
     }
 }

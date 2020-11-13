@@ -49,16 +49,17 @@ namespace Automata.Game.Chunks.Generation
 
         public override void Registered(EntityManager entityManager)
         {
-            IEntity entity = new Entity
+            InputManager.Instance.InputActions.Add(new InputAction(() =>
             {
-                new InputAction(() =>
-                {
-                    Log.Information(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(DiagnosticsSystem),
-                        $"Average generation times: {DiagnosticsProvider.GetGroup<ChunkGenerationDiagnosticGroup>()}"));
-                }, Key.ShiftLeft, Key.B)
-            };
+                Log.Information(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(DiagnosticsSystem),
+                    $"Average generation times: {DiagnosticsProvider.GetGroup<ChunkGenerationDiagnosticGroup>()}"));
+            }, Key.ShiftLeft, Key.B));
 
-            entityManager.RegisterEntity(entity);
+            InputManager.Instance.InputActions.Add(new InputAction(() =>
+            {
+                IEnumerable<GenerationState> states = entityManager.GetComponents<Chunk>().Select(chunk => chunk.State);
+                Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(DiagnosticsSystem), string.Join(", ", states)));
+            }, Key.ShiftLeft, Key.V));
         }
 
         [HandledComponents(DistinctionStrategy.All, typeof(Translation), typeof(Chunk))]
@@ -67,7 +68,8 @@ namespace Automata.Game.Chunks.Generation
             // empty channel of any pending blocks
             while (_PendingBlocks.TryTake(out (IEntity Entity, Palette<Block> Blocks) pendingBlocks)
                    && !pendingBlocks.Entity.Destroyed
-                   && pendingBlocks.Entity.TryFind(out Chunk? chunk))
+                   && pendingBlocks.Entity.TryFind(out Chunk? chunk)
+                   && chunk.State is GenerationState.GeneratingTerrain)
             {
                 chunk.Blocks = pendingBlocks.Blocks;
                 chunk.State += 1;
@@ -76,7 +78,8 @@ namespace Automata.Game.Chunks.Generation
             // empty channel of any pending meshes, apply the meshes, and update the material
             while (_PendingMeshes.TryTake(out (IEntity Entity, PendingMesh<PackedVertex> Mesh) pendingMesh)
                    && !pendingMesh.Entity.Destroyed
-                   && pendingMesh.Entity.TryFind(out Chunk? chunk))
+                   && pendingMesh.Entity.TryFind(out Chunk? chunk)
+                   && chunk.State is GenerationState.GeneratingMesh)
             {
                 PrepareChunkForRendering(entityManager, pendingMesh.Entity, pendingMesh.Mesh);
                 chunk.State += 1;
@@ -87,29 +90,24 @@ namespace Automata.Game.Chunks.Generation
                 switch (chunk.State)
                 {
                     case GenerationState.AwaitingTerrain:
-                        BoundedInvocationPool.Instance.Enqueue(_ =>
+                        Vector3i origin = Vector3i.FromVector3(translation.Value);
+
+                        IGenerationStep.Parameters parameters = new IGenerationStep.Parameters(GenerationConstants.Seed, origin.GetHashCode())
                         {
-                            Vector3i origin = Vector3i.FromVector3(translation.Value);
+                            Frequency = 0.008f
+                        };
 
-                            Debug.Assert(Vector3b.All((origin % 32) == 0), "Origin should be a multiple of chunk size.");
-
-                            IGenerationStep.Parameters parameters = new IGenerationStep.Parameters(origin.GetHashCode())
-                            {
-                                Frequency = 0.008f
-                            };
-
-                            return GenerateBlocks(entity, origin, parameters);
-                        });
+                        BoundedInvocationPool.Instance.Enqueue(_ => GenerateBlocks(entity, origin, parameters));
 
                         chunk.State += 1;
                         break;
 
-                    // case GenerationState.AwaitingStructures:
-                    //     BoundedInvocationPool.Instance.Enqueue(_ => GenerateStructures(chunk, Vector3i.FromVector3(translation.Value)));
-                    //     chunk.State += 1;
-                    //     break;
+                    case GenerationState.AwaitingStructures:
+                        BoundedInvocationPool.Instance.Enqueue(_ => GenerateStructures(chunk, Vector3i.FromVector3(translation.Value)));
+                        chunk.State += 1;
+                        break;
 
-                    case GenerationState.AwaitingMesh when chunk.IsStateLockstep(ComparisonMode.EqualOrGreaterThan):
+                    case GenerationState.AwaitingMesh when chunk.NeighborhoodState(GenerationState.AwaitingMesh, GenerationState.Finished):
                         BoundedInvocationPool.Instance.Enqueue(_ => GenerateMesh(entity, chunk));
                         chunk.State += 1;
                         break;
@@ -118,7 +116,7 @@ namespace Automata.Game.Chunks.Generation
             return ValueTask.CompletedTask;
         }
 
-        private async ValueTask GenerateBlocks(IEntity entity, Vector3i origin, IGenerationStep.Parameters parameters)
+        private async Task GenerateBlocks(IEntity entity, Vector3i origin, IGenerationStep.Parameters parameters)
         {
             Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
 
@@ -146,7 +144,7 @@ namespace Automata.Game.Chunks.Generation
             DiagnosticsSystem.Stopwatches.Return(stopwatch);
         }
 
-        private async ValueTask GenerateStructures(Chunk chunk, Vector3i origin)
+        private async Task GenerateStructures(Chunk chunk, Vector3i origin)
         {
             Stopwatch stopwatch = DiagnosticsSystem.Stopwatches.Rent();
 
@@ -188,7 +186,7 @@ namespace Automata.Game.Chunks.Generation
             chunk.State += 1;
         }
 
-        private async ValueTask GenerateMesh(IEntity entity, Chunk chunk)
+        private async Task GenerateMesh(IEntity entity, Chunk chunk)
         {
             if (chunk.Blocks is null)
             {
@@ -230,7 +228,8 @@ namespace Automata.Game.Chunks.Generation
 
             if (pendingMesh.IsEmpty)
             {
-                if (hasRenderMesh) renderMesh!.Mesh = null;
+                if (hasRenderMesh && renderMesh!.Mesh is not null) renderMesh!.Mesh.Dispose();
+
                 return false;
             }
 

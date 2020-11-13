@@ -4,7 +4,7 @@ using Silk.NET.Input.Common;
 
 namespace Automata.Engine.Input
 {
-    public class InputAction : Component
+    public class InputAction
     {
         public Key[] KeyCombination { get; }
         public Action Action { get; }

@@ -16,7 +16,7 @@ namespace Automata.Game.Chunks
         public override ValueTask Update(EntityManager entityManager, TimeSpan delta)
         {
             foreach (Chunk chunk in entityManager.GetComponents<Chunk>()
-                .Where(chunk => chunk.InsertionSafeState && chunk.IsStateLockstep(ComparisonMode.Equal)))
+                .Where(chunk => chunk.NeighborhoodState(GenerationState.AwaitingMesh, GenerationState.Finished)))
             {
                 Debug.Assert(chunk.Blocks is not null, $"Blocks should not be null when state is {nameof(GenerationState.Finished)}.");
 
@@ -28,17 +28,18 @@ namespace Automata.Game.Chunks
 
                     if (chunk.Blocks[index].ID == modification.BlockID) continue;
 
-                    // set state to prohibit lockstep mesh gen
-                    if (chunk.State is not GenerationState.AwaitingMesh)
-                    {
-                        chunk.State = GenerationState.AwaitingMesh;
-                        modified = true;
-                    }
-
+                    if (!modified) modified = true;
                     chunk.Blocks[index] = new Block(modification.BlockID);
                 }
 
-                if (modified) chunk.RemeshNeighbors();
+                if (!modified) continue;
+
+                chunk.State = GenerationState.AwaitingMesh;
+
+                foreach (Chunk? neighbor in chunk.Neighbors.Where(neighbor => neighbor is not null)) neighbor!.State = GenerationState.AwaitingMesh;
+
+                Debug.Assert(chunk.Neighbors.All(neighbor => neighbor?.State is null or GenerationState.AwaitingMesh),
+                    "Neighbors should all be awaiting remesh.");
             }
 
             return ValueTask.CompletedTask;

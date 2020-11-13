@@ -97,39 +97,6 @@ namespace Automata.Engine.Concurrency
             else Task.Run(Dispatch, CancellationToken);
         }
 
-        /// <inheritdoc cref="Enqueue(Automata.Engine.Concurrency.AsyncReferenceInvocation)" />
-        public void Enqueue(AsyncValueInvocation invocation)
-        {
-            // dispatch method used to wrap invocations
-            // this allows us to observe cancellations, wait on the semaphore, and
-            // generally control internal state before and after invocation execution.
-            async Task Dispatch()
-            {
-                try
-                {
-                    if (_CancellationTokenSource.IsCancellationRequested) return;
-
-                    await _Semaphore.WaitAsync(CancellationToken).ConfigureAwait(false);
-                    await invocation.Invoke(CancellationToken).ConfigureAwait(false);
-                    _Semaphore.Release(1);
-                }
-                catch (Exception exception) when (exception is not OperationCanceledException)
-                {
-                    // invoke exception event to propagate swallowed errors
-                    ExceptionOccurred?.Invoke(this, exception);
-                }
-            }
-
-            // ensure the pool size isn't being modified
-            _ModifyPoolReset.Wait(CancellationToken);
-
-            // ensure the pool is actually accepting invocations
-            if (Size == 0) throw new InvalidOperationException($"Pool is empty. Call {nameof(DefaultPoolSize)}() or {nameof(ModifyPoolSize)}().");
-
-            // dispatch work to ThreadPool
-            else Task.Run(Dispatch, CancellationToken);
-        }
-
         /// <summary>
         ///     Modifies pool size to <see cref="Environment.ProcessorCount" /> - 2.
         /// </summary>

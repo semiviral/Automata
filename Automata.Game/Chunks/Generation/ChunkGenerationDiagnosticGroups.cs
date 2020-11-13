@@ -52,7 +52,7 @@ namespace Automata.Game.Chunks.Generation
 
         public ChunkGenerationDiagnosticGroup()
         {
-            const int resolution = 300;
+            const int resolution = 300000;
             _BuildingTimes = new BoundedConcurrentQueue<BuildingTime>(resolution);
             _InsertionTimes = new BoundedConcurrentQueue<InsertionTime>(resolution);
             _StructuresTimes = new BoundedConcurrentQueue<StructuresTime>(resolution);

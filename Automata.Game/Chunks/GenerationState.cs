@@ -5,8 +5,8 @@ namespace Automata.Game.Chunks
         Deactivated,
         AwaitingTerrain,
         GeneratingTerrain,
-        // AwaitingStructures,
-        // GeneratingStructures,
+        AwaitingStructures,
+        GeneratingStructures,
         AwaitingMesh,
         GeneratingMesh,
         Finished

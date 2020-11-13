@@ -128,6 +128,8 @@ namespace Automata.Engine
 
                     if (!Window.IsClosing) await World.GlobalUpdate(deltaTime);
 
+                    InputManager.Instance.CheckAndExecuteInputActions();
+
                     Window.DoEvents();
                     Window.SwapBuffers();
 

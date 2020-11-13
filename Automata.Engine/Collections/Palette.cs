@@ -9,37 +9,37 @@ namespace Automata.Engine.Collections
 {
     public class Palette<T> : IReadOnlyCollection<T> where T : IEquatable<T>
     {
-        protected const byte UINT_32_BITS = sizeof(uint) * 8;
+        private const byte _UINT_32_BITS = sizeof(uint) * 8;
 
-        protected readonly List<T> LookupTable;
+        private readonly List<T> _LookupTable;
 
-        protected byte _IndexBits;
-        protected uint _IndexMask;
-        protected uint[] _Palette;
+        private byte _IndexBits;
+        private uint _IndexMask;
+        private uint[]? _Palette;
 
         public int Count { get; }
 
-        public IReadOnlyList<T> ReadOnlyLookupTable => LookupTable;
+        public IReadOnlyList<T> ReadOnlyLookupTable => _LookupTable;
 
-        public virtual T this[int index]
+        public T this[int index]
         {
             get
             {
                 if (index >= Count) throw new IndexOutOfRangeException("Index must be non-negative and less than the size of the collection.");
 
                 uint value = GetValue(index, _IndexBits, _IndexMask, _Palette);
-                return LookupTable[(int)value];
+                return _LookupTable[(int)value];
             }
             set
             {
                 if (index >= Count) throw new IndexOutOfRangeException("Index must be non-negative and less than the size of the collection.");
 
-                int paletteIndex = LookupTable.IndexOf(value);
+                int paletteIndex = _LookupTable.IndexOf(value);
 
                 if (paletteIndex == -1)
                 {
                     AllocateLookupEntry(value);
-                    paletteIndex = LookupTable.IndexOf(value);
+                    paletteIndex = _LookupTable.IndexOf(value);
                 }
 
                 SetValue(index, (uint)paletteIndex, _IndexBits, _IndexMask, _Palette);
@@ -54,12 +54,12 @@ namespace Automata.Engine.Collections
             _IndexBits = 1;
             ComputeMask();
 
-            LookupTable = new List<T>
+            _LookupTable = new List<T>
             {
                 defaultItem
             };
 
-            _Palette = ArrayPool<uint>.Shared.Rent(Compute32BitSlices(_IndexBits, Count));
+            ReallocatePalette(Compute32BitSlices(_IndexBits, Count));
         }
 
         public Palette(int length, IReadOnlyCollection<T> lookupTable)
@@ -70,23 +70,23 @@ namespace Automata.Engine.Collections
             Count = length;
             _IndexBits = 1;
             ComputeMask();
-            LookupTable = new List<T>(lookupTable);
+            _LookupTable = new List<T>(lookupTable);
 
             // ensure palette can fit lookup table
             while (_IndexMask < lookupTable.Count) IncreaseIndexBits();
 
-            _Palette = ArrayPool<uint>.Shared.Rent(Compute32BitSlices(_IndexBits, Count));
+            ReallocatePalette(Compute32BitSlices(_IndexBits, Count));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void AllocateLookupEntry(T item)
         {
-            Debug.Assert(!LookupTable.Contains(item), "Lookup table already contains item. This method should only be called when the item is not present.");
+            Debug.Assert(!_LookupTable.Contains(item), "Lookup table already contains item. This method should only be called when the item is not present.");
 
-            LookupTable.Add(item);
+            _LookupTable.Add(item);
 
             // check if lookup table length exceeds palette
-            if (LookupTable.Count <= _IndexMask) return;
+            if (_LookupTable.Count <= _IndexMask) return;
 
             // expand palette
             byte oldBits = _IndexBits;
@@ -102,26 +102,33 @@ namespace Automata.Engine.Collections
                 SetValue(index, value, _IndexBits, _IndexMask, palette);
             }
 
-            ArrayPool<uint>.Shared.Return(_Palette, true);
-            _Palette = ArrayPool<uint>.Shared.Rent(palette.Length);
+            ReallocatePalette(palette.Length);
             palette.CopyTo(_Palette);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static void SetValue(int index, uint lookupIndex, byte bits, uint mask, Span<uint> palette)
+        private void ReallocatePalette(int length)
         {
-            int paletteIndex = (index * bits) / UINT_32_BITS;
-            int offset = (index - (paletteIndex * (UINT_32_BITS / bits))) * bits;
+            if (_Palette is not null) ArrayPool<uint>.Shared.Return(_Palette);
+
+            _Palette = ArrayPool<uint>.Shared.Rent(length);
+            Array.Clear(_Palette, 0, _Palette.Length);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void SetValue(int index, uint lookupIndex, byte bits, uint mask, Span<uint> palette)
+        {
+            int paletteIndex = (index * bits) / _UINT_32_BITS;
+            int offset = (index - (paletteIndex * (_UINT_32_BITS / bits))) * bits;
             palette[paletteIndex] = (palette[paletteIndex] & ~(mask << offset)) | (lookupIndex << offset);
 
             Debug.Assert(GetValue(index, bits, mask, palette).Equals(lookupIndex), $"{nameof(SetValue)} failed.");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static uint GetValue(int index, byte bits, uint mask, ReadOnlySpan<uint> palette)
+        private static uint GetValue(int index, byte bits, uint mask, ReadOnlySpan<uint> palette)
         {
-            int paletteIndex = (index * bits) / UINT_32_BITS;
-            int offset = (index - (paletteIndex * (UINT_32_BITS / bits))) * bits;
+            int paletteIndex = (index * bits) / _UINT_32_BITS;
+            int offset = (index - (paletteIndex * (_UINT_32_BITS / bits))) * bits;
 
             return (uint)((palette[paletteIndex] & (mask << offset)) >> offset);
         }
@@ -144,7 +151,7 @@ namespace Automata.Engine.Collections
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static ushort Compute32BitSlices(byte bits, int length) =>
-            (ushort)MathF.Ceiling((bits * length) / (float)UINT_32_BITS);
+            (ushort)MathF.Ceiling((bits * length) / (float)_UINT_32_BITS);
 
         public void CopyTo(Span<T> destination)
         {
@@ -163,17 +170,22 @@ namespace Automata.Engine.Collections
 
         public IEnumerator<T> GetEnumerator()
         {
+            if (_Palette is null) throw new InvalidOperationException("Palette is in an invalid state (no internal data).");
+
             int index = 0;
 
             foreach (uint value in _Palette)
-                for (int offset = 0; offset < UINT_32_BITS; offset += _IndexBits)
+                for (int offset = 0; offset < _UINT_32_BITS; offset += _IndexBits)
                 {
-                    yield return LookupTable[(int)((value >> offset) & _IndexMask)];
+                    yield return _LookupTable[(int)((value >> offset) & _IndexMask)];
 
                     if ((index += 1) >= Count) yield break;
                 }
         }
 
-        ~Palette() => ArrayPool<uint>.Shared.Return(_Palette, true);
+        ~Palette()
+        {
+            if (_Palette is not null) ArrayPool<uint>.Shared.Return(_Palette);
+        }
     }
 }
