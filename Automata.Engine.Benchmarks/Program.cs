@@ -1,7 +1,7 @@
 ﻿using BenchmarkDotNet.Reports;
 using BenchmarkDotNet.Running;
 
-namespace Benchmarking
+namespace Automata.Engine.Benchmarks
 {
     internal class Program
     {

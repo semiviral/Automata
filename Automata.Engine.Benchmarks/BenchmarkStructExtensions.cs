@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using BenchmarkDotNet.Attributes;
 
-namespace Benchmarking
+namespace Automata.Engine.Benchmarks
 {
     internal static class BenchmarkStructExtensionsStatic
     {

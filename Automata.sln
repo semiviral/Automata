@@ -4,7 +4,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Automata.Engine", "Automata
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Automata.Game", "Automata.Game\Automata.Game.csproj", "{EC9BB4FA-8EEE-4890-A510-87D4D77E3AF7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmarking", "Benchmarking\Benchmarking.csproj", "{39883E3D-CE25-4F9A-A376-76D7E13F9E3F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Automata.Engine.Benchmarks", "Automata.Engine.Benchmarks\Automata.Engine.Benchmarks.csproj", "{39883E3D-CE25-4F9A-A376-76D7E13F9E3F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Automata.Engine.Tests", "Automata.Engine.Tests\Automata.Engine.Tests.csproj", "{C1BB68F0-6AE0-4302-84DF-194436C8748B}"
 EndProject
