@@ -23,9 +23,9 @@ namespace Automata.Engine.Rendering.OpenGL.Memory
         private readonly LinkedList<MemoryBlock> _MemoryMap;
         private readonly object _AccessLock;
 
-        public NativeMemoryPool(byte* nativePointer, uint length)
+        public NativeMemoryPool(byte* pointer, uint length)
         {
-            _MemoryManager = new NativeMemoryManager<byte>(nativePointer, length);
+            _MemoryManager = new NativeMemoryManager<byte>(pointer, length);
             _MemoryMap = new LinkedList<MemoryBlock>();
             _MemoryMap.AddFirst(new MemoryBlock(0u, length, false));
             _AccessLock = new object();

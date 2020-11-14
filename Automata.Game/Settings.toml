@@ -6,5 +6,5 @@ SingleThreadedGeneration=false
 GenerationRadius=12
 
 [Diagnostic]
-DisableTemporalDiagnostics=true
+DisableTemporalDiagnostics=false
 DebugDataBufferSize=300
