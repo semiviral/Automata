@@ -67,16 +67,16 @@ namespace Automata.Engine.Rendering.OpenGL.Memory
                     }
                     else continue;
 
-                    return _MemoryManager is not null
+                    return _MemoryManager is not null // if memory manager isn't null then the allocation is <=int.MaxValue
                         ? CreateMemoryOwnerFromBlockWithSlice<T>(current.Value)
                         : CreateMemoryOwnerFromBlockWithNewManager<T>(current.Value);
                 } while ((current = current.Next) is not null);
             }
 
-            throw new InsufficientMemoryException("Not enough memory to accomodate allocation.");
+            ThrowHelper.ThrowInsufficientMemoryException("Not enough memory to accomodate allocation.");
+            return null!;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private IMemoryOwner<T> CreateMemoryOwnerFromBlockWithSlice<T>(MemoryBlock memoryBlock) where T : unmanaged
         {
             if (_MemoryManager is null) ThrowHelper.ThrowInvalidOperationException("No memory manager to slice memory from.");
@@ -95,7 +95,10 @@ namespace Automata.Engine.Rendering.OpenGL.Memory
             if (memoryBlock.Length > int.MaxValue)
                 ThrowHelper.ThrowArgumentOutOfRangeException(nameof(memoryBlock.Length), $"Length cannot be greater than {int.MaxValue}.");
 
-            T* offsetPointer = (T*)_Pointer + memoryBlock.Index;
+            // remark: it's POSSIBLE for alignment to get screwed up in this operation.
+            // T will not often be the same size as _Pointer, so it's important to take care in calling this
+            // method with a valid MemoryBlock that won't misalign other MemoryBlock's offsets and length.
+            T* offsetPointer = (T*)(_Pointer + memoryBlock.Index);
             NativeMemoryManager<T> memoryManager = new NativeMemoryManager<T>(offsetPointer, (int)memoryBlock.Length);
             IMemoryOwner<T> memoryOwner = new NativeMemoryOwner<T>(this, memoryBlock.Index, memoryManager.Memory);
             Interlocked.Increment(ref _RentedBlocks);
@@ -110,13 +113,13 @@ namespace Automata.Engine.Rendering.OpenGL.Memory
                 LinkedListNode<MemoryBlock> current = GetMemoryBlockAtIndex(memoryOwner.Index);
                 LinkedListNode<MemoryBlock>? before = current.Previous;
                 LinkedListNode<MemoryBlock>? after = current.Next;
-                current.Value = current.Value with { Owned = false};
+                current.Value = current.Value with { Owned = false };
 
                 if (before?.Value.Owned is false)
                 {
                     nuint newIndex = before.Value.Index;
                     nuint newLength = before.Value.Length + current.Value.Length;
-                    current.Value = current.Value with { Index = newIndex, Length = newLength };
+                    current.Value = current.Value with{ Index = newIndex, Length = newLength };
                     _MemoryMap.Remove(before);
                 }
 
@@ -142,7 +145,8 @@ namespace Automata.Engine.Rendering.OpenGL.Memory
                 if (current!.Value.Index == index) return current;
             } while ((current = current.Next) is not null);
 
-            throw new InsufficientMemoryException("No memory block starts at index.");
+            ThrowHelper.ThrowArgumentOutOfRangeException(nameof(index), "No memory block starts at index.");
+            return null!;
         }
     }
 }
