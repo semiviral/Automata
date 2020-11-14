@@ -11,12 +11,17 @@ namespace Automata.Engine.Benchmarks
     {
         private IntPtr? _Pointer;
         private NativeMemoryPool? _NativeMemoryPool;
+        private IntPtr? _LargePointer;
+        private NativeMemoryPool _LargeNativeMemoryPool;
 
         [GlobalSetup]
         public unsafe void Setup()
         {
             _Pointer = Marshal.AllocHGlobal(1_000_000_000);
             _NativeMemoryPool = new NativeMemoryPool((byte*)_Pointer, 1_000_000_000);
+
+            _LargePointer = Marshal.AllocHGlobal((IntPtr)3_000_000_000);
+            _NativeMemoryPool = new NativeMemoryPool((byte*)_LargePointer, 3_000_000_000);
         }
 
         [GlobalCleanup]
@@ -53,6 +58,38 @@ namespace Automata.Engine.Benchmarks
         public IMemoryOwner<int> Rent1MBClear()
         {
             IMemoryOwner<int> memoryOwner = _NativeMemoryPool!.Rent<int>(1_000_000, true);
+            memoryOwner.Dispose();
+            return memoryOwner;
+        }
+
+        [Benchmark]
+        public IMemoryOwner<int> LargeRent1KBNoClear()
+        {
+            IMemoryOwner<int> memoryOwner = _LargeNativeMemoryPool!.Rent<int>(1_000);
+            memoryOwner.Dispose();
+            return memoryOwner;
+        }
+
+        [Benchmark]
+        public IMemoryOwner<int> LargeRent1KBClear()
+        {
+            IMemoryOwner<int> memoryOwner = _LargeNativeMemoryPool!.Rent<int>(1_000, true);
+            memoryOwner.Dispose();
+            return memoryOwner;
+        }
+
+        [Benchmark]
+        public IMemoryOwner<int> LargeRent1MBNoClear()
+        {
+            IMemoryOwner<int> memoryOwner = _LargeNativeMemoryPool!.Rent<int>(1_000_000);
+            memoryOwner.Dispose();
+            return memoryOwner;
+        }
+
+        [Benchmark]
+        public IMemoryOwner<int> LargeRent1MBClear()
+        {
+            IMemoryOwner<int> memoryOwner = _LargeNativeMemoryPool!.Rent<int>(1_000_000, true);
             memoryOwner.Dispose();
             return memoryOwner;
         }

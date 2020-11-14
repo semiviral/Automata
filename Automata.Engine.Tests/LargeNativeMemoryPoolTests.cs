@@ -7,14 +7,14 @@ using Xunit;
 
 namespace Automata.Engine.Tests
 {
-    public class NativeMemoryPoolTests : IDisposable
+    public class LargeNativeMemoryPoolTests : IDisposable
     {
-        private const nuint _POOL_SIZE = 2048u;
+        private const nuint _POOL_SIZE = 3_000_000_000u;
 
         private readonly IntPtr _Pointer;
         private readonly NativeMemoryPool _NativeMemoryPool;
 
-        public unsafe NativeMemoryPoolTests()
+        public unsafe LargeNativeMemoryPoolTests()
         {
             _Pointer = Marshal.AllocHGlobal((IntPtr)(ulong)_POOL_SIZE);
             _NativeMemoryPool = new NativeMemoryPool((byte*)_Pointer, _POOL_SIZE);

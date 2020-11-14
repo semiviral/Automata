@@ -1,4 +1,5 @@
-﻿using BenchmarkDotNet.Reports;
+﻿using System;
+using BenchmarkDotNet.Reports;
 using BenchmarkDotNet.Running;
 
 namespace Automata.Engine.Benchmarks

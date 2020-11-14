@@ -47,6 +47,8 @@ namespace Automata.Engine.Memory
 
         public IMemoryOwner<T> Rent<T>(nuint size, bool clear = false) where T : unmanaged
         {
+            size *= (nuint)sizeof(T);
+
             lock (_AccessLock)
             {
                 LinkedListNode<MemoryBlock>? current = _MemoryMap.First;
@@ -90,7 +92,7 @@ namespace Automata.Engine.Memory
             else if (memoryBlock.Index >= int.MaxValue) ThrowHelper.ThrowArgumentOutOfRangeException(nameof(memoryBlock.Index));
             else if (memoryBlock.Size > int.MaxValue) ThrowHelper.ThrowArgumentOutOfRangeException(nameof(memoryBlock.Size));
 
-            Memory<T> memory = _MemoryManager!.Slice((int)memoryBlock.Index, (int)memoryBlock.Size * sizeof(T)).Cast<byte, T>();
+            Memory<T> memory = _MemoryManager!.Slice((int)memoryBlock.Index, (int)memoryBlock.Size).Cast<byte, T>();
             IMemoryOwner<T> memoryOwner = new NativeMemoryOwner<T>(this, memoryBlock.Index, memory);
             Interlocked.Increment(ref _RentedBlocks);
 
@@ -105,8 +107,11 @@ namespace Automata.Engine.Memory
             // remark: it's POSSIBLE for alignment to get screwed up in this operation.
             // T will not often be the same size as _Pointer, so it's important to take care in calling this
             // method with a valid MemoryBlock that won't misalign other MemoryBlock's offsets and length.
-            T* offsetPointer = (T*)(_Pointer + memoryBlock.Index);
-            NativeMemoryManager<T> memoryManager = new NativeMemoryManager<T>(offsetPointer, (int)memoryBlock.Size * sizeof(T));
+            nuint genericAdjustedIndex = (memoryBlock.Index / (nuint)sizeof(T));
+            int genericAdjustedLength = (int)memoryBlock.Size / sizeof(T);
+
+            T* offsetPointer = (T*)(_Pointer + genericAdjustedIndex);
+            NativeMemoryManager<T> memoryManager = new NativeMemoryManager<T>(offsetPointer, genericAdjustedLength);
             IMemoryOwner<T> memoryOwner = new NativeMemoryOwner<T>(this, memoryBlock.Index, memoryManager.Memory);
             Interlocked.Increment(ref _RentedBlocks);
 
