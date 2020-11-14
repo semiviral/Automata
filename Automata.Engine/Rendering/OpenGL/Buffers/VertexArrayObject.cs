@@ -77,9 +77,10 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
         {
             if (_Disposed) throw new ObjectDisposedException(ToString());
 
-            GC.SuppressFinalize(this);
             GL.DeleteVertexArray(Handle);
+
             _Disposed = true;
+            GC.SuppressFinalize(this);
         }
     }
 }

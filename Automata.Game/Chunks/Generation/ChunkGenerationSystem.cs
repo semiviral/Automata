@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Automata.Engine;
 using Automata.Engine.Collections;
@@ -37,6 +38,8 @@ namespace Automata.Game.Chunks.Generation
         private readonly ConcurrentChannel<(IEntity, Palette<Block>)> _PendingBlocks;
         private readonly ConcurrentChannel<(IEntity, NonAllocatingMeshData<PackedVertex>)> _PendingMeshes;
 
+        private MultiDrawIndirectMesh? _MultiDrawIndirectMesh;
+
         public ChunkGenerationSystem()
         {
             _BuildSteps = new OrderedLinkedList<IGenerationStep>();
@@ -49,6 +52,10 @@ namespace Automata.Game.Chunks.Generation
 
         public override void Registered(EntityManager entityManager)
         {
+            const uint one_kb = 1024u;
+            const uint one_mb = one_kb * one_kb;
+            const uint one_gb = one_kb * one_kb * one_kb;
+
             // prints average chunk generation times
             InputManager.Instance.InputActions.Add(new InputAction(() =>
             {
@@ -62,6 +69,12 @@ namespace Automata.Game.Chunks.Generation
                 IEnumerable<(GenerationState, int)> states = entityManager.GetComponents<Chunk>().Select(chunk => (chunk.State, chunk.TimesMeshed));
                 Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(DiagnosticsPool), string.Join(", ", states)));
             }, Key.ShiftLeft, Key.V));
+
+            _MultiDrawIndirectMesh = new MultiDrawIndirectMesh(GLAPI.Instance.GL, 3u * one_mb, one_gb);
+            IEntity chunkDrawEntity = new Entity
+            {
+
+            }
         }
 
         [HandledComponents(DistinctionStrategy.All, typeof(Translation), typeof(Chunk))]

@@ -2,6 +2,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Microsoft.Toolkit.HighPerformance.Extensions;
 
 // ReSharper disable ConditionIsAlwaysTrueOrFalse
@@ -22,6 +23,9 @@ namespace Automata.Engine.Rendering.OpenGL.Memory
         private readonly NativeMemoryManager<byte> _MemoryManager;
         private readonly LinkedList<MemoryBlock> _MemoryMap;
         private readonly object _AccessLock;
+
+        private int _RentedBlocks;
+        public int RentedBlocks => _RentedBlocks;
 
         public NativeMemoryPool(byte* pointer, uint length)
         {
@@ -73,6 +77,7 @@ namespace Automata.Engine.Rendering.OpenGL.Memory
         {
             Memory<T> memory = _MemoryManager.Slice(memoryBlock.Index, memoryBlock.Length).Cast<byte, T>();
             IMemoryOwner<T> memoryOwner = new NativeMemoryOwner<T>(this, memoryBlock.Index, memory);
+            Interlocked.Increment(ref _RentedBlocks);
 
             return memoryOwner;
         }
@@ -101,6 +106,8 @@ namespace Automata.Engine.Rendering.OpenGL.Memory
                     _MemoryMap.Remove(after);
                 }
             }
+
+            Interlocked.Decrement(ref _RentedBlocks);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -11,19 +11,20 @@ namespace Automata.Engine.Rendering.Meshes
 {
     public class Mesh<TVertex> : IMesh where TVertex : unmanaged
     {
+        private readonly GL _GL;
+
         public Guid ID { get; }
-        public bool Visible { get; }
         public Layer Layer { get; }
+        public bool Visible { get; }
 
         public BufferObject<TVertex> VertexesBufferObject { get; }
         public BufferObject<uint> IndexesBufferObject { get; }
         public VertexArrayObject<TVertex> VertexArrayObject { get; }
 
-        public uint IndexesLength => IndexesBufferObject.Length;
-        public uint IndexesByteLength => IndexesBufferObject.ByteLength;
-
         public Mesh(GL gl, Layer layer = Layer.Layer0)
         {
+            _GL = gl;
+
             ID = Guid.NewGuid();
             Visible = true;
             Layer = layer;
@@ -32,8 +33,11 @@ namespace Automata.Engine.Rendering.Meshes
             VertexArrayObject = new VertexArrayObject<TVertex>(gl, VertexesBufferObject, IndexesBufferObject);
         }
 
-        public void Bind() => VertexArrayObject.Bind();
-        public void Unbind() => VertexArrayObject.Unbind();
+        public unsafe void Draw()
+        {
+            VertexArrayObject.Bind();
+            _GL.DrawElements(PrimitiveType.Triangles, IndexesBufferObject.ByteLength, DrawElementsType.UnsignedInt, (void*)null!);
+        }
 
         public void Dispose()
         {

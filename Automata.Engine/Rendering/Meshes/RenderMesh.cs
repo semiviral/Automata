@@ -23,7 +23,7 @@ namespace Automata.Engine.Rendering.Meshes
             }
         }
 
-        public bool ShouldRender => Mesh?.Visible is true && (Mesh.IndexesByteLength > 0);
+        public bool ShouldRender => Mesh?.Visible is true;
 
         public Matrix4x4 Model { get; set; } = Matrix4x4.Identity;
 

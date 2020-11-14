@@ -150,9 +150,7 @@ namespace Automata.Engine.Rendering
                     vertexShader.TrySetUniform("_object", modelInverted);
                     vertexShader.TrySetUniform("_world", renderMesh.Model);
 
-                    renderMesh.Mesh!.Bind();
-
-                    _GL.DrawElements(PrimitiveType.Triangles, renderMesh.Mesh!.IndexesLength, DrawElementsType.UnsignedInt, (void*)null!);
+                    renderMesh.Mesh!.Draw();
                 }
             }
 

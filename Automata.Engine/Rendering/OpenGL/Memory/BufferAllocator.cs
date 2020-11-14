@@ -13,6 +13,8 @@ namespace Automata.Engine.Rendering.OpenGL.Memory
 
         private readonly NativeMemoryPool _NativeMemoryPool;
 
+        public int AllocatedBuffers => _NativeMemoryPool.RentedBlocks;
+
         public unsafe BufferAllocator(GL gl, uint size) : base(gl)
         {
             Handle = GL.CreateBuffer();
