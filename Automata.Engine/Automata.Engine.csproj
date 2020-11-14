@@ -22,6 +22,9 @@
       <Reference Include="DiagnosticsProviderNS, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
         <HintPath>..\References\DiagnosticsProviderNS.dll</HintPath>
       </Reference>
+      <Reference Include="Microsoft.Toolkit.HighPerformance, Version=7.0.0.0, Culture=neutral, PublicKeyToken=4aff67a105548ee2">
+        <HintPath>..\References\Microsoft.Toolkit.HighPerformance.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>

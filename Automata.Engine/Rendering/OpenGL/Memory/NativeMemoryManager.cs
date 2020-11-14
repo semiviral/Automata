@@ -3,7 +3,7 @@ using System.Buffers;
 
 namespace Automata.Engine.Rendering.OpenGL.Memory
 {
-    public sealed unsafe class NativeMemoryManager<T> : MemoryManager<T> where T : unmanaged
+    internal sealed unsafe class NativeMemoryManager<T> : MemoryManager<T> where T : unmanaged
     {
         private readonly T* _Pointer;
         private readonly uint _Length;

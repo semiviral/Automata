@@ -7,6 +7,7 @@
 	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=C_003A_005CUsers_005Csemiv_005COneDrive_005CDocuments_005CGitHub_005CAutomata_005CReferences_005CDiagnosticsProviderNS_002Edll/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=C_003A_005CUsers_005Csemiv_005COneDrive_005CDocuments_005CGitHub_005CAutomata_005CReferences_005Cfreetype_002D2_002E10_002E4_002Edll/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=C_003A_005CUsers_005Csemiv_005COneDrive_005CDocuments_005CGitHub_005CAutomata_005CReferences_005CGeneric_002DOctree_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=C_003A_005CUsers_005Csemiv_005COneDrive_005CDocuments_005CGitHub_005CAutomata_005CReferences_005CMicrosoft_002EToolkit_002EHighPerformance_002Edll/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=C_003A_005CUsers_005Csemiv_005COneDrive_005CDocuments_005CGitHub_005CConcurrentAsyncScheduler_005CConcurrentAsyncScheduler_005Cbin_005CRelease_005Cnetcoreapp3_002E1_005CConcurrentAsyncScheduler_002Edll/@EntryIndexedValue">True</s:Boolean>
 	<s:String x:Key="/Default/Environment/AssemblyExplorer/XmlDocument/@EntryValue">&lt;AssemblyExplorer&gt;&#xD;
   &lt;Assembly Path="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\3.1.0\ref\netcoreapp3.1\System.ComponentModel.dll" /&gt;&#xD;

@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System.Buffers;
+using System.Drawing;
 using Automata.Engine;
 using Automata.Engine.Components;
 using Automata.Engine.Concurrency;
@@ -6,6 +7,7 @@ using Automata.Engine.Entities;
 using Automata.Engine.Input;
 using Automata.Engine.Rendering;
 using Automata.Engine.Rendering.OpenGL;
+using Automata.Engine.Rendering.OpenGL.Memory;
 using Automata.Engine.Systems;
 using Automata.Game;
 using Automata.Game.Blocks;
@@ -13,6 +15,19 @@ using Automata.Game.Chunks;
 using Automata.Game.Chunks.Generation;
 using Serilog;
 using Silk.NET.Windowing.Common;
+
+unsafe
+{
+    byte* stack = stackalloc byte[2048];
+    NativeMemoryPool nativeMemoryPool = new NativeMemoryPool(stack, 2048);
+    IMemoryOwner<byte> memory = nativeMemoryPool.Rent<byte>(64);
+    IMemoryOwner<byte> memory1 = nativeMemoryPool.Rent<byte>(128);
+    IMemoryOwner<byte> memory2 = nativeMemoryPool.Rent<byte>(64);
+    IMemoryOwner<byte> memory3= nativeMemoryPool.Rent<byte>(64);
+    IMemoryOwner<byte> memory4 = nativeMemoryPool.Rent<byte>(5000);
+
+    return;
+}
 
 Settings.Load();
 InitializeLogger();
