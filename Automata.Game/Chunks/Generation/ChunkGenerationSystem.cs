@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Automata.Engine;
 using Automata.Engine.Collections;
@@ -71,10 +70,14 @@ namespace Automata.Game.Chunks.Generation
             }, Key.ShiftLeft, Key.V));
 
             _MultiDrawIndirectMesh = new MultiDrawIndirectMesh(GLAPI.Instance.GL, 3u * one_mb, one_gb);
-            IEntity chunkDrawEntity = new Entity
-            {
 
-            }
+            entityManager.RegisterEntity(new Entity
+            {
+                new RenderMesh
+                {
+                    Mesh = _MultiDrawIndirectMesh
+                }
+            });
         }
 
         [HandledComponents(DistinctionStrategy.All, typeof(Translation), typeof(Chunk))]
@@ -254,7 +257,7 @@ namespace Automata.Game.Chunks.Generation
 
             Mesh<PackedVertex> mesh = (renderMesh.Mesh as Mesh<PackedVertex>)!;
 
-            if (!mesh.VertexArrayObject.VertexAttributes.SequenceEqual(_DefaultAttributes))
+            if (!mesh!.VertexArrayObject.VertexAttributes.SequenceEqual(_DefaultAttributes))
             {
                 mesh.VertexArrayObject.AllocateVertexAttributes(_DefaultAttributes);
                 mesh.VertexArrayObject.CommitVertexAttributes();
