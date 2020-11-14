@@ -29,8 +29,8 @@ namespace Automata.Engine.Rendering.Meshes
 
         public void Dispose()
         {
-            GC.SuppressFinalize(this);
             _Mesh?.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

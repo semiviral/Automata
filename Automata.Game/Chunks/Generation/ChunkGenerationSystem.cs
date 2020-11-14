@@ -102,8 +102,8 @@ namespace Automata.Game.Chunks.Generation
                 Debug.Assert(chunk.State is GenerationState.GeneratingMesh);
 
                 PrepareChunkForRendering(entityManager, pendingMesh.Entity, pendingMesh.Data);
-                chunk.TimesMeshed += 1;
                 pendingMesh.Data.Dispose();
+                chunk.TimesMeshed += 1;
                 chunk.State += 1;
             }
 

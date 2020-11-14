@@ -42,10 +42,10 @@ namespace Automata.Engine.Rendering.Meshes
 
         public void Dispose()
         {
-            GC.SuppressFinalize(this);
             VertexesBufferObject.Dispose();
             IndexesBufferObject.Dispose();
             VertexArrayObject.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

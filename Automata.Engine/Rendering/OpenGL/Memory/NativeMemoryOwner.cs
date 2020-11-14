@@ -7,10 +7,10 @@ namespace Automata.Engine.Rendering.OpenGL.Memory
     {
         private readonly NativeMemoryPool _NativeMemoryPool;
 
-        internal uint Index { get; }
+        internal nuint Index { get; }
         public Memory<T> Memory { get; }
 
-        internal NativeMemoryOwner(NativeMemoryPool nativeMemoryPool, uint index, Memory<T> memory)
+        internal NativeMemoryOwner(NativeMemoryPool nativeMemoryPool, nuint index, Memory<T> memory)
         {
             _NativeMemoryPool = nativeMemoryPool;
 

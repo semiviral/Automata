@@ -13,29 +13,35 @@ namespace Automata.Engine.Rendering.OpenGL.Memory
     {
         private sealed record MemoryBlock
         {
-            public uint Index { get; init; }
-            public uint Length { get; init; }
+            public nuint Index { get; init; }
+            public nuint Length { get; init; }
             public bool Owned { get; init; }
 
-            public MemoryBlock(uint index, uint length, bool owned) => (Index, Length, Owned) = (index, length, owned);
+            public MemoryBlock(nuint index, nuint length, bool owned) => (Index, Length, Owned) = (index, length, owned);
         }
 
-        private readonly NativeMemoryManager<byte> _MemoryManager;
+        private readonly NativeMemoryManager<byte>? _MemoryManager;
         private readonly LinkedList<MemoryBlock> _MemoryMap;
         private readonly object _AccessLock;
+        private readonly byte* _Pointer;
 
         private int _RentedBlocks;
         public int RentedBlocks => _RentedBlocks;
 
-        public NativeMemoryPool(byte* pointer, uint length)
+        public NativeMemoryPool(byte* pointer, nuint length)
         {
-            _MemoryManager = new NativeMemoryManager<byte>(pointer, length);
+            // one memory instance can't be >int.MaxValue, so ensure length is less or equal
+            // if it isn't, the default memory manager is uninitialized, and we just use a new memory manager
+            // for each rent
+            if (length <= int.MaxValue) _MemoryManager = new NativeMemoryManager<byte>(pointer, (int)length);
+
             _MemoryMap = new LinkedList<MemoryBlock>();
             _MemoryMap.AddFirst(new MemoryBlock(0u, length, false));
             _AccessLock = new object();
+            _Pointer = pointer;
         }
 
-        public IMemoryOwner<T> Rent<T>(uint length) where T : unmanaged
+        public IMemoryOwner<T> Rent<T>(nuint length) where T : unmanaged
         {
             lock (_AccessLock)
             {
@@ -46,37 +52,52 @@ namespace Automata.Engine.Rendering.OpenGL.Memory
                 {
                     if (current!.Value.Owned) continue;
 
-                    if (current.Value.Length == length)
-                    {
-                        // just convert entire block to owned
-                        current.Value = current.Value with { Owned = true };
-
-                        return CreateMemoryOwnerFromBlock<T>(current.Value);
-                    }
+                    // just convert entire block to owned
+                    if (current.Value.Length == length) current.Value = current.Value with { Owned = true };
                     else if (current.Value.Length > length)
                     {
-                        uint afterBlockIndex = current.Value.Index + length;
-                        uint afterBlockLength = current.Value.Length - length;
+                        nuint afterBlockIndex = current.Value.Index + length;
+                        nuint afterBlockLength = current.Value.Length - length;
 
                         // collapse current block to correct length
                         current.Value = current.Value with { Length = length, Owned = true };
 
                         // allocate new block with rest of length
                         _MemoryMap.AddAfter(current, new MemoryBlock(afterBlockIndex, afterBlockLength, false));
-
-                        return CreateMemoryOwnerFromBlock<T>(current.Value);
                     }
-                } while ((current = current?.Next) is not null);
+                    else continue;
+
+                    return _MemoryManager is not null
+                        ? CreateMemoryOwnerFromBlockWithSlice<T>(current.Value)
+                        : CreateMemoryOwnerFromBlockWithNewManager<T>(current.Value);
+                } while ((current = current.Next) is not null);
             }
 
             throw new InsufficientMemoryException("Not enough memory to accomodate allocation.");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private IMemoryOwner<T> CreateMemoryOwnerFromBlock<T>(MemoryBlock memoryBlock) where T : unmanaged
+        private IMemoryOwner<T> CreateMemoryOwnerFromBlockWithSlice<T>(MemoryBlock memoryBlock) where T : unmanaged
         {
-            Memory<T> memory = _MemoryManager.Slice(memoryBlock.Index, memoryBlock.Length).Cast<byte, T>();
+            if (_MemoryManager is null) ThrowHelper.ThrowInvalidOperationException("No memory manager to slice memory from.");
+            else if (memoryBlock.Index >= int.MaxValue) ThrowHelper.ThrowArgumentOutOfRangeException(nameof(memoryBlock.Index));
+            else if (memoryBlock.Length > int.MaxValue) ThrowHelper.ThrowArgumentOutOfRangeException(nameof(memoryBlock.Length));
+
+            Memory<T> memory = _MemoryManager!.Slice((int)memoryBlock.Index, (int)memoryBlock.Length).Cast<byte, T>();
             IMemoryOwner<T> memoryOwner = new NativeMemoryOwner<T>(this, memoryBlock.Index, memory);
+            Interlocked.Increment(ref _RentedBlocks);
+
+            return memoryOwner;
+        }
+
+        private IMemoryOwner<T> CreateMemoryOwnerFromBlockWithNewManager<T>(MemoryBlock memoryBlock) where T : unmanaged
+        {
+            if (memoryBlock.Length > int.MaxValue)
+                ThrowHelper.ThrowArgumentOutOfRangeException(nameof(memoryBlock.Length), $"Length cannot be greater than {int.MaxValue}.");
+
+            T* offsetPointer = (T*)_Pointer + memoryBlock.Index;
+            NativeMemoryManager<T> memoryManager = new NativeMemoryManager<T>(offsetPointer, (int)memoryBlock.Length);
+            IMemoryOwner<T> memoryOwner = new NativeMemoryOwner<T>(this, memoryBlock.Index, memoryManager.Memory);
             Interlocked.Increment(ref _RentedBlocks);
 
             return memoryOwner;
@@ -93,15 +114,15 @@ namespace Automata.Engine.Rendering.OpenGL.Memory
 
                 if (before?.Value.Owned is false)
                 {
-                    uint newIndex = before.Value.Index;
-                    uint newLength = before.Value.Length + current.Value.Length;
+                    nuint newIndex = before.Value.Index;
+                    nuint newLength = before.Value.Length + current.Value.Length;
                     current.Value = current.Value with { Index = newIndex, Length = newLength };
                     _MemoryMap.Remove(before);
                 }
 
                 if (after?.Value.Owned is false)
                 {
-                    uint newLength = current.Value.Length + after.Value.Length;
+                    nuint newLength = current.Value.Length + after.Value.Length;
                     current.Value = current.Value with { Length = newLength };
                     _MemoryMap.Remove(after);
                 }
@@ -111,7 +132,7 @@ namespace Automata.Engine.Rendering.OpenGL.Memory
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private LinkedListNode<MemoryBlock> GetMemoryBlockAtIndex(uint index)
+        private LinkedListNode<MemoryBlock> GetMemoryBlockAtIndex(nuint index)
         {
             LinkedListNode<MemoryBlock>? current = _MemoryMap.First;
             if (current is null) ThrowHelper.ThrowInvalidOperationException("Memory pool is in invalid state.");
@@ -119,7 +140,7 @@ namespace Automata.Engine.Rendering.OpenGL.Memory
             do
             {
                 if (current!.Value.Index == index) return current;
-            } while ((current = current?.Next) is not null);
+            } while ((current = current.Next) is not null);
 
             throw new InsufficientMemoryException("No memory block starts at index.");
         }
