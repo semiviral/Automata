@@ -36,7 +36,7 @@ namespace Automata.Engine.Rendering.Meshes
         public unsafe void Draw()
         {
             VertexArrayObject.Bind();
-            
+
             _GL.DrawElements(PrimitiveType.Triangles, IndexesBufferObject.Length, DrawElementsType.UnsignedInt, (void*)null!);
         }
 
