@@ -19,6 +19,7 @@ namespace Automata.Engine.Rendering.OpenGL.Memory
         public Memory<T> Slice(uint start) => _Memory.Slice((int)start);
         public Memory<T> Slice(uint start, uint length) => _Memory.Slice((int)start, (int)length);
 
+
         #region MemoryManager
 
         public override Span<T> GetSpan() => new Span<T>(_Pointer, (int)_Length);
