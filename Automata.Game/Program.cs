@@ -21,10 +21,10 @@ unsafe
     byte* stack = stackalloc byte[2048];
     NativeMemoryPool nativeMemoryPool = new NativeMemoryPool(stack, 2048);
     IMemoryOwner<byte> memory = nativeMemoryPool.Rent<byte>(64);
-    IMemoryOwner<byte> memory1 = nativeMemoryPool.Rent<byte>(128);
-    IMemoryOwner<byte> memory2 = nativeMemoryPool.Rent<byte>(64);
-    IMemoryOwner<byte> memory3= nativeMemoryPool.Rent<byte>(64);
-    IMemoryOwner<byte> memory4 = nativeMemoryPool.Rent<byte>(5000);
+    IMemoryOwner<byte> memory1 = nativeMemoryPool.Rent<byte>(64);
+
+    memory.Dispose();
+    memory1.Dispose();
 
     return;
 }

@@ -60,11 +60,13 @@ namespace Automata.Engine.Rendering.OpenGL.Memory
                 }
                 else if (current.Value.Length > length)
                 {
+                    uint afterBlockIndex = current.Value.Index + length;
+                    uint afterBlockLength = current.Value.Length - length;
                     // collapse current block to correct length
                     current.Value = current.Value with { Length = length, Owned = true };
 
                     // allocate new block with rest of length
-                    _MemoryMap.AddAfter(current, new MemoryBlock(current.Value.Index + length, current.Value.Length - length, false));
+                    _MemoryMap.AddAfter(current, new MemoryBlock(afterBlockIndex, afterBlockLength, false));
 
                     return CreateMemoryOwnerFromBlock<T>(current.Value);
                 }
@@ -94,7 +96,7 @@ namespace Automata.Engine.Rendering.OpenGL.Memory
 
             if (before?.Value.Owned is false)
             {
-                uint newIndex = current.Value.Index - before.Value.Index;
+                uint newIndex = before.Value.Index;
                 uint newLength = before.Value.Length + current.Value.Length;
                 current.Value = current.Value with { Index = newIndex, Length = newLength };
                 _MemoryMap.Remove(before);
