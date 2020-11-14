@@ -2,7 +2,6 @@ using System;
 using System.Buffers;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
-using Automata.Engine.Rendering.OpenGL.Memory;
 using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.Meshes

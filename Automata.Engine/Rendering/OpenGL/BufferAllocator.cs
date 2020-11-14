@@ -1,8 +1,9 @@
 using System;
 using System.Buffers;
+using Automata.Engine.Memory;
 using Silk.NET.OpenGL;
 
-namespace Automata.Engine.Rendering.OpenGL.Memory
+namespace Automata.Engine.Rendering.OpenGL
 {
     public class BufferAllocator : OpenGLObject, IDisposable
     {
