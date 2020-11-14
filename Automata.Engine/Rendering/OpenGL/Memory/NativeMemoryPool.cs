@@ -74,7 +74,7 @@ namespace Automata.Engine.Rendering.OpenGL.Memory
                     return _MemoryManager is not null // if memory manager isn't null then the allocation is <=int.MaxValue
                         ? CreateMemoryOwnerFromBlockWithSlice<T>(current.Value)
                         : CreateMemoryOwnerFromBlockWithNewManager<T>(current.Value);
-                } while ((current = current.Next) is not null);
+                } while ((current = current?.Next) is not null);
             }
 
             ThrowHelper.ThrowInsufficientMemoryException("Not enough memory to accomodate allocation.");
@@ -147,7 +147,7 @@ namespace Automata.Engine.Rendering.OpenGL.Memory
             do
             {
                 if (current!.Value.Index == index) return current;
-            } while ((current = current.Next) is not null);
+            } while ((current = current?.Next) is not null);
 
             ThrowHelper.ThrowArgumentOutOfRangeException(nameof(index), "No memory block starts at index.");
             return null!;

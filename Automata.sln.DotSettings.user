@@ -13,10 +13,7 @@
   &lt;Assembly Path="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\3.1.0\ref\netcoreapp3.1\System.ComponentModel.dll" /&gt;&#xD;
 &lt;/AssemblyExplorer&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=78c4a211_002D676f_002D4faf_002D9010_002Dcf24ea4e0b78/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="TestNativePoolMemoryRenting" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
-  &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;xUnit::C1BB68F0-6AE0-4302-84DF-194436C8748B::net5.0::Automata.Engine.Tests.NativeMemoryPoolTests.TestNativePoolMemoryRenting&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;xUnit::C1BB68F0-6AE0-4302-84DF-194436C8748B::net5.0::Automata.Engine.Tests.NativeMemoryPoolTests.VerifyNativeMemoryPoolCreated&lt;/TestId&gt;&#xD;
-  &lt;/TestAncestor&gt;&#xD;
+  &lt;Solution /&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	
 	</wpf:ResourceDictionary>

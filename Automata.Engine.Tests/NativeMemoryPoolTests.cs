@@ -26,18 +26,30 @@ namespace Automata.Engine.Tests
         }
 
         [Fact]
-        public void TestNativePoolMemoryRenting()
-        {
-            Debug.Assert(_NativeMemoryPool.RentedBlocks is 0, "No blocks should be rented at this point.");
-            IMemoryOwner<int> memoryOwner = _NativeMemoryPool.Rent<int>(8u);
-            Memory<int> memory = memoryOwner.Memory;
+        public void TestNativeMemoryPoolSingleRenting() => RentMemoryAndTest<int>(8);
 
-            Debug.Assert(_NativeMemoryPool.RentedBlocks is 1, "One block should be rented at this point.");
-            Debug.Assert(memory.IsEmpty is false);
-            Debug.Assert(memory.Length is 8);
+        [Fact]
+        public void TestNativeMemoryPoolMultiSingleRenting()
+        {
+            RentMemoryAndTest<int>(8u);
+            RentMemoryAndTest<uint>(8u);
+            RentMemoryAndTest<long>(8u);
+            RentMemoryAndTest<ulong>(8u);
+        }
+
+        private void RentMemoryAndTest<T>(nuint length) where T : unmanaged
+        {
+            int rentedBlocksBefore = _NativeMemoryPool.RentedBlocks;
+
+            IMemoryOwner<T> memoryOwner = _NativeMemoryPool.Rent<T>(length);
+            Memory<T> memory = memoryOwner.Memory;
+
+            Debug.Assert(_NativeMemoryPool.RentedBlocks == (rentedBlocksBefore + 1), "One block should be rented at this point.");
+            Debug.Assert(memory.IsEmpty is false, "Memory should not be empty.");
+            Debug.Assert(memory.Length == (int)length, "Memory should be of correct, expected length.");
 
             memoryOwner.Dispose();
-            Debug.Assert(_NativeMemoryPool.RentedBlocks is 0);
+            Debug.Assert(_NativeMemoryPool.RentedBlocks == rentedBlocksBefore, $"{_NativeMemoryPool.RentedBlocks} should be equivalent to the starting value.");
         }
 
         void IDisposable.Dispose()
