@@ -14,10 +14,10 @@ namespace Automata.Engine.Rendering.OpenGL.Memory
         private sealed record MemoryBlock
         {
             public nuint Index { get; init; }
-            public nuint Length { get; init; }
+            public nuint Size { get; init; }
             public bool Owned { get; init; }
 
-            public MemoryBlock(nuint index, nuint length, bool owned) => (Index, Length, Owned) = (index, length, owned);
+            public MemoryBlock(nuint index, nuint size, bool owned) => (Index, Size, Owned) = (index, size, owned);
         }
 
         private readonly NativeMemoryManager<byte>? _MemoryManager;
@@ -25,23 +25,27 @@ namespace Automata.Engine.Rendering.OpenGL.Memory
         private readonly object _AccessLock;
         private readonly byte* _Pointer;
 
+        public nuint Size { get; }
+
         private int _RentedBlocks;
         public int RentedBlocks => _RentedBlocks;
 
-        public NativeMemoryPool(byte* pointer, nuint length)
+        public NativeMemoryPool(byte* pointer, nuint size)
         {
             // one memory instance can't be >int.MaxValue, so ensure length is less or equal
             // if it isn't, the default memory manager is uninitialized, and we just use a new memory manager
             // for each rent
-            if (length <= int.MaxValue) _MemoryManager = new NativeMemoryManager<byte>(pointer, (int)length);
+            if (size <= int.MaxValue) _MemoryManager = new NativeMemoryManager<byte>(pointer, (int)size);
+
+            Size = size;
 
             _MemoryMap = new LinkedList<MemoryBlock>();
-            _MemoryMap.AddFirst(new MemoryBlock(0u, length, false));
+            _MemoryMap.AddFirst(new MemoryBlock(0u, size, false));
             _AccessLock = new object();
             _Pointer = pointer;
         }
 
-        public IMemoryOwner<T> Rent<T>(nuint length) where T : unmanaged
+        public IMemoryOwner<T> Rent<T>(nuint size) where T : unmanaged
         {
             lock (_AccessLock)
             {
@@ -53,14 +57,14 @@ namespace Automata.Engine.Rendering.OpenGL.Memory
                     if (current!.Value.Owned) continue;
 
                     // just convert entire block to owned
-                    if (current.Value.Length == length) current.Value = current.Value with { Owned = true };
-                    else if (current.Value.Length > length)
+                    if (current.Value.Size == size) current.Value = current.Value with { Owned = true };
+                    else if (current.Value.Size > size)
                     {
-                        nuint afterBlockIndex = current.Value.Index + length;
-                        nuint afterBlockLength = current.Value.Length - length;
+                        nuint afterBlockIndex = current.Value.Index + size;
+                        nuint afterBlockLength = current.Value.Size - size;
 
                         // collapse current block to correct length
-                        current.Value = current.Value with { Length = length, Owned = true };
+                        current.Value = current.Value with { Size = size, Owned = true };
 
                         // allocate new block with rest of length
                         _MemoryMap.AddAfter(current, new MemoryBlock(afterBlockIndex, afterBlockLength, false));
@@ -81,9 +85,9 @@ namespace Automata.Engine.Rendering.OpenGL.Memory
         {
             if (_MemoryManager is null) ThrowHelper.ThrowInvalidOperationException("No memory manager to slice memory from.");
             else if (memoryBlock.Index >= int.MaxValue) ThrowHelper.ThrowArgumentOutOfRangeException(nameof(memoryBlock.Index));
-            else if (memoryBlock.Length > int.MaxValue) ThrowHelper.ThrowArgumentOutOfRangeException(nameof(memoryBlock.Length));
+            else if (memoryBlock.Size > int.MaxValue) ThrowHelper.ThrowArgumentOutOfRangeException(nameof(memoryBlock.Size));
 
-            Memory<T> memory = _MemoryManager!.Slice((int)memoryBlock.Index, (int)memoryBlock.Length).Cast<byte, T>();
+            Memory<T> memory = _MemoryManager!.Slice((int)memoryBlock.Index, (int)memoryBlock.Size * sizeof(T)).Cast<byte, T>();
             IMemoryOwner<T> memoryOwner = new NativeMemoryOwner<T>(this, memoryBlock.Index, memory);
             Interlocked.Increment(ref _RentedBlocks);
 
@@ -92,14 +96,14 @@ namespace Automata.Engine.Rendering.OpenGL.Memory
 
         private IMemoryOwner<T> CreateMemoryOwnerFromBlockWithNewManager<T>(MemoryBlock memoryBlock) where T : unmanaged
         {
-            if (memoryBlock.Length > int.MaxValue)
-                ThrowHelper.ThrowArgumentOutOfRangeException(nameof(memoryBlock.Length), $"Length cannot be greater than {int.MaxValue}.");
+            if (memoryBlock.Size > int.MaxValue)
+                ThrowHelper.ThrowArgumentOutOfRangeException(nameof(memoryBlock.Size), $"Length cannot be greater than {int.MaxValue}.");
 
             // remark: it's POSSIBLE for alignment to get screwed up in this operation.
             // T will not often be the same size as _Pointer, so it's important to take care in calling this
             // method with a valid MemoryBlock that won't misalign other MemoryBlock's offsets and length.
             T* offsetPointer = (T*)(_Pointer + memoryBlock.Index);
-            NativeMemoryManager<T> memoryManager = new NativeMemoryManager<T>(offsetPointer, (int)memoryBlock.Length);
+            NativeMemoryManager<T> memoryManager = new NativeMemoryManager<T>(offsetPointer, (int)memoryBlock.Size * sizeof(T));
             IMemoryOwner<T> memoryOwner = new NativeMemoryOwner<T>(this, memoryBlock.Index, memoryManager.Memory);
             Interlocked.Increment(ref _RentedBlocks);
 
@@ -118,15 +122,15 @@ namespace Automata.Engine.Rendering.OpenGL.Memory
                 if (before?.Value.Owned is false)
                 {
                     nuint newIndex = before.Value.Index;
-                    nuint newLength = before.Value.Length + current.Value.Length;
-                    current.Value = current.Value with{ Index = newIndex, Length = newLength };
+                    nuint newLength = before.Value.Size + current.Value.Size;
+                    current.Value = current.Value with{ Index = newIndex, Size = newLength };
                     _MemoryMap.Remove(before);
                 }
 
                 if (after?.Value.Owned is false)
                 {
-                    nuint newLength = current.Value.Length + after.Value.Length;
-                    current.Value = current.Value with { Length = newLength };
+                    nuint newLength = current.Value.Size + after.Value.Size;
+                    current.Value = current.Value with { Size = newLength };
                     _MemoryMap.Remove(after);
                 }
             }
