@@ -1,7 +1,7 @@
 using System;
 using System.Buffers;
 
-namespace Automata.Engine.Rendering.OpenGL.Memory
+namespace Automata.Engine.Rendering.OpenGL
 {
     public interface IDrawElementsIndirectCommandOwner : IDisposable
     {

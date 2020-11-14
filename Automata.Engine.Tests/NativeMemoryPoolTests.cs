@@ -2,7 +2,7 @@ using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Automata.Engine.Rendering.OpenGL.Memory;
+using Automata.Engine.Memory;
 using Xunit;
 
 namespace Automata.Engine.Tests

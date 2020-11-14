@@ -7,7 +7,7 @@ using Microsoft.Toolkit.HighPerformance.Extensions;
 
 // ReSharper disable ConditionIsAlwaysTrueOrFalse
 
-namespace Automata.Engine.Rendering.OpenGL.Memory
+namespace Automata.Engine.Memory
 {
     public unsafe class NativeMemoryPool
     {
@@ -45,7 +45,7 @@ namespace Automata.Engine.Rendering.OpenGL.Memory
             _Pointer = pointer;
         }
 
-        public IMemoryOwner<T> Rent<T>(nuint size) where T : unmanaged
+        public IMemoryOwner<T> Rent<T>(nuint size, bool clear = false) where T : unmanaged
         {
             lock (_AccessLock)
             {
@@ -71,9 +71,12 @@ namespace Automata.Engine.Rendering.OpenGL.Memory
                     }
                     else continue;
 
-                    return _MemoryManager is not null // if memory manager isn't null then the allocation is <=int.MaxValue
+                    IMemoryOwner<T> memoryOwner = _MemoryManager is not null // if memory manager isn't null then the allocation is <=int.MaxValue
                         ? CreateMemoryOwnerFromBlockWithSlice<T>(current.Value)
                         : CreateMemoryOwnerFromBlockWithNewManager<T>(current.Value);
+
+                    if (clear) memoryOwner.Memory.Span.Clear();
+                    return memoryOwner;
                 } while ((current = current?.Next) is not null);
             }
 
