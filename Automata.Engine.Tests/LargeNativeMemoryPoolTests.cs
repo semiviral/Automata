@@ -33,13 +33,13 @@ namespace Automata.Engine.Tests
         [Fact]
         public void TestNativeMemoryPoolMultiSingleRenting()
         {
-            RentMemoryAndTest<int>(8u);
-            RentMemoryAndTest<uint>(8u);
-            RentMemoryAndTest<long>(8u);
-            RentMemoryAndTest<ulong>(8u);
+            RentMemoryAndTest<int>(8);
+            RentMemoryAndTest<uint>(8);
+            RentMemoryAndTest<long>(8);
+            RentMemoryAndTest<ulong>(8);
         }
 
-        private void RentMemoryAndTest<T>(nuint length) where T : unmanaged
+        private void RentMemoryAndTest<T>(int length) where T : unmanaged
         {
             int rentedBlocksBefore = _NativeMemoryPool.RentedBlocks;
 

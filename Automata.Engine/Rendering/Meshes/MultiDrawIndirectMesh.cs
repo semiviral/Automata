@@ -25,8 +25,8 @@ namespace Automata.Engine.Rendering.Meshes
             _VertexArrayObject = new VertexArrayObject<byte>(gl, _DataAllocator, 6 * sizeof(int), _DataAllocator);
         }
 
-        public IDrawElementsIndirectCommandOwner RentCommand() => new DrawElementsIndirectCommandOwner(_CommandAllocator.Rent<DrawElementsIndirectCommand>(1u));
-        public IMemoryOwner<T> Rent<T>(uint size) where T : unmanaged => _DataAllocator.Rent<T>(size);
+        public IDrawElementsIndirectCommandOwner RentCommand() => new DrawElementsIndirectCommandOwner(_CommandAllocator.Rent<DrawElementsIndirectCommand>(1));
+        public IMemoryOwner<T> Rent<T>(int size) where T : unmanaged => _DataAllocator.Rent<T>(size);
 
         public unsafe void Draw()
         {
