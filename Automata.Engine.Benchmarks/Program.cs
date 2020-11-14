@@ -7,7 +7,7 @@ namespace Automata.Engine.Benchmarks
     {
         private static void Main(string[] args)
         {
-            Summary summary = BenchmarkRunner.Run<BenchmarkStructExtensions>();
+            Summary summary = BenchmarkRunner.Run<NativeMemoryPoolBenchmarks>();
         }
     }
 }
