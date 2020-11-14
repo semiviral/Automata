@@ -23,6 +23,8 @@ namespace Automata.Engine.Rendering.OpenGL.Memory
 
         public IMemoryOwner<T> Rent<T>(uint size) where T : unmanaged => _NativeMemoryPool.Rent<T>(size);
 
+        public void Bind(BufferTargetARB target) => GL.BindBuffer(target, Handle);
+
         public void Dispose()
         {
             GL.UnmapNamedBuffer(Handle);
