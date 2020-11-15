@@ -1,8 +1,8 @@
 using System.Buffers;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Threading;
 
+// ReSharper disable InconsistentlySynchronizedField
 // ReSharper disable ConditionIsAlwaysTrueOrFalse
 
 namespace Automata.Engine.Memory
@@ -66,13 +66,12 @@ namespace Automata.Engine.Memory
                         // collapse current block to correct length
                         current.Value = current.Value with { Size = sizeInBytes, Owned = true };
 
-                        // allocate new block with rest of length
+                        // allocate new block after current with remaining length
                         _MemoryMap.AddAfter(current, new MemoryBlock(afterBlockIndex, afterBlockLength, false));
                     }
                     else continue;
 
                     IMemoryOwner<T> memoryOwner = CreateMemoryOwner<T>(current.Value.Index, size);
-
                     if (clear) memoryOwner.Memory.Span.Clear();
                     return memoryOwner;
                 } while ((current = current!.Next) is not null);
@@ -99,6 +98,20 @@ namespace Automata.Engine.Memory
 
         internal void Return<T>(NativeMemoryOwner<T> memoryOwner) where T : unmanaged
         {
+            LinkedListNode<MemoryBlock> GetMemoryBlockAtIndex(nuint index)
+            {
+                LinkedListNode<MemoryBlock>? current = _MemoryMap.First;
+                if (current is null) ThrowHelper.ThrowInvalidOperationException("Memory pool is in invalid state.");
+
+                do
+                {
+                    if (current!.Value.Index == index) return current;
+                } while ((current = current!.Next) is not null);
+
+                ThrowHelper.ThrowArgumentOutOfRangeException(nameof(index), "No memory block starts at index.");
+                return null!; // this return should never be hit
+            }
+
             lock (_AccessLock)
             {
                 LinkedListNode<MemoryBlock> current = GetMemoryBlockAtIndex(memoryOwner.Index);
@@ -110,34 +123,17 @@ namespace Automata.Engine.Memory
                 {
                     nuint newIndex = before.Value.Index;
                     nuint newLength = before.Value.Size + current.Value.Size;
-                    current.Value = current.Value with{ Index = newIndex, Size = newLength };
-                    _MemoryMap.Remove(before);
+                    current.Value = current.Value with { Index = newIndex, Size = newLength };
                 }
 
                 if (after?.Value.Owned is false)
                 {
                     nuint newLength = current.Value.Size + after.Value.Size;
                     current.Value = current.Value with { Size = newLength };
-                    _MemoryMap.Remove(after);
                 }
             }
 
             Interlocked.Decrement(ref _RentedBlocks);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private LinkedListNode<MemoryBlock> GetMemoryBlockAtIndex(nuint index)
-        {
-            LinkedListNode<MemoryBlock>? current = _MemoryMap.First;
-            if (current is null) ThrowHelper.ThrowInvalidOperationException("Memory pool is in invalid state.");
-
-            do
-            {
-                if (current!.Value.Index == index) return current;
-            } while ((current = current!.Next) is not null);
-
-            ThrowHelper.ThrowArgumentOutOfRangeException(nameof(index), "No memory block starts at index.");
-            return null!;
         }
     }
 }

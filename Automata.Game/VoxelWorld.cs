@@ -1,5 +1,4 @@
 using Automata.Engine;
-using Automata.Engine.Rendering.OpenGL;
 using Automata.Game.Chunks;
 
 namespace Automata.Game

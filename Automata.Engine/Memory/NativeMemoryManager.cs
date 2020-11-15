@@ -1,6 +1,5 @@
 using System;
 using System.Buffers;
-using System.Runtime.InteropServices;
 
 namespace Automata.Engine.Memory
 {
@@ -14,6 +13,7 @@ namespace Automata.Engine.Memory
             _Pointer = pointer;
             _Length = length;
         }
+
 
         #region MemoryManager
 
