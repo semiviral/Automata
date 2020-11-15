@@ -7,7 +7,7 @@ namespace Automata.Engine.Collections
 {
     public class NonAllocatingList<T> : IList<T>, IDisposable where T : IEquatable<T>
     {
-        private const int _DEFAULT_CAPACITY = 2;
+        private const int _DEFAULT_CAPACITY = 1;
 
         public static readonly NonAllocatingList<T> Empty = new NonAllocatingList<T>(0);
 
@@ -24,18 +24,22 @@ namespace Automata.Engine.Collections
         {
             get
             {
-                if (index >= Count) throw new IndexOutOfRangeException("Index must be non-zero and less than the size of the collection.");
+                if (index >= Count)
+                {
+                    ThrowHelper.ThrowIndexOutOfRangeException();
+                    return default!;
+                }
                 else return _InternalArray[index];
             }
             set
             {
-                if (index >= Count) throw new IndexOutOfRangeException("Index must be non-zero and less than the size of the collection.");
+                if (index >= Count) ThrowHelper.ThrowIndexOutOfRangeException();
                 else _InternalArray[index] = value;
             }
         }
 
         public NonAllocatingList() : this(_DEFAULT_CAPACITY) { }
-        public NonAllocatingList(int capacity) => _InternalArray = ArrayPool<T>.Shared.Rent(capacity);
+        public NonAllocatingList(int minimumCapacity) => _InternalArray = ArrayPool<T>.Shared.Rent(minimumCapacity);
 
         public bool Contains(T item) => (Count != 0) && (IndexOf(item) != -1);
 
@@ -63,11 +67,10 @@ namespace Automata.Engine.Collections
         {
             if (_InternalArray.Length >= minimumCapacity) return;
 
-            int newCapacity = _InternalArray.Length == 0 ? _DEFAULT_CAPACITY : _InternalArray.Length * 2;
+            int idealCapacity = _InternalArray.Length is 0 ? _DEFAULT_CAPACITY : _InternalArray.Length * 2;
+            int newCapacity = Math.Max(minimumCapacity, idealCapacity);
 
-            if (newCapacity < minimumCapacity) newCapacity = minimumCapacity;
-
-            T[] newArray = ArrayPool<T>.Shared.Rent(minimumCapacity);
+            T[] newArray = ArrayPool<T>.Shared.Rent(newCapacity);
             Array.Copy(_InternalArray, 0, newArray, 0, Count);
             _InternalArray = newArray;
         }
