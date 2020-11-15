@@ -56,21 +56,5 @@ namespace Automata.Engine.Benchmarks
             memoryOwner.Dispose();
             return memoryOwner;
         }
-
-        [Benchmark]
-        public IMemoryOwner<int> Rent1GBNoClear()
-        {
-            IMemoryOwner<int> memoryOwner = _NativeMemoryPool!.Rent<int>(1_000_000_000);
-            memoryOwner.Dispose();
-            return memoryOwner;
-        }
-
-        [Benchmark]
-        public IMemoryOwner<int> Rent1GBClear()
-        {
-            IMemoryOwner<int> memoryOwner = _NativeMemoryPool!.Rent<int>(1_000_000_000, true);
-            memoryOwner.Dispose();
-            return memoryOwner;
-        }
     }
 }
