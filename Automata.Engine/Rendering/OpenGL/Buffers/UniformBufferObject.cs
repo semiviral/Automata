@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Serilog;
 using Silk.NET.OpenGL;
 
@@ -69,12 +71,19 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
                 Log.Warning(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(UniformBufferObject),
                     "Offset is not aligned to a multiple of 16. This may be an error."));
 
-            GL.NamedBufferSubData(Handle, offset, (uint)(sizeof(T) * data.Length), ref data[0]);
+            uint length = Size - (uint)offset;
+            void* pointer = GL.MapNamedBufferRange(Handle, offset, length, (uint)BufferAccessARB.WriteOnly);
+            MemoryMarshal.Cast<T, byte>(data).CopyTo(new Span<byte>(pointer, (int)length));
+            GL.UnmapNamedBuffer(Handle);
         }
 
         public void Bind() => GL.BindBufferBase(BufferTargetARB.UniformBuffer, BindingIndex, Handle);
         public void Bind(int offset, uint size) => GL.BindBufferRange(BufferTargetARB.UniformBuffer, BindingIndex, Handle, offset, size);
 
-        public void Dispose() => GL.DeleteBuffer(Handle);
+        public void Dispose()
+        {
+            GL.DeleteBuffer(Handle);
+            GC.SuppressFinalize(this);
+        }
     }
 }
