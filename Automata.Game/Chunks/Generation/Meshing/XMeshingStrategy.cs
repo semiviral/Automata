@@ -8,7 +8,7 @@ namespace Automata.Game.Chunks.Generation.Meshing
 {
     public class XMeshingStrategy : IMeshingStrategy
     {
-        public void Mesh(Span<Block> blocks, Span<Direction> faces, ICollection<QuadVertexes<PackedVertex>> vertexes, ICollection<QuadIndexes> indexes,
+        public void Mesh(Span<Block> blocks, Span<Direction> faces, ICollection<QuadIndexes> indexes, ICollection<QuadVertexes<PackedVertex>> vertexes,
             IReadOnlyList<Palette<Block>?> neighbors, int index, int localPosition, Block block, bool isTransparent)
         {
             int textureDepth = TextureAtlas.Instance.GetTileDepth(BlockRegistry.Instance.GetBlockName(block.ID)) << (GenerationConstants.CHUNK_SIZE_SHIFT * 2);

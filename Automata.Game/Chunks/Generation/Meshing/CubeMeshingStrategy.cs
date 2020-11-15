@@ -77,7 +77,7 @@ namespace Automata.Game.Chunks.Generation.Meshing
             -GenerationConstants.CHUNK_SIZE
         };
 
-        public void Mesh(Span<Block> blocks, Span<Direction> faces, ICollection<QuadVertexes<PackedVertex>> vertexes, ICollection<QuadIndexes> indexes,
+        public void Mesh(Span<Block> blocks, Span<Direction> faces, ICollection<QuadIndexes> indexes, ICollection<QuadVertexes<PackedVertex>> vertexes,
             IReadOnlyList<Palette<Block>?> neighbors, int index, int localPosition, Block block, bool isTransparent)
         {
             // iterate once over all 6 faces of given cubic space
@@ -208,7 +208,7 @@ namespace Automata.Game.Chunks.Generation.Meshing
                                        | (traversals << (GenerationConstants.CHUNK_SIZE_SHIFT * uvShift)) // traversal component
                                        | (1 << (GenerationConstants.CHUNK_SIZE_SHIFT * ((uvShift + 1) % 2))); // opposite component to traversal
 
-                    uint indexesStart = (uint)vertexes.Count * 4u;
+                    uint indexesStart = (uint)(vertexes.Count * 4);
 
                     indexes.Add(new QuadIndexes(
                         indexesStart + 0u,
