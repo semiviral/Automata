@@ -31,34 +31,43 @@ namespace Automata.Game.Chunks.Generation.Meshing
         [SkipLocalsInit]
         public static unsafe NonAllocatingMeshData<PackedVertex> GeneratePackedMeshData(Palette<Block> blocksPalette, Palette<Block>?[] neighbors)
         {
-            if ((blocksPalette.ReadOnlyLookupTable.Count == 1) && (blocksPalette.ReadOnlyLookupTable[0].ID == BlockRegistry.AirID))
-                return NonAllocatingMeshData<PackedVertex>.Empty;
-
-            BlockRegistry blockRegistry = BlockRegistry.Instance;
-            NonAllocatingList<PackedVertex> vertexes = new NonAllocatingList<PackedVertex>(_DEFAULT_VERTEXES_CAPACITY);
-            NonAllocatingList<uint> indexes = new NonAllocatingList<uint>(_DEFAULT_INDEXES_CAPACITY);
-            Span<Block> blocks = stackalloc Block[GenerationConstants.CHUNK_SIZE_CUBED];
-            Span<Direction> faces = stackalloc Direction[GenerationConstants.CHUNK_SIZE_CUBED];
-            faces.Clear();
-
-            blocksPalette.CopyTo(blocks);
-
-            for (int index = 0, y = 0; y < GenerationConstants.CHUNK_SIZE; y++)
-            for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
-            for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++, index++)
+            try
             {
-                Block block = blocks[index];
+                if ((blocksPalette.ReadOnlyLookupTable.Count == 1) && (blocksPalette.ReadOnlyLookupTable[0].ID == BlockRegistry.AirID))
+                    return NonAllocatingMeshData<PackedVertex>.Empty;
 
-                if ((block.ID == BlockRegistry.AirID) || (block.ID == BlockRegistry.NullID)) continue;
+                BlockRegistry blockRegistry = BlockRegistry.Instance;
+                NonAllocatingList<PackedVertex> vertexes = new NonAllocatingList<PackedVertex>(_DEFAULT_VERTEXES_CAPACITY);
+                NonAllocatingList<uint> indexes = new NonAllocatingList<uint>(_DEFAULT_INDEXES_CAPACITY);
+                Span<Block> blocks = stackalloc Block[GenerationConstants.CHUNK_SIZE_CUBED];
+                Span<Direction> faces = stackalloc Direction[GenerationConstants.CHUNK_SIZE_CUBED];
+                faces.Clear();
 
-                IMeshingStrategy meshingStrategy = MeshingStrategies[blockRegistry.GetBlockDefinition(block.ID).MeshingStrategyIndex];
-                int localPosition = x | (y << GenerationConstants.CHUNK_SIZE_SHIFT) | (z << (GenerationConstants.CHUNK_SIZE_SHIFT * 2));
+                blocksPalette.CopyTo(blocks);
 
-                meshingStrategy.Mesh(blocks, faces, vertexes, indexes, neighbors, index, localPosition, block,
-                    blockRegistry.CheckBlockHasProperty(block.ID, BlockDefinitionDefinition.Attribute.Transparent));
+                for (int index = 0, y = 0; y < GenerationConstants.CHUNK_SIZE; y++)
+                for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
+                for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++, index++)
+                {
+                    Block block = blocks[index];
+
+                    if ((block.ID == BlockRegistry.AirID) || (block.ID == BlockRegistry.NullID)) continue;
+
+                    IMeshingStrategy meshingStrategy = MeshingStrategies[blockRegistry.GetBlockDefinition(block.ID).MeshingStrategyIndex];
+                    int localPosition = x | (y << GenerationConstants.CHUNK_SIZE_SHIFT) | (z << (GenerationConstants.CHUNK_SIZE_SHIFT * 2));
+
+                    meshingStrategy.Mesh(blocks, faces, vertexes, indexes, neighbors, index, localPosition, block,
+                        blockRegistry.CheckBlockHasProperty(block.ID, BlockDefinitionDefinition.Attribute.Transparent));
+                }
+
+                return new NonAllocatingMeshData<PackedVertex>(vertexes, indexes);
             }
-
-            return new NonAllocatingMeshData<PackedVertex>(vertexes, indexes);
+            catch (Exception exception)
+            {
+                if (exception is IndexOutOfRangeException or InvalidOperationException && blocksPalette.Count is 0)
+                    return NonAllocatingMeshData<PackedVertex>.Empty;
+                else throw;
+            }
         }
     }
 }

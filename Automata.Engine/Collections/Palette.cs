@@ -25,14 +25,14 @@ namespace Automata.Engine.Collections
         {
             get
             {
-                if (index >= Count) throw new IndexOutOfRangeException("Index must be non-negative and less than the size of the collection.");
+                if (index >= Count) ThrowHelper.ThrowIndexOutOfRangeException();
 
                 uint value = GetValue(index, _IndexBits, _IndexMask, _Palette);
                 return _LookupTable[(int)value];
             }
             set
             {
-                if (index >= Count) throw new IndexOutOfRangeException("Index must be non-negative and less than the size of the collection.");
+                if (index >= Count) ThrowHelper.ThrowIndexOutOfRangeException();
 
                 int paletteIndex = _LookupTable.IndexOf(value);
 
@@ -185,7 +185,12 @@ namespace Automata.Engine.Collections
 
         public void Dispose()
         {
-            if (_Palette is not null) ArrayPool<uint>.Shared.Return(_Palette);
+            if (_Palette is not null)
+            {
+                _LookupTable.Clear();
+                ArrayPool<uint>.Shared.Return(_Palette);
+                _Palette = null;
+            }
 
             GC.SuppressFinalize(this);
         }

@@ -25,11 +25,11 @@ namespace Automata.Game.Chunks
 {
     public class ChunkRegionLoaderSystem : ComponentSystem
     {
-        private readonly Queue<Chunk> _PendingRemeshingDueToNeighborUpdatesQueue;
+        private readonly Queue<Chunk> _ChunksRequiringRemesh;
 
         private VoxelWorld VoxelWorld => _CurrentWorld as VoxelWorld ?? throw new InvalidOperationException("Must be in VoxelWorld.");
 
-        public ChunkRegionLoaderSystem() => _PendingRemeshingDueToNeighborUpdatesQueue = new Queue<Chunk>();
+        public ChunkRegionLoaderSystem() => _ChunksRequiringRemesh = new Queue<Chunk>();
 
         public override void Registered(EntityManager entityManager)
         {
@@ -45,7 +45,6 @@ namespace Automata.Game.Chunks
             Stopwatch stopwatch = DiagnosticsPool.Stopwatches.Rent();
             stopwatch.Restart();
 
-            // attempt to state change any neighbors requiring remesh
             UpdateChunksPendingValidRemeshingState();
 
             // determine whether any chunk loaders have moved out far enough to recalculate their loaded chunk region
@@ -60,9 +59,9 @@ namespace Automata.Game.Chunks
 
         private void UpdateChunksPendingValidRemeshingState()
         {
-            while (_PendingRemeshingDueToNeighborUpdatesQueue.TryPeek(out Chunk? chunk) && chunk?.State is GenerationState.Finished)
+            while (_ChunksRequiringRemesh.TryPeek(out Chunk? chunk) && chunk!.State is GenerationState.Finished)
             {
-                _PendingRemeshingDueToNeighborUpdatesQueue.Dequeue();
+                _ChunksRequiringRemesh.Dequeue();
                 chunk.State = GenerationState.AwaitingMesh;
             }
         }
@@ -117,7 +116,7 @@ namespace Automata.Game.Chunks
 
                 foreach (Chunk? neighbor in GetNeighborsOfOrigin(origin))
                 {
-                    if (isNewChunk && neighbor is not null) _PendingRemeshingDueToNeighborUpdatesQueue.Enqueue(neighbor);
+                    if (isNewChunk && neighbor?.State is > GenerationState.AwaitingMesh) _ChunksRequiringRemesh.Enqueue(neighbor);
 
                     chunk.Neighbors[neighborIndex] = neighbor;
                     neighborIndex += 1;

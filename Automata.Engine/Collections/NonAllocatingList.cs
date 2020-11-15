@@ -127,7 +127,9 @@ namespace Automata.Engine.Collections
         {
             if (!disposing || _Disposed) return;
 
+            Count = 0;
             ArrayPool<T>.Shared.Return(_InternalArray);
+            _InternalArray = default!;
             _Disposed = true;
         }
 
