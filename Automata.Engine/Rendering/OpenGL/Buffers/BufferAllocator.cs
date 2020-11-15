@@ -3,7 +3,7 @@ using System.Buffers;
 using Automata.Engine.Memory;
 using Silk.NET.OpenGL;
 
-namespace Automata.Engine.Rendering.OpenGL
+namespace Automata.Engine.Rendering.OpenGL.Buffers
 {
     public class BufferAllocator : OpenGLObject, IDisposable
     {
@@ -20,8 +20,7 @@ namespace Automata.Engine.Rendering.OpenGL
         {
             Handle = GL.CreateBuffer();
             GL.NamedBufferStorage(Handle, size, (void*)null!, (uint)_STORAGE_MASK);
-            byte* pointer = (byte*)GL.MapNamedBuffer(Handle, GLEnum.WriteOnly);
-            _NativeMemoryPool = new NativeMemoryPool(pointer, size);
+            _NativeMemoryPool = new NativeMemoryPool((byte*)GL.MapNamedBuffer(Handle, BufferAccessARB.WriteOnly), size);
         }
 
         public IMemoryOwner<T> Rent<T>(int size) where T : unmanaged => _NativeMemoryPool.Rent<T>(size);

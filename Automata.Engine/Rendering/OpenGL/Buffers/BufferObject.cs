@@ -33,6 +33,9 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             GL.NamedBufferData(Handle, Length, (void*)null!, (VertexBufferObjectUsage)bufferDraw);
         }
 
+        public Span<T> BufferMemory<T>(BufferAccessARB access) where T : unmanaged => new Span<T>(GL.MapNamedBuffer(Handle, access), (int)Length);
+        public void UnbufferMemory() => GL.UnmapNamedBuffer(Handle);
+
 
         #region Data
 
@@ -42,11 +45,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             GL.NamedBufferData(Handle, Length, data, (VertexBufferObjectUsage)bufferDraw);
         }
 
-        public void SubData(int offset, void* data, uint length)
-        {
-            Length = length;
-            GL.NamedBufferSubData(Handle, offset, Length, data);
-        }
+        public void SubData(int offset, void* data, uint length) => GL.NamedBufferSubData(Handle, offset, length, data);
 
         public void SetData<T>(Span<T> data, BufferDraw bufferDraw) where T : unmanaged
         {
@@ -54,11 +53,8 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             GL.NamedBufferData(Handle, Length, data, (VertexBufferObjectUsage)bufferDraw);
         }
 
-        public void SubData<T>(int offset, Span<T> data) where T : unmanaged
-        {
-            Length = (uint)(data.Length * sizeof(T));
-            GL.NamedBufferSubData(Handle, offset, Length, ref data.GetPinnableReference());
-        }
+        public void SubData<T>(int offset, Span<T> data) where T : unmanaged =>
+            GL.NamedBufferSubData(Handle, offset, (uint)(data.Length * sizeof(T)), ref data.GetPinnableReference());
 
         #endregion
 

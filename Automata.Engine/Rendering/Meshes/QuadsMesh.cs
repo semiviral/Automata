@@ -17,9 +17,9 @@ namespace Automata.Engine.Rendering.Meshes
         public Guid ID { get; }
         public Layer Layer { get; }
         public bool Visible { get; }
-
         public BufferObject BufferObject { get; }
         public VertexArrayObject VertexArrayObject { get; }
+        public uint IndexesCount { get; set; }
 
         public unsafe QuadsMesh(GL gl, Layer layer = Layer.Layer0)
         {
@@ -36,7 +36,7 @@ namespace Automata.Engine.Rendering.Meshes
         {
             VertexArrayObject.Bind();
 
-            _GL.DrawElements(PrimitiveType.Triangles, BufferObject.Length * 6u, DrawElementsType.UnsignedInt, (void*)null!);
+            _GL.DrawElements(PrimitiveType.Triangles, IndexesCount, DrawElementsType.UnsignedInt, (void*)null!);
         }
 
         public void Dispose()

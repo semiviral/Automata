@@ -1,7 +1,10 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Automata.Engine;
 using Automata.Engine.Collections;
@@ -23,6 +26,7 @@ using Automata.Game.Chunks.Generation.Structures;
 using DiagnosticsProviderNS;
 using Serilog;
 using Silk.NET.Input.Common;
+using Silk.NET.OpenGL;
 
 namespace Automata.Game.Chunks.Generation
 {
@@ -72,10 +76,10 @@ namespace Automata.Game.Chunks.Generation
             //
             // _MultiDrawIndirectMesh.VertexArrayObject.AllocateVertexAttributes(new IVertexAttribute[]
             // {
-            //     new VertexAttribute<float>(3u + 0u, 4u, (uint)Marshal.OffsetOf<float>(nameof(Matrix4x4.M11)), 1u),
-            //     new VertexAttribute<float>(3u + 1u, 4u, (uint)Marshal.OffsetOf<float>(nameof(Matrix4x4.M11)), 1u),
-            //     new VertexAttribute<float>(3u + 2u, 4u, (uint)Marshal.OffsetOf<float>(nameof(Matrix4x4.M11)), 1u),
-            //     new VertexAttribute<float>(3u + 3u, 4u, (uint)Marshal.OffsetOf<float>(nameof(Matrix4x4.M11)), 1u)
+            //     new VertexAttribute<float>(3u + 0u, 4u, 4u * 0u, 1u),
+            //     new VertexAttribute<float>(3u + 1u, 4u, 4u * 1u, 1u),
+            //     new VertexAttribute<float>(3u + 2u, 4u, 4u * 2u, 1u),
+            //     new VertexAttribute<float>(3u + 3u, 4u, 4u * 3u, 1u)
             // });
             //
             // entityManager.RegisterEntity(new Entity
@@ -224,7 +228,7 @@ namespace Automata.Game.Chunks.Generation
             DiagnosticsPool.Stopwatches.Return(stopwatch);
         }
 
-        private static void PrepareChunkForRendering(EntityManager entityManager, IEntity entity, NonAllocatingQuadsMeshData<PackedVertex> pendingData)
+        private void PrepareChunkForRendering(EntityManager entityManager, IEntity entity, NonAllocatingQuadsMeshData<PackedVertex> pendingData)
         {
             Stopwatch stopwatch = DiagnosticsPool.Stopwatches.Rent();
             stopwatch.Restart();
@@ -238,7 +242,7 @@ namespace Automata.Game.Chunks.Generation
             DiagnosticsPool.Stopwatches.Return(stopwatch);
         }
 
-        private static unsafe bool ApplyMesh(EntityManager entityManager, IEntity entity, NonAllocatingQuadsMeshData<PackedVertex> pendingData)
+        private unsafe bool ApplyMesh(EntityManager entityManager, IEntity entity, NonAllocatingQuadsMeshData<PackedVertex> pendingData)
         {
             bool hasRenderMesh = entity.TryFind(out RenderMesh? renderMesh);
 
@@ -261,11 +265,24 @@ namespace Automata.Game.Chunks.Generation
             }
 
             int indexesLength = pendingData.Indexes.Count * sizeof(QuadIndexes);
+            int totalLength = indexesLength + (pendingData.Vertexes.Count * sizeof(QuadVertexes<PackedVertex>));
 
+            // IMemoryOwner<byte> memoryOwner = _MultiDrawIndirectMesh.Rent<byte>(totalLength);
+            // IDrawElementsIndirectCommandOwner commandOwner = _MultiDrawIndirectMesh.RentCommand();
+            // commandOwner.Command = new DrawElementsIndirectCommand((uint)(pendingData.Vertexes.Count * 4), 1u, (uint)indexesLength, 0u, 0u);
+            // Span<byte> span = memoryOwner.Memory.Span;
+            quadsMesh.BufferObject.Resize((uint)totalLength, BufferDraw.StaticDraw);
             quadsMesh.VertexArrayObject.AssignVertexArrayVertexBuffer<PackedVertex>(quadsMesh.BufferObject, indexesLength);
-            quadsMesh.BufferObject.Resize((uint)(indexesLength + (pendingData.Vertexes.Count * sizeof(QuadVertexes<PackedVertex>))), BufferDraw.StaticDraw);
-            quadsMesh.BufferObject.SubData(0, pendingData.Indexes.Segment);
-            quadsMesh.BufferObject.SubData(indexesLength, pendingData.Vertexes.Segment);
+            quadsMesh.IndexesCount = (uint)(pendingData.Indexes.Count * 6);
+
+            Span<byte> bufferMemory = quadsMesh.BufferObject.BufferMemory<byte>(BufferAccessARB.WriteOnly);
+            MemoryMarshal.AsBytes(pendingData.Indexes.Segment).CopyTo(bufferMemory);
+            MemoryMarshal.AsBytes(pendingData.Vertexes.Segment).CopyTo(bufferMemory.Slice(indexesLength));
+            quadsMesh.BufferObject.UnbufferMemory();
+
+            //
+            // quadsMesh.BufferObject.SubData(0, pendingData.Indexes.Segment);
+            // quadsMesh.BufferObject.SubData(indexesLength, pendingData.Vertexes.Segment);
 
             return true;
         }
