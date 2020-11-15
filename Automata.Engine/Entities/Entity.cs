@@ -131,8 +131,9 @@ namespace Automata.Engine.Entities
 
         bool ICollection<Component>.Contains(Component item) => _Components.IndexOf(item) > 0;
         void ICollection<Component>.Clear() => _Components.Clear();
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
         public IEnumerator<Component> GetEnumerator() => _Components.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         #endregion
 

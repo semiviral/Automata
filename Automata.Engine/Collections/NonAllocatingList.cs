@@ -7,7 +7,7 @@ namespace Automata.Engine.Collections
 {
     public class NonAllocatingList<T> : IList<T>, IDisposable where T : IEquatable<T>
     {
-        private const int _DEFAULT_CAPACITY = 8;
+        private const int _DEFAULT_CAPACITY = 2;
 
         public static readonly NonAllocatingList<T> Empty = new NonAllocatingList<T>(0);
 
@@ -41,17 +41,10 @@ namespace Automata.Engine.Collections
 
         public void Add(T item)
         {
-            if (Count < _InternalArray.Length)
-            {
-                _InternalArray[Count] = item;
-                Count += 1;
-            }
-            else
-            {
-                EnsureCapacityOrResize(Count + 1);
-                _InternalArray[Count] = item;
-                Count += 1;
-            }
+            if (Count >= _InternalArray.Length) EnsureCapacityOrResize(Count + 1);
+
+            _InternalArray[Count] = item;
+            Count += 1;
         }
 
         public void Insert(int index, T item)
@@ -97,7 +90,6 @@ namespace Automata.Engine.Collections
 
             // copies all elements from after index to the index itself, overwriting it
             if (index < Count) Array.Copy(_InternalArray, index + 1, _InternalArray, index, Count - (index + 1));
-            ;
 
             _InternalArray[Count] = default!;
         }
@@ -116,7 +108,10 @@ namespace Automata.Engine.Collections
 
         #region IEnumerable
 
-        public IEnumerator<T> GetEnumerator() => (IEnumerator<T>)_InternalArray.GetEnumerator();
+        public IEnumerator<T> GetEnumerator()
+        {
+            for (int index = 0; index < Count; index++) yield return _InternalArray[index];
+        }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
