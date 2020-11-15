@@ -1,5 +1,6 @@
 using System;
 using System.Buffers;
+using System.Runtime.InteropServices;
 
 namespace Automata.Engine.Memory
 {
@@ -7,18 +8,12 @@ namespace Automata.Engine.Memory
     {
         private readonly T* _Pointer;
         private readonly int _Length;
-        private readonly Memory<T> _Memory;
 
         public NativeMemoryManager(T* pointer, int length)
         {
             _Pointer = pointer;
             _Length = length;
-            _Memory = CreateMemory(length);
         }
-
-        public Memory<T> Slice(int start) => _Memory.Slice(start);
-        public Memory<T> Slice(int start, int length) => _Memory.Slice(start, length);
-
 
         #region MemoryManager
 

@@ -1,9 +1,7 @@
-using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using Microsoft.Toolkit.HighPerformance.Extensions;
 
 // ReSharper disable ConditionIsAlwaysTrueOrFalse
 
@@ -20,7 +18,6 @@ namespace Automata.Engine.Memory
             public MemoryBlock(nuint index, nuint size, bool owned) => (Index, Size, Owned) = (index, size, owned);
         }
 
-        private readonly NativeMemoryManager<byte>? _MemoryManager;
         private readonly LinkedList<MemoryBlock> _MemoryMap;
         private readonly object _AccessLock;
         private readonly byte* _Pointer;
@@ -32,11 +29,6 @@ namespace Automata.Engine.Memory
 
         public NativeMemoryPool(byte* pointer, nuint size)
         {
-            // one memory instance can't be >int.MaxValue, so ensure length is less or equal
-            // if it isn't, the default memory manager is uninitialized, and we just use a new memory manager
-            // for each rent
-            if (size <= int.MaxValue) _MemoryManager = new NativeMemoryManager<byte>(pointer, (int)size);
-
             Size = size;
 
             _MemoryMap = new LinkedList<MemoryBlock>();
@@ -54,7 +46,6 @@ namespace Automata.Engine.Memory
             // align memory block sizes, we need a byte-length representation
             // of the provided `size`.
             nuint sizeInBytes = (nuint)size * (nuint)sizeof(T);
-
 
             lock (_AccessLock)
             {
@@ -80,43 +71,26 @@ namespace Automata.Engine.Memory
                     }
                     else continue;
 
-                    IMemoryOwner<T> memoryOwner = _MemoryManager is not null // if memory manager isn't null then the allocation is <=int.MaxValue
-                        ? CreateMemoryOwnerFromBlockWithSlice<T>(current.Value.Index, size)
-                        : CreateMemoryOwnerFromBlockWithNewManager<T>(current.Value.Index, size);
+                    IMemoryOwner<T> memoryOwner = CreateMemoryOwner<T>(current.Value.Index, size);
 
                     if (clear) memoryOwner.Memory.Span.Clear();
                     return memoryOwner;
-                } while ((current = current?.Next) is not null);
+                } while ((current = current!.Next) is not null);
             }
 
             ThrowHelper.ThrowInsufficientMemoryException("Not enough memory to accomodate allocation.");
             return null!;
         }
 
-        private IMemoryOwner<T> CreateMemoryOwnerFromBlockWithSlice<T>(nuint index, int size) where T : unmanaged
+        private IMemoryOwner<T> CreateMemoryOwner<T>(nuint index, int size) where T : unmanaged
         {
-            if (_MemoryManager is null) ThrowHelper.ThrowInvalidOperationException("No memory manager to slice memory from.");
-            else if (index >= int.MaxValue) ThrowHelper.ThrowArgumentOutOfRangeException(nameof(index));
-            else if (size > int.MaxValue) ThrowHelper.ThrowArgumentOutOfRangeException(nameof(size));
-
-            Memory<T> memory = _MemoryManager!.Memory.Cast<byte, T>().Slice((int)index, size);
-            IMemoryOwner<T> memoryOwner = new NativeMemoryOwner<T>(this, index, memory);
-            Interlocked.Increment(ref _RentedBlocks);
-
-            return memoryOwner;
-        }
-
-        private IMemoryOwner<T> CreateMemoryOwnerFromBlockWithNewManager<T>(nuint index, int size) where T : unmanaged
-        {
-            if (size > int.MaxValue)
-                ThrowHelper.ThrowArgumentOutOfRangeException(nameof(size), $"Length cannot be greater than {int.MaxValue}.");
+            if (size > int.MaxValue) ThrowHelper.ThrowArgumentOutOfRangeException(nameof(size), $"Length cannot be greater than {int.MaxValue}.");
 
             // remark: it's POSSIBLE for alignment to get screwed up in this operation.
-            // T will not often be the same size as _Pointer, so it's important to take care in calling this
-            // method with a valid MemoryBlock that won't misalign other MemoryBlock's offsets and length.
+            // T will not often be the same size as _Pointer (i.e. a byte), so it's important to take care in calling this
+            // method with a valid index and size that won't misalign
 
-            T* offsetPointer = (T*)(_Pointer + index);
-            NativeMemoryManager<T> memoryManager = new NativeMemoryManager<T>(offsetPointer, size);
+            NativeMemoryManager<T> memoryManager = new NativeMemoryManager<T>((T*)(_Pointer + index), size);
             IMemoryOwner<T> memoryOwner = new NativeMemoryOwner<T>(this, index, memoryManager.Memory);
             Interlocked.Increment(ref _RentedBlocks);
 
@@ -160,7 +134,7 @@ namespace Automata.Engine.Memory
             do
             {
                 if (current!.Value.Index == index) return current;
-            } while ((current = current?.Next) is not null);
+            } while ((current = current!.Next) is not null);
 
             ThrowHelper.ThrowArgumentOutOfRangeException(nameof(index), "No memory block starts at index.");
             return null!;
