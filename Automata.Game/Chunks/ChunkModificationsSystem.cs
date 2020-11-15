@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Automata.Engine;
@@ -31,12 +32,10 @@ namespace Automata.Game.Chunks
             stopwatch.Restart();
 
             foreach (Chunk chunk in entityManager.GetComponents<Chunk>())
-            {
-                if (!chunk.NeighborhoodState(GenerationState.AwaitingMesh, GenerationState.Finished) || !TryProcessChunkModifications(chunk)) continue;
-
-                chunk.RemeshNeighborhood(true);
-                Debug.Assert(chunk.NeighborhoodState(GenerationState.AwaitingMesh), "Neighbors should all be awaiting remesh.");
-            }
+                if (chunk.State is GenerationState.AwaitingMesh or GenerationState.Finished
+                    && chunk.Neighbors.All(neighbor => neighbor?.State is <= GenerationState.AwaitingMesh or GenerationState.Finished)
+                    && TryProcessChunkModifications(chunk))
+                    chunk.RemeshNeighborhood(true);
 
             DiagnosticsProvider.CommitData<ChunkModificationsDiagnosticGroup, TimeSpan>(new ChunkModificationTime(stopwatch.Elapsed));
             DiagnosticsPool.Stopwatches.Return(stopwatch);
@@ -47,11 +46,11 @@ namespace Automata.Game.Chunks
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool TryProcessChunkModifications(Chunk chunk)
         {
-            Debug.Assert(chunk.Blocks is not null);
+            if (chunk.Blocks is null) ThrowHelper.ThrowNullReferenceException("Chunk must have blocks.");
 
             bool modified = false;
 
-            while (chunk.Modifications.TryTake(out ChunkModification? modification) && (chunk.Blocks[modification!.BlockIndex].ID != modification.BlockID))
+            while (chunk.Modifications.TryTake(out ChunkModification? modification) && (chunk.Blocks![modification!.BlockIndex].ID != modification.BlockID))
             {
                 chunk.Blocks[modification.BlockIndex] = new Block(modification.BlockID);
                 modified = true;

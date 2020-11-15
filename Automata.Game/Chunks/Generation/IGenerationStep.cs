@@ -5,7 +5,7 @@ namespace Automata.Game.Chunks.Generation
 {
     public interface IGenerationStep
     {
-        public record Parameters
+        public sealed record Parameters
         {
             public int Seed { get; }
             public Random SeededRandom { get; init; }

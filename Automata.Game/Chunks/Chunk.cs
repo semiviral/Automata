@@ -38,7 +38,7 @@ namespace Automata.Game.Chunks
             return true;
         }
 
-        public bool NeighborState(GenerationState state1, ComparisonMode comparisonMode) =>
+        public bool NeighborsState(GenerationState state1, ComparisonMode comparisonMode) =>
             comparisonMode switch
             {
                 ComparisonMode.EqualOrGreaterThan => Neighbors.All(neighbor => neighbor is null || (neighbor.State >= state1)),
@@ -54,7 +54,7 @@ namespace Automata.Game.Chunks
             State = GenerationState.AwaitingMesh;
 
             foreach (Chunk? neighbor in Neighbors)
-                if (neighbor?.State is not null and not GenerationState.AwaitingMesh)
+                if (neighbor?.State is not null and > GenerationState.AwaitingMesh)
                     neighbor.State = GenerationState.AwaitingMesh;
         }
 
