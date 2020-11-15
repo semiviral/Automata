@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 namespace Automata.Engine.Rendering.OpenGL
 {
     [StructLayout(LayoutKind.Sequential)]
-    public readonly struct QuadVertexes<TVertex>: IEquatable<QuadVertexes<TVertex>> where TVertex:unmanaged
+    public readonly struct QuadVertexes<TVertex> : IEquatable<QuadVertexes<TVertex>> where TVertex : unmanaged
     {
         public readonly TVertex Vertex1;
         public readonly TVertex Vertex2;

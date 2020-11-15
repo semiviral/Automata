@@ -3,7 +3,6 @@
 using System;
 using System.Runtime.CompilerServices;
 using Automata.Engine.Collections;
-using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Game.Blocks;
 
