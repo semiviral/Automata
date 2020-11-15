@@ -4,6 +4,7 @@ using System;
 using System.Runtime.CompilerServices;
 using Automata.Engine.Collections;
 using Automata.Engine.Rendering.Meshes;
+using Automata.Engine.Rendering.OpenGL;
 using Automata.Game.Blocks;
 
 #endregion
@@ -15,7 +16,7 @@ namespace Automata.Game.Chunks.Generation.Meshing
     {
         // these are semi-magic defaults, based on a collective average
         private const int _DEFAULT_VERTEXES_CAPACITY = 2048;
-        private const int _DEFAULT_INDEXES_CAPACITY = 3072;
+        private const int _DEFAULT_INDEXES_CAPACITY = 512;
 
         public const string DEFAULT_STRATEGY = "Cube";
 
@@ -38,7 +39,7 @@ namespace Automata.Game.Chunks.Generation.Meshing
 
                 BlockRegistry blockRegistry = BlockRegistry.Instance;
                 NonAllocatingList<PackedVertex> vertexes = new NonAllocatingList<PackedVertex>(_DEFAULT_VERTEXES_CAPACITY);
-                NonAllocatingList<uint> indexes = new NonAllocatingList<uint>(_DEFAULT_INDEXES_CAPACITY);
+                NonAllocatingList<VertexIndexes> indexes = new NonAllocatingList<VertexIndexes>(_DEFAULT_INDEXES_CAPACITY);
                 Span<Block> blocks = stackalloc Block[GenerationConstants.CHUNK_SIZE_CUBED];
                 Span<Direction> faces = stackalloc Direction[GenerationConstants.CHUNK_SIZE_CUBED];
                 faces.Clear();

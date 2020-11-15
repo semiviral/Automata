@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Automata.Engine.Collections;
 using Automata.Engine.Numerics;
+using Automata.Engine.Rendering.OpenGL;
 using Automata.Game.Blocks;
 
 namespace Automata.Game.Chunks.Generation.Meshing
@@ -76,7 +77,7 @@ namespace Automata.Game.Chunks.Generation.Meshing
             -GenerationConstants.CHUNK_SIZE
         };
 
-        public void Mesh(Span<Block> blocks, Span<Direction> faces, ICollection<PackedVertex> vertexes, ICollection<uint> indexes,
+        public void Mesh(Span<Block> blocks, Span<Direction> faces, ICollection<PackedVertex> vertexes, ICollection<VertexIndexes> indexes,
             IReadOnlyList<Palette<Block>?> neighbors, int index, int localPosition, Block block, bool isTransparent)
         {
             // iterate once over all 6 faces of given cubic space
@@ -196,12 +197,14 @@ namespace Automata.Game.Chunks.Generation.Meshing
                     else if ((traversals == 1) && (perpendicularNormalIndex == 1)) continue;
 
                     uint indexesStart = (uint)vertexes.Count;
-                    indexes.Add(indexesStart + 0u);
-                    indexes.Add(indexesStart + 1u);
-                    indexes.Add(indexesStart + 3u);
-                    indexes.Add(indexesStart + 1u);
-                    indexes.Add(indexesStart + 2u);
-                    indexes.Add(indexesStart + 3u);
+                    indexes.Add(new VertexIndexes(
+                        indexesStart + 0u,
+                        indexesStart + 1u,
+                        indexesStart + 3u,
+                        indexesStart + 1u,
+                        indexesStart + 2u,
+                        indexesStart + 3u
+                    ));
 
                     Span<int> compressedVertices = _PackedVertexesByIteration[normalIndex];
                     int traversalComponentMask = GenerationConstants.CHUNK_SIZE_MASK << traversalNormalShift;

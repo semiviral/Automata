@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Automata.Engine;
 using Automata.Engine.Collections;
@@ -37,7 +39,7 @@ namespace Automata.Game.Chunks.Generation
         private readonly IOrderedCollection<IGenerationStep> _BuildSteps;
         private readonly ConcurrentChannel<(IEntity, NonAllocatingMeshData<PackedVertex>)> _PendingMeshes;
 
-        // private MultiDrawIndirectMesh? _MultiDrawIndirectMesh;
+        private MultiDrawIndirectMesh? _MultiDrawIndirectMesh;
 
         public ChunkGenerationSystem()
         {
@@ -64,10 +66,10 @@ namespace Automata.Game.Chunks.Generation
                 Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(DiagnosticsPool), string.Join(", ", states)));
             }, Key.ShiftLeft, Key.V));
 
-            // const uint one_kb = 1024u;
-            // const uint one_mb = one_kb * one_kb;
-            // const uint one_gb = one_kb * one_kb * one_kb;
-            //
+            const uint one_kb = 1024u;
+            const uint one_mb = one_kb * one_kb;
+            const uint one_gb = one_kb * one_kb * one_kb;
+
             // _MultiDrawIndirectMesh = new MultiDrawIndirectMesh(GLAPI.Instance.GL, 3u * one_mb, one_gb);
             //
             // _MultiDrawIndirectMesh.VertexArrayObject.AllocateVertexAttributes(new IVertexAttribute[]
@@ -229,16 +231,12 @@ namespace Automata.Game.Chunks.Generation
             Stopwatch stopwatch = DiagnosticsPool.Stopwatches.Rent();
             stopwatch.Restart();
 
-            if (!ApplyMesh(entityManager, entity, pendingMesh))
+            if (ApplyMesh(entityManager, entity, pendingMesh))
             {
-                DiagnosticsPool.Stopwatches.Return(stopwatch);
-                return;
+                ConfigureMaterial(entityManager, entity);
+                DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new ApplyMeshTime(stopwatch.Elapsed));
             }
 
-            ConfigureMaterial(entityManager, entity);
-
-            stopwatch.Stop();
-            DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new ApplyMeshTime(stopwatch.Elapsed));
             DiagnosticsPool.Stopwatches.Return(stopwatch);
         }
 

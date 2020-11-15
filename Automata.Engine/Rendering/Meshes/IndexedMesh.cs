@@ -1,6 +1,7 @@
 #region
 
 using System;
+using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
 using Silk.NET.OpenGL;
 
@@ -18,7 +19,7 @@ namespace Automata.Engine.Rendering.Meshes
         public bool Visible { get; }
 
         public BufferObject<TVertex> VertexesBufferObject { get; }
-        public BufferObject<uint> IndexesBufferObject { get; }
+        public BufferObject<VertexIndexes> IndexesBufferObject { get; }
         public VertexArrayObject<TVertex> VertexArrayObject { get; }
 
         public Mesh(GL gl, Layer layer = Layer.Layer0)
@@ -29,7 +30,7 @@ namespace Automata.Engine.Rendering.Meshes
             Visible = true;
             Layer = layer;
             VertexesBufferObject = new BufferObject<TVertex>(gl);
-            IndexesBufferObject = new BufferObject<uint>(gl);
+            IndexesBufferObject = new BufferObject<VertexIndexes>(gl);
             VertexArrayObject = new VertexArrayObject<TVertex>(gl, VertexesBufferObject, IndexesBufferObject);
         }
 

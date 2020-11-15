@@ -70,12 +70,10 @@ namespace Automata.Engine.Entities
         private void RemoveComponentInternal(IEntity entity, Type type)
         {
             if (!typeof(Component).IsAssignableFrom(type)) throw new TypeLoadException($"Component types must be assignable from {nameof(Component)}.");
-
-            if (entity.TryFind(type, out Component? component) && entity.Remove(component))
-            {
-                if (component is IDisposable disposable) disposable.Dispose();
-                _ComponentCounts[type] -= 1;
-            }
+            if (!entity.TryFind(type, out Component? component) || !entity.Remove(component)) return;
+            if (component is IDisposable disposable) disposable.Dispose();
+            
+            _ComponentCounts[type] -= 1;
         }
 
         #endregion

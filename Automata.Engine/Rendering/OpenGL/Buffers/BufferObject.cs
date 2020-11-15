@@ -12,13 +12,19 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
         public BufferObject(GL gl) : base(gl) => Handle = GL.CreateBuffer();
 
-        public BufferObject(GL gl, uint length, BufferStorageMask bufferStorageMask = BufferStorageMask.DynamicStorageBit)
-            : this(gl, length, Span<TData>.Empty, bufferStorageMask) { }
-
-        public BufferObject(GL gl, uint length, Span<TData> data, BufferStorageMask bufferStorageMask = BufferStorageMask.DynamicStorageBit) : base(gl)
+        public BufferObject(GL gl, uint length, BufferStorageMask bufferStorageMask = BufferStorageMask.DynamicStorageBit) : base(gl)
         {
             Length = length;
             ByteLength = length * (uint)sizeof(TData);
+
+            Handle = GL.CreateBuffer();
+            GL.NamedBufferStorage(Handle, ByteLength, (void*)null!, (uint)bufferStorageMask);
+        }
+
+        public BufferObject(GL gl, Span<TData> data, BufferStorageMask bufferStorageMask = BufferStorageMask.DynamicStorageBit) : base(gl)
+        {
+            Length = (uint)data.Length;
+            ByteLength = (uint)data.Length * (uint)sizeof(TData);
 
             Handle = GL.CreateBuffer();
             GL.NamedBufferStorage(Handle, ByteLength, data, (uint)bufferStorageMask);
@@ -34,15 +40,10 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
         public void SetBufferData(int offset, Span<TData> data) =>
             GL.NamedBufferSubData(Handle, offset * sizeof(TData), (uint)(data.Length * sizeof(TData)), ref data[0]);
 
-        public void SetBufferData(Span<(int, TData)> data)
-        {
-            foreach ((int offset, TData datum) in data) GL.NamedBufferSubData(Handle, offset, (uint)sizeof(TData), &datum);
-        }
-
-        public void SetBufferData(uint length, uint indexSize, void* data, BufferDraw bufferDraw)
+        public void SetBufferData(uint length, uint byteLength, void* data, BufferDraw bufferDraw)
         {
             Length = length;
-            ByteLength = length * indexSize;
+            ByteLength = byteLength;
             GL.NamedBufferData(Handle, ByteLength, data, (VertexBufferObjectUsage)bufferDraw);
         }
 
@@ -60,9 +61,10 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
         {
             if (_Disposed) return;
 
-            GC.SuppressFinalize(this);
             GL.DeleteBuffer(Handle);
+
             _Disposed = true;
+            GC.SuppressFinalize(this);
         }
     }
 }
