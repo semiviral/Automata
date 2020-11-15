@@ -35,7 +35,6 @@ namespace Automata.Game.Chunks.Generation
         };
 
         private readonly IOrderedCollection<IGenerationStep> _BuildSteps;
-        private readonly ConcurrentChannel<(IEntity, Palette<Block>)> _PendingBlocks;
         private readonly ConcurrentChannel<(IEntity, NonAllocatingMeshData<PackedVertex>)> _PendingMeshes;
 
         // private MultiDrawIndirectMesh? _MultiDrawIndirectMesh;
@@ -44,7 +43,6 @@ namespace Automata.Game.Chunks.Generation
         {
             _BuildSteps = new OrderedLinkedList<IGenerationStep>();
             _BuildSteps.AddLast(new TerrainGenerationStep());
-            _PendingBlocks = new ConcurrentChannel<(IEntity, Palette<Block>)>(true, false);
             _PendingMeshes = new ConcurrentChannel<(IEntity, NonAllocatingMeshData<PackedVertex>)>(true, false);
 
             DiagnosticsProvider.EnableGroup<ChunkGenerationDiagnosticGroup>();
@@ -95,17 +93,6 @@ namespace Automata.Game.Chunks.Generation
          HandledComponents(DistinctionStrategy.All, typeof(Chunk), typeof(RenderModel))]
         public override ValueTask Update(EntityManager entityManager, TimeSpan delta)
         {
-            // empty channel of any pending blocks
-            while (_PendingBlocks.TryTake(out (IEntity Entity, Palette<Block> Blocks) pendingBlocks)
-                   && !pendingBlocks.Entity.Disposed
-                   && pendingBlocks.Entity.TryFind(out Chunk? chunk))
-            {
-                Debug.Assert(chunk.State is GenerationState.GeneratingTerrain);
-
-                chunk.Blocks = pendingBlocks.Blocks;
-                chunk.State += 1;
-            }
-
             // empty channel of any pending meshes, apply the meshes, and update the material
             while (_PendingMeshes.TryTake(out (IEntity Entity, NonAllocatingMeshData<PackedVertex> Data) pendingMesh)
                    && !pendingMesh.Entity.Disposed
@@ -124,7 +111,7 @@ namespace Automata.Game.Chunks.Generation
                 switch (chunk.State)
                 {
                     case GenerationState.AwaitingTerrain:
-                        BoundedInvocationPool.Instance.Enqueue(_ => GenerateBlocks(entity, Vector3i.FromVector3(translation.Value),
+                        BoundedInvocationPool.Instance.Enqueue(_ => GenerateBlocks(chunk, Vector3i.FromVector3(translation.Value),
                             new IGenerationStep.Parameters(GenerationConstants.Seed, Vector3i.FromVector3(translation.Value).GetHashCode())
                             {
                                 Frequency = 0.008f
@@ -138,7 +125,7 @@ namespace Automata.Game.Chunks.Generation
                         chunk.State += 1;
                         break;
 
-                    case GenerationState.AwaitingMesh when chunk.Neighbors.All(neighbor => neighbor?.State is >= GenerationState.AwaitingMesh):
+                    case GenerationState.AwaitingMesh when chunk.Neighbors.All(neighbor => neighbor?.State is null or >= GenerationState.AwaitingMesh):
                         BoundedInvocationPool.Instance.Enqueue(_ => GenerateMesh(entity, chunk));
                         chunk.State += 1;
                         break;
@@ -147,7 +134,7 @@ namespace Automata.Game.Chunks.Generation
             return ValueTask.CompletedTask;
         }
 
-        private async Task GenerateBlocks(IEntity entity, Vector3i origin, IGenerationStep.Parameters parameters)
+        private Task GenerateBlocks(Chunk chunk, Vector3i origin, IGenerationStep.Parameters parameters)
         {
             Stopwatch stopwatch = DiagnosticsPool.Stopwatches.Rent();
 
@@ -170,9 +157,11 @@ namespace Automata.Game.Chunks.Generation
                 return palette;
             }
 
-            Palette<Block> blocks = GenerateTerrainAndBuildPalette();
-            await _PendingBlocks.AddAsync((entity, blocks)).ConfigureAwait(false);
+            chunk.Blocks = GenerateTerrainAndBuildPalette();
+            chunk.State += 1;
+
             DiagnosticsPool.Stopwatches.Return(stopwatch);
+            return Task.CompletedTask;
         }
 
         private async Task GenerateStructures(Chunk chunk, Vector3i origin)
