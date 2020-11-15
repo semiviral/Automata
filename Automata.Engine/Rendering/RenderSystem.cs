@@ -117,17 +117,17 @@ namespace Automata.Engine.Rendering
                 Material? cachedMaterial = null;
 
                 // iterate each RenderMesh and check if the model matrix needs to be recalculated
-                foreach ((IEntity objectEntity, RenderMesh renderMesh) in entityManager.GetEntitiesWithComponents<RenderMesh>())
+                foreach ((IEntity objectEntity, RenderModel renderModel) in entityManager.GetEntitiesWithComponents<RenderModel>())
                     if (((objectEntity.TryFind(out Scale? modelScale) && modelScale.Changed)
                          | (objectEntity.TryFind(out Rotation? modelRotation) && modelRotation.Changed)
                          | (objectEntity.TryFind(out Translation? modelTranslation) && modelTranslation.Changed))
-                        || renderMesh.Changed)
+                        || renderModel.Changed)
                     {
-                        renderMesh.Model = Matrix4x4.Identity;
+                        renderModel.Model = Matrix4x4.Identity;
 
-                        if (modelTranslation is not null) renderMesh.Model *= Matrix4x4.CreateTranslation(modelTranslation.Value);
-                        if (modelRotation is not null) renderMesh.Model *= Matrix4x4.CreateFromQuaternion(modelRotation.Value);
-                        if (modelScale is not null) renderMesh.Model *= Matrix4x4.CreateScale(modelScale.Value);
+                        if (modelTranslation is not null) renderModel.Model *= Matrix4x4.CreateTranslation(modelTranslation.Value);
+                        if (modelRotation is not null) renderModel.Model *= Matrix4x4.CreateFromQuaternion(modelRotation.Value);
+                        if (modelScale is not null) renderModel.Model *= Matrix4x4.CreateScale(modelScale.Value);
                     }
 
                 // iterate every valid entity and try to render it
@@ -136,7 +136,8 @@ namespace Automata.Engine.Rendering
                     .Where(result => result.Component1.ShouldRender && ((camera.RenderedLayers & result.Component1.Mesh!.Layer) > 0))
                     .OrderBy(result => result.Component2.Pipeline.Handle))
                 {
-                    Matrix4x4 modelViewProjection = renderMesh.Model * viewProjection;
+                    bool hasModel = objectEntity.TryFind(out RenderModel? renderModel);
+                    Matrix4x4 modelViewProjection = hasModel ? renderModel!.Model * viewProjection : Matrix4x4.Identity * viewProjection;
 
                     if (objectEntity.TryFind(out OcclusionBounds? bounds) && CheckClipFrustumOcclude(bounds, planes, modelViewProjection)) continue;
 
@@ -144,11 +145,15 @@ namespace Automata.Engine.Rendering
                     if (cachedMaterial is null || !material.Equals(cachedMaterial)) ApplyMaterial(material, ref cachedMaterial);
 
                     // we're about to render, so ensure all of the relevant uniforms are set
-                    Matrix4x4.Invert(renderMesh.Model, out Matrix4x4 modelInverted);
                     ShaderProgram vertexShader = cachedMaterial!.Pipeline.Stage(ShaderType.VertexShader);
                     vertexShader.TrySetUniform("_mvp", modelViewProjection);
-                    vertexShader.TrySetUniform("_object", modelInverted);
-                    vertexShader.TrySetUniform("_world", renderMesh.Model);
+
+                    if (hasModel)
+                    {
+                        Matrix4x4.Invert(renderModel!.Model, out Matrix4x4 modelInverted);
+                        vertexShader.TrySetUniform("_object", modelInverted);
+                        vertexShader.TrySetUniform("_world", renderModel.Model);
+                    }
 
                     renderMesh.Mesh!.Draw();
                 }

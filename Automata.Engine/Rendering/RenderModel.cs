@@ -16,5 +16,7 @@ namespace Automata.Engine.Rendering
                 Changed = true;
             }
         }
+
+        public RenderModel() => Model = Matrix4x4.Identity;
     }
 }
