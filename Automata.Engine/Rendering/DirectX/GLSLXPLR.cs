@@ -137,7 +137,7 @@ namespace Automata.Engine.Rendering.DirectX
             File.Delete(temporaryShader);
         }
 
-        public bool TryTranspileShader(string shaderPath, [MaybeNullWhen(false)] out byte[] shaderBytes)
+        public bool TryTranspileShader(string shaderPath, [NotNullWhen(true)] out byte[]? shaderBytes)
         {
             shaderBytes = null;
 

@@ -3,15 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Serilog;
 using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.OpenGL.Buffers
 {
     public class UniformBufferObject : OpenGLObject, IDisposable
     {
-        private const MapBufferAccessMask _MAPPING_FLAGS = MapBufferAccessMask.MapWriteBit;
-        private const BufferStorageMask _STORAGE_FLAGS = BufferStorageMask.DynamicStorageBit | (BufferStorageMask)_MAPPING_FLAGS;
+        private const BufferStorageMask _STORAGE_FLAGS = BufferStorageMask.MapWriteBit | BufferStorageMask.DynamicStorageBit;
 
         private readonly Dictionary<string, int> _Offsets;
 
@@ -20,9 +18,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             get => _Offsets[uniform];
             init
             {
-                if ((value % 16) != 0)
-                    Log.Warning(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(UniformBufferObject),
-                        "Offset is not aligned to a multiple of 16. This may be an error."));
+                Debug.Assert((value % 16) == 0, "Offset is not aligned to a multiple of 16. This may be an error.");
 
                 if (!_Offsets.ContainsKey(uniform)) _Offsets.Add(uniform, value);
                 else _Offsets[uniform] = value;
@@ -41,7 +37,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
         public uint Size { get; }
 
-        public UniformBufferObject(GL gl, uint bindingIndex, uint size) : base(gl)
+        public UniformBufferObject(GL gl, uint bindingIndex, uint size, BufferStorageMask bufferStorageMask = _STORAGE_FLAGS) : base(gl)
         {
             if (size > short.MaxValue) throw new ArgumentOutOfRangeException(nameof(size), "Size must be greater than zero and less than 16KB.");
 
@@ -51,25 +47,25 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             BindingIndex = bindingIndex;
             Size = size;
 
-            GL.NamedBufferStorage(Handle, Size, Span<byte>.Empty, (uint)_STORAGE_FLAGS);
+            GL.NamedBufferStorage(Handle, Size, Span<byte>.Empty, (uint)bufferStorageMask);
         }
 
         public unsafe void Write<T>(int offset, T data) where T : unmanaged
         {
-            Debug.Assert((offset % 16) != 0, "Offset is not aligned to a multiple of 16. This may be an error.");
+            Debug.Assert((offset % 16) == 0, "Offset is not aligned to a multiple of 16. This may be an error.");
 
             uint length = Size - (uint)offset;
-            void* pointer = GL.MapNamedBufferRange(Handle, offset, length, (uint)BufferAccessARB.WriteOnly);
+            void* pointer = GL.MapNamedBufferRange(Handle, offset, length, (uint)MapBufferAccessMask.MapWriteBit);
             Unsafe.Write(pointer, data);
             GL.UnmapNamedBuffer(Handle);
         }
 
         public unsafe void Write<T>(int offset, Span<T> data) where T : unmanaged
         {
-            Debug.Assert((offset % 16) != 0, "Offset is not aligned to a multiple of 16. This may be an error.");
+            Debug.Assert((offset % 16) == 0, "Offset is not aligned to a multiple of 16. This may be an error.");
 
             uint length = Size - (uint)offset;
-            void* pointer = GL.MapNamedBufferRange(Handle, offset, length, (uint)BufferAccessARB.WriteOnly);
+            void* pointer = GL.MapNamedBufferRange(Handle, offset, length, (uint)MapBufferAccessMask.MapWriteBit);
             MemoryMarshal.Cast<T, byte>(data).CopyTo(new Span<byte>(pointer, (int)length));
             GL.UnmapNamedBuffer(Handle);
         }

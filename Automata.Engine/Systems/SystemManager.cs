@@ -50,9 +50,6 @@ namespace Automata.Engine.Systems
         {
             foreach (ComponentSystem componentSystem in _ComponentSystems)
                 if (componentSystem.Enabled && VerifyHandledComponentsExistForSystem(entityManager, componentSystem))
-
-                    // we can ConfigureAwait(false) because we're still effectively synchronous
-                    // after we loop, we'll return to the main thread anyway so long as the parent world doesn't ConfigureAwait(false)
                     await componentSystem.Update(entityManager, deltaTime).ConfigureAwait(false);
 
             foreach (ComponentChangeable changeable in entityManager.GetComponentsExplicit<ComponentChangeable>()) changeable.Changed = false;
@@ -86,9 +83,7 @@ namespace Automata.Engine.Systems
                 default: throw new ArgumentOutOfRangeException(nameof(order), order, null);
             }
 
-            RegisterHandledTypes<TSystem>();
-            componentSystem.SetCurrentWorld(_CurrentWorld);
-            componentSystem.Registered(_CurrentWorld.EntityManager);
+            RegisterSystemInternal(componentSystem);
 
             Log.Information($"({nameof(SystemManager)}) Registered {nameof(ComponentSystem)}: {typeof(TSystem)}");
         }
@@ -107,9 +102,7 @@ namespace Automata.Engine.Systems
                     break;
             }
 
-            RegisterHandledTypes<TSystem>();
-            componentSystem.SetCurrentWorld(_CurrentWorld);
-            componentSystem.Registered(_CurrentWorld.EntityManager);
+            RegisterSystemInternal(componentSystem);
 
             Log.Information($"({nameof(SystemManager)}) Registered {nameof(ComponentSystem)}: {typeof(TSystem)}");
         }
@@ -130,6 +123,13 @@ namespace Automata.Engine.Systems
             return methodBase is not null
                 ? methodBase.GetCustomAttributes<HandledComponents>().Select(handlesComponents => handlesComponents.Types)
                 : Enumerable.Empty<ComponentTypes>();
+        }
+
+        private void RegisterSystemInternal<TSystem>(TSystem componentSystem) where TSystem : ComponentSystem, new()
+        {
+            RegisterHandledTypes<TSystem>();
+            componentSystem.SetCurrentWorld(_CurrentWorld);
+            componentSystem.Registered(_CurrentWorld.EntityManager);
         }
 
         /// <summary>

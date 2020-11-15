@@ -140,8 +140,8 @@ namespace Automata.Engine.Entities
         {
             foreach (IEntity entity in _Entities)
             foreach (Component component in entity)
-                if (component is TComponent tComponent)
-                    yield return tComponent;
+                if (component is TComponent componentT)
+                    yield return componentT;
         }
 
         /// <summary>

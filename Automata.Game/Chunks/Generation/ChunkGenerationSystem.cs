@@ -275,8 +275,8 @@ namespace Automata.Game.Chunks.Generation
                 mesh.VertexArrayObject.CommitVertexAttributes();
             }
 
-            mesh.VertexesBufferObject.SetBufferData(pendingMesh.Vertexes.Segment.Span, BufferDraw.DynamicDraw);
-            mesh.IndexesBufferObject.SetBufferData(pendingMesh.Indexes.Segment.Span, BufferDraw.DynamicDraw);
+            mesh.VertexesBufferObject.SetBufferData(pendingMesh.Vertexes.Segment, BufferDraw.DynamicDraw);
+            mesh.IndexesBufferObject.SetBufferData(pendingMesh.Indexes.Segment, BufferDraw.DynamicDraw);
             return true;
         }
 

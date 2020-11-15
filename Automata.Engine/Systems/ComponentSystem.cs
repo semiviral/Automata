@@ -31,7 +31,6 @@ namespace Automata.Engine.Systems
 
         internal void SetCurrentWorld(World currentWorld) => _CurrentWorld = currentWorld;
 
-
         #region IDisposable
 
         private bool _Disposed;

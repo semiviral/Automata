@@ -46,14 +46,30 @@ namespace Automata.Game.Chunks
             stopwatch.Restart();
 
             // attempt to state change any neighbors requiring remesh
+            UpdateChunksPendingValidRemeshingState();
+
+            // determine whether any chunk loaders have moved out far enough to recalculate their loaded chunk region
+            bool recalculateChunkRegions = CheckAndUpdateChunkLoaderPositions(entityManager);
+            if (recalculateChunkRegions) RecalculateChunkRegions(entityManager);
+
+            DiagnosticsProvider.CommitData<ChunkRegionLoadingDiagnosticGroup, TimeSpan>(new RegionLoadingTime(stopwatch.Elapsed));
+            DiagnosticsPool.Stopwatches.Return(stopwatch);
+
+            return ValueTask.CompletedTask;
+        }
+
+        private void UpdateChunksPendingValidRemeshingState()
+        {
             while (_PendingRemeshingDueToNeighborUpdatesQueue.TryPeek(out Chunk? chunk) && chunk?.State is GenerationState.Finished)
             {
                 _PendingRemeshingDueToNeighborUpdatesQueue.Dequeue();
                 chunk.State = GenerationState.AwaitingMesh;
             }
+        }
 
-            // determine whether any chunk loaders have moved out far enough to recalculate their loaded chunk region
-            bool recalculateChunkRegions = false;
+        private static bool CheckAndUpdateChunkLoaderPositions(EntityManager entityManager)
+        {
+            bool updatedChunkPositions = false;
 
             foreach ((Translation translation, ChunkLoader chunkLoader) in entityManager.GetComponents<Translation, ChunkLoader>())
             {
@@ -64,15 +80,10 @@ namespace Automata.Game.Chunks
                 if (!chunkLoader.Changed && Vector3b.All(difference < GenerationConstants.CHUNK_SIZE)) continue;
 
                 chunkLoader.Origin = Vector3i.RoundBy(translationInt32, GenerationConstants.CHUNK_SIZE);
-                recalculateChunkRegions = true;
+                updatedChunkPositions = true;
             }
 
-            if (recalculateChunkRegions) RecalculateChunkRegions(entityManager);
-
-            DiagnosticsProvider.CommitData<ChunkRegionLoadingDiagnosticGroup, TimeSpan>(new RegionLoadingTime(stopwatch.Elapsed));
-            DiagnosticsPool.Stopwatches.Return(stopwatch);
-
-            return ValueTask.CompletedTask;
+            return updatedChunkPositions;
         }
 
         private void RecalculateChunkRegions(EntityManager entityManager)
@@ -136,7 +147,7 @@ namespace Automata.Game.Chunks
                 Vector3i component = Vector3i.One.WithComponent<Vector3i, int>(componentIndex) * sign;
                 Vector3i neighborOrigin = origin + (component * GenerationConstants.CHUNK_SIZE);
 
-                VoxelWorld.Chunks.TryGetEntity(neighborOrigin, out IEntity? neighbor);
+                VoxelWorld.Chunks.TryGetChunkEntity(neighborOrigin, out IEntity? neighbor);
                 yield return neighbor?.Find<Chunk>();
             }
         }

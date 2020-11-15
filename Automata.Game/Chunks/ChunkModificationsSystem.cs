@@ -51,7 +51,7 @@ namespace Automata.Game.Chunks
 
             bool modified = false;
 
-            while (chunk.Modifications.TryTake(out ChunkModification? modification) && (chunk.Blocks[modification.BlockIndex].ID != modification.BlockID))
+            while (chunk.Modifications.TryTake(out ChunkModification? modification) && (chunk.Blocks[modification!.BlockIndex].ID != modification.BlockID))
             {
                 chunk.Blocks[modification.BlockIndex] = new Block(modification.BlockID);
                 modified = true;

@@ -12,7 +12,7 @@ namespace Automata.Engine.Entities
 {
     public class Entity : IEntity
     {
-        private readonly MemoryList<Component> _Components;
+        private readonly NonAllocatingList<Component> _Components;
 
         public Guid ID { get; }
         public bool Disposed { get; private set; }
@@ -44,7 +44,7 @@ namespace Automata.Engine.Entities
 
         public int Count => _Components.Count;
 
-        public Entity() => (ID, Disposed, _Components) = (Guid.NewGuid(), false, new MemoryList<Component>(1));
+        public Entity() => (ID, Disposed, _Components) = (Guid.NewGuid(), false, new NonAllocatingList<Component>(1));
 
         public void Add<TComponent>() where TComponent : Component, new()
         {

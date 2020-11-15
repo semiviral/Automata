@@ -27,7 +27,7 @@ namespace Automata.Game.Chunks
 
         public ChunkMap() => _Chunks = new Dictionary<Vector3i, IEntity>();
 
-        public bool TryGetEntity(Vector3i origin, [NotNullWhen(true)] out IEntity? entity) => _Chunks.TryGetValue(origin, out entity);
+        public bool TryGetChunkEntity(Vector3i origin, [NotNullWhen(true)] out IEntity? entity) => _Chunks.TryGetValue(origin, out entity);
 
 
         #region Chunk Addition / Removal
