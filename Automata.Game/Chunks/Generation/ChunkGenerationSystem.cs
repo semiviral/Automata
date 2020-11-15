@@ -11,6 +11,7 @@ using Automata.Engine.Diagnostics;
 using Automata.Engine.Entities;
 using Automata.Engine.Input;
 using Automata.Engine.Numerics;
+using Automata.Engine.Rendering;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
@@ -37,6 +38,8 @@ namespace Automata.Game.Chunks.Generation
         private readonly ConcurrentChannel<(IEntity, Palette<Block>)> _PendingBlocks;
         private readonly ConcurrentChannel<(IEntity, NonAllocatingMeshData<PackedVertex>)> _PendingMeshes;
 
+        // private MultiDrawIndirectMesh? _MultiDrawIndirectMesh;
+
         public ChunkGenerationSystem()
         {
             _BuildSteps = new OrderedLinkedList<IGenerationStep>();
@@ -62,9 +65,34 @@ namespace Automata.Game.Chunks.Generation
                 IEnumerable<(GenerationState, int)> states = entityManager.GetComponents<Chunk>().Select(chunk => (chunk.State, chunk.TimesMeshed));
                 Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(DiagnosticsPool), string.Join(", ", states)));
             }, Key.ShiftLeft, Key.V));
+
+            // const uint one_kb = 1024u;
+            // const uint one_mb = one_kb * one_kb;
+            // const uint one_gb = one_kb * one_kb * one_kb;
+            //
+            // _MultiDrawIndirectMesh = new MultiDrawIndirectMesh(GLAPI.Instance.GL, 3u * one_mb, one_gb);
+            //
+            // _MultiDrawIndirectMesh.VertexArrayObject.AllocateVertexAttributes(new IVertexAttribute[]
+            // {
+            //     new VertexAttribute<float>(3u + 0u, 4u, (uint)Marshal.OffsetOf<float>(nameof(Matrix4x4.M11)), 1u),
+            //     new VertexAttribute<float>(3u + 1u, 4u, (uint)Marshal.OffsetOf<float>(nameof(Matrix4x4.M11)), 1u),
+            //     new VertexAttribute<float>(3u + 2u, 4u, (uint)Marshal.OffsetOf<float>(nameof(Matrix4x4.M11)), 1u),
+            //     new VertexAttribute<float>(3u + 3u, 4u, (uint)Marshal.OffsetOf<float>(nameof(Matrix4x4.M11)), 1u)
+            // });
+            //
+            // entityManager.RegisterEntity(new Entity
+            // {
+            //     new RenderMesh
+            //     {
+            //         Mesh = _MultiDrawIndirectMesh
+            //     },
+            //     new Material(ProgramRegistry.Instance.Load("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl"))
+            // });
         }
 
-        [HandledComponents(DistinctionStrategy.All, typeof(Translation), typeof(Chunk))]
+        [HandledComponents(DistinctionStrategy.All, typeof(Translation), typeof(Chunk)),
+         HandledComponents(DistinctionStrategy.All, typeof(Chunk), typeof(RenderMesh)),
+         HandledComponents(DistinctionStrategy.All, typeof(Chunk), typeof(RenderModel))]
         public override ValueTask Update(EntityManager entityManager, TimeSpan delta)
         {
             // empty channel of any pending blocks

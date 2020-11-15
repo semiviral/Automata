@@ -9,14 +9,7 @@ namespace Automata.Engine.Memory
 {
     public unsafe class NativeMemoryPool
     {
-        private sealed record MemoryBlock
-        {
-            public nuint Index { get; init; }
-            public nuint Size { get; init; }
-            public bool Owned { get; init; }
-
-            public MemoryBlock(nuint index, nuint size, bool owned) => (Index, Size, Owned) = (index, size, owned);
-        }
+        private sealed record MemoryBlock(nuint Index, nuint Size, bool Owned);
 
         private readonly LinkedList<MemoryBlock> _MemoryMap;
         private readonly object _AccessLock;
