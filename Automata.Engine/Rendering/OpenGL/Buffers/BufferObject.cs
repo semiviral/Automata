@@ -3,59 +3,75 @@ using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.OpenGL.Buffers
 {
-    public unsafe class BufferObject<TData> : OpenGLObject, IDisposable where TData : unmanaged
+    public unsafe class BufferObject : OpenGLObject, IDisposable
     {
         private bool _Disposed;
 
-        public uint Length { get; private set; }
-        public uint ByteLength { get; private set; }
+        public uint Length { get; protected set; }
 
-        public BufferObject(GL gl) : base(gl) => Handle = GL.CreateBuffer();
+        public BufferObject(GL gl) : base(gl) { }
 
-        public BufferObject(GL gl, uint length, BufferStorageMask bufferStorageMask = BufferStorageMask.DynamicStorageBit) : base(gl)
+        public BufferObject(GL gl, uint length, BufferStorageMask storageFlags = BufferStorageMask.DynamicStorageBit) : base(gl)
         {
             Length = length;
-            ByteLength = length * (uint)sizeof(TData);
 
             Handle = GL.CreateBuffer();
-            GL.NamedBufferStorage(Handle, ByteLength, (void*)null!, (uint)bufferStorageMask);
+            GL.NamedBufferStorage(Handle, Length, (void*)null!, (uint)storageFlags);
         }
 
-        public BufferObject(GL gl, Span<TData> data, BufferStorageMask bufferStorageMask = BufferStorageMask.DynamicStorageBit) : base(gl)
+        public BufferObject(GL gl, void* data, uint length, BufferStorageMask storageFlags = BufferStorageMask.DynamicStorageBit) : base(gl)
         {
-            Length = (uint)data.Length;
-            ByteLength = (uint)data.Length * (uint)sizeof(TData);
+            Length = length;
 
             Handle = GL.CreateBuffer();
-            GL.NamedBufferStorage(Handle, ByteLength, data, (uint)bufferStorageMask);
+            GL.NamedBufferStorage(Handle, Length, data, (uint)storageFlags);
         }
 
-        public void SetBufferData(Span<TData> data, BufferDraw bufferDraw)
-        {
-            Length = (uint)data.Length;
-            ByteLength = Length * (uint)sizeof(TData);
-            GL.NamedBufferData(Handle, ByteLength, data, (VertexBufferObjectUsage)bufferDraw);
-        }
-
-        public void SetBufferData(int offset, Span<TData> data) =>
-            GL.NamedBufferSubData(Handle, offset * sizeof(TData), (uint)(data.Length * sizeof(TData)), ref data[0]);
-
-        public void SetBufferData(uint length, uint byteLength, void* data, BufferDraw bufferDraw)
+        public void Resize(uint length, BufferDraw bufferDraw)
         {
             Length = length;
-            ByteLength = byteLength;
-            GL.NamedBufferData(Handle, ByteLength, data, (VertexBufferObjectUsage)bufferDraw);
+            GL.NamedBufferData(Handle, Length, (void*)null!, (VertexBufferObjectUsage)bufferDraw);
         }
 
-        public void SetBufferData(int offset, uint length, uint indexSize, void* data)
+
+        #region Data
+
+        public void SetData(void* data, uint length, BufferDraw bufferDraw)
         {
             Length = length;
-            ByteLength = length * indexSize;
-            GL.NamedBufferSubData(Handle, offset, ByteLength, data);
+            GL.NamedBufferData(Handle, Length, data, (VertexBufferObjectUsage)bufferDraw);
         }
+
+        public void SubData(int offset, void* data, uint length)
+        {
+            Length = length;
+            GL.NamedBufferSubData(Handle, offset, Length, data);
+        }
+
+        public void SetData<T>(Span<T> data, BufferDraw bufferDraw) where T : unmanaged
+        {
+            Length = (uint)(data.Length * sizeof(T));
+            GL.NamedBufferData(Handle, Length, data, (VertexBufferObjectUsage)bufferDraw);
+        }
+
+        public void SubData<T>(int offset, Span<T> data) where T : unmanaged
+        {
+            Length = (uint)(data.Length * sizeof(T));
+            GL.NamedBufferSubData(Handle, offset, Length, ref data.GetPinnableReference());
+        }
+
+        #endregion
+
+
+        #region Binding
 
         public void Bind(BufferTargetARB target) => GL.BindBuffer(target, Handle);
         public void Unbind(BufferTargetARB target) => GL.BindBuffer(target, 0);
+
+        #endregion
+
+
+        #region IDisposable
 
         public void Dispose()
         {
@@ -66,5 +82,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             _Disposed = true;
             GC.SuppressFinalize(this);
         }
+
+        #endregion
     }
 }

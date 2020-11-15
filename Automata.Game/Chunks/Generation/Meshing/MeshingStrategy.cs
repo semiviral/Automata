@@ -8,7 +8,7 @@ namespace Automata.Game.Chunks.Generation.Meshing
 {
     public interface IMeshingStrategy
     {
-        public void Mesh(Span<Block> blocks, Span<Direction> faces, ICollection<Quad<PackedVertex>> quads, IReadOnlyList<Palette<Block>?> neighbors, int index,
-            int localPosition, Block block, bool isTransparent);
+        public void Mesh(Span<Block> blocks, Span<Direction> faces, ICollection<QuadVertexes<PackedVertex>> vertexes, ICollection<QuadIndexes> indexes,
+            IReadOnlyList<Palette<Block>?> neighbors, int index, int localPosition, Block block, bool isTransparent);
     }
 }

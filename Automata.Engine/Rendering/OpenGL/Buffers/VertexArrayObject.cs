@@ -9,42 +9,35 @@ using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.OpenGL.Buffers
 {
-    public class VertexArrayObject<TVertex> : OpenGLObject, IDisposable
-        where TVertex : unmanaged
+    public class VertexArrayObject : OpenGLObject, IDisposable
     {
         private bool _Disposed;
         private IVertexAttribute[] _VertexAttributes;
 
         public IReadOnlyCollection<IVertexAttribute> VertexAttributes => _VertexAttributes;
 
-        public unsafe VertexArrayObject(GL gl, BufferObject<TVertex> vbo) : base(gl)
+        public VertexArrayObject(GL gl, BufferObject vbo, uint vertexStride, int vertexOffset) : base(gl)
         {
             _VertexAttributes = Array.Empty<IVertexAttribute>();
 
             Handle = GL.CreateVertexArray();
 
-            GL.VertexArrayVertexBuffer(Handle, 0, vbo.Handle, 0, (uint)sizeof(TVertex));
+            AssignVertexArrayVertexBuffer(vbo, vertexStride, vertexOffset);
         }
 
-        public unsafe VertexArrayObject(GL gl, BufferObject<TVertex> vbo, BufferObject<QuadIndexes> ebo) : base(gl)
-        {
-            _VertexAttributes = Array.Empty<IVertexAttribute>();
+        public VertexArrayObject(GL gl, BufferObject vbo, BufferObject ebo, uint vertexStride, int vertexOffset) : this(gl, vbo, vertexStride, vertexOffset) =>
+            AssignVertexArrayElementBuffer(ebo);
 
-            Handle = GL.CreateVertexArray();
+        public void AssignVertexArrayVertexBuffer(BufferObject vbo, uint vertexStride, int vertexOffset) =>
+            GL.VertexArrayVertexBuffer(Handle, 0, vbo.Handle, vertexOffset, vertexStride);
 
-            GL.VertexArrayVertexBuffer(Handle, 0, vbo.Handle, 0, (uint)sizeof(TVertex));
-            GL.VertexArrayElementBuffer(Handle, ebo.Handle);
-        }
-
-        public unsafe VertexArrayObject(GL gl, OpenGLObject vbo, int vertexOffset, OpenGLObject ebo) : base(gl)
-        {
-            _VertexAttributes = Array.Empty<IVertexAttribute>();
-
-            Handle = GL.CreateVertexArray();
-
+        public unsafe void AssignVertexArrayVertexBuffer<TVertex>(BufferObject vbo, int vertexOffset) where TVertex : unmanaged =>
             GL.VertexArrayVertexBuffer(Handle, 0, vbo.Handle, vertexOffset, (uint)sizeof(TVertex));
-            GL.VertexArrayElementBuffer(Handle, ebo.Handle);
-        }
+
+        public void AssignVertexArrayElementBuffer(BufferObject ebo) => GL.VertexArrayElementBuffer(Handle, ebo.Handle);
+
+
+        #region Vertex Attributes
 
         public void AllocateVertexAttribute(IVertexAttribute vertexAttribute)
         {
@@ -70,8 +63,18 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             }
         }
 
+        #endregion
+
+
+        #region Binding
+
         public void Bind() => GL.BindVertexArray(Handle);
         public void Unbind() => GL.BindVertexArray(0);
+
+        #endregion
+
+
+        #region IDisposable
 
         public void Dispose()
         {
@@ -82,5 +85,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             _Disposed = true;
             GC.SuppressFinalize(this);
         }
+
+        #endregion
     }
 }

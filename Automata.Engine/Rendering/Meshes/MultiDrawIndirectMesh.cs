@@ -22,7 +22,8 @@ namespace Automata.Engine.Rendering.Meshes
             _GL = gl;
             _CommandAllocator = new BufferAllocator(gl, commandAllocatorSize);
             _DataAllocator = new BufferAllocator(gl, dataAllocatorSize);
-            VertexArrayObject = new VertexArrayObject<byte>(gl, _DataAllocator, 6 * sizeof(int), _DataAllocator);
+            // todo fix this
+            // VertexArrayObject = new VertexArrayObject<byte>(gl, _DataAllocator, 6 * sizeof(int), _DataAllocator);
         }
 
         public IDrawElementsIndirectCommandOwner RentCommand() => new DrawElementsIndirectCommandOwner(_CommandAllocator.Rent<DrawElementsIndirectCommand>(1));

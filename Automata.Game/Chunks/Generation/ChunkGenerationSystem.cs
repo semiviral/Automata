@@ -35,7 +35,7 @@ namespace Automata.Game.Chunks.Generation
         };
 
         private readonly IOrderedCollection<IGenerationStep> _BuildSteps;
-        private readonly ConcurrentChannel<(IEntity, NonAllocatingList<Quad<PackedVertex>>)> _PendingMeshes;
+        private readonly ConcurrentChannel<(IEntity, NonAllocatingQuadsMeshData<PackedVertex>)> _PendingMeshes;
 
         private MultiDrawIndirectMesh? _MultiDrawIndirectMesh;
 
@@ -43,7 +43,7 @@ namespace Automata.Game.Chunks.Generation
         {
             _BuildSteps = new OrderedLinkedList<IGenerationStep>();
             _BuildSteps.AddLast(new TerrainGenerationStep());
-            _PendingMeshes = new ConcurrentChannel<(IEntity, NonAllocatingList<Quad<PackedVertex>>)>(true, false);
+            _PendingMeshes = new ConcurrentChannel<(IEntity, NonAllocatingQuadsMeshData<PackedVertex>)>(true, false);
 
             DiagnosticsProvider.EnableGroup<ChunkGenerationDiagnosticGroup>();
         }
@@ -94,14 +94,14 @@ namespace Automata.Game.Chunks.Generation
         public override ValueTask Update(EntityManager entityManager, TimeSpan delta)
         {
             // empty channel of any pending meshes, apply the meshes, and update the material
-            while (_PendingMeshes.TryTake(out (IEntity Entity, NonAllocatingList<Quad<PackedVertex>> Quads) pendingMesh)
+            while (_PendingMeshes.TryTake(out (IEntity Entity, NonAllocatingQuadsMeshData<PackedVertex> Data) pendingMesh)
                    && !pendingMesh.Entity.Disposed
                    && pendingMesh.Entity.TryFind(out Chunk? chunk))
             {
                 Debug.Assert(chunk.State is GenerationState.GeneratingMesh);
 
-                PrepareChunkForRendering(entityManager, pendingMesh.Entity, pendingMesh.Quads);
-                pendingMesh.Quads.Dispose();
+                PrepareChunkForRendering(entityManager, pendingMesh.Entity, pendingMesh.Data);
+                pendingMesh.Data.Dispose();
                 chunk.TimesMeshed += 1;
                 chunk.State += 1;
             }
@@ -217,19 +217,19 @@ namespace Automata.Game.Chunks.Generation
             Stopwatch stopwatch = DiagnosticsPool.Stopwatches.Rent();
             stopwatch.Restart();
 
-            NonAllocatingList<Quad<PackedVertex>> pendingQuads = ChunkMesher.GeneratePackedMesh(chunk.Blocks, chunk.NeighborBlocks.ToArray());
+            NonAllocatingQuadsMeshData<PackedVertex> pendingQuads = ChunkMesher.GeneratePackedMesh(chunk.Blocks, chunk.NeighborBlocks.ToArray());
             await _PendingMeshes.AddAsync((entity, pendingQuads)).ConfigureAwait(false);
 
             DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new MeshingTime(stopwatch.Elapsed));
             DiagnosticsPool.Stopwatches.Return(stopwatch);
         }
 
-        private static void PrepareChunkForRendering(EntityManager entityManager, IEntity entity, NonAllocatingList<Quad<PackedVertex>> pendingQuads)
+        private static void PrepareChunkForRendering(EntityManager entityManager, IEntity entity, NonAllocatingQuadsMeshData<PackedVertex> pendingData)
         {
             Stopwatch stopwatch = DiagnosticsPool.Stopwatches.Rent();
             stopwatch.Restart();
 
-            if (ApplyMesh(entityManager, entity, pendingQuads))
+            if (ApplyMesh(entityManager, entity, pendingData))
             {
                 ConfigureMaterial(entityManager, entity);
                 DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new ApplyMeshTime(stopwatch.Elapsed));
@@ -238,11 +238,11 @@ namespace Automata.Game.Chunks.Generation
             DiagnosticsPool.Stopwatches.Return(stopwatch);
         }
 
-        private static bool ApplyMesh(EntityManager entityManager, IEntity entity, NonAllocatingList<Quad<PackedVertex>> pendingQuads)
+        private static unsafe bool ApplyMesh(EntityManager entityManager, IEntity entity, NonAllocatingQuadsMeshData<PackedVertex> pendingData)
         {
             bool hasRenderMesh = entity.TryFind(out RenderMesh? renderMesh);
 
-            if (pendingQuads.IsEmpty)
+            if (pendingData.IsEmpty)
             {
                 if (hasRenderMesh) entityManager.RemoveComponent<RenderMesh>(entity);
 
@@ -260,7 +260,13 @@ namespace Automata.Game.Chunks.Generation
                 quadsMesh.VertexArrayObject.CommitVertexAttributes();
             }
 
-            quadsMesh.BufferObject.SetBufferData(pendingQuads.Segment, BufferDraw.DynamicDraw);
+            int indexesLength = pendingData.Indexes.Count * sizeof(QuadIndexes);
+
+            quadsMesh.VertexArrayObject.AssignVertexArrayVertexBuffer<PackedVertex>(quadsMesh.BufferObject, indexesLength);
+            quadsMesh.BufferObject.Resize((uint)(indexesLength + (pendingData.Vertexes.Count * sizeof(QuadVertexes<PackedVertex>))), BufferDraw.StaticDraw);
+            quadsMesh.BufferObject.SubData(0, pendingData.Indexes.Segment);
+            quadsMesh.BufferObject.SubData(indexesLength, pendingData.Vertexes.Segment);
+
             return true;
         }
 

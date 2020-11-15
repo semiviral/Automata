@@ -77,8 +77,8 @@ namespace Automata.Game.Chunks.Generation.Meshing
             -GenerationConstants.CHUNK_SIZE
         };
 
-        public void Mesh(Span<Block> blocks, Span<Direction> faces, ICollection<Quad<PackedVertex>> quads, IReadOnlyList<Palette<Block>?> neighbors, int index,
-            int localPosition, Block block, bool isTransparent)
+        public void Mesh(Span<Block> blocks, Span<Direction> faces, ICollection<QuadVertexes<PackedVertex>> vertexes, ICollection<QuadIndexes> indexes,
+            IReadOnlyList<Palette<Block>?> neighbors, int index, int localPosition, Block block, bool isTransparent)
         {
             // iterate once over all 6 faces of given cubic space
             for (int normalIndex = 0; normalIndex < 6; normalIndex++)
@@ -208,37 +208,38 @@ namespace Automata.Game.Chunks.Generation.Meshing
                                        | (traversals << (GenerationConstants.CHUNK_SIZE_SHIFT * uvShift)) // traversal component
                                        | (1 << (GenerationConstants.CHUNK_SIZE_SHIFT * ((uvShift + 1) % 2))); // opposite component to traversal
 
-                    uint indexesStart = (uint)quads.Count;
+                    uint indexesStart = (uint)vertexes.Count * 4u;
 
-                    quads.Add(new Quad<PackedVertex>(new QuadIndexes(
-                            indexesStart + 0u,
-                            indexesStart + 1u,
-                            indexesStart + 3u,
-                            indexesStart + 1u,
-                            indexesStart + 2u,
-                            indexesStart + 3u
-                        ),
-                        new QuadVertexes<PackedVertex>(
-                            new PackedVertex(
-                                localPosition
-                                + ((unaryTraversalComponentMask & compressedVertices[0])
-                                   | ((((compressedVertices[0] >> traversalNormalShift) * traversals) << traversalNormalShift) & traversalComponentMask)),
-                                compressedUV & (int.MaxValue << (GenerationConstants.CHUNK_SIZE_SHIFT * 2))),
-                            new PackedVertex(
-                                localPosition
-                                + ((unaryTraversalComponentMask & compressedVertices[1])
-                                   | ((((compressedVertices[1] >> traversalNormalShift) * traversals) << traversalNormalShift) & traversalComponentMask)),
-                                compressedUV & (int.MaxValue << GenerationConstants.CHUNK_SIZE_SHIFT)),
-                            new PackedVertex(
-                                localPosition
-                                + ((unaryTraversalComponentMask & compressedVertices[2])
-                                   | ((((compressedVertices[2] >> traversalNormalShift) * traversals) << traversalNormalShift) & traversalComponentMask)),
-                                compressedUV & int.MaxValue),
-                            new PackedVertex(
-                                localPosition
-                                + ((unaryTraversalComponentMask & compressedVertices[3])
-                                   | ((((compressedVertices[3] >> traversalNormalShift) * traversals) << traversalNormalShift) & traversalComponentMask)),
-                                compressedUV & ~(GenerationConstants.CHUNK_SIZE_MASK << GenerationConstants.CHUNK_SIZE_SHIFT)))));
+                    indexes.Add(new QuadIndexes(
+                        indexesStart + 0u,
+                        indexesStart + 1u,
+                        indexesStart + 3u,
+                        indexesStart + 1u,
+                        indexesStart + 2u,
+                        indexesStart + 3u
+                    ));
+
+                    vertexes.Add(new QuadVertexes<PackedVertex>(
+                        new PackedVertex(
+                            localPosition
+                            + ((unaryTraversalComponentMask & compressedVertices[0])
+                               | ((((compressedVertices[0] >> traversalNormalShift) * traversals) << traversalNormalShift) & traversalComponentMask)),
+                            compressedUV & (int.MaxValue << (GenerationConstants.CHUNK_SIZE_SHIFT * 2))),
+                        new PackedVertex(
+                            localPosition
+                            + ((unaryTraversalComponentMask & compressedVertices[1])
+                               | ((((compressedVertices[1] >> traversalNormalShift) * traversals) << traversalNormalShift) & traversalComponentMask)),
+                            compressedUV & (int.MaxValue << GenerationConstants.CHUNK_SIZE_SHIFT)),
+                        new PackedVertex(
+                            localPosition
+                            + ((unaryTraversalComponentMask & compressedVertices[2])
+                               | ((((compressedVertices[2] >> traversalNormalShift) * traversals) << traversalNormalShift) & traversalComponentMask)),
+                            compressedUV & int.MaxValue),
+                        new PackedVertex(
+                            localPosition
+                            + ((unaryTraversalComponentMask & compressedVertices[3])
+                               | ((((compressedVertices[3] >> traversalNormalShift) * traversals) << traversalNormalShift) & traversalComponentMask)),
+                            compressedUV & ~(GenerationConstants.CHUNK_SIZE_MASK << GenerationConstants.CHUNK_SIZE_SHIFT))));
 
                     break;
                 }

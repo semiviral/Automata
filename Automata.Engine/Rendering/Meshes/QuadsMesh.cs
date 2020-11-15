@@ -18,10 +18,10 @@ namespace Automata.Engine.Rendering.Meshes
         public Layer Layer { get; }
         public bool Visible { get; }
 
-        public BufferObject<Quad<TVertex>> BufferObject { get; }
-        public VertexArrayObject<TVertex> VertexArrayObject { get; }
+        public BufferObject BufferObject { get; }
+        public VertexArrayObject VertexArrayObject { get; }
 
-        public QuadsMesh(GL gl, Layer layer = Layer.Layer0)
+        public unsafe QuadsMesh(GL gl, Layer layer = Layer.Layer0)
         {
             _GL = gl;
 
@@ -29,7 +29,7 @@ namespace Automata.Engine.Rendering.Meshes
             Visible = true;
             Layer = layer;
             BufferObject = new BufferObject<Quad<TVertex>>(gl);
-            VertexArrayObject = new VertexArrayObject<TVertex>(gl, BufferObject, 6 * sizeof(uint), BufferObject);
+            VertexArrayObject = new VertexArrayObject(gl, BufferObject, BufferObject, (uint)sizeof(TVertex), 0);
         }
 
         public unsafe void Draw()
