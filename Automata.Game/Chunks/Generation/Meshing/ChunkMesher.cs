@@ -15,8 +15,7 @@ namespace Automata.Game.Chunks.Generation.Meshing
     public static class ChunkMesher
     {
         // these are semi-magic defaults, based on a collective average
-        private const int _DEFAULT_VERTEXES_CAPACITY = 2048;
-        private const int _DEFAULT_INDEXES_CAPACITY = 512;
+        private const int _DEFAULT_QUADS_CAPACITY = 512;
 
         public const string DEFAULT_STRATEGY = "Cube";
 
@@ -30,16 +29,15 @@ namespace Automata.Game.Chunks.Generation.Meshing
             };
 
         [SkipLocalsInit]
-        public static unsafe NonAllocatingMeshData<PackedVertex> GeneratePackedMeshData(Palette<Block> blocksPalette, Palette<Block>?[] neighbors)
+        public static unsafe NonAllocatingList<Quad<PackedVertex>> GeneratePackedMesh(Palette<Block> blocksPalette, Palette<Block>?[] neighbors)
         {
             try
             {
                 if ((blocksPalette.ReadOnlyLookupTable.Count == 1) && (blocksPalette.ReadOnlyLookupTable[0].ID == BlockRegistry.AirID))
-                    return NonAllocatingMeshData<PackedVertex>.Empty;
+                    return NonAllocatingList<Quad<PackedVertex>>.Empty;
 
                 BlockRegistry blockRegistry = BlockRegistry.Instance;
-                NonAllocatingList<PackedVertex> vertexes = new NonAllocatingList<PackedVertex>(_DEFAULT_VERTEXES_CAPACITY);
-                NonAllocatingList<VertexIndexes> indexes = new NonAllocatingList<VertexIndexes>(_DEFAULT_INDEXES_CAPACITY);
+                NonAllocatingList<Quad<PackedVertex>> quads = new NonAllocatingList<Quad<PackedVertex>>(_DEFAULT_QUADS_CAPACITY);
                 Span<Block> blocks = stackalloc Block[GenerationConstants.CHUNK_SIZE_CUBED];
                 Span<Direction> faces = stackalloc Direction[GenerationConstants.CHUNK_SIZE_CUBED];
                 faces.Clear();
@@ -57,16 +55,16 @@ namespace Automata.Game.Chunks.Generation.Meshing
                     IMeshingStrategy meshingStrategy = MeshingStrategies[blockRegistry.GetBlockDefinition(block.ID).MeshingStrategyIndex];
                     int localPosition = x | (y << GenerationConstants.CHUNK_SIZE_SHIFT) | (z << (GenerationConstants.CHUNK_SIZE_SHIFT * 2));
 
-                    meshingStrategy.Mesh(blocks, faces, vertexes, indexes, neighbors, index, localPosition, block,
+                    meshingStrategy.Mesh(blocks, faces, quads, neighbors, index, localPosition, block,
                         blockRegistry.CheckBlockHasProperty(block.ID, BlockDefinitionDefinition.Attribute.Transparent));
                 }
 
-                return new NonAllocatingMeshData<PackedVertex>(vertexes, indexes);
+                return quads;
             }
             catch (Exception exception)
             {
                 if (exception is IndexOutOfRangeException or InvalidOperationException && blocksPalette.Count is 0)
-                    return NonAllocatingMeshData<PackedVertex>.Empty;
+                    return NonAllocatingList<Quad<PackedVertex>>.Empty;
                 else throw;
             }
         }
