@@ -33,8 +33,8 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             GL.NamedBufferData(Handle, Length, (void*)null!, (VertexBufferObjectUsage)bufferDraw);
         }
 
-        public Span<T> BufferMemory<T>(BufferAccessARB access) where T : unmanaged => new Span<T>(GL.MapNamedBuffer(Handle, access), (int)Length);
-        public void UnbufferMemory() => GL.UnmapNamedBuffer(Handle);
+        public Span<T> Pin<T>(BufferAccessARB access) where T : unmanaged => new Span<T>(GL.MapNamedBuffer(Handle, access), (int)Length);
+        public void Unpin() => GL.UnmapNamedBuffer(Handle);
 
 
         #region Data
@@ -69,7 +69,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
         #region IDisposable
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             if (_Disposed) return;
 

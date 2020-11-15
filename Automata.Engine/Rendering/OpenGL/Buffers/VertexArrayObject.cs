@@ -16,14 +16,15 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
         public IReadOnlyCollection<IVertexAttribute> VertexAttributes => _VertexAttributes;
 
-        public VertexArrayObject(GL gl, BufferObject vbo, uint vertexStride, int vertexOffset) : base(gl)
+        public VertexArrayObject(GL gl) : base(gl)
         {
             _VertexAttributes = Array.Empty<IVertexAttribute>();
 
             Handle = GL.CreateVertexArray();
-
-            AssignVertexArrayVertexBuffer(vbo, vertexStride, vertexOffset);
         }
+
+        public VertexArrayObject(GL gl, BufferObject vbo, uint vertexStride, int vertexOffset) : this(gl) =>
+            AssignVertexArrayVertexBuffer(vbo, vertexStride, vertexOffset);
 
         public VertexArrayObject(GL gl, BufferObject vbo, BufferObject ebo, uint vertexStride, int vertexOffset) : this(gl, vbo, vertexStride, vertexOffset) =>
             AssignVertexArrayElementBuffer(ebo);

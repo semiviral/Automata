@@ -15,16 +15,20 @@ namespace Automata.Engine.Rendering.Meshes
         public Guid ID { get; }
         public Layer Layer { get; }
         public bool Visible { get; }
-        public readonly VertexArrayObject<byte> VertexArrayObject;
+        public VertexArrayObject VertexArrayObject { get; }
 
-        public MultiDrawIndirectMesh(GL gl, uint commandAllocatorSize, uint dataAllocatorSize)
+        public MultiDrawIndirectMesh(GL gl, uint commandAllocatorSize, uint dataAllocatorSize, Layer layers = Layer.Layer0)
         {
+            ID = Guid.NewGuid();
+            Layer = layers;
+            Visible = true;
+
             _GL = gl;
             _CommandAllocator = new BufferAllocator(gl, commandAllocatorSize);
             _DataAllocator = new BufferAllocator(gl, dataAllocatorSize);
 
-            // todo fix this
-            // VertexArrayObject = new VertexArrayObject<byte>(gl, _DataAllocator, 6 * sizeof(int), _DataAllocator);
+
+            VertexArrayObject = new VertexArrayObject(gl);
         }
 
         public IDrawElementsIndirectCommandOwner RentCommand() => new DrawElementsIndirectCommandOwner(_CommandAllocator.Rent<DrawElementsIndirectCommand>(1));
@@ -35,7 +39,7 @@ namespace Automata.Engine.Rendering.Meshes
             VertexArrayObject.Bind();
             _CommandAllocator.Bind(BufferTargetARB.DrawIndirectBuffer);
 
-            _GL.MultiDrawElementsIndirect(PrimitiveType.Triangles, DrawElementsType.UnsignedInt, (void*)null!, (uint)_CommandAllocator.AllocatedBuffers, 0u);
+            _GL.MultiDrawElementsIndirect(PrimitiveType.Triangles, DrawElementsType.UnsignedInt, (void*)null!, (uint)_CommandAllocator.AllocatedBufferCount, 0u);
         }
 
         public void Dispose()

@@ -72,24 +72,24 @@ namespace Automata.Game.Chunks.Generation
             const uint one_mb = one_kb * one_kb;
             const uint one_gb = one_kb * one_kb * one_kb;
 
-            // _MultiDrawIndirectMesh = new MultiDrawIndirectMesh(GLAPI.Instance.GL, 3u * one_mb, one_gb);
-            //
-            // _MultiDrawIndirectMesh.VertexArrayObject.AllocateVertexAttributes(new IVertexAttribute[]
-            // {
-            //     new VertexAttribute<float>(3u + 0u, 4u, 4u * 0u, 1u),
-            //     new VertexAttribute<float>(3u + 1u, 4u, 4u * 1u, 1u),
-            //     new VertexAttribute<float>(3u + 2u, 4u, 4u * 2u, 1u),
-            //     new VertexAttribute<float>(3u + 3u, 4u, 4u * 3u, 1u)
-            // });
-            //
-            // entityManager.RegisterEntity(new Entity
-            // {
-            //     new RenderMesh
-            //     {
-            //         Mesh = _MultiDrawIndirectMesh
-            //     },
-            //     new Material(ProgramRegistry.Instance.Load("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl"))
-            // });
+            _MultiDrawIndirectMesh = new MultiDrawIndirectMesh(GLAPI.Instance.GL, 3u * one_mb, one_gb);
+
+            _MultiDrawIndirectMesh.VertexArrayObject.AllocateVertexAttributes(new IVertexAttribute[]
+            {
+                new VertexAttribute<float>(3u + 0u, 4u, 4u * 0u, 1u),
+                new VertexAttribute<float>(3u + 1u, 4u, 4u * 1u, 1u),
+                new VertexAttribute<float>(3u + 2u, 4u, 4u * 2u, 1u),
+                new VertexAttribute<float>(3u + 3u, 4u, 4u * 3u, 1u)
+            });
+
+            entityManager.RegisterEntity(new Entity
+            {
+                new RenderMesh
+                {
+                    Mesh = _MultiDrawIndirectMesh
+                },
+                new Material(ProgramRegistry.Instance.Load("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl"))
+            });
         }
 
         [HandledComponents(DistinctionStrategy.All, typeof(Translation), typeof(Chunk)),
@@ -267,22 +267,22 @@ namespace Automata.Game.Chunks.Generation
             int indexesLength = pendingData.Indexes.Count * sizeof(QuadIndexes);
             int totalLength = indexesLength + (pendingData.Vertexes.Count * sizeof(QuadVertexes<PackedVertex>));
 
-            // IMemoryOwner<byte> memoryOwner = _MultiDrawIndirectMesh.Rent<byte>(totalLength);
-            // IDrawElementsIndirectCommandOwner commandOwner = _MultiDrawIndirectMesh.RentCommand();
-            // commandOwner.Command = new DrawElementsIndirectCommand((uint)(pendingData.Vertexes.Count * 4), 1u, (uint)indexesLength, 0u, 0u);
-            // Span<byte> span = memoryOwner.Memory.Span;
-            quadsMesh.BufferObject.Resize((uint)totalLength, BufferDraw.StaticDraw);
-            quadsMesh.VertexArrayObject.AssignVertexArrayVertexBuffer<PackedVertex>(quadsMesh.BufferObject, indexesLength);
-            quadsMesh.IndexesCount = (uint)(pendingData.Indexes.Count * 6);
+            IMemoryOwner<byte> memoryOwner = _MultiDrawIndirectMesh.Rent<byte>(totalLength);
+            IDrawElementsIndirectCommandOwner commandOwner = _MultiDrawIndirectMesh.RentCommand();
+            commandOwner.Command = new DrawElementsIndirectCommand((uint)(pendingData.Vertexes.Count * 4), 1u, (uint)indexesLength, 0u, 0u);
+            Span<byte> span = memoryOwner.Memory.Span;
 
-            Span<byte> bufferMemory = quadsMesh.BufferObject.BufferMemory<byte>(BufferAccessARB.WriteOnly);
-            MemoryMarshal.AsBytes(pendingData.Indexes.Segment).CopyTo(bufferMemory);
-            MemoryMarshal.AsBytes(pendingData.Vertexes.Segment).CopyTo(bufferMemory.Slice(indexesLength));
-            quadsMesh.BufferObject.UnbufferMemory();
 
-            //
-            // quadsMesh.BufferObject.SubData(0, pendingData.Indexes.Segment);
-            // quadsMesh.BufferObject.SubData(indexesLength, pendingData.Vertexes.Segment);
+
+            // quadsMesh.BufferObject.Resize((uint)totalLength, BufferDraw.StaticDraw);
+            // quadsMesh.VertexArrayObject.AssignVertexArrayVertexBuffer<PackedVertex>(quadsMesh.BufferObject, indexesLength);
+            // quadsMesh.IndexesCount = (uint)(pendingData.Indexes.Count * 6);
+
+            // Span<byte> bufferMemory = quadsMesh.BufferObject.Pin<byte>(BufferAccessARB.WriteOnly);
+            // MemoryMarshal.AsBytes(pendingData.Indexes.Segment).CopyTo(bufferMemory);
+            // MemoryMarshal.AsBytes(pendingData.Vertexes.Segment).CopyTo(bufferMemory.Slice(indexesLength));
+            // quadsMesh.BufferObject.Unpin();
+
 
             return true;
         }

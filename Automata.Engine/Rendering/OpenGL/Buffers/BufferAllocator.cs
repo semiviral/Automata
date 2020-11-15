@@ -1,11 +1,10 @@
-using System;
 using System.Buffers;
 using Automata.Engine.Memory;
 using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.OpenGL.Buffers
 {
-    public class BufferAllocator : OpenGLObject, IDisposable
+    public class BufferAllocator : BufferObject
     {
         private const BufferStorageMask _STORAGE_MASK = BufferStorageMask.DynamicStorageBit
                                                         | BufferStorageMask.MapPersistentBit
@@ -14,7 +13,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
         private readonly NativeMemoryPool _NativeMemoryPool;
 
-        public int AllocatedBuffers => _NativeMemoryPool.RentedBlocks;
+        public int AllocatedBufferCount => _NativeMemoryPool.RentedBlocks;
 
         public unsafe BufferAllocator(GL gl, nuint size) : base(gl)
         {
@@ -25,13 +24,10 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
         public IMemoryOwner<T> Rent<T>(int size) where T : unmanaged => _NativeMemoryPool.Rent<T>(size);
 
-        public void Bind(BufferTargetARB target) => GL.BindBuffer(target, Handle);
-
-        public void Dispose()
+        public override void Dispose()
         {
             GL.UnmapNamedBuffer(Handle);
-            GL.DeleteBuffer(Handle);
-            GC.SuppressFinalize(this);
+            base.Dispose();
         }
     }
 }

@@ -32,6 +32,8 @@ namespace Automata.Engine.Rendering
 
         private float _NewAspectRatio;
 
+        public ulong DrawCalls { get; private set; }
+
         public unsafe RenderSystem()
         {
             GameWindowResized(null!, AutomataWindow.Instance.Size);
@@ -64,6 +66,7 @@ namespace Automata.Engine.Rendering
         {
             _GL.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
             Span<Plane> planes = stackalloc Plane[Frustum.TOTAL_PLANES];
+            DrawCalls = 0;
 
             CheckUpdateViewportUBOAndBind();
 
@@ -157,6 +160,7 @@ namespace Automata.Engine.Rendering
                     }
 
                     renderMesh.Mesh!.Draw();
+                    DrawCalls += 1;
                 }
             }
 
