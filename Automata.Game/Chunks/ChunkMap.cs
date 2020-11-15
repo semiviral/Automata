@@ -48,7 +48,8 @@ namespace Automata.Game.Chunks
                     {
                         Value = origin
                     },
-                    _ChunkOcclusionBounds
+                    _ChunkOcclusionBounds,
+                    new RenderModel()
                 };
 
                 _Chunks.Add(origin, entity);
