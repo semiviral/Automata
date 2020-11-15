@@ -11,6 +11,11 @@ namespace Automata.Game.Chunks
     {
         [HandledComponents(DistinctionStrategy.All, typeof(Chunk), typeof(RenderMesh)),
          HandledComponents(DistinctionStrategy.All, typeof(Chunk), typeof(RenderModel))]
-        public override ValueTask Update(EntityManager entityManager, TimeSpan delta) => base.Update(entityManager, delta);
+        public override ValueTask Update(EntityManager entityManager, TimeSpan delta)
+        {
+            
+
+            return ValueTask.CompletedTask;
+        }
     }
 }

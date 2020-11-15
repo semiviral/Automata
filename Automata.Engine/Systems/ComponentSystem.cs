@@ -24,7 +24,7 @@ namespace Automata.Engine.Systems
         /// <summary>
         ///     Method called once per frame.
         /// </summary>
-        public virtual ValueTask Update(EntityManager entityManager, TimeSpan delta) => ValueTask.CompletedTask;
+        public abstract ValueTask Update(EntityManager entityManager, TimeSpan delta);
 
         protected TComponentSystem? GetSystem<TComponentSystem>() where TComponentSystem : ComponentSystem =>
             _CurrentWorld?.SystemManager.GetSystem<TComponentSystem>();
