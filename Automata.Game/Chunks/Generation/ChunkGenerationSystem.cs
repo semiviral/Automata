@@ -76,9 +76,11 @@ namespace Automata.Game.Chunks.Generation
                     PrepareChunkForRendering(entityManager, pendingMesh.Entity, pendingMesh.Data);
                 }
 
-                pendingMesh.Data.Dispose();
+                // we ALWAYS update chunk state, so we can properly dispose of it
+                // and be conscious of not doing so when its generating
                 pendingMesh.Chunk.TimesMeshed += 1;
                 pendingMesh.Chunk.State += 1;
+                pendingMesh.Data.Dispose();
             }
 
             // iterate over each valid chunk and process the generateable states
