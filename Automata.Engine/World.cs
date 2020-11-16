@@ -60,7 +60,11 @@ namespace Automata.Engine
 
         private bool _Disposed;
 
-        protected virtual void DisposeInternal() => SystemManager.Dispose();
+        protected virtual void DisposeInternal()
+        {
+            EntityManager.Dispose();
+            SystemManager.Dispose();
+        }
 
         public void Dispose()
         {

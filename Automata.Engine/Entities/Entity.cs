@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Automata.Engine.Collections;
 using Automata.Engine.Components;
 
@@ -13,14 +14,14 @@ namespace Automata.Engine.Entities
     {
         private readonly NonAllocatingList<Component> _Components;
 
-        public int ID { get; }
+        public Guid ID { get; }
         public bool Disposed { get; private set; }
 
-        internal Entity(int id)
+        public Entity()
         {
-            ID = id;
+            ID = Guid.NewGuid();
             Disposed = false;
-            _Components = new NonAllocatingList<Component>(0);
+            _Components = new NonAllocatingList<Component>();
         }
 
 
@@ -116,6 +117,8 @@ namespace Automata.Engine.Entities
         public bool Equals(IEntity? other) => other is not null && ID.Equals(other.ID);
 
         public override int GetHashCode() => ID.GetHashCode();
+
+        public override string ToString() => $"{nameof(Entity)}(ID {ID}: {string.Join(", ", _Components.Select(component => component.GetType().Name))})";
 
         #endregion
 

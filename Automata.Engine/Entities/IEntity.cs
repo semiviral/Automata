@@ -12,7 +12,7 @@ namespace Automata.Engine.Entities
 {
     public interface IEntity : IEnumerable<Component>, IEquatable<IEntity>, IDisposable
     {
-        int ID { get; }
+        Guid ID { get; }
         bool Disposed { get; }
 
         void Add<TComponent>() where TComponent : Component, new();
@@ -25,7 +25,5 @@ namespace Automata.Engine.Entities
         bool Contains(Type type);
 
         bool TryFind<TComponent>([NotNullWhen(true)] out TComponent? component) where TComponent : Component;
-
-        int GetHashCode() => ID.GetHashCode();
     }
 }
