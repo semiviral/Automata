@@ -1,6 +1,6 @@
 using Silk.NET.OpenGL;
 
-namespace Automata.Engine.Rendering
+namespace Automata.Engine.Rendering.OpenGL
 {
     public abstract class OpenGLObject
     {

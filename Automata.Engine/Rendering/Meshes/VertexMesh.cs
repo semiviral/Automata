@@ -1,9 +1,8 @@
 using System;
-using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL.Buffers;
 using Silk.NET.OpenGL;
 
-namespace Automata.Engine.Rendering
+namespace Automata.Engine.Rendering.Meshes
 {
     public class VertexMesh<TVertex> : IMesh where TVertex : unmanaged
     {
