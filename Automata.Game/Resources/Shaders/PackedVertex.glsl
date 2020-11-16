@@ -2,11 +2,8 @@
 
 out gl_PerVertex { vec4 gl_Position; };
 
-layout (location = 2) flat in uint drawID;
-
 layout (location = 0) in int vert;
 layout (location = 1) in int uv;
-layout (location = 3) in mat4 model;
 
 layout (location = 0) out fragment
 {
@@ -14,7 +11,7 @@ layout (location = 0) out fragment
     vec3 color;
 } fragment;
 
-uniform mat4 _vp;
+uniform mat4 _mvp;
 
 void main()
 {
@@ -48,5 +45,5 @@ void main()
 
     fragment.uv = uncompressedUV;
     fragment.color = vec3(lerpedNormal.x + lerpedNormal.y + lerpedNormal.z);
-    gl_Position = model * _vp * uncompressedPosition;
+    gl_Position = _mvp * uncompressedPosition;
 }

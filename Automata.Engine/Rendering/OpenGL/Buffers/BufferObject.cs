@@ -33,6 +33,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             GL.NamedBufferData(Handle, Length, (void*)null!, (VertexBufferObjectUsage)bufferDraw);
         }
 
+        public void* Pin(BufferAccessARB access) => GL.MapNamedBuffer(Handle, access);
         public Span<T> Pin<T>(BufferAccessARB access) where T : unmanaged => new Span<T>(GL.MapNamedBuffer(Handle, access), (int)Length);
         public void Unpin() => GL.UnmapNamedBuffer(Handle);
 
