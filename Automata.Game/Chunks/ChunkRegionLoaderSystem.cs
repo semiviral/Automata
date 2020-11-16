@@ -45,7 +45,7 @@ namespace Automata.Game.Chunks
         }
 
         [HandledComponents(DistinctionStrategy.All, typeof(Translation), typeof(ChunkLoader))]
-        public override ValueTask Update(EntityManager entityManager, TimeSpan delta)
+        public override async ValueTask Update(EntityManager entityManager, TimeSpan delta)
         {
             Stopwatch stopwatch = DiagnosticsPool.Stopwatches.Rent();
             stopwatch.Restart();
@@ -64,13 +64,14 @@ namespace Automata.Game.Chunks
                    && _ChunksPendingCleanup.TryPop(out chunk)) chunk!.SafeDispose();
 
             // determine whether any chunk loaders have moved out far enough to recalculate their loaded chunk region
-            bool recalculateChunkRegions = CheckAndUpdateChunkLoaderPositions(entityManager);
-            if (recalculateChunkRegions) RecalculateChunkRegions(entityManager);
+            if (CheckAndUpdateChunkLoaderPositions(entityManager))
+            {
+                RecalculateChunkRegions(entityManager);
+                await VoxelWorld.Chunks.ProcessPendingChunkAllocations();
+            }
 
             DiagnosticsProvider.CommitData<ChunkRegionLoadingDiagnosticGroup, TimeSpan>(new RegionLoadingTime(stopwatch.Elapsed));
             DiagnosticsPool.Stopwatches.Return(stopwatch);
-
-            return ValueTask.CompletedTask;
         }
 
         private static bool CheckAndUpdateChunkLoaderPositions(EntityManager entityManager)
@@ -97,7 +98,7 @@ namespace Automata.Game.Chunks
             // this calculates new chunk allocations and current chunk deallocations
             HashSet<Vector3i> withinLoaderRange = new HashSet<Vector3i>(GetOriginsWithinLoaderRanges(entityManager.GetComponents<ChunkLoader>()));
 
-            foreach (Vector3i origin in withinLoaderRange.Except(VoxelWorld.Chunks.Origins)) VoxelWorld.Chunks.TryAllocate(entityManager, origin, out _);
+            foreach (Vector3i origin in withinLoaderRange.Except(VoxelWorld.Chunks.Origins)) VoxelWorld.Chunks.Allocate(entityManager, origin);
 
             foreach (Vector3i origin in VoxelWorld.Chunks.Origins.Except(withinLoaderRange))
                 if (VoxelWorld.Chunks.TryDeallocate(entityManager, origin, out Chunk? chunk))

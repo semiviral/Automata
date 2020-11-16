@@ -151,32 +151,33 @@ namespace Automata.Game.Chunks.Generation
                 return;
             }
 
-            IStructure testStructure = new TestStructure();
+            IStructure testStructure = new TreeStructure();
             Random random = new Random(origin.GetHashCode());
 
             for (int y = 0, index = 0; y < GenerationConstants.CHUNK_SIZE; y++)
             for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
             for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++, index++)
-                if (testStructure.CheckPlaceStructureAt(random, origin))
+            {
+                Vector3i offset = new Vector3i(x, y, z);
+
+                if (_CurrentWorld is null || !testStructure.CheckPlaceStructureAt(_CurrentWorld, random, origin + offset)) continue;
+
+                foreach ((Vector3i local, ushort blockID) in testStructure.StructureBlocks)
                 {
-                    Vector3i offset = new Vector3i(x, y, z);
+                    Vector3i modificationOffset = offset + local;
 
-                    foreach ((Vector3i local, ushort blockID) in testStructure.StructureBlocks)
-                    {
-                        Vector3i modificationOffset = offset + local;
+                    // see if we can allocate the modification directly to the chunk
+                    if (Vector3b.All(modificationOffset >= 0) && Vector3b.All(modificationOffset < GenerationConstants.CHUNK_SIZE))
+                        await chunk.Modifications.AddAsync(new ChunkModification
+                        {
+                            BlockIndex = index,
+                            BlockID = blockID
+                        }).ConfigureAwait(false);
 
-                        // see if we can allocate the modification directly to the chunk
-                        if (Vector3b.All(modificationOffset >= 0) && Vector3b.All(modificationOffset < GenerationConstants.CHUNK_SIZE))
-                            await chunk.Modifications.AddAsync(new ChunkModification
-                            {
-                                BlockIndex = index,
-                                BlockID = blockID
-                            }).ConfigureAwait(false);
-
-                        // if not, just go ahead and delegate the modification allocation to the world.
-                        else await (_CurrentWorld as VoxelWorld)!.Chunks.AllocateChunkModification(origin + modificationOffset, blockID).ConfigureAwait(false);
-                    }
+                    // if not, just go ahead and delegate the modification allocation to the world.
+                    else await (_CurrentWorld as VoxelWorld)!.Chunks.AllocateChunkModification(origin + modificationOffset, blockID).ConfigureAwait(false);
                 }
+            }
 
             DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new StructuresTime(stopwatch.Elapsed));
             DiagnosticsPool.Stopwatches.Return(stopwatch);
