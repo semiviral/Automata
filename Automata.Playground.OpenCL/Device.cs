@@ -42,5 +42,20 @@ namespace Automata.Playground.OpenCL
             CL.GetDeviceInfo(Handle, (uint)parameter, returnSize, value, null!);
             return value;
         }
+
+        // todo abstract a ContextProperties record or something to pass in
+        public unsafe Context CreateContext<T>(Span<nint> properties, NotifyCallback? notifyCallback, Span<T> userData, out int errorCode) where T : unmanaged
+        {
+            Span<int> temp = stackalloc int[1];
+
+            nint handle = CL.CreateContext(properties, 1u, stackalloc[]
+            {
+                Handle
+            }, notifyCallback, userData, temp);
+
+            errorCode = temp[0];
+
+            return new Context(CL, handle);
+        }
     }
 }
