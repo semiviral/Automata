@@ -20,19 +20,6 @@ void Main()
         "}\r\n"
     };
 
-    cl.Program
-}
-
-namespace Automata.Playground.OpenCL
-{
-    public record Program : OpenCLObject
-    {
-        internal Program(CL cl, nint handle, Span<string> sourceLines) : base(cl)
-        {
-            Handle = handle;
-            CL.CreateProgramWithSource()
-        }
-
-        public
-    }
+    Context context = device.CreateContext(Span<nint>.Empty, null, Span<byte>.Empty, out _);
+    Program program = context.CreateProgram(source_strings, out _);
 }
