@@ -1,9 +1,17 @@
-﻿using System;
+﻿using Silk.NET.OpenCL;
 
 namespace Automata.Playground.OpenCL
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args) { Console.WriteLine("Hello World!"); }
+        private static CL _CL;
+
+        private static void Main(string[] args)
+        {
+            _CL = CLAPI.Instance.CL;
+
+            Platform platform = CLAPI.GetPlatforms(_CL)[0];
+            Device[] devices = platform.GetDevices(Device.Type.All);
+        }
     }
 }
