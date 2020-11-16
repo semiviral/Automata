@@ -111,12 +111,65 @@ namespace Automata.Engine.Collections
 
         #region IEnumerable
 
-        public IEnumerator<T> GetEnumerator()
-        {
-            for (int index = 0; index < Count; index++) yield return _InternalArray[index];
-        }
+        public Enumerator GetEnumerator() => new Enumerator(this);
+        IEnumerator<T> IEnumerable<T>.GetEnumerator() => new Enumerator(this);
+        IEnumerator IEnumerable.GetEnumerator() => new Enumerator(this);
 
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        public struct Enumerator : IEnumerator<T>
+        {
+            private readonly NonAllocatingList<T> _List;
+            private uint _Index;
+            private T? _Current;
+
+            public T Current
+            {
+                get
+                {
+                    if (_Current is null) ThrowHelper.ThrowInvalidOperationException("Enumerable has not been enumerated.");
+
+                    return _Current!;
+                }
+            }
+
+            object? IEnumerator.Current
+            {
+                get
+                {
+                    if (_Current is null) ThrowHelper.ThrowInvalidOperationException("Enumerable has not been enumerated.");
+
+                    return _Current;
+                }
+            }
+
+            internal Enumerator(NonAllocatingList<T> list)
+            {
+                _List = list;
+                _Index = 0u;
+                _Current = default;
+            }
+
+            public bool MoveNext()
+            {
+                if ((uint)_Index >= (uint)_List.Count) return false;
+
+                _Current = _List._InternalArray[_Index];
+                _Index += 1;
+                return true;
+            }
+
+            void IEnumerator.Reset()
+            {
+                _Index = 0;
+                _Current = default;
+            }
+
+
+            #region IDisposable
+
+            public void Dispose() { }
+
+            #endregion
+        }
 
         #endregion
 

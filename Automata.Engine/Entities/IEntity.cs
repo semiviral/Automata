@@ -14,16 +14,20 @@ namespace Automata.Engine.Entities
     {
         Guid ID { get; }
         bool Disposed { get; }
+        int Count { get; }
 
-        void Add<TComponent>() where TComponent : Component, new();
-        TComponent Remove<TComponent>() where TComponent : Component;
+        Component this[int index] { get; }
+
+        internal void Add<TComponent>() where TComponent : Component, new();
+        internal TComponent Remove<TComponent>() where TComponent : Component;
         TComponent? Find<TComponent>() where TComponent : Component;
         bool Contains<TComponent>() where TComponent : Component;
 
-        void Add(Component component);
+        internal void Add(Component component);
+        internal bool Remove(Component component);
         Component? Find(Type type);
         bool Contains(Type type);
 
-        bool TryFind<TComponent>([NotNullWhen(true)] out TComponent? component) where TComponent : Component;
+        bool TryFind<TComponent>([NotNullWhen(true)] out TComponent? result) where TComponent : Component;
     }
 }

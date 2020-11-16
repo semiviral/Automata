@@ -17,6 +17,8 @@ namespace Automata.Engine.Entities
         public Guid ID { get; }
         public bool Disposed { get; private set; }
 
+        public Component this[int index] => _Components[index];
+
         public Entity()
         {
             ID = Guid.NewGuid();
@@ -24,16 +26,17 @@ namespace Automata.Engine.Entities
             _Components = new NonAllocatingList<Component>();
         }
 
+        public int Count => _Components.Count;
 
         #region Generic
 
-        public void Add<TComponent>() where TComponent : Component, new()
+        void IEntity.Add<TComponent>()
         {
             if (Contains<TComponent>()) ThrowHelper.ThrowArgumentException(typeof(TComponent).Name, "Entity already has component of type.");
             else _Components.Add(new TComponent());
         }
 
-        public TComponent Remove<TComponent>() where TComponent : Component
+        TComponent IEntity.Remove<TComponent>()
         {
             TComponent? component = Find<TComponent>();
 
@@ -56,16 +59,16 @@ namespace Automata.Engine.Entities
             return null;
         }
 
-        public bool TryFind<TComponent>([NotNullWhen(true)] out TComponent? component) where TComponent : Component
+        public bool TryFind<TComponent>([NotNullWhen(true)] out TComponent? result) where TComponent : Component
         {
-            foreach (Component current in _Components)
-                if (current is TComponent result)
+            foreach (Component component in _Components)
+                if (component is TComponent componentT)
                 {
-                    component = result;
+                    result = componentT;
                     return true;
                 }
 
-            component = null;
+            result = null;
             return false;
         }
 
@@ -83,11 +86,13 @@ namespace Automata.Engine.Entities
 
         #region Non-generic
 
-        public void Add(Component component)
+        void IEntity.Add(Component component)
         {
             if (Contains(component.GetType())) ThrowHelper.ThrowArgumentException(component.GetType().Name, "Entity already contains component of type.");
             else _Components.Add(component);
         }
+
+        bool IEntity.Remove(Component component) => _Components.Remove(component);
 
         public Component? Find(Type type)
         {
@@ -105,7 +110,8 @@ namespace Automata.Engine.Entities
 
         #region IEnumerable
 
-        public IEnumerator<Component> GetEnumerator() => _Components.GetEnumerator();
+        public NonAllocatingList<Component>.Enumerator GetEnumerator() => _Components.GetEnumerator();
+        IEnumerator<Component> IEnumerable<Component>.GetEnumerator() => GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         #endregion
