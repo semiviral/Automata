@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Automata.Engine.Collections;
@@ -10,10 +11,12 @@ namespace Automata.Game.Chunks
     {
         public GenerationState State { get; set; }
         public Palette<Block>? Blocks { get; set; }
+        public Chunk?[] Neighbors { get; private set; } = new Chunk?[6];
+        public ConcurrentChannel<ChunkModification> Modifications { get; private set; } = new ConcurrentChannel<ChunkModification>(true, true);
+
         public int TimesMeshed { get; set; }
-        public Chunk?[] Neighbors { get; } = new Chunk?[6];
-        public IEnumerable<Palette<Block>?> NeighborBlocks => Neighbors.Select(chunk => chunk?.Blocks);
-        public ConcurrentChannel<ChunkModification> Modifications { get; } = new ConcurrentChannel<ChunkModification>(true, true);
+
+        public IEnumerable<Palette<Block>?> NeighborBlocks() => Neighbors.Select(chunk => chunk?.Blocks);
 
         public void RemeshNeighborhood(bool remesh)
         {
@@ -24,6 +27,17 @@ namespace Automata.Game.Chunks
             foreach (Chunk? neighbor in Neighbors)
                 if (neighbor?.State is > GenerationState.AwaitingMesh)
                     neighbor.State = GenerationState.AwaitingMesh;
+        }
+
+        public void SafeDispose()
+        {
+            State = GenerationState.Inactive;
+            Blocks?.Dispose();
+            Neighbors = null!;
+            Modifications = null!;
+            TimesMeshed = 0;
+
+            GC.SuppressFinalize(this);
         }
     }
 }

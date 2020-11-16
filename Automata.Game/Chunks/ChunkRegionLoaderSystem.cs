@@ -61,7 +61,7 @@ namespace Automata.Game.Chunks
                        or not GenerationState.GeneratingTerrain
                        and not GenerationState.GeneratingStructures
                        and not GenerationState.GeneratingMesh)
-                   && _ChunksPendingCleanup.TryPop(out chunk)) chunk!.Blocks?.Dispose();
+                   && _ChunksPendingCleanup.TryPop(out chunk)) chunk!.SafeDispose();
 
             // determine whether any chunk loaders have moved out far enough to recalculate their loaded chunk region
             bool recalculateChunkRegions = CheckAndUpdateChunkLoaderPositions(entityManager);

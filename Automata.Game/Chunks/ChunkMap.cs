@@ -79,7 +79,7 @@ namespace Automata.Game.Chunks
         {
             Vector3i origin = Vector3i.RoundBy(global, GenerationConstants.CHUNK_SIZE);
 
-            if (_Chunks.TryGetValue(origin, out IEntity? entity) && entity.TryFind(out Chunk? chunk))
+            if (_Chunks.TryGetValue(origin, out IEntity? entity) && entity!.TryFind(out Chunk? chunk))
                 await chunk.Modifications.AddAsync(new ChunkModification
                 {
                     BlockIndex = Vector3i.Project1D(Vector3i.Abs(global - origin), GenerationConstants.CHUNK_SIZE),
@@ -94,7 +94,7 @@ namespace Automata.Game.Chunks
                 Vector3i modificationGlobal = global + local;
                 Vector3i modificationOrigin = Vector3i.RoundBy(modificationGlobal, GenerationConstants.CHUNK_SIZE);
 
-                if (_Chunks.TryGetValue(modificationOrigin, out IEntity? entity) && entity.TryFind(out Chunk? chunk))
+                if (_Chunks.TryGetValue(modificationOrigin, out IEntity? entity) && entity!.TryFind(out Chunk? chunk))
                     await chunk.Modifications.AddAsync(new ChunkModification
                     {
                         BlockIndex = Vector3i.Project1D(Vector3i.Abs(modificationGlobal - modificationOrigin), GenerationConstants.CHUNK_SIZE),

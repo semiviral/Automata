@@ -173,7 +173,7 @@ namespace Automata.Game.Chunks.Generation
                                 BlockID = blockID
                             }).ConfigureAwait(false);
 
-                        // if not, just go ahead and delegate the modification to the world.
+                        // if not, just go ahead and delegate the modification allocation to the world.
                         else await (_CurrentWorld as VoxelWorld)!.Chunks.AllocateChunkModification(origin + modificationOffset, blockID).ConfigureAwait(false);
                     }
                 }
@@ -194,7 +194,7 @@ namespace Automata.Game.Chunks.Generation
             Stopwatch stopwatch = DiagnosticsPool.Stopwatches.Rent();
             stopwatch.Restart();
 
-            NonAllocatingQuadsMeshData<PackedVertex> pendingQuads = ChunkMesher.GeneratePackedMesh(chunk.Blocks, chunk.NeighborBlocks.ToArray());
+            NonAllocatingQuadsMeshData<PackedVertex> pendingQuads = ChunkMesher.GeneratePackedMesh(chunk.Blocks, chunk.NeighborBlocks().ToArray());
             await _PendingMeshes.AddAsync((entity, chunk, pendingQuads)).ConfigureAwait(false);
 
             DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new MeshingTime(stopwatch.Elapsed));

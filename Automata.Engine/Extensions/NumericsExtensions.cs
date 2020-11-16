@@ -1,14 +1,18 @@
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 namespace Automata.Engine.Extensions
 {
     public static class NumericsExtensions
     {
         // row major
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe Span<float> Unroll(this Matrix4x4 matrix) => MemoryMarshal.CreateSpan(ref matrix.M11, sizeof(Matrix4x4) / sizeof(float));
 
         public static IEnumerable<float> UnrollColumnMajor(this Matrix4x4 matrix)

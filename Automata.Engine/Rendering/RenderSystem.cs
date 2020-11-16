@@ -81,9 +81,11 @@ namespace Automata.Engine.Rendering
                 };
 
                 // check for changes and update current camera's view matrix & UBO data
+                bool hasScale, hasTranslation, hasRotation;
+
                 if ((cameraEntity.TryFind(out Scale? cameraScale) && cameraScale.Changed)
-                    | (cameraEntity.TryFind(out Translation? cameraTranslation) && cameraTranslation.Changed)
-                    | (cameraEntity.TryFind(out Rotation? cameraRotation) && cameraRotation.Changed))
+                    | (cameraEntity.TryFind(out Rotation? cameraRotation) && cameraRotation.Changed)
+                    | (cameraEntity.TryFind(out Translation? cameraTranslation) && cameraTranslation.Changed))
                 {
                     Matrix4x4 view = Matrix4x4.Identity;
 
@@ -114,16 +116,11 @@ namespace Automata.Engine.Rendering
                 // if the camera doesn't have a projection, it doesn't make sense to try and render to it
                 if (camera.Projection is null) continue;
 
-                // bind camera's view data UBO and precalculate viewproj matrix
-                camera.Uniforms.Bind();
-                Matrix4x4 viewProjection = camera.View * camera.Projection.Matrix;
-                Material? cachedMaterial = null;
-
                 // iterate each RenderMesh and check if the model matrix needs to be recalculated
                 foreach ((IEntity objectEntity, RenderModel renderModel) in entityManager.GetEntitiesWithComponents<RenderModel>())
-                    if (((objectEntity.TryFind(out Scale? modelScale) && modelScale.Changed)
+                    if (((objectEntity.TryFind(out Translation? modelTranslation) && modelTranslation.Changed)
                          | (objectEntity.TryFind(out Rotation? modelRotation) && modelRotation.Changed)
-                         | (objectEntity.TryFind(out Translation? modelTranslation) && modelTranslation.Changed))
+                         | (objectEntity.TryFind(out Scale? modelScale) && modelScale.Changed))
                         || renderModel.Changed)
                     {
                         renderModel.Model = Matrix4x4.Identity;
@@ -133,6 +130,12 @@ namespace Automata.Engine.Rendering
                         if (modelScale is not null) renderModel.Model *= Matrix4x4.CreateScale(modelScale.Value);
                     }
 
+
+                // bind camera's view data UBO and precalculate viewproj matrix
+                camera.Uniforms.Bind();
+                Matrix4x4 viewProjection = camera.View * camera.Projection.Matrix;
+                Material? cachedMaterial = null;
+
                 // iterate every valid entity and try to render it
                 // we also sort the entities by their render pipeline ID, so we can avoid doing a ton of rebinding
                 foreach ((IEntity objectEntity, RenderMesh renderMesh, Material material) in entityManager.GetEntitiesWithComponents<RenderMesh, Material>()
@@ -140,7 +143,7 @@ namespace Automata.Engine.Rendering
                     .OrderBy(result => result.Component2.Pipeline.Handle))
                 {
                     bool hasModel = objectEntity.TryFind(out RenderModel? renderModel);
-                    Matrix4x4 modelViewProjection = hasModel ? renderModel!.Model * viewProjection : Matrix4x4.Identity * viewProjection;
+                    Matrix4x4 modelViewProjection = (hasModel ? renderModel!.Model : Matrix4x4.Identity) * viewProjection;
 
                     if (objectEntity.TryFind(out OcclusionBounds? bounds) && CheckClipFrustumOcclude(bounds, planes, modelViewProjection)) continue;
 
