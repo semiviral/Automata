@@ -24,17 +24,27 @@ namespace Automata.Engine.Collections
         {
             get
             {
-                if (index >= Count)
-                {
-                    ThrowHelper.ThrowIndexOutOfRangeException();
-                    return default!;
-                }
-                else return _InternalArray[index];
+                if (index >= Count) ThrowHelper.ThrowIndexOutOfRangeException();
+                return _InternalArray[index];
             }
             set
             {
                 if (index >= Count) ThrowHelper.ThrowIndexOutOfRangeException();
-                else _InternalArray[index] = value;
+                _InternalArray[index] = value;
+            }
+        }
+
+        public T this[uint index]
+        {
+            get
+            {
+                if (index >= Count) ThrowHelper.ThrowIndexOutOfRangeException();
+                return _InternalArray[index];
+            }
+            set
+            {
+                if (index >= Count) ThrowHelper.ThrowIndexOutOfRangeException();
+                _InternalArray[index] = value;
             }
         }
 
@@ -118,24 +128,16 @@ namespace Automata.Engine.Collections
         public struct Enumerator : IEnumerator<T>
         {
             private readonly NonAllocatingList<T> _List;
-            private int _Index;
+            private uint _Index;
             private T? _Current;
 
-            public T Current
-            {
-                get
-                {
-                    if (_Current is null) ThrowHelper.ThrowInvalidOperationException("Enumerable has not been enumerated.");
-
-                    return _Current!;
-                }
-            }
+            public T Current => _Current!;
 
             object? IEnumerator.Current
             {
                 get
                 {
-                    if (_Current is null) ThrowHelper.ThrowInvalidOperationException("Enumerable has not been enumerated.");
+                    if ((_Index == 0u) || (_Index >= (uint)_List.Count)) ThrowHelper.ThrowInvalidOperationException("Enumerable has not been enumerated.");
 
                     return _Current;
                 }
@@ -144,22 +146,22 @@ namespace Automata.Engine.Collections
             internal Enumerator(NonAllocatingList<T> list)
             {
                 _List = list;
-                _Index = 0;
+                _Index = 0u;
                 _Current = default;
             }
 
             public bool MoveNext()
             {
-                if ((uint)_Index >= (uint)_List.Count) return false;
+                if (_Index >= (uint)_List.Count) return false;
 
                 _Current = _List._InternalArray[_Index];
-                _Index += 1;
+                _Index += 1u;
                 return true;
             }
 
             void IEnumerator.Reset()
             {
-                _Index = 0;
+                _Index = 0u;
                 _Current = default;
             }
 

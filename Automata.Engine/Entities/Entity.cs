@@ -14,6 +14,7 @@ namespace Automata.Engine.Entities
         public bool Disposed { get; private set; }
 
         public Component this[int index] => _Components[index];
+        public Component this[uint index] => _Components[index];
 
         public Entity()
         {

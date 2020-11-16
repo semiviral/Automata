@@ -18,6 +18,7 @@ namespace Automata.Engine.Entities
         int Count { get; }
 
         Component this[int index] { get; }
+        Component this[uint index] { get; }
 
         internal void Add<TComponent>() where TComponent : Component, new();
         internal TComponent Remove<TComponent>() where TComponent : Component;
@@ -36,24 +37,16 @@ namespace Automata.Engine.Entities
         {
             private readonly Entity _Entity;
 
-            private int _Index;
+            private uint _Index;
             private Component? _Current;
 
-            public Component Current
-            {
-                get
-                {
-                    if (_Current is null) ThrowHelper.ThrowInvalidOperationException("Enumerable has not been enumerated.");
-
-                    return _Current!;
-                }
-            }
+            public Component Current => _Current!;
 
             object? IEnumerator.Current
             {
                 get
                 {
-                    if (_Current is null) ThrowHelper.ThrowInvalidOperationException("Enumerable has not been enumerated.");
+                    if ((_Index == 0u) || (_Index >= (uint)_Entity.Count)) ThrowHelper.ThrowInvalidOperationException("Enumerable has not been enumerated.");
 
                     return _Current;
                 }
@@ -62,22 +55,22 @@ namespace Automata.Engine.Entities
             internal Enumerator(Entity entity)
             {
                 _Entity = entity;
-                _Index = 0;
+                _Index = 0u;
                 _Current = default;
             }
 
             public bool MoveNext()
             {
-                if ((uint)_Index >= (uint)_Entity.Count) return false;
+                if (_Index >= (uint)_Entity.Count) return false;
 
                 _Current = _Entity[_Index];
-                _Index += 1;
+                _Index += 1u;
                 return true;
             }
 
             void IEnumerator.Reset()
             {
-                _Index = 0;
+                _Index = 0u;
                 _Current = default;
             }
 
@@ -88,6 +81,5 @@ namespace Automata.Engine.Entities
 
             #endregion
         }
-
     }
 }
