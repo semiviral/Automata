@@ -118,7 +118,7 @@ namespace Automata.Engine.Collections
         public struct Enumerator : IEnumerator<T>
         {
             private readonly NonAllocatingList<T> _List;
-            private uint _Index;
+            private int _Index;
             private T? _Current;
 
             public T Current
@@ -144,7 +144,7 @@ namespace Automata.Engine.Collections
             internal Enumerator(NonAllocatingList<T> list)
             {
                 _List = list;
-                _Index = 0u;
+                _Index = 0;
                 _Current = default;
             }
 

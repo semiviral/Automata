@@ -1,12 +1,8 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Automata.Engine.Collections;
 using Automata.Engine.Components;
-
-// ReSharper disable LoopCanBeConvertedToQuery
 
 namespace Automata.Engine.Entities
 {
@@ -27,6 +23,7 @@ namespace Automata.Engine.Entities
         }
 
         public int Count => _Components.Count;
+
 
         #region Generic
 
@@ -110,9 +107,7 @@ namespace Automata.Engine.Entities
 
         #region IEnumerable
 
-        public NonAllocatingList<Component>.Enumerator GetEnumerator() => _Components.GetEnumerator();
-        IEnumerator<Component> IEnumerable<Component>.GetEnumerator() => GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        public IEntity.Enumerator GetEnumerator() => new IEntity.Enumerator(this);
 
         #endregion
 
