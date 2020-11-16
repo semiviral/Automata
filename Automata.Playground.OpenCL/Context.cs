@@ -6,7 +6,13 @@ namespace Automata.Playground.OpenCL
 {
     public record Context : OpenCLObject
     {
-        public Context(CL cl, nint handle) : base(cl) => Handle = handle;
+        internal Device Device { get; }
+
+        internal Context(CL cl, Device device, nint handle) : base(cl)
+        {
+            Device = device;
+            Handle = handle;
+        }
 
         public Program CreateProgram(string filePath, out int errorCode)
         {
@@ -24,12 +30,7 @@ namespace Automata.Playground.OpenCL
             nint handle = CL.CreateProgramWithSource(Handle, (uint)lines.Length, lines, lengths, temp);
             errorCode = temp[0];
 
-            return new Program(CL, handle);
+            return new Program(CL, this, handle);
         }
-    }
-
-    public record Program : OpenCLObject
-    {
-        internal Program(CL cl, nint handle) : base(cl) => Handle = handle;
     }
 }

@@ -43,19 +43,13 @@ namespace Automata.Playground.OpenCL
             return value;
         }
 
-        // todo abstract a ContextProperties record or something to pass in
-        public unsafe Context CreateContext<T>(Span<nint> properties, NotifyCallback? notifyCallback, Span<T> userData, out int errorCode) where T : unmanaged
-        {
-            Span<int> temp = stackalloc int[1];
+        public Context CreateContext(Span<nint> properties, NotifyCallback? notifyCallback) => CreateContext(properties, notifyCallback, Span<byte>.Empty);
 
-            nint handle = CL.CreateContext(properties, 1u, stackalloc[]
+        // todo abstract a ContextProperties record or something to pass in
+        public unsafe Context CreateContext<T>(Span<nint> properties, NotifyCallback? notifyCallback, Span<T> userData) where T : unmanaged =>
+            new Context(CL, this, CL.CreateContext(properties, 1u, stackalloc[]
             {
                 Handle
-            }, notifyCallback, userData, temp);
-
-            errorCode = temp[0];
-
-            return new Context(CL, handle);
-        }
+            }, notifyCallback, userData, null));
     }
 }
