@@ -11,7 +11,7 @@ namespace Automata.Playground.OpenCL
             _CL = CLAPI.Instance.CL;
 
             Platform platform = CLAPI.GetPlatforms(_CL)[0];
-            Device[] devices = platform.GetDevices(Device.Type.All);
+            Device[] devices = platform.GetDevices(DeviceType.All);
         }
     }
 }

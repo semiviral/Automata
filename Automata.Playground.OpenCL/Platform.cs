@@ -44,7 +44,7 @@ namespace Automata.Playground.OpenCL
             return value;
         }
 
-        public unsafe Device[] GetDevices(Device.Type deviceType)
+        public unsafe Device[] GetDevices(DeviceType deviceType)
         {
             uint deviceCount = 0u;
             CL.GetDeviceIDs(Handle, (CLEnum)deviceType, 0u, (nint*)null!, &deviceCount);
