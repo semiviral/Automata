@@ -21,7 +21,6 @@ InitializeWindow();
 BlockRegistry.Instance.LazyInitialize();
 InitializeWorld(out World world);
 InitializePlayer(world.EntityManager);
-for (int count = 0; count < 100000; count++) world.EntityManager.CreateEntity(new RenderModel(), new Translation(), new KeyboardListener());
 await AutomataWindow.Instance.Run();
 
 static void ApplicationCloseCallback(object sender)
