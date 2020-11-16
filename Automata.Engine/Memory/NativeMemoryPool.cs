@@ -1,5 +1,6 @@
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 // ReSharper disable InconsistentlySynchronizedField
@@ -30,7 +31,7 @@ namespace Automata.Engine.Memory
             _Pointer = pointer;
         }
 
-        public IMemoryOwner<T> Rent<T>(int size, bool clear = false) where T : unmanaged
+        public IMemoryOwner<T> Rent<T>(int size, [MaybeNullWhen(false)] out nuint index, bool clear = false) where T : unmanaged
         {
             if (size < 0) ThrowHelper.ThrowArgumentOutOfRangeException(nameof(size), "Size must be non-negative.");
 
@@ -66,10 +67,12 @@ namespace Automata.Engine.Memory
 
                     IMemoryOwner<T> memoryOwner = CreateMemoryOwner<T>(current.Value.Index, size);
                     if (clear) memoryOwner.Memory.Span.Clear();
+                    index = current.Value.Index;
                     return memoryOwner;
                 } while ((current = current!.Next) is not null);
             }
 
+            index = default;
             ThrowHelper.ThrowInsufficientMemoryException("Not enough memory to accomodate allocation.");
             return null!;
         }

@@ -34,6 +34,9 @@ namespace Automata.Engine.Extensions
             yield return matrix.M44;
         }
 
+        public static void CopyTo(this Matrix4x4 matrix, Span<byte> destination) => matrix.Unroll().CopyTo(MemoryMarshal.Cast<byte, float>(destination));
+        public static void CopyTo(this Matrix4x4 matrix, Span<float> destination) => matrix.Unroll().CopyTo(destination);
+
         public static Vector3 RoundBy(this Vector3 a, Vector3 by)
         {
             Vector3 rounded = a / by;

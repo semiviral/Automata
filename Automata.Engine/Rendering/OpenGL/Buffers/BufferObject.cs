@@ -74,9 +74,8 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             if (_Disposed) return;
 
             GL.DeleteBuffer(Handle);
-
-            _Disposed = true;
             GC.SuppressFinalize(this);
+            _Disposed = true;
         }
 
         #endregion
