@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Automata.Engine;
@@ -33,7 +32,7 @@ namespace Automata.Game.Chunks
 
             foreach (Chunk chunk in entityManager.GetComponents<Chunk>())
                 if (chunk.State is GenerationState.AwaitingMesh or GenerationState.Finished
-                    && chunk.Neighbors.All(neighbor => neighbor?.State is <= GenerationState.AwaitingMesh or GenerationState.Finished)
+                    && Array.TrueForAll(chunk.Neighbors, neighbor => neighbor?.State is <= GenerationState.AwaitingMesh or GenerationState.Finished)
                     && TryProcessChunkModifications(chunk))
                     chunk.RemeshNeighborhood(true);
 

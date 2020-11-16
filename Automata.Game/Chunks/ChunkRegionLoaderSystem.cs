@@ -26,10 +26,15 @@ namespace Automata.Game.Chunks
     public class ChunkRegionLoaderSystem : ComponentSystem
     {
         private readonly Queue<Chunk> _ChunksRequiringRemesh;
+        private readonly Stack<Chunk> _ChunksPendingCleanup;
 
         private VoxelWorld VoxelWorld => _CurrentWorld as VoxelWorld ?? throw new InvalidOperationException("Must be in VoxelWorld.");
 
-        public ChunkRegionLoaderSystem() => _ChunksRequiringRemesh = new Queue<Chunk>();
+        public ChunkRegionLoaderSystem()
+        {
+            _ChunksRequiringRemesh = new Queue<Chunk>();
+            _ChunksPendingCleanup = new Stack<Chunk>();
+        }
 
         public override void Registered(EntityManager entityManager)
         {
@@ -45,7 +50,18 @@ namespace Automata.Game.Chunks
             Stopwatch stopwatch = DiagnosticsPool.Stopwatches.Rent();
             stopwatch.Restart();
 
-            UpdateChunksPendingValidRemeshingState();
+            while (_ChunksRequiringRemesh.TryPeek(out Chunk? chunk)
+                   && chunk!.State is not GenerationState.GeneratingMesh
+                   && _ChunksRequiringRemesh.TryDequeue(out chunk))
+                if (chunk!.State is GenerationState.Finished)
+                    chunk.State = GenerationState.AwaitingMesh;
+
+            while (_ChunksPendingCleanup.TryPeek(out Chunk? chunk)
+                   && Array.TrueForAll(chunk!.Neighbors, neighbor => neighbor?.State is null
+                       or not GenerationState.GeneratingTerrain
+                       and not GenerationState.GeneratingStructures
+                       and not GenerationState.GeneratingMesh)
+                   && _ChunksPendingCleanup.TryPop(out chunk)) chunk!.Blocks?.Dispose();
 
             // determine whether any chunk loaders have moved out far enough to recalculate their loaded chunk region
             bool recalculateChunkRegions = CheckAndUpdateChunkLoaderPositions(entityManager);
@@ -55,15 +71,6 @@ namespace Automata.Game.Chunks
             DiagnosticsPool.Stopwatches.Return(stopwatch);
 
             return ValueTask.CompletedTask;
-        }
-
-        private void UpdateChunksPendingValidRemeshingState()
-        {
-            while (_ChunksRequiringRemesh.TryPeek(out Chunk? chunk) && chunk!.State is GenerationState.Finished)
-            {
-                _ChunksRequiringRemesh.Dequeue();
-                chunk.State = GenerationState.AwaitingMesh;
-            }
         }
 
         private static bool CheckAndUpdateChunkLoaderPositions(EntityManager entityManager)
@@ -91,7 +98,10 @@ namespace Automata.Game.Chunks
             HashSet<Vector3i> withinLoaderRange = new HashSet<Vector3i>(GetOriginsWithinLoaderRanges(entityManager.GetComponents<ChunkLoader>()));
 
             foreach (Vector3i origin in withinLoaderRange.Except(VoxelWorld.Chunks.Origins)) VoxelWorld.Chunks.TryAllocate(entityManager, origin, out _);
-            foreach (Vector3i origin in VoxelWorld.Chunks.Origins.Except(withinLoaderRange)) VoxelWorld.Chunks.TryDeallocate(entityManager, origin, out _);
+
+            foreach (Vector3i origin in VoxelWorld.Chunks.Origins.Except(withinLoaderRange))
+                if (VoxelWorld.Chunks.TryDeallocate(entityManager, origin, out Chunk? chunk))
+                    _ChunksPendingCleanup.Push(chunk);
 
             // here we update neighbors, and allocate (in a stack) all chunks that will require remeshing
             foreach ((Vector3i origin, IEntity entity) in VoxelWorld.Chunks)

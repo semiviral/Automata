@@ -19,8 +19,6 @@ namespace Automata.Engine.Collections
 
         public int Count { get; }
 
-        public IReadOnlyList<T> ReadOnlyLookupTable => _LookupTable;
-
         public T this[int index]
         {
             get
@@ -45,6 +43,8 @@ namespace Automata.Engine.Collections
                 SetValue(index, (uint)paletteIndex, _IndexBits, _IndexMask, _Palette);
             }
         }
+
+        public int LookupTableSize => _LookupTable.Count;
 
         public Palette(int length, T defaultItem)
         {
@@ -78,7 +78,8 @@ namespace Automata.Engine.Collections
             ReallocatePalette(Compute32BitSlices(_IndexBits, Count));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public T GetLookupIndex(int index) => _LookupTable[index];
+
         private void AllocateLookupEntry(T item)
         {
             Debug.Assert(!_LookupTable.Contains(item), "Lookup table already contains item. This method should only be called when the item is not present.");
@@ -114,7 +115,6 @@ namespace Automata.Engine.Collections
             Array.Clear(_Palette, 0, _Palette.Length);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void SetValue(int index, uint lookupIndex, byte bits, uint mask, Span<uint> palette)
         {
             int paletteIndex = (index * bits) / _UINT_32_BITS;
@@ -124,7 +124,6 @@ namespace Automata.Engine.Collections
             Debug.Assert(GetValue(index, bits, mask, palette).Equals(lookupIndex), $"{nameof(SetValue)} failed.");
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static uint GetValue(int index, byte bits, uint mask, ReadOnlySpan<uint> palette)
         {
             int paletteIndex = (index * bits) / _UINT_32_BITS;
@@ -133,7 +132,6 @@ namespace Automata.Engine.Collections
             return (uint)((palette[paletteIndex] & (mask << offset)) >> offset);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void IncreaseIndexBits()
         {
             if (_IndexBits == 32) throw new OverflowException($"Too many palette entries. Cannot exceed {int.MaxValue}.");
@@ -142,14 +140,12 @@ namespace Automata.Engine.Collections
             ComputeMask();
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ComputeMask()
         {
             _IndexMask = 0;
             for (ushort bit = _IndexBits; bit > 0; bit >>= 1) _IndexMask |= bit;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static ushort Compute32BitSlices(byte bits, int length) =>
             (ushort)MathF.Ceiling((bits * length) / (float)_UINT_32_BITS);
 
@@ -166,8 +162,12 @@ namespace Automata.Engine.Collections
             }
         }
 
+
+        #region IEnumerable
+
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
+        // todo optimize this with a struct enumerator
         public IEnumerator<T> GetEnumerator()
         {
             if (_Palette is null) throw new InvalidOperationException("Palette is in an invalid state (no internal data).");
@@ -183,6 +183,11 @@ namespace Automata.Engine.Collections
                 }
         }
 
+        #endregion
+
+
+        #region IDisposable
+
         public void Dispose()
         {
             if (_Palette is not null)
@@ -194,5 +199,7 @@ namespace Automata.Engine.Collections
 
             GC.SuppressFinalize(this);
         }
+
+        #endregion
     }
 }

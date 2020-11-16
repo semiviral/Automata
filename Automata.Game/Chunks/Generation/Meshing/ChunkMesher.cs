@@ -34,7 +34,7 @@ namespace Automata.Game.Chunks.Generation.Meshing
         {
             try
             {
-                if ((blocksPalette.ReadOnlyLookupTable.Count == 1) && (blocksPalette.ReadOnlyLookupTable[0].ID == BlockRegistry.AirID))
+                if ((blocksPalette.LookupTableSize == 1) && (blocksPalette.GetLookupIndex(0).ID == BlockRegistry.AirID))
                     return NonAllocatingQuadsMeshData<PackedVertex>.Empty;
 
                 BlockRegistry blockRegistry = BlockRegistry.Instance;
