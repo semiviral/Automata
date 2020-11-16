@@ -20,8 +20,7 @@ InitializeBoundedPool();
 InitializeWindow();
 BlockRegistry.Instance.LazyInitialize();
 InitializeWorld(out World world);
-InitializePlayer(out IEntity player);
-world.EntityManager.RegisterEntity(player);
+InitializePlayer(world.EntityManager);
 await AutomataWindow.Instance.Run();
 
 static void ApplicationCloseCallback(object sender)
@@ -75,10 +74,9 @@ static void InitializeWorld(out World world)
     World.RegisterWorld("Overworld", world);
 }
 
-static void InitializePlayer(out IEntity player)
+static void InitializePlayer(EntityManager entityManager)
 {
-    player = new Entity
-    {
+    entityManager.CreateEntity(
         new Translation(),
         new Rotation(),
         new Camera
@@ -100,8 +98,7 @@ static void InitializePlayer(out IEntity player)
 #else
             Radius = Settings.Instance.GenerationRadius
 #endif
-        }
-    };
+        });
 }
 
 #endregion

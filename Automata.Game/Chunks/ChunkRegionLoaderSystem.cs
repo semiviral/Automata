@@ -90,15 +90,8 @@ namespace Automata.Game.Chunks
             // this calculates new chunk allocations and current chunk deallocations
             HashSet<Vector3i> withinLoaderRange = new HashSet<Vector3i>(GetOriginsWithinLoaderRanges(entityManager.GetComponents<ChunkLoader>()));
 
-            // process chunk allocations
-            foreach (Vector3i origin in withinLoaderRange.Except(VoxelWorld.Chunks.Origins))
-                if (VoxelWorld.Chunks.TryAllocate(origin, out IEntity? entity))
-                    entityManager.RegisterEntity(entity);
-
-            // process chunk deallocations
-            foreach (Vector3i origin in VoxelWorld.Chunks.Origins.Except(withinLoaderRange))
-                if (VoxelWorld.Chunks.TryDeallocate(origin, out IEntity? entity))
-                    entityManager.RemoveEntity(entity);
+            foreach (Vector3i origin in withinLoaderRange.Except(VoxelWorld.Chunks.Origins)) VoxelWorld.Chunks.TryAllocate(entityManager, origin, out _);
+            foreach (Vector3i origin in VoxelWorld.Chunks.Origins.Except(withinLoaderRange)) VoxelWorld.Chunks.TryDeallocate(entityManager, origin, out _);
 
             // here we update neighbors, and allocate (in a stack) all chunks that will require remeshing
             foreach ((Vector3i origin, IEntity entity) in VoxelWorld.Chunks)

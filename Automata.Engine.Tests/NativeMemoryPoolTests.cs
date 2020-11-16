@@ -50,19 +50,19 @@ namespace Automata.Engine.Tests
 
             int rentedBlocksBefore = _NativeMemoryPool.RentedBlocks;
 
-            IMemoryOwner<int> memoryOwner1 = _NativeMemoryPool.Rent<int>(length);
+            IMemoryOwner<int> memoryOwner1 = _NativeMemoryPool.Rent<int>(length, out _);
             Memory<int> memory1 = memoryOwner1.Memory;
 
-            IMemoryOwner<int> memoryOwner2 = _NativeMemoryPool.Rent<int>(length);
+            IMemoryOwner<int> memoryOwner2 = _NativeMemoryPool.Rent<int>(length, out _);
             Memory<int> memory2 = memoryOwner1.Memory;
 
-            IMemoryOwner<int> memoryOwner3 = _NativeMemoryPool.Rent<int>(length);
+            IMemoryOwner<int> memoryOwner3 = _NativeMemoryPool.Rent<int>(length, out _);
             Memory<int> memory3 = memoryOwner1.Memory;
 
-            IMemoryOwner<int> memoryOwner4 = _NativeMemoryPool.Rent<int>(length);
+            IMemoryOwner<int> memoryOwner4 = _NativeMemoryPool.Rent<int>(length, out _);
             Memory<int> memory4 = memoryOwner1.Memory;
 
-            IMemoryOwner<int> memoryOwner5 = _NativeMemoryPool.Rent<int>(length);
+            IMemoryOwner<int> memoryOwner5 = _NativeMemoryPool.Rent<int>(length, out _);
             Memory<int> memory5 = memoryOwner1.Memory;
 
             ValidateMemory(memory1, length);
@@ -86,7 +86,7 @@ namespace Automata.Engine.Tests
         {
             int rentedBlocksBefore = _NativeMemoryPool.RentedBlocks;
 
-            IMemoryOwner<T> memoryOwner = _NativeMemoryPool.Rent<T>(length);
+            IMemoryOwner<T> memoryOwner = _NativeMemoryPool.Rent<T>(length, out _);
             Memory<T> memory = memoryOwner.Memory;
 
             Debug.Assert(_NativeMemoryPool.RentedBlocks == (rentedBlocksBefore + 1), "One block should be rented at this point.");

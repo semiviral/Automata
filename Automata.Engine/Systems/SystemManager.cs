@@ -147,8 +147,11 @@ namespace Automata.Engine.Systems
 
         private bool VerifyHandledComponentsExistForSystem(EntityManager entityManager, ComponentSystem componentSystem)
         {
-            if (!_HandledTypes.TryGetValue(componentSystem.GetType(), out ComponentTypes[]? handledTypesArray)) return false;
-            else if (handledTypesArray.Length == 0) return true;
+            if (_HandledTypes.TryGetValue(componentSystem.GetType(), out ComponentTypes[]? handledTypesArray))
+            {
+                if (handledTypesArray?.Length is null or 0) return true;
+            }
+            else return false;
 
             foreach (ComponentTypes handledTypes in handledTypesArray)
                 switch (handledTypes.Strategy)
