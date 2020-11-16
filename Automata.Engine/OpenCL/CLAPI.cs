@@ -9,6 +9,8 @@ namespace Automata.Engine.OpenCL
 
         public CLAPI() => CL = CL.GetApi();
 
+        public static Platform[] GetPlatforms() => GetPlatforms(Instance.CL);
+
         public static unsafe Platform[] GetPlatforms(CL cl)
         {
             uint platformCount = 0u;
