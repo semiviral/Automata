@@ -5,8 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using Automata.Engine.Collections;
 using Automata.Engine.Components;
 
-// ReSharper disable ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
-// ReSharper disable ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
+// ReSharper disable LoopCanBeConvertedToQuery
 
 namespace Automata.Engine.Entities
 {
@@ -17,7 +16,7 @@ namespace Automata.Engine.Entities
         public int ID { get; }
         public bool Disposed { get; private set; }
 
-        public Entity(int id)
+        internal Entity(int id)
         {
             ID = id;
             Disposed = false;
@@ -58,10 +57,10 @@ namespace Automata.Engine.Entities
 
         public bool TryFind<TComponent>([NotNullWhen(true)] out TComponent? component) where TComponent : Component
         {
-            foreach (Component component1 in _Components)
-                if (component1 is TComponent componentT)
+            foreach (Component current in _Components)
+                if (current is TComponent result)
                 {
-                    component = componentT;
+                    component = result;
                     return true;
                 }
 
@@ -81,6 +80,8 @@ namespace Automata.Engine.Entities
         #endregion
 
 
+        #region Non-generic
+
         public void Add(Component component)
         {
             if (Contains(component.GetType())) ThrowHelper.ThrowArgumentException(component.GetType().Name, "Entity already contains component of type.");
@@ -98,7 +99,7 @@ namespace Automata.Engine.Entities
 
         public bool Contains(Type type) => Find(type) is not null;
 
-        public void CopyTo(Component[] array, int arrayIndex) => _Components.CopyTo(array, arrayIndex);
+        #endregion
 
 
         #region IEnumerable

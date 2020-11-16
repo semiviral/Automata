@@ -156,9 +156,9 @@ namespace Automata.Engine.Systems
             foreach (ComponentTypes handledTypes in handledTypesArray)
                 switch (handledTypes.Strategy)
                 {
-                    case DistinctionStrategy.None when handledTypes.All(type => entityManager.GetComponentCount(type) == 0):
-                    case DistinctionStrategy.Any when handledTypes.Any(type => entityManager.GetComponentCount(type) > 0):
-                    case DistinctionStrategy.All when handledTypes.All(type => entityManager.GetComponentCount(type) > 0): return true;
+                    case DistinctionStrategy.None when handledTypes.All(type => entityManager.GetComponentCount(type) == 0u):
+                    case DistinctionStrategy.Any when handledTypes.Any(type => entityManager.GetComponentCount(type) > 0u):
+                    case DistinctionStrategy.All when handledTypes.All(type => entityManager.GetComponentCount(type) > 0u): return true;
                     default: continue;
                 }
 
