@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Automata.Engine;
 using Automata.Engine.Collections;
@@ -10,8 +12,10 @@ using Automata.Engine.Components;
 using Automata.Engine.Concurrency;
 using Automata.Engine.Diagnostics;
 using Automata.Engine.Entities;
+using Automata.Engine.Extensions;
 using Automata.Engine.Input;
 using Automata.Engine.Numerics;
+using Automata.Engine.Rendering;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
@@ -38,6 +42,8 @@ namespace Automata.Game.Chunks.Generation
         private readonly IOrderedCollection<IGenerationStep> _BuildSteps;
         private readonly ConcurrentChannel<(IEntity, Chunk, NonAllocatingQuadsMeshData<PackedVertex>)> _PendingMeshes;
 
+        private MultiDrawIndirectMesh? _MultiDrawIndirectMesh;
+
         public ChunkGenerationSystem()
         {
             _BuildSteps = new OrderedLinkedList<IGenerationStep>();
@@ -62,6 +68,34 @@ namespace Automata.Game.Chunks.Generation
                 IEnumerable<(GenerationState, int)> states = entityManager.GetComponents<Chunk>().Select(chunk => (chunk.State, chunk.TimesMeshed));
                 Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(DiagnosticsPool), string.Join(", ", states)));
             }, Key.ShiftLeft, Key.V));
+
+            _MultiDrawIndirectMesh = new MultiDrawIndirectMesh(GLAPI.Instance.GL, 3_000_000, 3_000_000_000)
+            {
+                Visible = false
+            };
+
+            _MultiDrawIndirectMesh.VertexArrayObject.AllocateVertexAttributes(new IVertexAttribute[]
+            {
+                new VertexAttribute<int>(0u, 1u, 0u), // position
+                new VertexAttribute<int>(1u, 1u, sizeof(int)), // uv
+                // new VertexAttribute<uint>(2u, 1u, (uint)(sizeof(uint) * 4), 1u), // instance ID
+                // new VertexAttribute<float>(3u + 0u, 4u, 4u * 0u, 1u), // matrix row 1
+                // new VertexAttribute<float>(3u + 1u, 4u, 4u * 1u, 1u), // matrix row 2
+                // new VertexAttribute<float>(3u + 2u, 4u, 4u * 2u, 1u), // matrix row 3
+                // new VertexAttribute<float>(3u + 3u, 4u, 4u * 3u, 1u) // matrix row 4
+            });
+
+            _MultiDrawIndirectMesh.VertexArrayObject.CommitVertexAttributes();
+
+            Material material = new Material(ProgramRegistry.Instance.Load("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl"));
+            material.Textures.Add(TextureAtlas.Instance.Blocks!);
+
+            entityManager.CreateEntity(
+                material,
+                new RenderMesh
+                {
+                    Mesh = _MultiDrawIndirectMesh
+                });
         }
 
         [HandledComponents(DistinctionStrategy.All, typeof(Translation), typeof(Chunk))]
@@ -98,8 +132,8 @@ namespace Automata.Game.Chunks.Generation
                         break;
 
                     case GenerationState.AwaitingStructures:
-                        BoundedInvocationPool.Instance.Enqueue(_ => GenerateStructures(chunk, Vector3i.FromVector3(translation.Value)));
-                        chunk.State += 1;
+                        //BoundedInvocationPool.Instance.Enqueue(_ => GenerateStructures(chunk, Vector3i.FromVector3(translation.Value)));
+                        chunk.State += 2;
                         break;
 
                     case GenerationState.AwaitingMesh when chunk.Neighbors.All(neighbor => neighbor?.State is null or >= GenerationState.AwaitingMesh):
@@ -202,12 +236,15 @@ namespace Automata.Game.Chunks.Generation
             DiagnosticsPool.Stopwatches.Return(stopwatch);
         }
 
-        private static void PrepareChunkForRendering(EntityManager entityManager, IEntity entity, NonAllocatingQuadsMeshData<PackedVertex> pendingData)
+
+        #region Render Prep
+
+        private void PrepareChunkForRendering(EntityManager entityManager, IEntity entity, NonAllocatingQuadsMeshData<PackedVertex> pendingData)
         {
             Stopwatch stopwatch = DiagnosticsPool.Stopwatches.Rent();
             stopwatch.Restart();
 
-            if (ApplyMesh(entityManager, entity, pendingData))
+            if (ApplyMeshMultiDraw(entityManager, entity, pendingData))
             {
                 ConfigureMaterial(entityManager, entity);
                 DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new ApplyMeshTime(stopwatch.Elapsed));
@@ -252,6 +289,56 @@ namespace Automata.Game.Chunks.Generation
             return true;
         }
 
+        private long _Count;
+
+        private unsafe bool ApplyMeshMultiDraw(EntityManager entityManager, IEntity entity, NonAllocatingQuadsMeshData<PackedVertex> pendingData)
+        {
+            if (_MultiDrawIndirectMesh is null) throw new NullReferenceException("Mesh is null!");
+
+            _MultiDrawIndirectMesh.Visible = true;
+
+            if (entity.TryFind(out DrawIndirectAllocation? drawIndirectAllocation)) entityManager.RemoveComponent<DrawIndirectAllocation>(entity);
+            if (pendingData.IsEmpty) return false;
+
+            const int header_length = 64; // length of matrix
+            int indexesLength = pendingData.Indexes.Count * sizeof(QuadIndexes);
+            int bufferLength = indexesLength + (pendingData.Vertexes.Count * sizeof(QuadVertexes<PackedVertex>));
+            int totalLength = header_length + bufferLength;
+
+            drawIndirectAllocation = new DrawIndirectAllocation(_MultiDrawIndirectMesh.RentMemory<byte>(totalLength, (uint)sizeof(uint), out nuint index),
+                _MultiDrawIndirectMesh.RentCommand(out _));
+
+            Span<byte> bufferMemory = drawIndirectAllocation.MemoryOwner.Memory.Span;
+
+            drawIndirectAllocation.CommandOwner.Command =
+                new DrawElementsIndirectCommand((uint)(pendingData.Indexes.Count * 6), 1u, (uint)(index / sizeof(uint)), (uint)indexesLength, 0u);
+
+            // uint handle = _MultiDrawIndirectMesh._CommandAllocator.Handle;
+            //
+            // DrawElementsIndirectCommand command =
+            //     new DrawElementsIndirectCommand((uint)(pendingData.Indexes.Count * 6), 1u, (uint)(index / sizeof(uint)), (uint)indexesLength, 0u);
+            // GLAPI.Instance.GL.NamedBufferSubData(handle, (int)commandIndex, (uint)sizeof(DrawElementsIndirectCommand), ref command);
+            //
+            // Span<byte> data = stackalloc byte[totalLength];
+            // MemoryMarshal.AsBytes(pendingData.Indexes.Segment).CopyTo(data);
+            // MemoryMarshal.AsBytes(Matrix4x4.Identity.Unroll()).CopyTo(data.Slice(indexesLength));
+            // MemoryMarshal.AsBytes(pendingData.Vertexes.Segment).CopyTo(data.Slice(indexesLength + sizeof(Matrix4x4)));
+            //
+            // handle = _MultiDrawIndirectMesh._DataAllocator.Handle;
+            // GLAPI.Instance.GL.NamedBufferSubData(handle, (int)index, (uint)totalLength, ref data.GetPinnableReference());
+            //
+            // Interlocked.Increment(ref _Count);
+            // Log.Information(_Count.ToString());
+
+            //_MultiDrawIndirectMesh.WaitForBufferSync();
+
+            MemoryMarshal.AsBytes(pendingData.Indexes.Segment).CopyTo(bufferMemory);
+            MemoryMarshal.AsBytes(Matrix4x4.Identity.Unroll()).CopyTo(bufferMemory.Slice(indexesLength));
+            MemoryMarshal.AsBytes(pendingData.Vertexes.Segment).CopyTo(bufferMemory.Slice(indexesLength + sizeof(Matrix4x4)));
+
+            return true;
+        }
+
         private static void ConfigureMaterial(EntityManager entityManager, IEntity entity)
         {
             ProgramPipeline programPipeline = ProgramRegistry.Instance.Load("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl");
@@ -264,5 +351,7 @@ namespace Automata.Game.Chunks.Generation
 
             material.Textures.Add(TextureAtlas.Instance.Blocks ?? throw new NullReferenceException("Blocks texture array not initialized."));
         }
+
+        #endregion
     }
 }

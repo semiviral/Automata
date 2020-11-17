@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.Design;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Automata.Engine.Collections;
@@ -38,10 +39,14 @@ namespace Automata.Engine.Entities
         {
             TComponent? component = Find<TComponent>();
 
-            if (component is null)
+            switch (component)
             {
-                ThrowHelper.ThrowArgumentException(typeof(TComponent).Name, "Entity does not have component of type.");
-                return null!;
+                case null:
+                    ThrowHelper.ThrowArgumentException(typeof(TComponent).Name, "Entity does not have component of type.");
+                    return null!;
+                case IDisposable disposable:
+                    disposable.Dispose();
+                    break;
             }
 
             _Components.Remove(component);
@@ -90,7 +95,12 @@ namespace Automata.Engine.Entities
             else _Components.Add(component);
         }
 
-        bool IEntity.Remove(Component component) => _Components.Remove(component);
+        bool IEntity.Remove(Component component)
+        {
+            bool success = _Components.Remove(component);
+            if (success && component is IDisposable disposable) disposable.Dispose();
+            return success;
+        }
 
         public Component? Find(Type type)
         {

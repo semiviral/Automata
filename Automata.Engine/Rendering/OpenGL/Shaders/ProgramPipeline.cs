@@ -38,7 +38,12 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
         }
 
         public void Bind() => GL.BindProgramPipeline(Handle);
-        public void Dispose() => GL.DeleteProgramPipeline(Handle);
+
+        public void Dispose()
+        {
+            GL.DeleteProgramPipeline(Handle);
+            GC.SuppressFinalize(this);
+        }
 
         public bool Equals(ProgramPipeline? other) => other is not null && (other.Handle == Handle);
         public override bool Equals(object? obj) => obj is ProgramPipeline other && Equals(other);

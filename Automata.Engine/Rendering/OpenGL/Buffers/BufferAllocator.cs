@@ -7,10 +7,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 {
     public class BufferAllocator : BufferObject
     {
-        private const BufferStorageMask _STORAGE_MASK = BufferStorageMask.DynamicStorageBit
-                                                        | BufferStorageMask.MapPersistentBit
-                                                        | BufferStorageMask.MapCoherentBit
-                                                        | BufferStorageMask.MapWriteBit;
+        private const BufferStorageMask _STORAGE_MASK = BufferStorageMask.MapWriteBit | BufferStorageMask.MapPersistentBit | BufferStorageMask.MapCoherentBit;
 
         private readonly NativeMemoryPool _NativeMemoryPool;
 
@@ -20,10 +17,11 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
         {
             Handle = GL.CreateBuffer();
             GL.NamedBufferStorage(Handle, size, (void*)null!, (uint)_STORAGE_MASK);
-            _NativeMemoryPool = new NativeMemoryPool((byte*)GL.MapNamedBuffer(Handle, BufferAccessARB.WriteOnly), size);
+            _NativeMemoryPool = new NativeMemoryPool((byte*)GL.MapNamedBufferRange(Handle, 0, (uint)size, (uint)_STORAGE_MASK), size);
         }
 
-        public IMemoryOwner<T> Rent<T>(int size, out nuint index, bool clear = false) where T : unmanaged => _NativeMemoryPool.Rent<T>(size, out index, clear);
+        public IMemoryOwner<T> Rent<T>(int size, nuint alignment, out nuint index, bool clear = false) where T : unmanaged =>
+            _NativeMemoryPool.Rent<T>(size, alignment, out index, clear);
 
         public override void Dispose()
         {

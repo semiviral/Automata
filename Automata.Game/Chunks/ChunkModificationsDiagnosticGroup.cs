@@ -28,6 +28,8 @@ namespace Automata.Game.Chunks
             }
         }
 
-        public double Average() => _ChunkModificationTimes.DefaultIfEmpty().Average(time => time!.Data.TotalMilliseconds);
+        public double Average() => _ChunkModificationTimes.Count > 0
+            ? _ChunkModificationTimes.DefaultIfEmpty().Average(time => time?.Data.TotalMilliseconds ?? throw new NullReferenceException(nameof(time)))
+            : 0d;
     }
 }

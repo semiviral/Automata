@@ -1,6 +1,7 @@
 using System;
 using System.Buffers;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Automata.Engine.Memory;
 using Xunit;
@@ -50,19 +51,19 @@ namespace Automata.Engine.Tests
 
             int rentedBlocksBefore = _NativeMemoryPool.RentedBlocks;
 
-            IMemoryOwner<int> memoryOwner1 = _NativeMemoryPool.Rent<int>(length, out _);
+            IMemoryOwner<int> memoryOwner1 = _NativeMemoryPool.Rent<int>(length, 0u, out _);
             Memory<int> memory1 = memoryOwner1.Memory;
 
-            IMemoryOwner<int> memoryOwner2 = _NativeMemoryPool.Rent<int>(length, out _);
+            IMemoryOwner<int> memoryOwner2 = _NativeMemoryPool.Rent<int>(length, 0u, out _);
             Memory<int> memory2 = memoryOwner1.Memory;
 
-            IMemoryOwner<int> memoryOwner3 = _NativeMemoryPool.Rent<int>(length, out _);
+            IMemoryOwner<int> memoryOwner3 = _NativeMemoryPool.Rent<int>(length, 0u, out _);
             Memory<int> memory3 = memoryOwner1.Memory;
 
-            IMemoryOwner<int> memoryOwner4 = _NativeMemoryPool.Rent<int>(length, out _);
+            IMemoryOwner<int> memoryOwner4 = _NativeMemoryPool.Rent<int>(length, 0u, out _);
             Memory<int> memory4 = memoryOwner1.Memory;
 
-            IMemoryOwner<int> memoryOwner5 = _NativeMemoryPool.Rent<int>(length, out _);
+            IMemoryOwner<int> memoryOwner5 = _NativeMemoryPool.Rent<int>(length, 0u, out _);
             Memory<int> memory5 = memoryOwner1.Memory;
 
             ValidateMemory(memory1, length);
@@ -82,11 +83,27 @@ namespace Automata.Engine.Tests
             Debug.Assert(_NativeMemoryPool.RentedBlocks == rentedBlocksBefore, $"{_NativeMemoryPool.RentedBlocks} should be equivalent to the starting value.");
         }
 
+        [Fact]
+        public void TestRentingAlignment()
+        {
+            using IMemoryOwner<uint> memoryOwner1 = _NativeMemoryPool.Rent<uint>(1, (uint)sizeof(uint), out nuint index1);
+            using IMemoryOwner<ushort> memoryOwner2 = _NativeMemoryPool.Rent<ushort>(1, 0u, out nuint index2);
+            using IMemoryOwner<uint> memoryOwner3 = _NativeMemoryPool.Rent<uint>(1, (uint)sizeof(uint), out nuint index3);
+            using IMemoryOwner<byte> memoryOwner4 = _NativeMemoryPool.Rent<byte>(7, 0u, out nuint index4);
+            using IMemoryOwner<uint> memoryOwner5 = _NativeMemoryPool.Rent<uint>(1, (uint)sizeof(uint), out nuint index5);
+
+            Debug.Assert(index1 == 0u);
+            Debug.Assert(index2 == 4u);
+            Debug.Assert(index3 == 8u);
+            Debug.Assert(index4 == 12u);
+            Debug.Assert(index5 == 20u);
+        }
+
         private void RentMemoryAndTest<T>(int length) where T : unmanaged
         {
             int rentedBlocksBefore = _NativeMemoryPool.RentedBlocks;
 
-            IMemoryOwner<T> memoryOwner = _NativeMemoryPool.Rent<T>(length, out _);
+            IMemoryOwner<T> memoryOwner = _NativeMemoryPool.Rent<T>(length, 0u, out _);
             Memory<T> memory = memoryOwner.Memory;
 
             Debug.Assert(_NativeMemoryPool.RentedBlocks == (rentedBlocksBefore + 1), "One block should be rented at this point.");

@@ -1,5 +1,3 @@
-#region
-
 using System;
 using System.Drawing;
 using System.Linq;
@@ -7,6 +5,7 @@ using System.Numerics;
 using System.Threading.Tasks;
 using Automata.Engine.Components;
 using Automata.Engine.Entities;
+using Automata.Engine.Input;
 using Automata.Engine.Numerics;
 using Automata.Engine.Numerics.Shapes;
 using Automata.Engine.Rendering.Meshes;
@@ -14,11 +13,9 @@ using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
 using Automata.Engine.Rendering.OpenGL.Shaders;
 using Automata.Engine.Systems;
+using Silk.NET.Input.Common;
 using Silk.NET.OpenGL;
 using Plane = Automata.Engine.Numerics.Shapes.Plane;
-
-#endregion
-
 
 namespace Automata.Engine.Rendering
 {
@@ -54,11 +51,23 @@ namespace Automata.Engine.Rendering
             _Viewport = new UniformBufferObject(_GL, 1, (uint)sizeof(Vector4));
         }
 
-        private void CheckUpdateViewportUBOAndBind()
+        public override void Registered(EntityManager entityManager)
         {
-            if (_NewAspectRatio > 0f) _Viewport.Write(0, new Vector4(0f, 0f, AutomataWindow.Instance.Size.X, AutomataWindow.Instance.Size.Y));
+            bool wireframe = false;
 
-            _Viewport.Bind();
+            InputManager.Instance.InputActions.Add(new InputAction(() =>
+            {
+                if (wireframe)
+                {
+                    _GL.PolygonMode(GLEnum.FrontAndBack, PolygonMode.Fill);
+                    wireframe = false;
+                }
+                else
+                {
+                    _GL.PolygonMode(GLEnum.FrontAndBack, PolygonMode.Line);
+                    wireframe = true;
+                }
+            }, Key.F4));
         }
 
         [HandledComponents(DistinctionStrategy.All, typeof(Camera))]
@@ -68,7 +77,10 @@ namespace Automata.Engine.Rendering
             Span<Plane> planes = stackalloc Plane[Frustum.TOTAL_PLANES];
             DrawCalls = 0;
 
-            CheckUpdateViewportUBOAndBind();
+            // update viewport UBO
+            if (_NewAspectRatio > 0f) _Viewport.Write(0, new Vector4(0f, 0f, AutomataWindow.Instance.Size.X, AutomataWindow.Instance.Size.Y));
+
+            _Viewport.Bind();
 
             foreach ((IEntity cameraEntity, Camera camera) in entityManager.GetEntitiesWithComponents<Camera>())
             {
@@ -81,8 +93,6 @@ namespace Automata.Engine.Rendering
                 };
 
                 // check for changes and update current camera's view matrix & UBO data
-                bool hasScale, hasTranslation, hasRotation;
-
                 if ((cameraEntity.TryFind(out Scale? cameraScale) && cameraScale.Changed)
                     | (cameraEntity.TryFind(out Rotation? cameraRotation) && cameraRotation.Changed)
                     | (cameraEntity.TryFind(out Translation? cameraTranslation) && cameraTranslation.Changed))
@@ -130,7 +140,6 @@ namespace Automata.Engine.Rendering
                         if (modelScale is not null) renderModel.Model *= Matrix4x4.CreateScale(modelScale.Value);
                     }
 
-
                 // bind camera's view data UBO and precalculate viewproj matrix
                 camera.Uniforms.Bind();
                 Matrix4x4 viewProjection = camera.View * camera.Projection.Matrix;
@@ -152,7 +161,7 @@ namespace Automata.Engine.Rendering
 
                     // we're about to render, so ensure all of the relevant uniforms are set
                     ShaderProgram vertexShader = cachedMaterial!.Pipeline.Stage(ShaderType.VertexShader);
-                    vertexShader.TrySetUniform("_viewProj", viewProjection);
+                    vertexShader.TrySetUniform("_vp", viewProjection);
                     vertexShader.TrySetUniform("_mvp", modelViewProjection);
 
                     if (hasModel)

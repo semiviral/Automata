@@ -28,7 +28,7 @@ namespace Automata.Engine.Benchmarks
         [Benchmark]
         public IMemoryOwner<int> Rent1KBNoClear()
         {
-            IMemoryOwner<int> memoryOwner = _NativeMemoryPool!.Rent<int>(1_000, out _);
+            IMemoryOwner<int> memoryOwner = _NativeMemoryPool!.Rent<int>(1_000, 0u, out _);
             memoryOwner.Dispose();
             return memoryOwner;
         }
@@ -36,7 +36,7 @@ namespace Automata.Engine.Benchmarks
         [Benchmark]
         public IMemoryOwner<int> Rent1KBClear()
         {
-            IMemoryOwner<int> memoryOwner = _NativeMemoryPool!.Rent<int>(1_000, out _, true);
+            IMemoryOwner<int> memoryOwner = _NativeMemoryPool!.Rent<int>(1_000, 0u, out _, true);
             memoryOwner.Dispose();
             return memoryOwner;
         }
@@ -44,7 +44,7 @@ namespace Automata.Engine.Benchmarks
         [Benchmark]
         public IMemoryOwner<int> Rent1MBNoClear()
         {
-            IMemoryOwner<int> memoryOwner = _NativeMemoryPool!.Rent<int>(1_000_000, out _);
+            IMemoryOwner<int> memoryOwner = _NativeMemoryPool!.Rent<int>(1_000_000, 0u, out _);
             memoryOwner.Dispose();
             return memoryOwner;
         }
@@ -52,7 +52,7 @@ namespace Automata.Engine.Benchmarks
         [Benchmark]
         public IMemoryOwner<int> Rent1MBClear()
         {
-            IMemoryOwner<int> memoryOwner = _NativeMemoryPool!.Rent<int>(1_000_000, out _, true);
+            IMemoryOwner<int> memoryOwner = _NativeMemoryPool!.Rent<int>(1_000_000, 0u, out _, true);
             memoryOwner.Dispose();
             return memoryOwner;
         }

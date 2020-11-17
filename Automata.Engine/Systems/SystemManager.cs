@@ -174,7 +174,9 @@ namespace Automata.Engine.Systems
 
         private void DisposeInternal()
         {
-            foreach (ComponentSystem componentSystem in _ComponentSystems) componentSystem.Dispose();
+            foreach (ComponentSystem componentSystem in _ComponentSystems)
+                if (componentSystem is IDisposable disposable)
+                    disposable.Dispose();
         }
 
         public void Dispose()

@@ -31,7 +31,7 @@ namespace Automata.Engine.Memory
             _Pointer = pointer;
         }
 
-        public IMemoryOwner<T> Rent<T>(int size, [MaybeNullWhen(false)] out nuint index, bool clear = false) where T : unmanaged
+        public IMemoryOwner<T> Rent<T>(int size, nuint alignment, [MaybeNullWhen(false)] out nuint index, bool clear = false) where T : unmanaged
         {
             if (size < 0) ThrowHelper.ThrowArgumentOutOfRangeException(nameof(size), "Size must be non-negative.");
 
@@ -50,20 +50,54 @@ namespace Automata.Engine.Memory
                 {
                     if (current!.Value.Owned) continue;
 
-                    // just convert entire block to owned
-                    if (current.Value.Size == sizeInBytes) current.Value = current.Value with { Owned = true };
-                    else if (current.Value.Size > sizeInBytes)
+                    if (alignment is 0u)
                     {
-                        nuint afterBlockIndex = current.Value.Index + sizeInBytes;
-                        nuint afterBlockLength = current.Value.Size - sizeInBytes;
+                        // just convert entire block to owned
+                        if (current.Value.Size == sizeInBytes) current.Value = current.Value with { Owned = true };
+                        else if (current.Value.Size > sizeInBytes)
+                        {
+                            nuint afterBlockIndex = current.Value.Index + sizeInBytes;
+                            nuint afterBlockLength = current.Value.Size - sizeInBytes;
 
-                        // collapse current block to correct length
-                        current.Value = current.Value with { Size = sizeInBytes, Owned = true };
+                            // collapse current block to correct length
+                            current.Value = current.Value with { Size = sizeInBytes, Owned = true };
 
-                        // allocate new block after current with remaining length
-                        _MemoryMap.AddAfter(current, new MemoryBlock(afterBlockIndex, afterBlockLength, false));
+                            // allocate new block after current with remaining length
+                            _MemoryMap.AddAfter(current, new MemoryBlock(afterBlockIndex, afterBlockLength, false));
+                        }
+                        else continue;
                     }
-                    else continue;
+                    else
+                    {
+                        nuint alignmentPadding = (alignment - (current.Value.Index % alignment)) % alignment;
+                        nuint alignedIndex = current.Value.Index + alignmentPadding;
+                        nuint alignedSize = current.Value.Size - alignmentPadding;
+
+                        // check for an overflow, in which case size is too small.
+                        if (alignedSize > current.Value.Size) continue;
+                        else if (alignedIndex == current.Value.Index && alignedSize == sizeInBytes) current.Value = current.Value with { Owned = true };
+                        else if (alignedSize >= sizeInBytes)
+                        {
+                            // if our alignment forces us out-of-alignment with
+                            // this block's index, then allocate a block before to
+                            // facilitate the unaligned size
+                            if (alignedIndex > current.Value.Index)
+                            {
+                                nuint beforeBlockIndex = current.Value.Index;
+                                nuint beforeBlockSize = alignmentPadding;
+
+                                _MemoryMap.AddBefore(current, new MemoryBlock(beforeBlockIndex, beforeBlockSize, false));
+                                current.Value = current.Value with { Index = alignedIndex, Size = alignedSize, Owned = true };
+                            }
+
+                            nuint afterBlockIndex = current.Value.Index + sizeInBytes;
+                            nuint afterBlockSize = current.Value.Size - sizeInBytes;
+
+                            current.Value = current.Value with { Size = sizeInBytes, Owned = true };
+                            _MemoryMap.AddAfter(current, new MemoryBlock(afterBlockIndex, afterBlockSize, false));
+                        }
+                        else continue;
+                    }
 
                     IMemoryOwner<T> memoryOwner = CreateMemoryOwner<T>(current.Value.Index, size);
                     if (clear) memoryOwner.Memory.Span.Clear();

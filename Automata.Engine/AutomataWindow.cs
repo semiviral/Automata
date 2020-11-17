@@ -10,6 +10,7 @@ using Automata.Engine.Collections;
 using Automata.Engine.Input;
 using Automata.Engine.Numerics;
 using Automata.Engine.Rendering.OpenGL;
+using Automata.Engine.Rendering.OpenGL.Shaders;
 using Serilog;
 using Silk.NET.GLFW;
 using Silk.NET.Input.Common;
@@ -167,6 +168,12 @@ namespace Automata.Engine
             FocusChanged?.Invoke(this, focused);
         }
 
-        private void OnWindowClosing() => Closing?.Invoke(this);
+        private void OnWindowClosing()
+        {
+            Closing?.Invoke(this);
+
+            World.DisposeWorlds();
+            ProgramRegistry.Instance.Dispose();
+        }
     }
 }

@@ -29,8 +29,6 @@ namespace Automata.Engine.Rendering
 
         public ClipFrustum(Span<Plane> planes, Matrix4x4 mvp)
         {
-            if (planes.Length != Frustum.TOTAL_PLANES) throw new ArgumentOutOfRangeException(nameof(planes), "Length must be 6.");
-
             planes[Frustum.NEAR] = new Plane
             (
                 mvp.M13 + mvp.M14,

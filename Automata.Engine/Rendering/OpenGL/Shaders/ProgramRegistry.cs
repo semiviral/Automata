@@ -1,9 +1,10 @@
+using System;
 using System.Collections.Generic;
 using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.OpenGL.Shaders
 {
-    public class ProgramRegistry : Singleton<ProgramRegistry>
+    public class ProgramRegistry : Singleton<ProgramRegistry>, IDisposable
     {
         public const string RESERVED_UNIFORM_NAME_MATRIX_MVP = "_mvp";
         public const string RESERVED_UNIFORM_NAME_MATRIX_WORLD = "_world";
@@ -15,6 +16,8 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
         private readonly Dictionary<string, ShaderProgram> _CachedVertexPrograms;
         private readonly Dictionary<string, ShaderProgram> _CachedFragmentPrograms;
         private readonly Dictionary<string, ProgramPipeline> _CachedProgramPipelines;
+
+        public bool Disposed { get; private set; }
 
         public ProgramRegistry()
         {
@@ -49,11 +52,25 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
             }
         }
 
-        ~ProgramRegistry()
+
+        #region IDisposable
+
+        public void Dispose()
+        {
+            if (Disposed) return;
+
+            DisposeInternal();
+            Disposed = true;
+            GC.SuppressFinalize(this);
+        }
+
+        private void DisposeInternal()
         {
             foreach ((_, ShaderProgram shaderProgram) in _CachedVertexPrograms) shaderProgram.Dispose();
             foreach ((_, ShaderProgram shaderProgram) in _CachedFragmentPrograms) shaderProgram.Dispose();
             foreach ((_, ProgramPipeline programPipeline) in _CachedProgramPipelines) programPipeline.Dispose();
         }
+
+        #endregion
     }
 }

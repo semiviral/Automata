@@ -36,6 +36,11 @@ namespace Automata.Engine
             foreach (World world in Worlds.Values.Where(world => world.Active)) await world.Update(deltaTime);
         }
 
+        public static void DisposeWorlds()
+        {
+            foreach ((_, World world) in Worlds) world.Dispose();
+        }
+
         #endregion
 
 
