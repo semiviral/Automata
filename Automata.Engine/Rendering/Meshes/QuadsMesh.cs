@@ -21,7 +21,7 @@ namespace Automata.Engine.Rendering.Meshes
         public VertexArrayObject VertexArrayObject { get; }
         public uint IndexesCount { get; set; }
 
-        public unsafe QuadsMesh(GL gl, Layer layer = Layer.Layer0)
+        public QuadsMesh(GL gl, Layer layer = Layer.Layer0)
         {
             _GL = gl;
 

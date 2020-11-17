@@ -75,7 +75,7 @@ namespace Automata.Engine.Memory
 
                         // check for an overflow, in which case size is too small.
                         if (alignedSize > current.Value.Size) continue;
-                        else if (alignedIndex == current.Value.Index && alignedSize == sizeInBytes) current.Value = current.Value with { Owned = true };
+                        else if ((alignedIndex == current.Value.Index) && (alignedSize == sizeInBytes)) current.Value = current.Value with { Owned = true };
                         else if (alignedSize >= sizeInBytes)
                         {
                             // if our alignment forces us out-of-alignment with

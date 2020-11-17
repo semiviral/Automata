@@ -1,4 +1,3 @@
-using System;
 using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.OpenGL.Buffers
@@ -8,6 +7,6 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
         public VertexArrayObject(GL gl) : base(gl) { }
 
         public void CommitVertexAttributes(BufferObject<TVertex> vbo, BufferObject<uint>? ebo, int vertexOffset) =>
-            base.Finalize(vbo, ebo, vertexOffset);
+            Finalize(vbo, ebo, vertexOffset);
     }
 }

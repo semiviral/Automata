@@ -78,13 +78,12 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
         public void Bind() => GL.BindBufferBase(BufferTargetARB.UniformBuffer, BindingIndex, Handle);
 
-            #endregion
+        #endregion
 
 
         #region IDisposable
 
-        protected override void DisposeInternal() =>             GL.DeleteBuffer(Handle);
-
+        protected override void DisposeInternal() => GL.DeleteBuffer(Handle);
 
         #endregion
     }

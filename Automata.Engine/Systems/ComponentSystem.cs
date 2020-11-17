@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using Automata.Engine.Entities;
 
-
 namespace Automata.Engine.Systems
 {
     public abstract class ComponentSystem

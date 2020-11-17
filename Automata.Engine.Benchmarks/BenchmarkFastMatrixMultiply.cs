@@ -1,5 +1,4 @@
 using System.Numerics;
-using Automata.Engine.Extensions;
 using BenchmarkDotNet.Attributes;
 
 namespace Automata.Engine.Benchmarks

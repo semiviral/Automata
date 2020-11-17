@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Text;
 using Automata.Playground.OpenCL;
 using Silk.NET.OpenCL;
 
 CL cl;
 Main();
 
-unsafe void Main()
+void Main()
 {
     cl = CLAPI.Instance.CL;
 

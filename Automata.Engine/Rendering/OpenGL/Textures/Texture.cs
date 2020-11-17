@@ -79,6 +79,7 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
 
         #endregion
 
+
         #region IEquatable
 
         public bool Equals(Texture? other) => other is not null && (other.Handle == Handle);
@@ -90,6 +91,7 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
         public static bool operator !=(Texture? left, Texture? right) => !Equals(left, right);
 
         #endregion
+
 
         #region IDisposable
 

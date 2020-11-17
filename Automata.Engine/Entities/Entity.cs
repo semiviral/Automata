@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel.Design;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Automata.Engine.Collections;
