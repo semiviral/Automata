@@ -1,13 +1,8 @@
-#region
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Automata.Engine.Components;
-
-#endregion
-
 
 namespace Automata.Engine.Entities
 {
@@ -20,7 +15,7 @@ namespace Automata.Engine.Entities
         Component this[int index] { get; }
         Component this[uint index] { get; }
 
-        internal void Add<TComponent>() where TComponent : Component, new();
+        internal TComponent Add<TComponent>() where TComponent : Component, new();
         internal TComponent Remove<TComponent>() where TComponent : Component;
         TComponent? Find<TComponent>() where TComponent : Component;
         bool Contains<TComponent>() where TComponent : Component;

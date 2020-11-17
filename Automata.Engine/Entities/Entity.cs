@@ -28,10 +28,19 @@ namespace Automata.Engine.Entities
 
         #region Generic
 
-        void IEntity.Add<TComponent>()
+        TComponent IEntity.Add<TComponent>()
         {
-            if (Contains<TComponent>()) ThrowHelper.ThrowArgumentException(typeof(TComponent).Name, "Entity already has component of type.");
-            else _Components.Add(new TComponent());
+            if (Contains<TComponent>())
+            {
+                ThrowHelper.ThrowArgumentException(typeof(TComponent).Name, "Entity already has component of type.");
+                return null!;
+            }
+            else
+            {
+                TComponent component = new TComponent();
+                _Components.Add(component);
+                return component;
+            }
         }
 
         TComponent IEntity.Remove<TComponent>()

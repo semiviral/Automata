@@ -9,40 +9,44 @@ namespace Automata.Engine.Rendering.Meshes
     public class MultiDrawIndirectMesh : IMesh
     {
         private readonly GL _GL;
-        private readonly BufferAllocator _CommandAllocator;
-        private readonly BufferAllocator _DataAllocator;
+        private readonly MultiDrawElementsIndirectCommandBuffer _CommandBuffer;
+        private readonly BufferAllocator _IndexAllocator;
+        private readonly BufferAllocator _VertexAllocator;
         private readonly VertexArrayObject _VertexArrayObject;
 
         private nint _BufferSync;
 
         public Guid ID { get; }
         public Layer Layer { get; }
-        public bool Visible { get; set; }
+        public bool Visible => _CommandBuffer.Count > 0;
 
-        public MultiDrawIndirectMesh(GL gl, uint commandAllocatorSize, uint dataAllocatorSize, Layer layers = Layer.Layer0)
+        public MultiDrawIndirectMesh(GL gl, uint indexAllocatorSize, uint vertexAllocatorSize, Layer layers = Layer.Layer0)
         {
             ID = Guid.NewGuid();
             Layer = layers;
 
             _GL = gl;
-            _CommandAllocator = new BufferAllocator(gl, commandAllocatorSize);
-            _DataAllocator = new BufferAllocator(gl, dataAllocatorSize);
+            _CommandBuffer = new MultiDrawElementsIndirectCommandBuffer(gl);
+            _IndexAllocator = new BufferAllocator(gl, indexAllocatorSize);
+            _VertexAllocator = new BufferAllocator(gl, vertexAllocatorSize);
             _VertexArrayObject = new VertexArrayObject(gl);
         }
 
-        public void FinalizeVertexArrayObject(int vertexOffset) => _VertexArrayObject.Finalize(_DataAllocator, _DataAllocator, vertexOffset);
+        public void FinalizeVertexArrayObject(int vertexOffset) => _VertexArrayObject.Finalize(_VertexAllocator, _IndexAllocator, vertexOffset);
 
         public void AllocateVertexAttributes(bool replace, params IVertexAttribute[] attributes) =>
             _VertexArrayObject.AllocateVertexAttributes(replace, attributes);
+
+        public void AllocateDrawElementsIndirectCommands(Span<DrawElementsIndirectCommand> commands) => _CommandBuffer.AllocateCommands(commands);
 
         public unsafe void Draw()
         {
             WaitForBufferFreeSync();
 
+            _CommandBuffer.Bind();
             _VertexArrayObject.Bind();
-            _CommandAllocator.Bind(BufferTargetARB.DrawIndirectBuffer);
 
-            _GL.MultiDrawElementsIndirect(PrimitiveType.Triangles, DrawElementsType.UnsignedInt, (void*)null!, (uint)_CommandAllocator.RentedBufferCount, 0u);
+            _GL.MultiDrawElementsIndirect(PrimitiveType.Triangles, DrawElementsType.UnsignedInt, (void*)null!, _CommandBuffer.Count, 0u);
 
             RegenerateBufferSync();
         }
@@ -50,11 +54,11 @@ namespace Automata.Engine.Rendering.Meshes
 
         #region Renting
 
-        public unsafe IDrawElementsIndirectCommandOwner RentCommand(out nuint index) =>
-            new DrawElementsIndirectCommandOwner(_CommandAllocator.Rent<DrawElementsIndirectCommand>(1, (uint)sizeof(DrawElementsIndirectCommand), out index));
+        public IMemoryOwner<uint> RentIndexMemory(int size, nuint alignment, out nuint index, bool clear = false) =>
+            _IndexAllocator.Rent<uint>(size, alignment, out index, clear);
 
-        public IMemoryOwner<T> RentMemory<T>(int size, nuint alignment, out nuint index, bool clear = false) where T : unmanaged =>
-            _DataAllocator.Rent<T>(size, alignment, out index, clear);
+        public IMemoryOwner<T> RentVertexMemory<T>(int size, nuint alignment, out nuint index, bool clear = false) where T : unmanaged =>
+            _VertexAllocator.Rent<T>(size, alignment, out index, clear);
 
         #endregion
 
@@ -90,8 +94,9 @@ namespace Automata.Engine.Rendering.Meshes
         public void Dispose()
         {
             DisposeBufferSync();
-            _CommandAllocator.Dispose();
-            _DataAllocator.Dispose();
+            _CommandBuffer.Dispose();
+            _IndexAllocator.Dispose();
+            _VertexAllocator.Dispose();
             _VertexArrayObject.Dispose();
 
             GC.SuppressFinalize(this);

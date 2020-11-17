@@ -1,4 +1,3 @@
-using System;
 using System.Buffers;
 using Automata.Engine.Memory;
 using Silk.NET.OpenGL;
@@ -23,11 +22,15 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
         public IMemoryOwner<T> Rent<T>(int size, nuint alignment, out nuint index, bool clear = false) where T : unmanaged =>
             _NativeMemoryPool.Rent<T>(size, alignment, out index, clear);
 
-        public override void Dispose()
+
+        #region IDisposable
+
+        protected override void DisposeInternal()
         {
             GL.UnmapNamedBuffer(Handle);
             GL.DeleteBuffer(Handle);
-            GC.SuppressFinalize(this);
         }
+
+        #endregion
     }
 }

@@ -48,6 +48,7 @@ void main()
         );
 
     fragment.uv = uncompressedUV;
+    fragment.color = model.xyz;
     fragment.color = vec3(lerpedNormal.x + lerpedNormal.y + lerpedNormal.z);
     gl_Position = _mvp * uncompressedPosition;
 }

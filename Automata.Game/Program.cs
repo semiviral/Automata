@@ -68,9 +68,9 @@ static void InitializeWorld(out World world)
     world = new VoxelWorld(true);
     world.SystemManager.RegisterSystem<InputSystem, FirstOrderSystem>(SystemRegistrationOrder.Before);
     world.SystemManager.RegisterSystem<RenderSystem, LastOrderSystem>(SystemRegistrationOrder.Before);
-    world.SystemManager.RegisterSystem<ChunkRegionLoaderSystem, DefaultOrderSystem>(SystemRegistrationOrder.After);
-    world.SystemManager.RegisterSystem<ChunkGenerationSystem, ChunkRegionLoaderSystem>(SystemRegistrationOrder.After);
-    world.SystemManager.RegisterSystem<ChunkModificationsSystem, ChunkGenerationSystem>(SystemRegistrationOrder.Before);
+    world.SystemManager.RegisterSystem<ChunkRegionLoaderSystem, DefaultOrderSystem>(SystemRegistrationOrder.Before);
+    world.SystemManager.RegisterSystem<ChunkModificationsSystem, DefaultOrderSystem>(SystemRegistrationOrder.Before);
+    world.SystemManager.RegisterSystem<ChunkGenerationSystem, DefaultOrderSystem>(SystemRegistrationOrder.Before);
     World.RegisterWorld("Overworld", world);
 }
 
@@ -99,6 +99,11 @@ static void InitializePlayer(EntityManager entityManager)
             Radius = Settings.Instance.GenerationRadius
 #endif
         });
+
+    // entityManager.CreateEntity(new Chunk
+    // {
+    //     State = GenerationState.AwaitingTerrain
+    // }, new Translation());
 }
 
 #endregion

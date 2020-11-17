@@ -124,12 +124,14 @@ namespace Automata.Engine.Entities
         /// <remarks>
         ///     Use this method to ensure <see cref="EntityManager" /> caches remain accurate.
         /// </remarks>
-        public void RegisterComponent<TComponent>(IEntity entity) where TComponent : Component, new()
+        public TComponent RegisterComponent<TComponent>(IEntity entity) where TComponent : Component, new()
         {
-            entity.Add<TComponent>();
+            TComponent component = entity.Add<TComponent>();
 
             if (!_ComponentCounts.ContainsKey(typeof(TComponent))) _ComponentCounts.Add(typeof(TComponent), 1u);
             else _ComponentCounts[typeof(TComponent)] += 1u;
+
+            return component;
         }
 
         #endregion

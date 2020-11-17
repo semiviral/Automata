@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -60,12 +61,13 @@ namespace Automata.Game.Chunks.Generation
                 Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(DiagnosticsPool), string.Join(", ", states)));
             }, Key.ShiftLeft, Key.V));
 
-            _MultiDrawIndirectMesh = new MultiDrawIndirectMesh(GLAPI.Instance.GL, 1_000_000, 1_000_000_000);
+            _MultiDrawIndirectMesh = new MultiDrawIndirectMesh(GLAPI.Instance.GL, 750_000_000, 500_000_000);
 
             _MultiDrawIndirectMesh.AllocateVertexAttributes(true,
                 new VertexAttribute<int>(0u, 1u, 0u),
                 new VertexAttribute<int>(1u, 1u, 4u),
-                new VertexAttribute<float>(2u + 0u, 4u, (uint)sizeof(Vector4) * 0u, 1u));
+
+                new VertexAttribute<float>(2u + 0u, 4u, 8u + ((uint)sizeof(Vector4) * 0u), 1u));
 
             _MultiDrawIndirectMesh.FinalizeVertexArrayObject(0);
 
@@ -83,6 +85,8 @@ namespace Automata.Game.Chunks.Generation
         [HandledComponents(DistinctionStrategy.All, typeof(Translation), typeof(Chunk))]
         public override ValueTask Update(EntityManager entityManager, TimeSpan delta)
         {
+            bool recreateCommandBuffer = false;
+
             // empty channel of any pending meshes, apply the meshes, and update the material
             while (_PendingMeshes.TryTake(out (IEntity Entity, Chunk Chunk, NonAllocatingQuadsMeshData<PackedVertex> Data) pendingMesh))
             {
@@ -97,6 +101,7 @@ namespace Automata.Game.Chunks.Generation
                 pendingMesh.Chunk.TimesMeshed += 1;
                 pendingMesh.Chunk.State += 1;
                 pendingMesh.Data.Dispose();
+                recreateCommandBuffer = true;
             }
 
             // iterate over each valid chunk and process the generateable states
@@ -124,7 +129,30 @@ namespace Automata.Game.Chunks.Generation
                         break;
                 }
 
+            if (recreateCommandBuffer) GenerateDrawElementsIndirectCommands(entityManager.GetComponents<DrawIndirectAllocation>());
+
             return ValueTask.CompletedTask;
+        }
+
+        private unsafe void GenerateDrawElementsIndirectCommands(IEnumerable<DrawIndirectAllocation> drawIndirectAllocations)
+        {
+            if (_MultiDrawIndirectMesh is null) ThrowHelper.ThrowNullReferenceException(nameof(_MultiDrawIndirectMesh));
+
+            DrawIndirectAllocation[] allocations = drawIndirectAllocations.ToArray();
+            Span<DrawElementsIndirectCommand> commands = stackalloc DrawElementsIndirectCommand[allocations.Length];
+
+            for (int index = 0; index < allocations.Length; index++)
+            {
+                DrawIndirectAllocation drawIndirectAllocation = allocations[index];
+                if (drawIndirectAllocation.Allocation is null) ThrowHelper.ThrowNullReferenceException(nameof(drawIndirectAllocation.Allocation));
+
+                uint indexesStart = (uint)(drawIndirectAllocation.Allocation!.IndexesIndex / sizeof(uint));
+                uint vertexesStart = (uint)drawIndirectAllocation.Allocation!.VertexesIndex;
+
+                commands[index] = new DrawElementsIndirectCommand(drawIndirectAllocation.Allocation!.VertexCount, 1u, indexesStart, vertexesStart, (uint)index);
+            }
+
+            _MultiDrawIndirectMesh!.AllocateDrawElementsIndirectCommands(commands);
         }
 
 
@@ -243,28 +271,26 @@ namespace Automata.Game.Chunks.Generation
         private unsafe bool ApplyMeshMultiDraw(EntityManager entityManager, IEntity entity, NonAllocatingQuadsMeshData<PackedVertex> pendingData)
         {
             if (_MultiDrawIndirectMesh is null) throw new NullReferenceException("Mesh is null!");
+            else if (pendingData.IsEmpty) return false;
 
-            _MultiDrawIndirectMesh.Visible = true;
+            if (!entity.TryFind(out DrawIndirectAllocation? drawIndirectAllocation))
+                drawIndirectAllocation = entityManager.RegisterComponent<DrawIndirectAllocation>(entity);
 
-            if (entity.TryFind(out DrawIndirectAllocation? drawIndirectAllocation)) entityManager.RemoveComponent<DrawIndirectAllocation>(entity);
+            drawIndirectAllocation.Allocation?.Dispose();
 
-            if (pendingData.IsEmpty) return false;
+            int indexesSize = pendingData.Indexes.Count * sizeof(QuadIndexes);
+            int vertexesSize = pendingData.Vertexes.Count * sizeof(QuadVertexes<PackedVertex>);
+            IMemoryOwner<uint> indexesOwner = _MultiDrawIndirectMesh.RentIndexMemory(indexesSize, (nuint)sizeof(uint), out nuint indexesIndex);
+            IMemoryOwner<byte> vertexesOwner = _MultiDrawIndirectMesh.RentVertexMemory<byte>(vertexesSize, 0u, out nuint vertexesIndex);
 
-            int indexesLength = pendingData.Indexes.Count * sizeof(QuadIndexes);
-            int totalLength = indexesLength + sizeof(Matrix4x4) + (pendingData.Vertexes.Count * sizeof(QuadVertexes<PackedVertex>));
-
-            drawIndirectAllocation = new DrawIndirectAllocation(_MultiDrawIndirectMesh.RentMemory<byte>(totalLength, (uint)sizeof(uint), out nuint index),
-                _MultiDrawIndirectMesh.RentCommand(out _));
-
-            Span<byte> bufferMemory = drawIndirectAllocation.MemoryOwner.Memory.Span;
-
-            drawIndirectAllocation.CommandOwner.Command =
-                new DrawElementsIndirectCommand((uint)(pendingData.Vertexes.Count * 4), 1u, 0u, (uint)index, 0u);
+            drawIndirectAllocation.Allocation = new DrawIndirectAllocation.AllocationWrapper(indexesOwner, vertexesOwner, indexesIndex, vertexesIndex,
+                (uint)(pendingData.Vertexes.Count * 4));
 
             _MultiDrawIndirectMesh.WaitForBufferFreeSync();
-            MemoryMarshal.AsBytes(pendingData.Indexes.Segment).CopyTo(bufferMemory);
-            Vector4.One.Unroll<Vector4, byte>().CopyTo(bufferMemory.Slice(indexesLength));
-            MemoryMarshal.AsBytes(pendingData.Vertexes.Segment).CopyTo(bufferMemory.Slice(indexesLength));
+            MemoryMarshal.Cast<QuadIndexes, uint>(pendingData.Indexes.Segment).CopyTo(indexesOwner.Memory.Span);
+            Span<byte> vertexes = vertexesOwner.Memory.Span;
+            Vector4.One.Unroll<Vector4, byte>().CopyTo(vertexes);
+            MemoryMarshal.AsBytes(pendingData.Vertexes.Segment).CopyTo(vertexes.Slice(sizeof(Vector4)));
 
             return true;
         }

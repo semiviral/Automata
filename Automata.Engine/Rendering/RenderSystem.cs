@@ -21,7 +21,7 @@ namespace Automata.Engine.Rendering
 {
     public class RenderSystem : ComponentSystem
     {
-        private const bool _ENABLE_BACK_FACE_CULLING = true;
+        private const bool _ENABLE_BACK_FACE_CULLING = false;
         private const bool _ENABLE_FRUSTUM_CULLING = true;
 
         private readonly GL _GL;
@@ -76,7 +76,7 @@ namespace Automata.Engine.Rendering
             _GL.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
             Span<Plane> planes = stackalloc Plane[Frustum.TOTAL_PLANES];
             DrawCalls = 0;
-
+            
             // update viewport UBO
             if (_NewAspectRatio > 0f) _Viewport.Write(0, new Vector4(0f, 0f, AutomataWindow.Instance.Size.X, AutomataWindow.Instance.Size.Y));
 
