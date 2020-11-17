@@ -1,4 +1,5 @@
 using Automata.Engine.Collections;
+using Serilog;
 using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.OpenGL.Buffers
@@ -23,7 +24,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             _VertexAttributes.AddRange(vertexAttributes);
         }
 
-        public void CommitVertexAttributes(BufferObject vbo, BufferObject? ebo, int vertexOffset)
+        public void Finalize(BufferObject vbo, BufferObject? ebo, int vertexOffset)
         {
             uint stride = 0u;
 
@@ -37,6 +38,9 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
             GL.VertexArrayVertexBuffer(Handle, 0u, vbo.Handle, vertexOffset, stride);
             if (ebo is not null) GL.VertexArrayElementBuffer(Handle, ebo.Handle);
+
+            Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(VertexArrayObject),
+                $"Finalized (0x{Handle:x}): stride {stride}, attributes {_VertexAttributes.Count}\r\n\t{string.Join(",\r\n\t", _VertexAttributes)}"));
         }
 
         #endregion

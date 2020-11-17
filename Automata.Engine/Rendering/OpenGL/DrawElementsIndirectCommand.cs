@@ -9,19 +9,15 @@ namespace Automata.Engine.Rendering.OpenGL
         public readonly uint InstanceCount;
 
         /// <summary>
-        ///     Offset of your first index.
+        ///     Offset of your first index, relative to the start of the buffer, in units of your index type.
         /// </summary>
-        /// <remarks>
-        ///     <p>
-        ///         This offset is measured in units of whatever the size of your index type is.
-        ///     </p>
-        ///     <p>
-        ///         So, for an an index type of uint, that means units of 4 bytes. So, if allocating from a shared buffer, ensure alignment of the rented slices.
-        ///     </p>
-        /// </remarks>
         public readonly uint FirstIndexOffset;
 
+        /// <summary>
+        ///     Offset of your first vertex, relative to the start of the indexes, in bytes.
+        /// </summary>
         public readonly uint FirstVertexOffset;
+
         public readonly uint BaseInstance;
 
         public DrawElementsIndirectCommand(uint vertexCount, uint instanceCount, uint firstIndexOffset, uint firstVertexOffset, uint baseInstance)

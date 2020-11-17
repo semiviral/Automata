@@ -30,7 +30,7 @@ namespace Automata.Engine.Rendering.Meshes
             _VertexArrayObject = new VertexArrayObject(gl);
         }
 
-        public void FinalizeVertexArrayObject(int vertexOffset) => _VertexArrayObject.CommitVertexAttributes(_DataAllocator, _DataAllocator, vertexOffset);
+        public void FinalizeVertexArrayObject(int vertexOffset) => _VertexArrayObject.Finalize(_DataAllocator, _DataAllocator, vertexOffset);
 
         public void AllocateVertexAttributes(bool replace, params IVertexAttribute[] attributes) =>
             _VertexArrayObject.AllocateVertexAttributes(replace, attributes);

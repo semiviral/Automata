@@ -72,9 +72,14 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             else throw new ArgumentOutOfRangeException();
         }
 
+
+        #region Binding
+
         public abstract void Bind(TextureUnit textureSlot);
 
-        public void Dispose() => GL.DeleteTexture(Handle);
+        #endregion
+
+        #region IEquatable
 
         public bool Equals(Texture? other) => other is not null && (other.Handle == Handle);
         public override bool Equals(object? obj) => obj is Texture texture && Equals(texture);
@@ -83,5 +88,13 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
 
         public static bool operator ==(Texture? left, Texture? right) => Equals(left, right);
         public static bool operator !=(Texture? left, Texture? right) => !Equals(left, right);
+
+        #endregion
+
+        #region IDisposable
+
+        protected override void DisposeInternal() => GL.DeleteTexture(Handle);
+
+        #endregion
     }
 }

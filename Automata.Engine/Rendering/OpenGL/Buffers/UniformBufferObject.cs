@@ -7,7 +7,7 @@ using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.OpenGL.Buffers
 {
-    public class UniformBufferObject : OpenGLObject, IDisposable
+    public class UniformBufferObject : OpenGLObject
     {
         private const BufferStorageMask _STORAGE_FLAGS = BufferStorageMask.MapWriteBit | BufferStorageMask.DynamicStorageBit;
 
@@ -73,12 +73,19 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
         public unsafe void Write<T>(string uniform, T data) where T : unmanaged =>
             GL.NamedBufferSubData(Handle, _Offsets[uniform], (uint)sizeof(T), ref data);
 
+
+        #region Binding
+
         public void Bind() => GL.BindBufferBase(BufferTargetARB.UniformBuffer, BindingIndex, Handle);
 
-        public void Dispose()
-        {
-            GL.DeleteBuffer(Handle);
-            GC.SuppressFinalize(this);
-        }
+            #endregion
+
+
+        #region IDisposable
+
+        protected override void DisposeInternal() =>             GL.DeleteBuffer(Handle);
+
+
+        #endregion
     }
 }

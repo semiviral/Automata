@@ -3,10 +3,8 @@ using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.OpenGL.Buffers
 {
-    public unsafe class BufferObject : OpenGLObject, IDisposable
+    public unsafe class BufferObject : OpenGLObject
     {
-        private bool _Disposed;
-
         public uint Length { get; protected set; }
 
         public BufferObject(GL gl) : base(gl) { }
@@ -70,14 +68,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
         #region IDisposable
 
-        public virtual void Dispose()
-        {
-            if (_Disposed) return;
-
-            GL.DeleteBuffer(Handle);
-            GC.SuppressFinalize(this);
-            _Disposed = true;
-        }
+        protected override void DisposeInternal() => GL.DeleteBuffer(Handle);
 
         #endregion
     }

@@ -3,7 +3,7 @@ using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.OpenGL.Shaders
 {
-    public class ProgramPipeline : OpenGLObject, IEquatable<ProgramPipeline>, IDisposable
+    public class ProgramPipeline : OpenGLObject, IEquatable<ProgramPipeline>
     {
         private readonly ShaderProgram _VertexShader;
         private readonly ShaderProgram _FragmentShader;
@@ -37,13 +37,22 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
             if (!string.IsNullOrWhiteSpace(infoLog)) throw new ShaderLoadException((ShaderType)0, infoLog);
         }
 
+
+        #region Binding
+
         public void Bind() => GL.BindProgramPipeline(Handle);
 
-        public void Dispose()
-        {
-            GL.DeleteProgramPipeline(Handle);
-            GC.SuppressFinalize(this);
-        }
+        #endregion
+
+
+        #region IDisposable
+
+        protected override void DisposeInternal() => GL.DeleteProgramPipeline(Handle);
+
+        #endregion
+
+
+        #region IEquatable
 
         public bool Equals(ProgramPipeline? other) => other is not null && (other.Handle == Handle);
         public override bool Equals(object? obj) => obj is ProgramPipeline other && Equals(other);
@@ -52,5 +61,7 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
 
         public static bool operator ==(ProgramPipeline? left, ProgramPipeline? right) => Equals(left, right);
         public static bool operator !=(ProgramPipeline? left, ProgramPipeline? right) => !Equals(left, right);
+
+        #endregion
     }
 }

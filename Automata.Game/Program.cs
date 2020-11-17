@@ -35,7 +35,7 @@ static void ApplicationCloseCallback(object sender)
 static void InitializeLogger()
 {
     Log.Logger = new LoggerConfiguration()
-        .MinimumLevel.Debug()
+        .MinimumLevel.Verbose()
         .WriteTo.Console()
         .CreateLogger();
 

@@ -5,7 +5,7 @@ using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.OpenGL.Buffers
 {
-    public class ShaderStorageBufferObject : OpenGLObject, IDisposable
+    public class ShaderStorageBufferObject : OpenGLObject
     {
         private const MapBufferAccessMask _MAPPING_FLAGS = MapBufferAccessMask.MapWriteBit;
         private const BufferStorageMask _STORAGE_FLAGS = BufferStorageMask.DynamicStorageBit | (BufferStorageMask)_MAPPING_FLAGS;
@@ -42,12 +42,18 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             GL.NamedBufferStorage(Handle, Size, Span<byte>.Empty, (uint)_STORAGE_FLAGS);
         }
 
+
+        #region Binding
+
         public void Bind() => GL.BindBufferBase(BufferTargetARB.ShaderStorageBuffer, BindingIndex, Handle);
 
-        public void Dispose()
-        {
-            GL.DeleteBuffer(Handle);
-            GC.SuppressFinalize(this);
-        }
+        #endregion
+
+
+        #region IDisposable
+
+        protected override void DisposeInternal() => GL.DeleteBuffer(Handle);
+
+        #endregion
     }
 }

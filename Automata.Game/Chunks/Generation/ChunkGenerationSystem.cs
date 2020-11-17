@@ -259,12 +259,12 @@ namespace Automata.Game.Chunks.Generation
             Span<byte> bufferMemory = drawIndirectAllocation.MemoryOwner.Memory.Span;
 
             drawIndirectAllocation.CommandOwner.Command =
-                new DrawElementsIndirectCommand((uint)(pendingData.Vertexes.Count * 4), 1u, 0u, (uint)(index + (uint)indexesLength), 0u);
+                new DrawElementsIndirectCommand((uint)(pendingData.Vertexes.Count * 4), 1u, 0u, (uint)index, 0u);
 
             _MultiDrawIndirectMesh.WaitForBufferFreeSync();
             MemoryMarshal.AsBytes(pendingData.Indexes.Segment).CopyTo(bufferMemory);
             Vector4.One.Unroll<Vector4, byte>().CopyTo(bufferMemory.Slice(indexesLength));
-            MemoryMarshal.AsBytes(pendingData.Vertexes.Segment).CopyTo(bufferMemory.Slice(indexesLength + sizeof(Vector4)));
+            MemoryMarshal.AsBytes(pendingData.Vertexes.Segment).CopyTo(bufferMemory.Slice(indexesLength));
 
             return true;
         }

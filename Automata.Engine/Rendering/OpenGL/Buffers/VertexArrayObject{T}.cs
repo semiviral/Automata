@@ -8,6 +8,6 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
         public VertexArrayObject(GL gl) : base(gl) { }
 
         public void CommitVertexAttributes(BufferObject<TVertex> vbo, BufferObject<uint>? ebo, int vertexOffset) =>
-            base.CommitVertexAttributes(vbo, ebo, vertexOffset);
+            base.Finalize(vbo, ebo, vertexOffset);
     }
 }

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Numerics;
 using Automata.Engine.Extensions;
 using Serilog;
@@ -9,7 +8,7 @@ using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.OpenGL.Shaders
 {
-    public class ShaderProgram : OpenGLObject, IEquatable<ShaderProgram>, IDisposable
+    public class ShaderProgram : OpenGLObject, IEquatable<ShaderProgram>
     {
         private readonly Dictionary<string, int> _CachedUniforms;
 
@@ -112,11 +111,7 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
 
         #region IDisposable
 
-        public void Dispose()
-        {
-            GL.DeleteProgram(Handle);
-            GC.SuppressFinalize(this);
-        }
+        protected override void DisposeInternal() => GL.DeleteProgram(Handle);
 
         #endregion
 
