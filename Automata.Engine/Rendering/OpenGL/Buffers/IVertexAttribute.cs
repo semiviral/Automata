@@ -8,6 +8,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
         public uint Index { get; }
         public int Dimensions { get; }
         public uint Offset { get; }
+        public uint BindingIndex { get; }
         public uint Divisor { get; }
         public bool Normalized { get; }
         public uint Stride { get; }

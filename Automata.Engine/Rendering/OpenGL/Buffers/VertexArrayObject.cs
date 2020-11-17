@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using Automata.Engine.Collections;
 using Serilog;
 using Silk.NET.OpenGL;
@@ -26,21 +28,24 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
         public void Finalize(BufferObject vbo, BufferObject? ebo, int vertexOffset)
         {
-            uint stride = 0u;
+            Dictionary<uint, uint> strides = new Dictionary<uint, uint>();
 
-            foreach (IVertexAttribute vertexAttribute in _VertexAttributes)
+            foreach (IVertexAttribute vertexAttribute in _VertexAttributes.OrderBy(attribute => attribute.BindingIndex))
             {
                 vertexAttribute.Commit(GL, Handle);
                 GL.EnableVertexArrayAttrib(Handle, vertexAttribute.Index);
-                GL.VertexArrayAttribBinding(Handle, vertexAttribute.Index, 0u);
-                stride += vertexAttribute.Stride;
+                GL.VertexArrayAttribBinding(Handle, vertexAttribute.Index, vertexAttribute.BindingIndex);
+                if (vertexAttribute.Divisor > 0u) GL.VertexArrayBindingDivisor(Handle, vertexAttribute.BindingIndex, vertexAttribute.Divisor);
+
+                if (strides.ContainsKey(vertexAttribute.BindingIndex)) strides[vertexAttribute.BindingIndex] += vertexAttribute.Stride;
+                else strides.Add(vertexAttribute.BindingIndex, vertexAttribute.Stride);
             }
 
-            GL.VertexArrayVertexBuffer(Handle, 0u, vbo.Handle, vertexOffset, stride);
+            foreach ((uint bindingIndex, uint stride) in strides) GL.VertexArrayVertexBuffer(Handle, bindingIndex, vbo.Handle, vertexOffset, stride);
             if (ebo is not null) GL.VertexArrayElementBuffer(Handle, ebo.Handle);
 
             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(VertexArrayObject),
-                $"Finalized (0x{Handle:x}): stride {stride}, attributes {_VertexAttributes.Count}\r\n\t{string.Join(",\r\n\t", _VertexAttributes)}"));
+                $"Finalized (0x{Handle:x}): attributes {_VertexAttributes.Count}\r\n\t{string.Join(",\r\n\t", _VertexAttributes)}"));
         }
 
         #endregion

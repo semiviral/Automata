@@ -66,8 +66,7 @@ namespace Automata.Game.Chunks.Generation
             _MultiDrawIndirectMesh.AllocateVertexAttributes(true,
                 new VertexAttribute<int>(0u, 1u, 0u),
                 new VertexAttribute<int>(1u, 1u, 4u),
-
-                new VertexAttribute<float>(2u + 0u, 4u, 8u + ((uint)sizeof(Vector4) * 0u), 1u));
+                new VertexAttribute<float>(2u + 0u, 4u, (uint)sizeof(Vector4) * 0u, 0u, 1u));
 
             _MultiDrawIndirectMesh.FinalizeVertexArrayObject(0);
 
@@ -148,7 +147,6 @@ namespace Automata.Game.Chunks.Generation
 
                 uint indexesStart = (uint)(drawIndirectAllocation.Allocation!.IndexesIndex / sizeof(uint));
                 uint vertexesStart = (uint)drawIndirectAllocation.Allocation!.VertexesIndex;
-
                 commands[index] = new DrawElementsIndirectCommand(drawIndirectAllocation.Allocation!.VertexCount, 1u, indexesStart, vertexesStart, (uint)index);
             }
 
@@ -278,8 +276,10 @@ namespace Automata.Game.Chunks.Generation
 
             drawIndirectAllocation.Allocation?.Dispose();
 
+            int vertexArrayHeaderSize = sizeof(Vector4);
+
             int indexesSize = pendingData.Indexes.Count * sizeof(QuadIndexes);
-            int vertexesSize = pendingData.Vertexes.Count * sizeof(QuadVertexes<PackedVertex>);
+            int vertexesSize = (pendingData.Vertexes.Count * sizeof(QuadVertexes<PackedVertex>)) + vertexArrayHeaderSize;
             IMemoryOwner<uint> indexesOwner = _MultiDrawIndirectMesh.RentIndexMemory(indexesSize, (nuint)sizeof(uint), out nuint indexesIndex);
             IMemoryOwner<byte> vertexesOwner = _MultiDrawIndirectMesh.RentVertexMemory<byte>(vertexesSize, 0u, out nuint vertexesIndex);
 
@@ -290,7 +290,7 @@ namespace Automata.Game.Chunks.Generation
             MemoryMarshal.Cast<QuadIndexes, uint>(pendingData.Indexes.Segment).CopyTo(indexesOwner.Memory.Span);
             Span<byte> vertexes = vertexesOwner.Memory.Span;
             Vector4.One.Unroll<Vector4, byte>().CopyTo(vertexes);
-            MemoryMarshal.AsBytes(pendingData.Vertexes.Segment).CopyTo(vertexes.Slice(sizeof(Vector4)));
+            MemoryMarshal.AsBytes(pendingData.Vertexes.Segment).CopyTo(vertexes.Slice(vertexArrayHeaderSize));
 
             return true;
         }

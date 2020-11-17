@@ -8,15 +8,17 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
         public uint Index { get; }
         public int Dimensions { get; }
         public uint Offset { get; }
+        public uint BindingIndex { get; }
         public uint Divisor { get; }
         public bool Normalized { get; }
         public unsafe uint Stride => (uint)(Dimensions * sizeof(TComponent));
 
-        public VertexAttribute(uint index, uint dimensions, uint offset, uint divisor = 0u, bool normalized = false)
+        public VertexAttribute(uint index, uint dimensions, uint offset, uint bindingIndex = 0u, uint divisor = 0u, bool normalized = false)
         {
             Index = index;
             Dimensions = (int)dimensions;
             Offset = offset;
+            BindingIndex = bindingIndex;
             Divisor = divisor;
             Normalized = normalized;
         }
@@ -32,8 +34,6 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             else if (typeof(TComponent) == typeof(float)) gl.VertexArrayAttribFormat(vao, Index, Dimensions, VertexAttribType.Float, Normalized, Offset);
             else if (typeof(TComponent) == typeof(double)) gl.VertexArrayAttribLFormat(vao, Index, Dimensions, VertexAttribLType.Double, Offset);
             else throw new NotSupportedException($"{nameof(TComponent)} is of unsupported type '{typeof(TComponent)}'. Must be a primitive.");
-
-            if (Divisor > 0) gl.VertexArrayBindingDivisor(vao, Index, Divisor);
         }
 
 
