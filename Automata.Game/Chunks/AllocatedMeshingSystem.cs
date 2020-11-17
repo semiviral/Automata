@@ -31,8 +31,9 @@ namespace Automata.Game.Chunks
 
             _MultiDrawIndirectMesh.AllocateVertexAttributes(true,
                 new VertexAttribute<int>(0u, 1u, 0u),
-                new VertexAttribute<int>(1u, 1u, 4u),
-                new VertexAttribute<float>(2u + 0u, 4u, 0u, 0u, 1u));
+                new VertexAttribute<int>(1u, 1u, 4u)
+                //new VertexAttribute<float>(2u + 0u, 4u, 0u, 0u, 1u)
+                );
 
             _MultiDrawIndirectMesh.FinalizeVertexArrayObject(0);
 

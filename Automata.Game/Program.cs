@@ -68,6 +68,7 @@ static void InitializeWorld(out World world)
     world = new VoxelWorld(true);
     world.SystemManager.RegisterSystem<InputSystem, FirstOrderSystem>(SystemRegistrationOrder.Before);
     world.SystemManager.RegisterSystem<RenderSystem, LastOrderSystem>(SystemRegistrationOrder.Before);
+    world.SystemManager.RegisterSystem<AllocatedMeshingSystem, RenderSystem>(SystemRegistrationOrder.Before);
     world.SystemManager.RegisterSystem<ChunkRegionLoaderSystem, DefaultOrderSystem>(SystemRegistrationOrder.Before);
     world.SystemManager.RegisterSystem<ChunkModificationsSystem, DefaultOrderSystem>(SystemRegistrationOrder.Before);
     world.SystemManager.RegisterSystem<ChunkGenerationSystem, DefaultOrderSystem>(SystemRegistrationOrder.Before);
