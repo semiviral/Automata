@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Numerics;
 using Automata.Engine.Extensions;
 using Serilog;
@@ -100,7 +101,7 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
         {
             if (TryGetUniformLocation(name, out int location))
             {
-                GL.ProgramUniformMatrix4(Handle, location, 1, false, value.Unroll());
+                GL.ProgramUniformMatrix4(Handle, location, 1, false, value.Unroll<Matrix4x4, float>());
                 return true;
             }
             else return false;
@@ -108,7 +109,19 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
 
         private bool TryGetUniformLocation(string name, out int location) => _CachedUniforms.TryGetValue(name, out location);
 
-        public void Dispose() => GL.DeleteProgram(Handle);
+
+        #region IDisposable
+
+        public void Dispose()
+        {
+            GL.DeleteProgram(Handle);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
+
+
+        #region IEquateable
 
         public bool Equals(ShaderProgram? other) => other is not null && (other.Handle == Handle);
         public override bool Equals(object? obj) => obj is ShaderProgram other && Equals(other);
@@ -117,5 +130,7 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
 
         public static bool operator ==(ShaderProgram? left, ShaderProgram? right) => Equals(left, right);
         public static bool operator !=(ShaderProgram? left, ShaderProgram? right) => !Equals(left, right);
+
+        #endregion
     }
 }

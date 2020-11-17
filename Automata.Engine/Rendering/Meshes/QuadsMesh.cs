@@ -29,7 +29,7 @@ namespace Automata.Engine.Rendering.Meshes
             Visible = true;
             Layer = layer;
             BufferObject = new BufferObject<Quad<TVertex>>(gl);
-            VertexArrayObject = new VertexArrayObject(gl, BufferObject, BufferObject, (uint)sizeof(TVertex), 0);
+            VertexArrayObject = new VertexArrayObject(gl);
         }
 
         public unsafe void Draw()

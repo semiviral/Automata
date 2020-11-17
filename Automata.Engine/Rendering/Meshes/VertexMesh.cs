@@ -24,7 +24,7 @@ namespace Automata.Engine.Rendering.Meshes
             Visible = true;
 
             BufferObject = new BufferObject<TVertex>(gl);
-            VertexArrayObject = new VertexArrayObject<TVertex>(gl, BufferObject, 0);
+            VertexArrayObject = new VertexArrayObject<TVertex>(gl);
         }
 
         public void Draw()

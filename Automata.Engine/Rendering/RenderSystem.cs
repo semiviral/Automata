@@ -161,6 +161,8 @@ namespace Automata.Engine.Rendering
 
                     // we're about to render, so ensure all of the relevant uniforms are set
                     ShaderProgram vertexShader = cachedMaterial!.Pipeline.Stage(ShaderType.VertexShader);
+                    vertexShader.TrySetUniform("_view", camera.View);
+                    vertexShader.TrySetUniform("_proj", camera.Projection.Matrix);
                     vertexShader.TrySetUniform("_vp", viewProjection);
                     vertexShader.TrySetUniform("_mvp", modelViewProjection);
 

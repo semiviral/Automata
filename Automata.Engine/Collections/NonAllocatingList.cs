@@ -61,6 +61,8 @@ namespace Automata.Engine.Collections
             Count += 1;
         }
 
+        public void AddRange(IEnumerable<T> items) => InsertRange(Count, items);
+
         public void Insert(int index, T item)
         {
             if (index > Count) throw new ArgumentOutOfRangeException(nameof(index), "Must be non-negative and less than the size of the collection.");
@@ -71,6 +73,40 @@ namespace Automata.Engine.Collections
 
             _InternalArray[index] = item;
             Count += 1;
+        }
+
+        public void InsertRange(int index, IEnumerable<T> items)
+        {
+            if ((uint)index > (uint)Count) ThrowHelper.ThrowIndexOutOfRangeException();
+
+            if (items is ICollection<T> collection)
+            {
+                int count = collection.Count;
+
+                if (count <= 0) return;
+
+                EnsureCapacityOrResize(collection.Count + count);
+                if (index < Count) Array.Copy(_InternalArray, index, _InternalArray, index + count, Count - index);
+
+                // If we're inserting a List into itself, we want to be able to deal with that.
+                if (Equals(items))
+                {
+                    // Copy first part of _items to insert location
+                    Array.Copy(_InternalArray, 0, _InternalArray, index, index);
+
+                    // Copy last part of _items back to inserted location
+                    Array.Copy(_InternalArray, index + count, _InternalArray, index * 2, Count - index);
+                }
+                else collection.CopyTo(_InternalArray, index);
+
+                Count += count;
+            }
+            else
+            {
+                using IEnumerator<T> en = items.GetEnumerator();
+
+                while (en.MoveNext()) Insert(index++, en.Current);
+            }
         }
 
         private void EnsureCapacityOrResize(int minimumCapacity)

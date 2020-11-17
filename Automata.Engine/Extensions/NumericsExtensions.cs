@@ -11,10 +11,6 @@ namespace Automata.Engine.Extensions
 {
     public static class NumericsExtensions
     {
-        // row major
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe Span<float> Unroll(this Matrix4x4 matrix) => MemoryMarshal.CreateSpan(ref matrix.M11, sizeof(Matrix4x4) / sizeof(float));
-
         public static IEnumerable<float> UnrollColumnMajor(this Matrix4x4 matrix)
         {
             yield return matrix.M11;
@@ -37,9 +33,6 @@ namespace Automata.Engine.Extensions
             yield return matrix.M34;
             yield return matrix.M44;
         }
-
-        public static void CopyTo(this Matrix4x4 matrix, Span<byte> destination) => matrix.Unroll().CopyTo(MemoryMarshal.Cast<byte, float>(destination));
-        public static void CopyTo(this Matrix4x4 matrix, Span<float> destination) => matrix.Unroll().CopyTo(destination);
 
         public static Vector3 RoundBy(this Vector3 a, Vector3 by)
         {

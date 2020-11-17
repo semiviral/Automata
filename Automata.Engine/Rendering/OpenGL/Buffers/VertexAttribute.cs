@@ -3,53 +3,51 @@ using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.OpenGL.Buffers
 {
-    public interface IVertexAttribute
+    public record VertexAttribute<TComponent> : IVertexAttribute where TComponent : unmanaged
     {
         public uint Index { get; }
+        public int Dimensions { get; }
+        public uint Offset { get; }
         public uint Divisor { get; }
+        public bool Normalized { get; }
+        public unsafe uint Stride => (uint)(Dimensions * sizeof(TComponent));
 
-        public void Commit(GL gl, uint vao);
-    }
-
-    public class VertexAttribute<TComponent> : IVertexAttribute, IEquatable<VertexAttribute<TComponent>> where TComponent : unmanaged
-    {
-        private readonly int _Dimensions;
-        private readonly uint _Offset;
-        private readonly bool _Normalized;
-
-        public uint Index { get; }
-        public uint Divisor { get; }
-
-        public VertexAttribute(uint index, uint dimensions, uint offset, uint divisor = 0, bool normalized = false) =>
-            (Index, _Dimensions, _Offset, Divisor, _Normalized) = (index, (int)dimensions, offset, divisor, normalized);
+        public VertexAttribute(uint index, uint dimensions, uint offset, uint divisor = 0u, bool normalized = false)
+        {
+            Index = index;
+            Dimensions = (int)dimensions;
+            Offset = offset;
+            Divisor = divisor;
+            Normalized = normalized;
+        }
 
         public void Commit(GL gl, uint vao)
         {
-            if (typeof(TComponent) == typeof(int)) gl.VertexArrayAttribIFormat(vao, Index, _Dimensions, VertexAttribIType.Int, _Offset);
-            else if (typeof(TComponent) == typeof(uint)) gl.VertexArrayAttribIFormat(vao, Index, _Dimensions, VertexAttribIType.UnsignedInt, _Offset);
-            else if (typeof(TComponent) == typeof(short)) gl.VertexArrayAttribIFormat(vao, Index, _Dimensions, VertexAttribIType.Short, _Offset);
-            else if (typeof(TComponent) == typeof(ushort)) gl.VertexArrayAttribIFormat(vao, Index, _Dimensions, VertexAttribIType.UnsignedShort, _Offset);
-            else if (typeof(TComponent) == typeof(sbyte)) gl.VertexArrayAttribIFormat(vao, Index, _Dimensions, VertexAttribIType.Byte, _Offset);
-            else if (typeof(TComponent) == typeof(byte)) gl.VertexArrayAttribIFormat(vao, Index, _Dimensions, VertexAttribIType.UnsignedByte, _Offset);
-            else if (typeof(TComponent) == typeof(float)) gl.VertexArrayAttribFormat(vao, Index, _Dimensions, VertexAttribType.Float, _Normalized, _Offset);
-            else if (typeof(TComponent) == typeof(double)) gl.VertexArrayAttribLFormat(vao, Index, _Dimensions, VertexAttribLType.Double, _Offset);
+            if (typeof(TComponent) == typeof(int)) gl.VertexArrayAttribIFormat(vao, Index, Dimensions, VertexAttribIType.Int, Offset);
+            else if (typeof(TComponent) == typeof(uint)) gl.VertexArrayAttribIFormat(vao, Index, Dimensions, VertexAttribIType.UnsignedInt, Offset);
+            else if (typeof(TComponent) == typeof(short)) gl.VertexArrayAttribIFormat(vao, Index, Dimensions, VertexAttribIType.Short, Offset);
+            else if (typeof(TComponent) == typeof(ushort)) gl.VertexArrayAttribIFormat(vao, Index, Dimensions, VertexAttribIType.UnsignedShort, Offset);
+            else if (typeof(TComponent) == typeof(sbyte)) gl.VertexArrayAttribIFormat(vao, Index, Dimensions, VertexAttribIType.Byte, Offset);
+            else if (typeof(TComponent) == typeof(byte)) gl.VertexArrayAttribIFormat(vao, Index, Dimensions, VertexAttribIType.UnsignedByte, Offset);
+            else if (typeof(TComponent) == typeof(float)) gl.VertexArrayAttribFormat(vao, Index, Dimensions, VertexAttribType.Float, Normalized, Offset);
+            else if (typeof(TComponent) == typeof(double)) gl.VertexArrayAttribLFormat(vao, Index, Dimensions, VertexAttribLType.Double, Offset);
             else throw new NotSupportedException($"{nameof(TComponent)} is of unsupported type '{typeof(TComponent)}'. Must be a primitive.");
 
             if (Divisor > 0) gl.VertexArrayBindingDivisor(vao, Index, Divisor);
         }
 
-        public bool Equals(VertexAttribute<TComponent>? other) =>
-            other is not null
-            && (_Dimensions == other._Dimensions)
-            && (_Offset == other._Offset)
-            && (_Normalized == other._Normalized)
-            && (Index == other.Index);
 
-        public override bool Equals(object? obj) => obj is VertexAttribute<TComponent> other && Equals(other);
+        #region IEquatable
 
-        public override int GetHashCode() => HashCode.Combine(_Dimensions, _Offset, _Normalized, Index);
+        public virtual bool Equals(IVertexAttribute? other) => other is not null
+                                                               && (Index == other.Index)
+                                                               && (Dimensions == other.Dimensions)
+                                                               && (Offset == other.Offset)
+                                                               && (Divisor == other.Divisor)
+                                                               && (Normalized == other.Normalized);
 
-        public static bool operator ==(VertexAttribute<TComponent>? left, VertexAttribute<TComponent>? right) => Equals(left, right);
-        public static bool operator !=(VertexAttribute<TComponent>? left, VertexAttribute<TComponent>? right) => !Equals(left, right);
+        public override int GetHashCode() => HashCode.Combine(Index, Dimensions, Offset, Divisor, Normalized);
+
+        #endregion
     }
 }

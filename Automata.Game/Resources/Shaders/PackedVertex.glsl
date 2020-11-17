@@ -4,6 +4,7 @@ out gl_PerVertex { vec4 gl_Position; };
 
 layout (location = 0) in int vert;
 layout (location = 1) in int uv;
+layout (location = 2) in vec4 model;
 
 layout (location = 0) out fragment
 {
@@ -11,7 +12,10 @@ layout (location = 0) out fragment
     vec3 color;
 } fragment;
 
+uniform mat4 _vp;
 uniform mat4 _mvp;
+uniform mat4 _view;
+uniform mat4 _proj;
 
 void main()
 {

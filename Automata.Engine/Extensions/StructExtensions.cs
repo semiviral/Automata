@@ -1,4 +1,6 @@
+using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Automata.Engine.Extensions
 {
@@ -45,5 +47,11 @@ namespace Automata.Engine.Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static ref TComponent GetComponent<T, TComponent>(ref this T a, int index) where T : unmanaged where TComponent : unmanaged =>
             ref Unsafe.Add(ref Unsafe.As<T, TComponent>(ref a), index);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe Span<TComponent> Unroll<T, TComponent>(this T a)
+            where T : unmanaged
+            where TComponent : unmanaged =>
+            MemoryMarshal.CreateSpan(ref Unsafe.As<T, TComponent>(ref a), sizeof(T) / sizeof(TComponent));
     }
 }

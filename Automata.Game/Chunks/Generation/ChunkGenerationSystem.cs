@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
 using Automata.Engine;
 using Automata.Engine.Collections;
@@ -15,7 +14,6 @@ using Automata.Engine.Entities;
 using Automata.Engine.Extensions;
 using Automata.Engine.Input;
 using Automata.Engine.Numerics;
-using Automata.Engine.Rendering;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
@@ -27,18 +25,11 @@ using Automata.Game.Chunks.Generation.Structures;
 using DiagnosticsProviderNS;
 using Serilog;
 using Silk.NET.Input.Common;
-using Silk.NET.OpenGL;
 
 namespace Automata.Game.Chunks.Generation
 {
     public class ChunkGenerationSystem : ComponentSystem
     {
-        private static readonly IVertexAttribute[] _DefaultAttributes =
-        {
-            new VertexAttribute<int>(0u, 1u, 0u),
-            new VertexAttribute<int>(1u, 1u, sizeof(int))
-        };
-
         private readonly IOrderedCollection<IGenerationStep> _BuildSteps;
         private readonly ConcurrentChannel<(IEntity, Chunk, NonAllocatingQuadsMeshData<PackedVertex>)> _PendingMeshes;
 
@@ -53,7 +44,7 @@ namespace Automata.Game.Chunks.Generation
             DiagnosticsProvider.EnableGroup<ChunkGenerationDiagnosticGroup>();
         }
 
-        public override void Registered(EntityManager entityManager)
+        public override unsafe void Registered(EntityManager entityManager)
         {
             // prints average chunk generation times
             InputManager.Instance.InputActions.Add(new InputAction(() =>
@@ -69,23 +60,14 @@ namespace Automata.Game.Chunks.Generation
                 Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(DiagnosticsPool), string.Join(", ", states)));
             }, Key.ShiftLeft, Key.V));
 
-            _MultiDrawIndirectMesh = new MultiDrawIndirectMesh(GLAPI.Instance.GL, 3_000_000, 3_000_000_000)
-            {
-                Visible = false
-            };
+            _MultiDrawIndirectMesh = new MultiDrawIndirectMesh(GLAPI.Instance.GL, 1_000_000, 1_000_000_000);
 
-            _MultiDrawIndirectMesh.VertexArrayObject.AllocateVertexAttributes(new IVertexAttribute[]
-            {
-                new VertexAttribute<int>(0u, 1u, 0u), // position
-                new VertexAttribute<int>(1u, 1u, sizeof(int)), // uv
-                // new VertexAttribute<uint>(2u, 1u, (uint)(sizeof(uint) * 4), 1u), // instance ID
-                // new VertexAttribute<float>(3u + 0u, 4u, 4u * 0u, 1u), // matrix row 1
-                // new VertexAttribute<float>(3u + 1u, 4u, 4u * 1u, 1u), // matrix row 2
-                // new VertexAttribute<float>(3u + 2u, 4u, 4u * 2u, 1u), // matrix row 3
-                // new VertexAttribute<float>(3u + 3u, 4u, 4u * 3u, 1u) // matrix row 4
-            });
+            _MultiDrawIndirectMesh.AllocateVertexAttributes(true,
+                new VertexAttribute<int>(0u, 1u, 0u),
+                new VertexAttribute<int>(1u, 1u, 4u),
+                new VertexAttribute<float>(2u + 0u, 4u, (uint)sizeof(Vector4) * 0u, 1u));
 
-            _MultiDrawIndirectMesh.VertexArrayObject.CommitVertexAttributes();
+            _MultiDrawIndirectMesh.FinalizeVertexArrayObject(0);
 
             Material material = new Material(ProgramRegistry.Instance.Load("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl"));
             material.Textures.Add(TextureAtlas.Instance.Blocks!);
@@ -144,6 +126,9 @@ namespace Automata.Game.Chunks.Generation
 
             return ValueTask.CompletedTask;
         }
+
+
+        #region Generation
 
         private Task GenerateBlocks(Chunk chunk, Vector3i origin, IGenerationStep.Parameters parameters)
         {
@@ -236,6 +221,8 @@ namespace Automata.Game.Chunks.Generation
             DiagnosticsPool.Stopwatches.Return(stopwatch);
         }
 
+        #endregion
+
 
         #region Render Prep
 
@@ -253,44 +240,6 @@ namespace Automata.Game.Chunks.Generation
             DiagnosticsPool.Stopwatches.Return(stopwatch);
         }
 
-        private static unsafe bool ApplyMesh(EntityManager entityManager, IEntity entity, NonAllocatingQuadsMeshData<PackedVertex> pendingData)
-        {
-            bool hasRenderMesh = entity.TryFind(out RenderMesh? renderMesh);
-
-            if (pendingData.IsEmpty)
-            {
-                if (hasRenderMesh) entityManager.RemoveComponent<RenderMesh>(entity);
-
-                return false;
-            }
-
-            if (!hasRenderMesh) entityManager.RegisterComponent(entity, renderMesh = new RenderMesh());
-            if (renderMesh!.Mesh is null or not QuadsMesh<PackedVertex>) renderMesh.Mesh = new QuadsMesh<PackedVertex>(GLAPI.Instance.GL);
-
-            QuadsMesh<PackedVertex> quadsMesh = (renderMesh.Mesh as QuadsMesh<PackedVertex>)!;
-
-            if (!quadsMesh!.VertexArrayObject.VertexAttributes.SequenceEqual(_DefaultAttributes))
-            {
-                quadsMesh.VertexArrayObject.AllocateVertexAttributes(_DefaultAttributes);
-                quadsMesh.VertexArrayObject.CommitVertexAttributes();
-            }
-
-            int indexesLength = pendingData.Indexes.Count * sizeof(QuadIndexes);
-            int totalLength = indexesLength + (pendingData.Indexes.Count * sizeof(QuadVertexes<PackedVertex>));
-            quadsMesh.BufferObject.Resize((uint)totalLength, BufferDraw.StaticDraw);
-            quadsMesh.VertexArrayObject.AssignVertexArrayVertexBuffer<PackedVertex>(quadsMesh.BufferObject, indexesLength);
-            quadsMesh.IndexesCount = (uint)(pendingData.Indexes.Count * 6);
-
-            Span<byte> bufferMemory = quadsMesh.BufferObject.Pin<byte>(BufferAccessARB.WriteOnly);
-            MemoryMarshal.AsBytes(pendingData.Indexes.Segment).CopyTo(bufferMemory);
-            MemoryMarshal.AsBytes(pendingData.Vertexes.Segment).CopyTo(bufferMemory.Slice(indexesLength));
-            quadsMesh.BufferObject.Unpin();
-
-            return true;
-        }
-
-        private long _Count;
-
         private unsafe bool ApplyMeshMultiDraw(EntityManager entityManager, IEntity entity, NonAllocatingQuadsMeshData<PackedVertex> pendingData)
         {
             if (_MultiDrawIndirectMesh is null) throw new NullReferenceException("Mesh is null!");
@@ -298,12 +247,11 @@ namespace Automata.Game.Chunks.Generation
             _MultiDrawIndirectMesh.Visible = true;
 
             if (entity.TryFind(out DrawIndirectAllocation? drawIndirectAllocation)) entityManager.RemoveComponent<DrawIndirectAllocation>(entity);
+
             if (pendingData.IsEmpty) return false;
 
-            const int header_length = 64; // length of matrix
             int indexesLength = pendingData.Indexes.Count * sizeof(QuadIndexes);
-            int bufferLength = indexesLength + (pendingData.Vertexes.Count * sizeof(QuadVertexes<PackedVertex>));
-            int totalLength = header_length + bufferLength;
+            int totalLength = indexesLength + sizeof(Matrix4x4) + (pendingData.Vertexes.Count * sizeof(QuadVertexes<PackedVertex>));
 
             drawIndirectAllocation = new DrawIndirectAllocation(_MultiDrawIndirectMesh.RentMemory<byte>(totalLength, (uint)sizeof(uint), out nuint index),
                 _MultiDrawIndirectMesh.RentCommand(out _));
@@ -311,30 +259,12 @@ namespace Automata.Game.Chunks.Generation
             Span<byte> bufferMemory = drawIndirectAllocation.MemoryOwner.Memory.Span;
 
             drawIndirectAllocation.CommandOwner.Command =
-                new DrawElementsIndirectCommand((uint)(pendingData.Indexes.Count * 6), 1u, (uint)(index / sizeof(uint)), (uint)indexesLength, 0u);
+                new DrawElementsIndirectCommand((uint)(pendingData.Vertexes.Count * 4), 1u, 0u, (uint)(index + (uint)indexesLength), 0u);
 
-            // uint handle = _MultiDrawIndirectMesh._CommandAllocator.Handle;
-            //
-            // DrawElementsIndirectCommand command =
-            //     new DrawElementsIndirectCommand((uint)(pendingData.Indexes.Count * 6), 1u, (uint)(index / sizeof(uint)), (uint)indexesLength, 0u);
-            // GLAPI.Instance.GL.NamedBufferSubData(handle, (int)commandIndex, (uint)sizeof(DrawElementsIndirectCommand), ref command);
-            //
-            // Span<byte> data = stackalloc byte[totalLength];
-            // MemoryMarshal.AsBytes(pendingData.Indexes.Segment).CopyTo(data);
-            // MemoryMarshal.AsBytes(Matrix4x4.Identity.Unroll()).CopyTo(data.Slice(indexesLength));
-            // MemoryMarshal.AsBytes(pendingData.Vertexes.Segment).CopyTo(data.Slice(indexesLength + sizeof(Matrix4x4)));
-            //
-            // handle = _MultiDrawIndirectMesh._DataAllocator.Handle;
-            // GLAPI.Instance.GL.NamedBufferSubData(handle, (int)index, (uint)totalLength, ref data.GetPinnableReference());
-            //
-            // Interlocked.Increment(ref _Count);
-            // Log.Information(_Count.ToString());
-
-            //_MultiDrawIndirectMesh.WaitForBufferSync();
-
+            _MultiDrawIndirectMesh.WaitForBufferFreeSync();
             MemoryMarshal.AsBytes(pendingData.Indexes.Segment).CopyTo(bufferMemory);
-            MemoryMarshal.AsBytes(Matrix4x4.Identity.Unroll()).CopyTo(bufferMemory.Slice(indexesLength));
-            MemoryMarshal.AsBytes(pendingData.Vertexes.Segment).CopyTo(bufferMemory.Slice(indexesLength + sizeof(Matrix4x4)));
+            Vector4.One.Unroll<Vector4, byte>().CopyTo(bufferMemory.Slice(indexesLength));
+            MemoryMarshal.AsBytes(pendingData.Vertexes.Segment).CopyTo(bufferMemory.Slice(indexesLength + sizeof(Vector4)));
 
             return true;
         }

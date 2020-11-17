@@ -17,8 +17,9 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
         public void Dispose()
         {
-            MemoryOwner?.Dispose();
-            CommandOwner?.Dispose();
+            CommandOwner.Command = default;
+            MemoryOwner.Dispose();
+            CommandOwner.Dispose();
             GC.SuppressFinalize(this);
         }
     }
