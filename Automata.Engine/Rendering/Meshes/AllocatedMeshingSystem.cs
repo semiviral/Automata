@@ -48,11 +48,11 @@ namespace Automata.Engine.Rendering.Meshes
 
             if (recreateCommandBuffer)
             {
-                using NonAllocatingList<DrawIndirectAllocation<TIndex, TVertex>> allocations = new NonAllocatingList<DrawIndirectAllocation<TIndex, TVertex>>();
+                using NonAllocatingList<MultiDrawIndirectAllocation<TIndex, TVertex>> allocations = new NonAllocatingList<MultiDrawIndirectAllocation<TIndex, TVertex>>();
                 using NonAllocatingList<Matrix4x4> models = new NonAllocatingList<Matrix4x4>();
 
-                foreach ((IEntity entity, DrawIndirectAllocation<TIndex, TVertex> allocation) in
-                    entityManager.GetEntitiesWithComponents<DrawIndirectAllocation<TIndex, TVertex>>())
+                foreach ((IEntity entity, MultiDrawIndirectAllocation<TIndex, TVertex> allocation) in
+                    entityManager.GetEntitiesWithComponents<MultiDrawIndirectAllocation<TIndex, TVertex>>())
                 {
                     allocations.Add(allocation);
                     models.Add(entity.Find<RenderModel>()?.Model ?? Matrix4x4.Identity);
@@ -84,7 +84,7 @@ namespace Automata.Engine.Rendering.Meshes
 
         #region Data Processing
 
-        private unsafe void GenerateDrawElementsIndirectCommands(Span<DrawIndirectAllocation<TIndex, TVertex>> allocations)
+        private unsafe void GenerateDrawElementsIndirectCommands(Span<MultiDrawIndirectAllocation<TIndex, TVertex>> allocations)
         {
             if (_MultiDrawIndirectMesh is null) ThrowHelper.ThrowNullReferenceException(nameof(_MultiDrawIndirectMesh));
 
@@ -92,13 +92,13 @@ namespace Automata.Engine.Rendering.Meshes
 
             for (uint index = 0; index < allocations.Length; index++)
             {
-                DrawIndirectAllocation<TIndex, TVertex> drawIndirectAllocation = allocations[(int)index];
-                if (drawIndirectAllocation.Allocation is null) throw new NullReferenceException("Allocation should not be null at this point.");
+                MultiDrawIndirectAllocation<TIndex, TVertex> multiDrawIndirectAllocation = allocations[(int)index];
+                if (multiDrawIndirectAllocation.Allocation is null) throw new NullReferenceException("Allocation should not be null at this point.");
 
-                nuint indexesStart = drawIndirectAllocation.Allocation.IndexesArrayMemory.Index / (nuint)sizeof(TIndex);
-                nuint vertexesStart = drawIndirectAllocation.Allocation.VertexArrayMemory.Index;
+                nuint indexesStart = multiDrawIndirectAllocation.Allocation.IndexesArrayMemory.Index / (nuint)sizeof(TIndex);
+                nuint vertexesStart = multiDrawIndirectAllocation.Allocation.VertexArrayMemory.Index;
 
-                commands[(int)index] = new DrawElementsIndirectCommand(drawIndirectAllocation.Allocation.VertexArrayMemory.Count, 1u,
+                commands[(int)index] = new DrawElementsIndirectCommand(multiDrawIndirectAllocation.Allocation.VertexArrayMemory.Count, 1u,
                     (uint)indexesStart, (uint)vertexesStart, index);
             }
 
@@ -123,20 +123,17 @@ namespace Automata.Engine.Rendering.Meshes
             if (_MultiDrawIndirectMesh is null) throw new NullReferenceException("Mesh is null!");
             else if (pendingData.IsEmpty) return false;
 
-            if (!entity.TryFind(out DrawIndirectAllocation<TIndex, TVertex>? drawIndirectAllocation))
-                drawIndirectAllocation = entityManager.RegisterComponent<DrawIndirectAllocation<TIndex, TVertex>>(entity);
+            // if the entity doesn't have the required component, make sure we add it
+            if (!entity.TryFind(out MultiDrawIndirectAllocation<TIndex, TVertex>? drawIndirectAllocation))
+                drawIndirectAllocation = entityManager.RegisterComponent<MultiDrawIndirectAllocation<TIndex, TVertex>>(entity);
 
+            // we make sure to dispose the old allocation to
+            // free the memory in the pool
             drawIndirectAllocation.Allocation?.Dispose();
             _MultiDrawIndirectMesh.WaitForBufferSync();
 
-            // create index buffer array memory
-            int indexCount = pendingData.Indexes.Count * 6;
-
             BufferArrayMemory<TIndex> indexArrayMemory = _MultiDrawIndirectMesh.RentIndexBufferArrayMemory((nuint)sizeof(TIndex),
                 MemoryMarshal.Cast<QuadIndexes<TIndex>, TIndex>(pendingData.Indexes.Segment));
-
-            // create vertex buffer array memory
-            int vertexCount = pendingData.Vertexes.Count * 4;
 
             BufferArrayMemory<TVertex> vertexArrayMemory = _MultiDrawIndirectMesh.RentVertexBufferArrayMemory(0u,
                 MemoryMarshal.Cast<QuadVertexes<TVertex>, TVertex>(pendingData.Vertexes.Segment));
@@ -144,7 +141,7 @@ namespace Automata.Engine.Rendering.Meshes
             drawIndirectAllocation.Allocation = new AllocationWrapper<TIndex, TVertex>(indexArrayMemory, vertexArrayMemory);
 
             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(AllocatedMeshingSystem<TIndex, TVertex>),
-                $"Allocated new {nameof(DrawIndirectAllocation<TIndex, TVertex>)}: indexes ({indexCount}, {indexArrayMemory.MemoryOwner.Memory.Length} bytes), vertexes ({vertexCount}, {vertexArrayMemory.MemoryOwner.Memory.Length} bytes)"));
+                $"Allocated new {nameof(MultiDrawIndirectAllocation<TIndex, TVertex>)}: indexes ({pendingData.Indexes.Count * 6}, {indexArrayMemory.MemoryOwner.Memory.Length} bytes), vertexes ({pendingData.Vertexes.Count * 4}, {vertexArrayMemory.MemoryOwner.Memory.Length} bytes)"));
 
             return true;
         }

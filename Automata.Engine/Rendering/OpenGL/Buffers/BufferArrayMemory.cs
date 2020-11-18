@@ -13,6 +13,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
         public BufferArrayMemory(BufferAllocator allocator, nuint alignment, ReadOnlySpan<T> data)
         {
             MemoryOwner = allocator.Rent<T>(data.Length, alignment, out nuint index);
+            data.CopyTo(MemoryOwner.Memory.Span);
             Index = index;
         }
 

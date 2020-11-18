@@ -96,7 +96,7 @@ namespace Automata.Engine.Memory
                                 nuint beforeBlockSize = alignmentPadding;
 
                                 _MemoryMap.AddBefore(current, new MemoryBlock(beforeBlockIndex, beforeBlockSize, false));
-                                current.Value = current.Value with { Index = alignedIndex, Size = alignedSize, Owned = true };
+                                current.Value = current.Value with { Index = alignedIndex, Size = sizeInBytes, Owned = true };
                             }
 
                             nuint afterBlockIndex = current.Value.Index + sizeInBytes;
@@ -108,9 +108,9 @@ namespace Automata.Engine.Memory
                         else continue;
                     }
 
-                    IMemoryOwner<T> memoryOwner = CreateMemoryOwner<T>(current.Value.Index, size);
-                    if (clear) memoryOwner.Memory.Span.Clear();
                     index = current.Value.Index;
+                    IMemoryOwner<T> memoryOwner = CreateMemoryOwner<T>(index, size);
+                    if (clear) memoryOwner.Memory.Span.Clear();
                     return memoryOwner;
                 } while ((current = current!.Next) is not null);
             }
@@ -120,6 +120,16 @@ namespace Automata.Engine.Memory
             return null!;
         }
 
+        /// <summary>
+        ///     Creates an <see cref="IMemoryOwner{T}" /> from the specified index and size.
+        /// </summary>
+        /// <param name="index">Index of which <see cref="IMemoryOwner{T}" /> starts (relative to start of buffer).</param>
+        /// <param name="size">Size of <see cref="IMemoryOwner{T}" /> in units of <see cref="T" />.</param>
+        /// <typeparam name="T">Unmanaged type to instance <see cref="IMemoryOwner{T}" /> with.</typeparam>
+        /// <returns>
+        ///     <see cref="IMemoryOwner{T}" /> wrapping a specified region of memory, starting at <see cref="index" /> and ending
+        ///     at <see cref="index" /> + <see cref="Size" />.
+        /// </returns>
         private IMemoryOwner<T> CreateMemoryOwner<T>(nuint index, int size) where T : unmanaged
         {
             if (size > int.MaxValue) ThrowHelper.ThrowArgumentOutOfRangeException(nameof(size), $"Length cannot be greater than {int.MaxValue}.");
