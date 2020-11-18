@@ -54,7 +54,7 @@ namespace Automata.Engine.Rendering
         {
             bool wireframe = false;
 
-            InputManager.Instance.InputActions.Add(new InputAction(() =>
+            InputManager.Instance.RegisterInputAction(() =>
             {
                 if (wireframe)
                 {
@@ -66,7 +66,7 @@ namespace Automata.Engine.Rendering
                     _GL.PolygonMode(GLEnum.FrontAndBack, PolygonMode.Line);
                     wireframe = true;
                 }
-            }, Key.F4));
+            }, Key.F4);
         }
 
         [HandledComponents(DistinctionStrategy.All, typeof(Camera))]

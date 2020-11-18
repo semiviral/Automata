@@ -25,26 +25,36 @@ namespace Automata.Engine.Input
 
     public sealed class InputManager : Singleton<InputManager>
     {
+        private class InputAction
+        {
+            public Key[] KeyCombination { get; }
+            public Action Action { get; }
+            public bool Activated { get; set; }
+
+            public InputAction(Action action, params Key[] keyCombination) => (Action, KeyCombination) = (action, keyCombination);
+        }
+
         private readonly List<IKeyboard> _Keyboards;
         private readonly List<IMouse> _Mice;
+        private readonly List<InputAction> _InputActions;
 
         private IInputContext? _InputContext;
 
         // todo make this private, and add hooks at the class-level
         // we don't really want to expose total control of this as an API feature
-        public List<InputAction> InputActions;
 
         public InputManager()
         {
             _Keyboards = new List<IKeyboard>();
             _Mice = new List<IMouse>();
-
-            InputActions = new List<InputAction>();
+            _InputActions = new List<InputAction>();
         }
 
         public void RegisterView(IView view)
         {
             _InputContext = view.CreateInput();
+
+            if (_InputContext is null) throw new NullReferenceException("View provided a null input context.");
 
             foreach (IKeyboard keyboard in _InputContext.Keyboards)
             {
@@ -65,6 +75,8 @@ namespace Automata.Engine.Input
                 _Mice.Add(mouse);
             }
         }
+
+        public void RegisterInputAction(Action action, params Key[] keys) => _InputActions.Add(new InputAction(action, keys));
 
         public bool IsKeyPressed(Key key) => _Keyboards.Any(keyboard => keyboard.IsKeyPressed(key));
         public bool IsButtonPressed(MouseButton mouseButton) => _Mice.Any(mouse => mouse.IsButtonPressed(mouseButton));
@@ -97,15 +109,15 @@ namespace Automata.Engine.Input
 
         public void CheckAndExecuteInputActions()
         {
-            foreach (InputAction inputAction in InputActions)
+            foreach (InputAction inputAction in _InputActions)
                 if (inputAction.KeyCombination.All(IsKeyPressed))
                 {
-                    if (inputAction.Active) continue;
+                    if (inputAction.Activated) continue;
 
-                    inputAction.Active = true;
+                    inputAction.Activated = true;
                     inputAction.Action.Invoke();
                 }
-                else inputAction.Active = false;
+                else inputAction.Activated = false;
         }
 
 

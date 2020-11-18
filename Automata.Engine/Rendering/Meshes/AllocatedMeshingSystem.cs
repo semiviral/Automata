@@ -27,6 +27,14 @@ namespace Automata.Engine.Rendering.Meshes
             else _MultiDrawIndirectMeshMaterial.Textures[key] = texture;
         }
 
+        public void AllocateVertexAttributes(bool replace, bool finalize, params IVertexAttribute[] attributes)
+        {
+            if (_MultiDrawIndirectMesh is null) ThrowHelper.ThrowNullReferenceException(nameof(_MultiDrawIndirectMesh));
+
+            _MultiDrawIndirectMesh!.AllocateVertexAttributes(replace, attributes);
+            if (finalize) _MultiDrawIndirectMesh!.FinalizeVertexArrayObject(0);
+
+        }
 
         #region ComponentSystem
 
@@ -36,17 +44,6 @@ namespace Automata.Engine.Rendering.Meshes
                 new Material(ProgramRegistry.Instance.Load("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl"));
 
             _MultiDrawIndirectMesh = new MultiDrawIndirectMesh<TIndex, TVertex>(GLAPI.Instance.GL, 750_000_000, 500_000_000);
-
-            _MultiDrawIndirectMesh.AllocateVertexAttributes(true,
-                new VertexAttribute<int>(0u, 1u, 0u),
-                new VertexAttribute<int>(1u, 1u, 4u)
-
-                //new VertexAttribute<float>(2u + 0u, 4u, 0u, 0u, 1u)
-            );
-
-            _MultiDrawIndirectMesh.FinalizeVertexArrayObject(0);
-
-            //material.Textures.Add(TextureAtlas.Instance.Blocks!);
 
             entityManager.CreateEntity(
                 _MultiDrawIndirectMeshMaterial,

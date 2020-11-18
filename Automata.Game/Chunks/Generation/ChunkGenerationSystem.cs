@@ -37,20 +37,18 @@ namespace Automata.Game.Chunks.Generation
         public override void Registered(EntityManager entityManager)
         {
             // prints average chunk generation times
-            InputManager.Instance.InputActions.Add(new InputAction(() =>
+            InputManager.Instance.RegisterInputAction(() =>
             {
                 Log.Information(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(DiagnosticsPool),
                     $"Average generation times: {DiagnosticsProvider.GetGroup<ChunkGenerationDiagnosticGroup>()}"));
-            }, Key.ShiftLeft, Key.B));
+            }, Key.ShiftLeft, Key.B);
 
             // prints all chunk states
-            InputManager.Instance.InputActions.Add(new InputAction(() =>
+            InputManager.Instance.RegisterInputAction(() =>
             {
                 IEnumerable<(GenerationState, int)> states = entityManager.GetComponents<Chunk>().Select(chunk => (chunk.State, chunk.TimesMeshed));
                 Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(DiagnosticsPool), string.Join(", ", states)));
-            }, Key.ShiftLeft, Key.V));
-
-            GetSystem<AllocatedMeshingSystem<uint, PackedVertex>>()?.SetTexture("Blocks", TextureAtlas.Instance.Blocks!);
+            }, Key.ShiftLeft, Key.V);
         }
 
         [HandledComponents(DistinctionStrategy.All, typeof(Translation), typeof(Chunk))]

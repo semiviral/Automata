@@ -38,8 +38,8 @@ namespace Automata.Game.Chunks
         {
             DiagnosticsProvider.EnableGroup<ChunkRegionLoadingDiagnosticGroup>();
 
-            InputManager.Instance.InputActions.Add(new InputAction(() => Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkRegionLoaderSystem),
-                $"Average update time: {DiagnosticsProvider.GetGroup<ChunkRegionLoadingDiagnosticGroup>().Average():0.00}ms")), Key.ShiftLeft, Key.X));
+            InputManager.Instance.RegisterInputAction(() => Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkRegionLoaderSystem),
+                $"Average update time: {DiagnosticsProvider.GetGroup<ChunkRegionLoadingDiagnosticGroup>().Average():0.00}ms")), Key.ShiftLeft, Key.X);
         }
 
         [HandledComponents(DistinctionStrategy.All, typeof(Translation), typeof(ChunkLoader))]

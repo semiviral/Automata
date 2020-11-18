@@ -71,6 +71,10 @@ static void InitializeWorld(out World world)
     world.SystemManager.RegisterSystem<RenderSystem, LastOrderSystem>(SystemRegistrationOrder.Before);
     world.SystemManager.RegisterSystem<AllocatedMeshingSystem<uint, PackedVertex>, RenderSystem>(SystemRegistrationOrder.Before);
 
+    AllocatedMeshingSystem<uint, PackedVertex> allocatedMeshingSystem = world.SystemManager.GetSystem<AllocatedMeshingSystem<uint, PackedVertex>>();
+    allocatedMeshingSystem.AllocateVertexAttributes(true, true, new VertexAttribute<int>(0u, 1u, 0u), new VertexAttribute<int>(1u, 1u, 4u));
+    allocatedMeshingSystem.SetTexture("Blocks", TextureAtlas.Instance.Blocks!);
+
     // world.SystemManager.RegisterSystem<ChunkRegionLoaderSystem, DefaultOrderSystem>(SystemRegistrationOrder.Before);
     world.SystemManager.RegisterSystem<ChunkModificationsSystem, DefaultOrderSystem>(SystemRegistrationOrder.Before);
     world.SystemManager.RegisterSystem<ChunkGenerationSystem, DefaultOrderSystem>(SystemRegistrationOrder.Before);

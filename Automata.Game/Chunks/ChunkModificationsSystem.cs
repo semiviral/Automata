@@ -18,8 +18,8 @@ namespace Automata.Game.Chunks
         {
             DiagnosticsProvider.EnableGroup<ChunkModificationsDiagnosticGroup>();
 
-            InputManager.Instance.InputActions.Add(new InputAction(() => Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkModificationsSystem),
-                $"Average update time: {DiagnosticsProvider.GetGroup<ChunkModificationsDiagnosticGroup>().Average():0.00}ms")), Key.ShiftLeft, Key.C));
+            InputManager.Instance.RegisterInputAction(() => Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkModificationsSystem),
+                $"Average update time: {DiagnosticsProvider.GetGroup<ChunkModificationsDiagnosticGroup>().Average():0.00}ms")), Key.ShiftLeft, Key.C);
         }
 
         [HandledComponents(DistinctionStrategy.All, typeof(Chunk))]

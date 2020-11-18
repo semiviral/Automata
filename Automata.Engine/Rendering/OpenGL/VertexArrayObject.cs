@@ -27,6 +27,7 @@ namespace Automata.Engine.Rendering.OpenGL
             _VertexAttributes.AddRange(vertexAttributes);
         }
 
+        // todo support binding multiple vbos to different binding indexes
         public void Finalize(BufferObject vbo, BufferObject? ebo, int vertexOffset)
         {
             Dictionary<uint, uint> strides = new Dictionary<uint, uint>();
