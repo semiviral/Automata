@@ -6,7 +6,9 @@ using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.Meshes
 {
-    public class MultiDrawIndirectMesh : IMesh
+    public class MultiDrawIndirectMesh<TIndex, TVertex> : IMesh
+        where TIndex : unmanaged, IEquatable<TIndex>
+        where TVertex : unmanaged, IEquatable<TVertex>
     {
         private readonly GL _GL;
         private readonly MultiDrawElementsIndirectCommandBuffer _CommandBuffer;
@@ -54,11 +56,11 @@ namespace Automata.Engine.Rendering.Meshes
 
         #region Renting
 
-        public IMemoryOwner<uint> RentIndexMemory(int size, nuint alignment, out nuint index, bool clear = false) =>
-            _IndexAllocator.Rent<uint>(size, alignment, out index, clear);
+        public IMemoryOwner<TIndex> RentIndexMemory(int size, nuint alignment, out nuint index, bool clear = false) =>
+            _IndexAllocator.Rent<TIndex>(size, alignment, out index, clear);
 
-        public IMemoryOwner<T> RentVertexMemory<T>(int size, nuint alignment, out nuint index, bool clear = false) where T : unmanaged =>
-            _VertexAllocator.Rent<T>(size, alignment, out index, clear);
+        public IMemoryOwner<TVertex> RentVertexMemory(int size, nuint alignment, out nuint index, bool clear = false) =>
+            _VertexAllocator.Rent<TVertex>(size, alignment, out index, clear);
 
         #endregion
 

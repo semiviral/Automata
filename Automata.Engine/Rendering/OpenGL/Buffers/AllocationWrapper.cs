@@ -1,30 +1,25 @@
 using System;
-using System.Buffers;
+using Automata.Engine.Rendering.Meshes;
 
 namespace Automata.Engine.Rendering.OpenGL.Buffers
 {
-    public sealed record AllocationWrapper : IDisposable
+    public sealed record AllocationWrapper<TIndex, TVertex> : IDisposable
+        where TIndex : unmanaged, IEquatable<TIndex>
+        where TVertex : unmanaged, IEquatable<TVertex>
     {
-        public IMemoryOwner<uint> IndexesOwner { get; }
-        public IMemoryOwner<byte> VertexesOwner { get; }
-        public nuint IndexesIndex { get; }
-        public nuint VertexesIndex { get; }
-        public uint VertexCount { get; }
+        public BufferArrayMemory<TIndex> IndexesArrayMemory { get; }
+        public BufferArrayMemory<TVertex> VertexArrayMemory { get; }
 
-        public AllocationWrapper(IMemoryOwner<uint> indexesOwner, IMemoryOwner<byte> vertexesOwner, nuint indexesIndex, nuint vertexesIndex,
-            uint vertexCount)
+        public AllocationWrapper(BufferArrayMemory<TIndex> indexesArrayMemory, BufferArrayMemory<TVertex> vertexArrayMemory)
         {
-            IndexesOwner = indexesOwner;
-            VertexesOwner = vertexesOwner;
-            IndexesIndex = indexesIndex;
-            VertexesIndex = vertexesIndex;
-            VertexCount = vertexCount;
+            IndexesArrayMemory = indexesArrayMemory;
+            VertexArrayMemory = vertexArrayMemory;
         }
 
         public void Dispose()
         {
-            IndexesOwner.Dispose();
-            VertexesOwner.Dispose();
+            IndexesArrayMemory.Dispose();
+            VertexArrayMemory.Dispose();
         }
     }
 }

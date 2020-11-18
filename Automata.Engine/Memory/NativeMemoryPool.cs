@@ -31,6 +31,15 @@ namespace Automata.Engine.Memory
             _Pointer = pointer;
         }
 
+        /// <summary>
+        ///     Attempts to rent a sector of memory from the pool.
+        /// </summary>
+        /// <param name="size">Size of the rental in units of <see cref="T" />.</param>
+        /// <param name="alignment">The alignment of the rental index in bytes.</param>
+        /// <param name="index">The resulting index of the rental, from the start of the pool's pointer.</param>
+        /// <param name="clear">Whether to clear the resulting rental before returning the <see cref="IMemoryOwner{T}" />.</param>
+        /// <typeparam name="T">The unmanaged type to return <see cref="IMemoryOwner{T}" /> as.</typeparam>
+        /// <returns></returns>
         public IMemoryOwner<T> Rent<T>(int size, nuint alignment, [MaybeNullWhen(false)] out nuint index, bool clear = false) where T : unmanaged
         {
             if (size < 0) ThrowHelper.ThrowArgumentOutOfRangeException(nameof(size), "Size must be non-negative.");

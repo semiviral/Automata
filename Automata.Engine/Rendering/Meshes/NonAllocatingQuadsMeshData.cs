@@ -4,17 +4,19 @@ using Automata.Engine.Rendering.OpenGL;
 
 namespace Automata.Engine.Rendering.Meshes
 {
-    public record NonAllocatingQuadsMeshData<TVertex> : IDisposable where TVertex : unmanaged, IEquatable<TVertex>
+    public record NonAllocatingQuadsMeshData<TIndex, TVertex> : IDisposable
+        where TIndex : unmanaged, IEquatable<TIndex>
+        where TVertex : unmanaged, IEquatable<TVertex>
     {
-        public static readonly NonAllocatingQuadsMeshData<TVertex> Empty =
-            new NonAllocatingQuadsMeshData<TVertex>(NonAllocatingList<QuadIndexes>.Empty, NonAllocatingList<QuadVertexes<TVertex>>.Empty);
+        public static readonly NonAllocatingQuadsMeshData<TIndex, TVertex> Empty =
+            new NonAllocatingQuadsMeshData<TIndex, TVertex>(NonAllocatingList<QuadIndexes<TIndex>>.Empty, NonAllocatingList<QuadVertexes<TVertex>>.Empty);
 
-        public NonAllocatingList<QuadIndexes> Indexes { get; }
+        public NonAllocatingList<QuadIndexes<TIndex>> Indexes { get; }
         public NonAllocatingList<QuadVertexes<TVertex>> Vertexes { get; }
 
         public bool IsEmpty => Indexes.IsEmpty && Vertexes.IsEmpty;
 
-        public NonAllocatingQuadsMeshData(NonAllocatingList<QuadIndexes> indexes, NonAllocatingList<QuadVertexes<TVertex>> vertexes)
+        public NonAllocatingQuadsMeshData(NonAllocatingList<QuadIndexes<TIndex>> indexes, NonAllocatingList<QuadVertexes<TVertex>> vertexes)
         {
             Indexes = indexes;
             Vertexes = vertexes;
@@ -24,6 +26,7 @@ namespace Automata.Engine.Rendering.Meshes
         {
             Indexes.Dispose();
             Vertexes.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

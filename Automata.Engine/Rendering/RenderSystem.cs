@@ -76,7 +76,7 @@ namespace Automata.Engine.Rendering
             _GL.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
             Span<Plane> planes = stackalloc Plane[Frustum.TOTAL_PLANES];
             DrawCalls = 0;
-            
+
             // update viewport UBO
             if (_NewAspectRatio > 0f) _Viewport.Write(0, new Vector4(0f, 0f, AutomataWindow.Instance.Size.X, AutomataWindow.Instance.Size.Y));
 
