@@ -1,9 +1,6 @@
-
 using System.Numerics;
 using Automata.Engine.Components;
 using Automata.Engine.Rendering.OpenGL.Buffers;
-
-
 
 namespace Automata.Engine.Rendering
 {
