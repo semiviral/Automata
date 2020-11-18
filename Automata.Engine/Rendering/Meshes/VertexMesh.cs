@@ -14,7 +14,7 @@ namespace Automata.Engine.Rendering.Meshes
         public bool Visible { get; }
 
         public BufferObject<TVertex> BufferObject { get; }
-        public VertexArrayObject<TVertex> VertexArrayObject { get; }
+        public VertexArrayObject VertexArrayObject { get; }
 
         public VertexMesh(GL gl)
         {
@@ -25,7 +25,8 @@ namespace Automata.Engine.Rendering.Meshes
             Visible = true;
 
             BufferObject = new BufferObject<TVertex>(gl);
-            VertexArrayObject = new VertexArrayObject<TVertex>(gl);
+            VertexArrayObject = new VertexArrayObject(gl);
+            VertexArrayObject.BindVertexBuffer(0u, BufferObject, 0);
         }
 
         public void Draw()

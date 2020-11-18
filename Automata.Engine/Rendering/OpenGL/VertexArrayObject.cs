@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Automata.Engine.Collections;
 using Automata.Engine.Rendering.OpenGL.Buffers;
 using Serilog;
