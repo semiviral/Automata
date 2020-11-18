@@ -9,11 +9,26 @@ namespace Automata.Engine.Rendering.OpenGL
 {
     public class VertexArrayObject : OpenGLObject
     {
+        private sealed class VertexBufferObjectBinding
+        {
+            public uint Handle { get; }
+            public uint Stride { get; set; }
+            public int VertexOffset { get; }
+
+            public VertexBufferObjectBinding(uint handle, int vertexOffset)
+            {
+                Handle = handle;
+                VertexOffset = vertexOffset;
+            }
+        }
+
         private readonly NonAllocatingList<IVertexAttribute> _VertexAttributes;
+        private readonly Dictionary<uint, VertexBufferObjectBinding> _VertexBufferObjectBindings;
 
         public VertexArrayObject(GL gl) : base(gl)
         {
             _VertexAttributes = new NonAllocatingList<IVertexAttribute>();
+            _VertexBufferObjectBindings = new Dictionary<uint, VertexBufferObjectBinding>();
 
             Handle = GL.CreateVertexArray();
         }
@@ -27,23 +42,30 @@ namespace Automata.Engine.Rendering.OpenGL
             _VertexAttributes.AddRange(vertexAttributes);
         }
 
-        // todo support binding multiple vbos to different binding indexes
-        public void Finalize(BufferObject vbo, BufferObject? ebo, int vertexOffset)
+        public void BindVertexBuffer(uint bindingIndex, BufferObject vbo, int vertexOffset)
         {
-            Dictionary<uint, uint> strides = new Dictionary<uint, uint>();
+            if (_VertexBufferObjectBindings.ContainsKey(bindingIndex))
+                _VertexBufferObjectBindings[bindingIndex] = new VertexBufferObjectBinding(vbo.Handle, vertexOffset);
+            else _VertexBufferObjectBindings.Add(bindingIndex, new VertexBufferObjectBinding(vbo.Handle, vertexOffset));
+        }
 
+        public void Finalize(BufferObject? ebo)
+        {
             foreach (IVertexAttribute vertexAttribute in _VertexAttributes.OrderBy(attribute => attribute.BindingIndex))
             {
-                vertexAttribute.Commit(GL, Handle);
+
+                vertexAttribute.CommitFormat(GL, Handle);
                 GL.EnableVertexArrayAttrib(Handle, vertexAttribute.Index);
                 GL.VertexArrayAttribBinding(Handle, vertexAttribute.Index, vertexAttribute.BindingIndex);
                 if (vertexAttribute.Divisor > 0u) GL.VertexArrayBindingDivisor(Handle, vertexAttribute.BindingIndex, vertexAttribute.Divisor);
 
-                if (strides.ContainsKey(vertexAttribute.BindingIndex)) strides[vertexAttribute.BindingIndex] += vertexAttribute.Stride;
-                else strides.Add(vertexAttribute.BindingIndex, vertexAttribute.Stride);
+                if (_VertexBufferObjectBindings.TryGetValue(vertexAttribute.BindingIndex, out VertexBufferObjectBinding? binding))
+                    binding!.Stride += vertexAttribute.Stride;
             }
 
-            foreach ((uint bindingIndex, uint stride) in strides) GL.VertexArrayVertexBuffer(Handle, bindingIndex, vbo.Handle, vertexOffset, stride);
+            foreach ((uint bindingIndex, VertexBufferObjectBinding binding) in _VertexBufferObjectBindings)
+                GL.VertexArrayVertexBuffer(Handle, bindingIndex, binding.Handle, binding.VertexOffset, binding.Stride);
+
             if (ebo is not null) GL.VertexArrayElementBuffer(Handle, ebo.Handle);
 
             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(VertexArrayObject),
@@ -63,7 +85,11 @@ namespace Automata.Engine.Rendering.OpenGL
 
         #region IDisposable
 
-        protected override void DisposeInternal() => GL.DeleteVertexArray(Handle);
+        protected override void DisposeInternal()
+        {
+            _VertexAttributes.Dispose();
+            GL.DeleteVertexArray(Handle);
+        }
 
         #endregion
     }

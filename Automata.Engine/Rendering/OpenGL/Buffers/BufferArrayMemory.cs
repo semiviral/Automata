@@ -3,26 +3,24 @@ using System.Buffers;
 
 namespace Automata.Engine.Rendering.OpenGL.Buffers
 {
-    public delegate IMemoryOwner<T> AllocationRenter<T>(int length, nuint alignment, out nuint index, bool clear = false) where T : unmanaged;
-
-    public record BufferArrayMemory<T> : IDisposable where T : unmanaged
+    public sealed record BufferArrayMemory : IDisposable
     {
-        public IMemoryOwner<T> MemoryOwner { get; }
+        public IMemoryOwner<byte> MemoryOwner { get; }
         public nuint Index { get; }
 
         public uint Count => (uint)MemoryOwner.Memory.Length;
 
-        public BufferArrayMemory(AllocationRenter<T> renter, nuint alignment, ReadOnlySpan<T> data)
+        public BufferArrayMemory(BufferAllocator allocator, nuint alignment, nuint length)
         {
-            MemoryOwner = renter(data.Length, alignment, out nuint index);
-            data.CopyTo(MemoryOwner.Memory.Span);
+            MemoryOwner = allocator.Rent<byte>((int)length, alignment, out nuint index);
             Index = index;
         }
 
-        public void Dispose()
-        {
-            MemoryOwner.Dispose();
-            GC.SuppressFinalize(this);
-        }
+
+        #region IDisposable
+
+        public void Dispose() => MemoryOwner.Dispose();
+
+        #endregion
     }
 }

@@ -2,9 +2,14 @@
 
 out gl_PerVertex { vec4 gl_Position; };
 
-layout (location = 0) in int vert;
-layout (location = 1) in int uv;
-//layout (location = 2) in vec4 model;
+layout (location = 1) in int vert;
+layout (location = 2) in int uv;
+layout (location = 0) in uint drawID;
+
+layout (std430, binding = 5) buffer models
+{
+    mat4 data[];
+};
 
 layout (location = 0) out fragment
 {
@@ -48,7 +53,7 @@ void main()
         );
 
     fragment.uv = uncompressedUV;
-    //fragment.color = model.xyz;
+    fragment.color.r = data[drawID][0][0];
     fragment.color = vec3(lerpedNormal.x + lerpedNormal.y + lerpedNormal.z);
-    gl_Position = _mvp * uncompressedPosition;
+    gl_Position = (_mvp) * uncompressedPosition;
 }

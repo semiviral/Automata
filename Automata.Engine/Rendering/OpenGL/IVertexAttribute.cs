@@ -1,7 +1,7 @@
 using System;
 using Silk.NET.OpenGL;
 
-namespace Automata.Engine.Rendering.OpenGL.Buffers
+namespace Automata.Engine.Rendering.OpenGL
 {
     public interface IVertexAttribute : IEquatable<IVertexAttribute>
     {
@@ -13,6 +13,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
         public bool Normalized { get; }
         public uint Stride { get; }
 
-        public void Commit(GL gl, uint vao);
+        public void CommitFormat(GL gl, uint vao);
+        public void CommitFormatDirect(GL gl);
     }
 }

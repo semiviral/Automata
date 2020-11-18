@@ -1,5 +1,5 @@
 using System;
-using System.Buffers;
+using System.Numerics;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
 using Silk.NET.OpenGL;
@@ -11,17 +11,19 @@ namespace Automata.Engine.Rendering.Meshes
         where TVertex : unmanaged, IEquatable<TVertex>
     {
         private readonly GL _GL;
-        private readonly MultiDrawElementsIndirectCommandBuffer _CommandBuffer;
+        private readonly BufferObject _CommandBuffer;
         private readonly BufferAllocator _IndexAllocator;
         private readonly BufferAllocator _VertexAllocator;
         private readonly VertexArrayObject _VertexArrayObject;
+        private readonly ShaderStorageBufferObject<Matrix4x4> _Models;
         private readonly DrawElementsType _DrawElementsType;
 
         private nint _BufferSync;
 
         public Guid ID { get; }
         public Layer Layer { get; }
-        public bool Visible => _CommandBuffer.Count > 0;
+        public uint DrawCommandCount { get; private set; }
+        public bool Visible => DrawCommandCount > 0u;
 
         public MultiDrawIndirectMesh(GL gl, uint indexAllocatorSize, uint vertexAllocatorSize, Layer layers = Layer.Layer0)
         {
@@ -29,10 +31,14 @@ namespace Automata.Engine.Rendering.Meshes
             Layer = layers;
 
             _GL = gl;
-            _CommandBuffer = new MultiDrawElementsIndirectCommandBuffer(gl);
+            _CommandBuffer = new BufferObject(gl);
             _IndexAllocator = new BufferAllocator(gl, indexAllocatorSize);
             _VertexAllocator = new BufferAllocator(gl, vertexAllocatorSize);
             _VertexArrayObject = new VertexArrayObject(gl);
+            _Models = new ShaderStorageBufferObject<Matrix4x4>(gl, 5u);
+
+            _VertexArrayObject.BindVertexBuffer(0u, _VertexAllocator, 0);
+            _VertexArrayObject.BindVertexBuffer(1u, _CommandBuffer, 0);
 
             if (typeof(TIndex) == typeof(byte)) _DrawElementsType = DrawElementsType.UnsignedByte;
             else if (typeof(TIndex) == typeof(ushort)) _DrawElementsType = DrawElementsType.UnsignedShort;
@@ -40,21 +46,28 @@ namespace Automata.Engine.Rendering.Meshes
             else throw new NotSupportedException("Does not support specified index type.");
         }
 
-        public void FinalizeVertexArrayObject(int vertexOffset) => _VertexArrayObject.Finalize(_VertexAllocator, _IndexAllocator, vertexOffset);
+        public void FinalizeVertexArrayObject() => _VertexArrayObject.Finalize(_IndexAllocator);
 
         public void AllocateVertexAttributes(bool replace, params IVertexAttribute[] attributes) =>
             _VertexArrayObject.AllocateVertexAttributes(replace, attributes);
 
-        public void AllocateDrawElementsIndirectCommands(Span<DrawElementsIndirectCommand> commands) => _CommandBuffer.AllocateCommands(commands);
+        public void AllocateDrawElementsIndirectCommands(Span<DrawElementsIndirectCommand> commands)
+        {
+            DrawCommandCount = (uint)commands.Length;
+            _CommandBuffer.SetData(commands, BufferDraw.StaticDraw);
+        }
+
+        public void SetSSBOModelsData(Span<Matrix4x4> models) => _Models.SetData(models);
 
         public unsafe void Draw()
         {
             WaitForBufferFreeSync();
 
-            _CommandBuffer.Bind();
+            _Models.Bind();
             _VertexArrayObject.Bind();
+            _CommandBuffer.Bind(BufferTargetARB.DrawIndirectBuffer);
 
-            _GL.MultiDrawElementsIndirect(PrimitiveType.Triangles, _DrawElementsType, (void*)null!, _CommandBuffer.Count, 0u);
+            _GL.MultiDrawElementsIndirect(PrimitiveType.Triangles, _DrawElementsType, (void*)null!, DrawCommandCount, 0u);
 
             RegenerateBufferSync();
         }
@@ -62,11 +75,8 @@ namespace Automata.Engine.Rendering.Meshes
 
         #region Renting
 
-        public IMemoryOwner<TIndex> RentIndexMemory(int size, nuint alignment, out nuint index, bool clear = false) =>
-            _IndexAllocator.Rent<TIndex>(size, alignment, out index, clear);
-
-        public IMemoryOwner<TVertex> RentVertexMemory(int size, nuint alignment, out nuint index, bool clear = false) =>
-            _VertexAllocator.Rent<TVertex>(size, alignment, out index, clear);
+        public BufferArrayMemory RentIndexBufferArrayMemory(nuint alignment, nuint length) => new BufferArrayMemory(_IndexAllocator, alignment, length);
+        public BufferArrayMemory RentVertexBufferArrayMemory(nuint alignment, nuint length) => new BufferArrayMemory(_VertexAllocator, alignment, length);
 
         #endregion
 

@@ -1,5 +1,4 @@
 using System;
-using Automata.Engine.Rendering.OpenGL.Buffers;
 using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.OpenGL
@@ -24,7 +23,7 @@ namespace Automata.Engine.Rendering.OpenGL
             Normalized = normalized;
         }
 
-        public void Commit(GL gl, uint vao)
+        public void CommitFormat(GL gl, uint vao)
         {
             if (typeof(TComponent) == typeof(int)) gl.VertexArrayAttribIFormat(vao, Index, Dimensions, VertexAttribIType.Int, Offset);
             else if (typeof(TComponent) == typeof(uint)) gl.VertexArrayAttribIFormat(vao, Index, Dimensions, VertexAttribIType.UnsignedInt, Offset);
@@ -34,6 +33,19 @@ namespace Automata.Engine.Rendering.OpenGL
             else if (typeof(TComponent) == typeof(byte)) gl.VertexArrayAttribIFormat(vao, Index, Dimensions, VertexAttribIType.UnsignedByte, Offset);
             else if (typeof(TComponent) == typeof(float)) gl.VertexArrayAttribFormat(vao, Index, Dimensions, VertexAttribType.Float, Normalized, Offset);
             else if (typeof(TComponent) == typeof(double)) gl.VertexArrayAttribLFormat(vao, Index, Dimensions, VertexAttribLType.Double, Offset);
+            else throw new NotSupportedException($"{nameof(TComponent)} is of unsupported type '{typeof(TComponent)}'. Must be a primitive.");
+        }
+
+        public void CommitFormatDirect(GL gl)
+        {
+            if (typeof(TComponent) == typeof(int)) gl.VertexAttribIFormat(Index, Dimensions, VertexAttribIType.Int, Offset);
+            else if (typeof(TComponent) == typeof(uint)) gl.VertexAttribIFormat(Index, Dimensions, VertexAttribIType.UnsignedInt, Offset);
+            else if (typeof(TComponent) == typeof(short)) gl.VertexAttribIFormat(Index, Dimensions, VertexAttribIType.Short, Offset);
+            else if (typeof(TComponent) == typeof(ushort)) gl.VertexAttribIFormat(Index, Dimensions, VertexAttribIType.UnsignedShort, Offset);
+            else if (typeof(TComponent) == typeof(sbyte)) gl.VertexAttribIFormat(Index, Dimensions, VertexAttribIType.Byte, Offset);
+            else if (typeof(TComponent) == typeof(byte)) gl.VertexAttribIFormat(Index, Dimensions, VertexAttribIType.UnsignedByte, Offset);
+            else if (typeof(TComponent) == typeof(float)) gl.VertexAttribFormat(Index, Dimensions, VertexAttribType.Float, Normalized, Offset);
+            else if (typeof(TComponent) == typeof(double)) gl.VertexAttribLFormat(Index, Dimensions, VertexAttribLType.Double, Offset);
             else throw new NotSupportedException($"{nameof(TComponent)} is of unsupported type '{typeof(TComponent)}'. Must be a primitive.");
         }
 

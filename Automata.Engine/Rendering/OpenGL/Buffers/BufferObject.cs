@@ -7,7 +7,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
     {
         public uint Length { get; protected set; }
 
-        public BufferObject(GL gl) : base(gl) { }
+        public BufferObject(GL gl) : base(gl) => Handle = GL.CreateBuffer();
 
         public BufferObject(GL gl, uint length, BufferStorageMask storageFlags = BufferStorageMask.DynamicStorageBit) : base(gl)
         {

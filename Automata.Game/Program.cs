@@ -38,6 +38,7 @@ static void InitializeLogger()
     Log.Logger = new LoggerConfiguration()
         .MinimumLevel.Verbose()
         .WriteTo.Console()
+        .WriteTo.Async(config => config.File("log.txt"))
         .CreateLogger();
 
     Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(Serilog), "Logger initialized."));
@@ -72,7 +73,10 @@ static void InitializeWorld(out World world)
     world.SystemManager.RegisterSystem<AllocatedMeshingSystem<uint, PackedVertex>, RenderSystem>(SystemRegistrationOrder.Before);
 
     AllocatedMeshingSystem<uint, PackedVertex> allocatedMeshingSystem = world.SystemManager.GetSystem<AllocatedMeshingSystem<uint, PackedVertex>>();
-    allocatedMeshingSystem.AllocateVertexAttributes(true, true, new VertexAttribute<int>(0u, 1u, 0u), new VertexAttribute<int>(1u, 1u, 4u));
+    allocatedMeshingSystem.AllocateVertexAttributes(true, true,
+        new VertexAttribute<int>(0u, 1u, 0u),
+        new VertexAttribute<int>(1u, 1u, 4u),
+        new VertexAttribute<uint>(2u, 1u, 0u, 1u, 1u));
     allocatedMeshingSystem.SetTexture("Blocks", TextureAtlas.Instance.Blocks!);
 
     // world.SystemManager.RegisterSystem<ChunkRegionLoaderSystem, DefaultOrderSystem>(SystemRegistrationOrder.Before);
