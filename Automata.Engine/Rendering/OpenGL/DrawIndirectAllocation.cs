@@ -1,7 +1,7 @@
 using System;
 using Automata.Engine.Components;
 
-namespace Automata.Engine.Rendering.OpenGL.Buffers
+namespace Automata.Engine.Rendering.OpenGL
 {
     public class DrawIndirectAllocation<TIndex, TVertex> : ComponentChangeable, IDisposable
         where TIndex : unmanaged, IEquatable<TIndex>

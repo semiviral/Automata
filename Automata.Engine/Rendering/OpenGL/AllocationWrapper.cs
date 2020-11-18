@@ -1,6 +1,7 @@
 using System;
+using Automata.Engine.Rendering.OpenGL.Buffers;
 
-namespace Automata.Engine.Rendering.OpenGL.Buffers
+namespace Automata.Engine.Rendering.OpenGL
 {
     public sealed record AllocationWrapper<TIndex, TVertex> : IDisposable
         where TIndex : unmanaged, IEquatable<TIndex>

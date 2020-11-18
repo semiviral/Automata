@@ -1,4 +1,4 @@
-namespace Automata.Game.Chunks
+namespace Automata.Game
 {
     public enum ComparisonMode
     {

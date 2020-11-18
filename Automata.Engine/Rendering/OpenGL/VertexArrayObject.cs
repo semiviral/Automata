@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using Automata.Engine.Collections;
+using Automata.Engine.Rendering.OpenGL.Buffers;
 using Serilog;
 using Silk.NET.OpenGL;
 
-namespace Automata.Engine.Rendering.OpenGL.Buffers
+namespace Automata.Engine.Rendering.OpenGL
 {
     public class VertexArrayObject : OpenGLObject
     {

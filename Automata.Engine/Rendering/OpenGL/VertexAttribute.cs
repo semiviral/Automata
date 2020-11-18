@@ -1,7 +1,8 @@
 using System;
+using Automata.Engine.Rendering.OpenGL.Buffers;
 using Silk.NET.OpenGL;
 
-namespace Automata.Engine.Rendering.OpenGL.Buffers
+namespace Automata.Engine.Rendering.OpenGL
 {
     public record VertexAttribute<TComponent> : IVertexAttribute where TComponent : unmanaged
     {
