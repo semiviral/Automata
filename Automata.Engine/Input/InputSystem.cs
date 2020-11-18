@@ -4,8 +4,6 @@ using System;
 using System.Numerics;
 using System.Threading.Tasks;
 using Automata.Engine.Components;
-using Automata.Engine.Entities;
-using Automata.Engine.Systems;
 using Silk.NET.Input.Common;
 
 #endregion

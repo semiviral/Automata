@@ -4,12 +4,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Automata.Engine.Diagnostics;
-using Automata.Engine.Entities;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
 using Automata.Engine.Rendering.OpenGL.Shaders;
 using Automata.Engine.Rendering.OpenGL.Textures;
-using Automata.Engine.Systems;
 using Microsoft.Toolkit.HighPerformance.Extensions;
 
 namespace Automata.Engine.Rendering.Meshes

@@ -1,12 +1,11 @@
 using System;
 using System.Threading.Tasks;
-using Automata.Engine.Entities;
 
-namespace Automata.Engine.Systems
+namespace Automata.Engine
 {
     public abstract class ComponentSystem
     {
-        protected World? _CurrentWorld { get; private set; }
+        protected World _CurrentWorld { get; private set; } = null!;
         public bool Enabled { get; protected set; }
 
         public ComponentSystem() => Enabled = true;

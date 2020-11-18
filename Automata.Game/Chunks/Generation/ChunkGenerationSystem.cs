@@ -8,11 +8,9 @@ using Automata.Engine.Collections;
 using Automata.Engine.Components;
 using Automata.Engine.Concurrency;
 using Automata.Engine.Diagnostics;
-using Automata.Engine.Entities;
 using Automata.Engine.Input;
 using Automata.Engine.Numerics;
 using Automata.Engine.Rendering.Meshes;
-using Automata.Engine.Systems;
 using Automata.Game.Blocks;
 using Automata.Game.Chunks.Generation.Meshing;
 using Automata.Game.Chunks.Generation.Structures;
@@ -52,7 +50,7 @@ namespace Automata.Game.Chunks.Generation
                 Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(DiagnosticsPool), string.Join(", ", states)));
             }, Key.ShiftLeft, Key.V));
 
-            _CurrentWorld!.SystemManager.GetSystem<AllocatedMeshingSystem<uint, PackedVertex>>().SetTexture("Blocks", TextureAtlas.Instance.Blocks!);
+            GetSystem<AllocatedMeshingSystem<uint, PackedVertex>>()?.SetTexture("Blocks", TextureAtlas.Instance.Blocks!);
         }
 
         [HandledComponents(DistinctionStrategy.All, typeof(Translation), typeof(Chunk))]
