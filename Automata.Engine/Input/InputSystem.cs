@@ -29,10 +29,15 @@ namespace Automata.Engine.Input
             // without this line, the x-axis rotation will be backwards
             relativeMousePosition.X = -relativeMousePosition.X;
 
-            if (relativeMousePosition == Vector2.Zero) return;
+            if (relativeMousePosition == Vector2.Zero)
+            {
+                return;
+            }
 
             foreach ((Rotation rotation, MouseListener mouseListener) in entityManager.GetComponents<Rotation, MouseListener>())
+            {
                 rotation.AccumulateAngles(relativeMousePosition * mouseListener.Sensitivity);
+            }
 
             // reset mouse position to center of screen
             InputManager.Instance.SetMousePositionCenterRelative(0, Vector2.Zero);
@@ -42,24 +47,44 @@ namespace Automata.Engine.Input
         {
             Vector3 movementVector = -GetMovementVector((float)delta.TotalSeconds);
 
-            if (movementVector == Vector3.Zero) return;
+            if (movementVector == Vector3.Zero)
+            {
+                return;
+            }
 
             foreach ((IEntity entity, Translation translation, KeyboardListener listener) in entityManager
                 .GetEntitiesWithComponents<Translation, KeyboardListener>())
+            {
                 translation.Value += listener.Sensitivity
                                      * (entity.TryFind(out Rotation? rotation)
                                          ? Vector3.Transform(movementVector, rotation.Value)
                                          : movementVector);
+            }
         }
 
         private static Vector3 GetMovementVector(float deltaTime)
         {
             Vector3 movementVector = Vector3.Zero;
 
-            if (InputManager.Instance.IsKeyPressed(Key.W)) movementVector += Vector3.UnitZ * deltaTime;
-            if (InputManager.Instance.IsKeyPressed(Key.S)) movementVector -= Vector3.UnitZ * deltaTime;
-            if (InputManager.Instance.IsKeyPressed(Key.A)) movementVector += Vector3.UnitX * deltaTime;
-            if (InputManager.Instance.IsKeyPressed(Key.D)) movementVector -= Vector3.UnitX * deltaTime;
+            if (InputManager.Instance.IsKeyPressed(Key.W))
+            {
+                movementVector += Vector3.UnitZ * deltaTime;
+            }
+
+            if (InputManager.Instance.IsKeyPressed(Key.S))
+            {
+                movementVector -= Vector3.UnitZ * deltaTime;
+            }
+
+            if (InputManager.Instance.IsKeyPressed(Key.A))
+            {
+                movementVector += Vector3.UnitX * deltaTime;
+            }
+
+            if (InputManager.Instance.IsKeyPressed(Key.D))
+            {
+                movementVector -= Vector3.UnitX * deltaTime;
+            }
 
             return movementVector;
         }

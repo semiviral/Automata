@@ -42,7 +42,10 @@ namespace Automata.Engine.Memory
         /// <returns></returns>
         public IMemoryOwner<T> Rent<T>(int size, nuint alignment, [MaybeNullWhen(false)] out nuint index, bool clear = false) where T : unmanaged
         {
-            if (size < 0) ThrowHelper.ThrowArgumentOutOfRangeException(nameof(size), "Size must be non-negative.");
+            if (size < 0)
+            {
+                ThrowHelper.ThrowArgumentOutOfRangeException(nameof(size), "Size must be non-negative.");
+            }
 
             // `byteSize` will be used to define the MemoryBlock sizes
             // it's assumed that `size` will be in units of `T`, so to properly
@@ -53,16 +56,26 @@ namespace Automata.Engine.Memory
             lock (_AccessLock)
             {
                 LinkedListNode<MemoryBlock>? current = _MemoryMap.First;
-                if (current is null) ThrowHelper.ThrowInvalidOperationException("Memory pool is in invalid state.");
+
+                if (current is null)
+                {
+                    ThrowHelper.ThrowInvalidOperationException("Memory pool is in invalid state.");
+                }
 
                 do
                 {
-                    if (current!.Value.Owned) continue;
+                    if (current!.Value.Owned)
+                    {
+                        continue;
+                    }
 
                     if (alignment is 0u)
                     {
                         // just convert entire block to owned
-                        if (current.Value.Size == sizeInBytes) current.Value = current.Value with { Owned = true };
+                        if (current.Value.Size == sizeInBytes)
+                        {
+                            current.Value = current.Value with { Owned = true };
+                        }
                         else if (current.Value.Size > sizeInBytes)
                         {
                             nuint afterBlockIndex = current.Value.Index + sizeInBytes;
@@ -74,7 +87,10 @@ namespace Automata.Engine.Memory
                             // allocate new block after current with remaining length
                             _MemoryMap.AddAfter(current, new MemoryBlock(afterBlockIndex, afterBlockLength, false));
                         }
-                        else continue;
+                        else
+                        {
+                            continue;
+                        }
                     }
                     else
                     {
@@ -83,8 +99,14 @@ namespace Automata.Engine.Memory
                         nuint alignedSize = current.Value.Size - alignmentPadding;
 
                         // check for an overflow, in which case size is too small.
-                        if (alignedSize > current.Value.Size) continue;
-                        else if ((alignedIndex == current.Value.Index) && (alignedSize == sizeInBytes)) current.Value = current.Value with { Owned = true };
+                        if (alignedSize > current.Value.Size)
+                        {
+                            continue;
+                        }
+                        else if ((alignedIndex == current.Value.Index) && (alignedSize == sizeInBytes))
+                        {
+                            current.Value = current.Value with { Owned = true };
+                        }
                         else if (alignedSize >= sizeInBytes)
                         {
                             // if our alignment forces us out-of-alignment with
@@ -105,12 +127,20 @@ namespace Automata.Engine.Memory
                             current.Value = current.Value with { Size = sizeInBytes, Owned = true };
                             _MemoryMap.AddAfter(current, new MemoryBlock(afterBlockIndex, afterBlockSize, false));
                         }
-                        else continue;
+                        else
+                        {
+                            continue;
+                        }
                     }
 
                     index = current.Value.Index;
                     IMemoryOwner<T> memoryOwner = CreateMemoryOwner<T>(index, size);
-                    if (clear) memoryOwner.Memory.Span.Clear();
+
+                    if (clear)
+                    {
+                        memoryOwner.Memory.Span.Clear();
+                    }
+
                     return memoryOwner;
                 } while ((current = current!.Next) is not null);
             }
@@ -132,7 +162,10 @@ namespace Automata.Engine.Memory
         /// </returns>
         private IMemoryOwner<T> CreateMemoryOwner<T>(nuint index, int size) where T : unmanaged
         {
-            if (size > int.MaxValue) ThrowHelper.ThrowArgumentOutOfRangeException(nameof(size), $"Length cannot be greater than {int.MaxValue}.");
+            if (size > int.MaxValue)
+            {
+                ThrowHelper.ThrowArgumentOutOfRangeException(nameof(size), $"Length cannot be greater than {int.MaxValue}.");
+            }
 
             // remark: it's POSSIBLE for alignment to get screwed up in this operation.
             // T will not often be the same size as _Pointer (i.e. a byte), so it's important to take care in calling this
@@ -150,11 +183,18 @@ namespace Automata.Engine.Memory
             LinkedListNode<MemoryBlock> GetMemoryBlockAtIndex(nuint index)
             {
                 LinkedListNode<MemoryBlock>? current = _MemoryMap.First;
-                if (current is null) ThrowHelper.ThrowInvalidOperationException("Memory pool is in invalid state.");
+
+                if (current is null)
+                {
+                    ThrowHelper.ThrowInvalidOperationException("Memory pool is in invalid state.");
+                }
 
                 do
                 {
-                    if (current!.Value.Index == index) return current;
+                    if (current!.Value.Index == index)
+                    {
+                        return current;
+                    }
                 } while ((current = current!.Next) is not null);
 
                 ThrowHelper.ThrowArgumentOutOfRangeException(nameof(index), "No memory block starts at index.");

@@ -30,7 +30,9 @@ namespace Automata.Game.Chunks.Generation.Meshing
             try
             {
                 if ((blocksPalette.LookupTableSize == 1) && (blocksPalette.GetLookupIndex(0).ID == BlockRegistry.AirID))
+                {
                     return NonAllocatingQuadsMeshData<uint, PackedVertex>.Empty;
+                }
 
                 BlockRegistry blockRegistry = BlockRegistry.Instance;
                 NonAllocatingList<QuadIndexes<uint>> indexes = new NonAllocatingList<QuadIndexes<uint>>(_DEFAULT_INDEXES_CAPACITY);
@@ -47,7 +49,10 @@ namespace Automata.Game.Chunks.Generation.Meshing
                 {
                     Block block = blocks[index];
 
-                    if ((block.ID == BlockRegistry.AirID) || (block.ID == BlockRegistry.NullID)) continue;
+                    if ((block.ID == BlockRegistry.AirID) || (block.ID == BlockRegistry.NullID))
+                    {
+                        continue;
+                    }
 
                     IMeshingStrategy meshingStrategy = MeshingStrategies[blockRegistry.GetBlockDefinition(block.ID).MeshingStrategyIndex];
                     int localPosition = x | (y << GenerationConstants.CHUNK_SIZE_SHIFT) | (z << (GenerationConstants.CHUNK_SIZE_SHIFT * 2));
@@ -61,8 +66,13 @@ namespace Automata.Game.Chunks.Generation.Meshing
             catch (Exception exception)
             {
                 if (exception is IndexOutOfRangeException or InvalidOperationException && blocksPalette.Count is 0)
+                {
                     return NonAllocatingQuadsMeshData<uint, PackedVertex>.Empty;
-                else throw;
+                }
+                else
+                {
+                    throw;
+                }
             }
         }
     }

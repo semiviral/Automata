@@ -49,7 +49,10 @@ namespace Automata.Engine.Input
         {
             _InputContext = view.CreateInput();
 
-            if (_InputContext is null) throw new NullReferenceException("View provided a null input context.");
+            if (_InputContext is null)
+            {
+                throw new NullReferenceException("View provided a null input context.");
+            }
 
             foreach (IKeyboard keyboard in _InputContext.Keyboards)
             {
@@ -78,7 +81,10 @@ namespace Automata.Engine.Input
 
         public Vector2 GetMousePosition(int mouseIndex)
         {
-            if ((mouseIndex < 0) || (mouseIndex >= _Mice.Count)) throw new IndexOutOfRangeException(nameof(mouseIndex));
+            if ((mouseIndex < 0) || (mouseIndex >= _Mice.Count))
+            {
+                throw new IndexOutOfRangeException(nameof(mouseIndex));
+            }
 
             PointF position = _Mice[mouseIndex].Position;
             position.Y = -position.Y + AutomataWindow.Instance.Size.Y;
@@ -96,7 +102,10 @@ namespace Automata.Engine.Input
 
         public void SetMousePositionCenterRelative(int mouseIndex, Vector2 position)
         {
-            if ((mouseIndex < 0) || (mouseIndex >= _Mice.Count)) throw new IndexOutOfRangeException(nameof(mouseIndex));
+            if ((mouseIndex < 0) || (mouseIndex >= _Mice.Count))
+            {
+                throw new IndexOutOfRangeException(nameof(mouseIndex));
+            }
 
             position += (Vector2)AutomataWindow.Instance.Center;
             _Mice[mouseIndex].Position = Unsafe.As<Vector2, PointF>(ref position);
@@ -105,14 +114,22 @@ namespace Automata.Engine.Input
         public void CheckAndExecuteInputActions()
         {
             foreach (InputAction inputAction in _InputActions)
+            {
                 if (inputAction.KeyCombination.All(IsKeyPressed))
                 {
-                    if (inputAction.Activated) continue;
+                    if (inputAction.Activated)
+                    {
+                        continue;
+                    }
 
                     inputAction.Activated = true;
                     inputAction.Action.Invoke();
                 }
-                else inputAction.Activated = false;
+                else
+                {
+                    inputAction.Activated = false;
+                }
+            }
         }
 
 

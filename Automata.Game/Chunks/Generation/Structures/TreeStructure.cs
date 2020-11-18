@@ -24,12 +24,18 @@ namespace Automata.Game.Chunks.Generation.Structures
             ushort sandID = BlockRegistry.Instance.GetBlockID("Core:Sand");
 
             int yTotal = 0;
-            for (; yTotal < 5; yTotal++) yield return (new Vector3i(0, yTotal, 0), sandID);
+
+            for (; yTotal < 5; yTotal++)
+            {
+                yield return (new Vector3i(0, yTotal, 0), sandID);
+            }
 
             for (int y = -1; y < 2; y++)
             for (int z = -1; z < 2; z++)
             for (int x = -1; x < 2; x++)
+            {
                 yield return (new Vector3i(x, y + yTotal, z), sandID);
+            }
         }
     }
 }

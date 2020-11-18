@@ -13,7 +13,10 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
 
         public Texture3D(GL gl, Vector3i size, WrapMode wrapMode, FilterMode filterMode, bool mipmap) : base(gl, TextureTarget.Texture3D)
         {
-            if (Vector3b.Any(size < 0)) throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
+            if (Vector3b.Any(size < 0))
+            {
+                throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
+            }
 
             Size = size;
 
@@ -21,13 +24,22 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             AssignTextureParameters(GetWrapModeAsGLEnum(wrapMode), GetFilterModeAsGLEnum(filterMode));
             GL.TextureStorage3D(Handle, 1, _InternalFormat, (uint)size.X, (uint)size.Y, (uint)size.Z);
 
-            if (mipmap) GL.GenerateTextureMipmap(Handle);
+            if (mipmap)
+            {
+                GL.GenerateTextureMipmap(Handle);
+            }
         }
 
         public void SetPixels(Vector3i offset, Vector3i size, Span<TPixel> pixels)
         {
-            if (Vector3b.Any(offset < 0)) throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
-            else if (Vector3b.Any(size < 0)) throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0 and <TexSize");
+            if (Vector3b.Any(offset < 0))
+            {
+                throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
+            }
+            else if (Vector3b.Any(size < 0))
+            {
+                throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0 and <TexSize");
+            }
 
             GL.TextureSubImage3D(Handle, 0, offset.X, offset.Y, offset.Z, (uint)size.X, (uint)size.Y, (uint)size.Z, _PixelFormat, _PixelType, pixels);
         }

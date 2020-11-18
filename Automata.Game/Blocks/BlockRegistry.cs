@@ -45,19 +45,29 @@ namespace Automata.Game.Blocks
 
             foreach ((string directoryPath, Resource resource) in resources)
             {
-                if (resource.Group is null) continue;
+                if (resource.Group is null)
+                {
+                    continue;
+                }
 
                 foreach (Resource.BlockDefinition blockDefinition in resource.BlockDefinitions ?? Enumerable.Empty<Resource.BlockDefinition>())
                 {
-                    if (blockDefinition.Name is null) continue;
+                    if (blockDefinition.Name is null)
+                    {
+                        continue;
+                    }
 
                     IBlockDefinition.Attribute attributes = 0;
 
-                    if (blockDefinition.Attributes is not null && !TryParseAttributes(blockDefinition.Attributes, out attributes)) continue;
+                    if (blockDefinition.Attributes is not null && !TryParseAttributes(blockDefinition.Attributes, out attributes))
+                    {
+                        continue;
+                    }
 
                     ushort id = RegisterBlock(resource.Group, blockDefinition.Name, attributes, blockDefinition.MeshingStrategy);
 
                     if (resource.Group.Equals("Core"))
+                    {
                         switch (blockDefinition.Name)
                         {
                             case "Null":
@@ -67,6 +77,7 @@ namespace Automata.Game.Blocks
                                 AirID = id;
                                 break;
                         }
+                    }
 
                     foreach (string textureName in blockDefinition.Textures ?? Enumerable.Empty<string>())
                     {
@@ -82,11 +93,15 @@ namespace Automata.Game.Blocks
             result = (IBlockDefinition.Attribute)0;
 
             foreach (string attribute in attributes)
+            {
                 if (attribute.StartsWith("Alias"))
                 {
                     string aliasName = attribute.Substring(attribute.IndexOf(' ') + 1);
 
-                    if (_AttributeAliases.TryGetValue(aliasName, out IBlockDefinition.Attribute aliasAttribute)) result |= aliasAttribute;
+                    if (_AttributeAliases.TryGetValue(aliasName, out IBlockDefinition.Attribute aliasAttribute))
+                    {
+                        result |= aliasAttribute;
+                    }
                     else
                     {
                         Log.Error(string.Format(_LogFormat,
@@ -95,7 +110,10 @@ namespace Automata.Game.Blocks
                         return false;
                     }
                 }
-                else if (Enum.TryParse(typeof(IBlockDefinition.Attribute), attribute, true, out object? parsed)) result |= (IBlockDefinition.Attribute)parsed!;
+                else if (Enum.TryParse(typeof(IBlockDefinition.Attribute), attribute, true, out object? parsed))
+                {
+                    result |= (IBlockDefinition.Attribute)parsed!;
+                }
                 else
                 {
                     Log.Error(string.Format(_LogFormat,
@@ -103,6 +121,7 @@ namespace Automata.Game.Blocks
 
                     return false;
                 }
+            }
 
             return true;
         }
@@ -111,7 +130,10 @@ namespace Automata.Game.Blocks
         {
             const string group_with_block_name_format = "{0}:{1}";
 
-            if (Blocks.Count >= ushort.MaxValue) throw new OverflowException($"{nameof(BlockRegistry)} has run out of valid block IDs.");
+            if (Blocks.Count >= ushort.MaxValue)
+            {
+                throw new OverflowException($"{nameof(BlockRegistry)} has run out of valid block IDs.");
+            }
 
             ushort blockID = (ushort)Blocks.Count;
             string groupedName = string.Format(group_with_block_name_format, group, blockName);

@@ -34,10 +34,19 @@ namespace Automata.Game
 
                 // it shouldn't be too uncommon for multiple identical paths to be parsed out
                 // as it just means multiple blocks are using the same texture
-                if (_TextureDepths.ContainsKey(formattedName)) continue;
+                if (_TextureDepths.ContainsKey(formattedName))
+                {
+                    continue;
+                }
 
-                if (_TextureDepths.TryAdd(formattedName, depth)) Log.Debug(string.Format(_LogFormat, $"Registered texture: \"{formattedName}\" depth {depth}"));
-                else Log.Warning(string.Format(_LogFormat, $"Failed to register texture: \"{formattedName}\" depth {depth}"));
+                if (_TextureDepths.TryAdd(formattedName, depth))
+                {
+                    Log.Debug(string.Format(_LogFormat, $"Registered texture: \"{formattedName}\" depth {depth}"));
+                }
+                else
+                {
+                    Log.Warning(string.Format(_LogFormat, $"Failed to register texture: \"{formattedName}\" depth {depth}"));
+                }
 
                 depth += 1;
             }

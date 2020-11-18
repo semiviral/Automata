@@ -70,9 +70,16 @@ namespace Automata.Game.Chunks
             ConcurrentChannel<(Vector3i, ChunkModification)> channel = _PendingModifications[_PendingModificationIndex];
 
             while (channel.TryTake(out (Vector3i Origin, ChunkModification modification) pending))
+            {
                 if (_Chunks.TryGetValue(pending.Origin, out IEntity? entity) && entity!.TryFind(out Chunk? chunk))
+                {
                     await chunk.Modifications.AddAsync(pending.modification);
-                else await _PendingModifications[nextIndex].AddAsync(pending);
+                }
+                else
+                {
+                    await _PendingModifications[nextIndex].AddAsync(pending);
+                }
+            }
 
             Interlocked.Exchange(ref _PendingModificationIndex, nextIndex);
         }
@@ -83,6 +90,7 @@ namespace Automata.Game.Chunks
         public void Allocate(EntityManager entityManager, Vector3i origin)
         {
             if (!_Chunks.ContainsKey(origin))
+            {
                 _Chunks.Add(origin, entityManager.CreateEntity(
                     new Translation
                     {
@@ -91,6 +99,7 @@ namespace Automata.Game.Chunks
                     _ChunkOcclusionBounds,
                     new RenderModel()
                 ));
+            }
         }
 
         public bool TryDeallocate(EntityManager entityManager, Vector3i origin, [NotNullWhen(true)] out Chunk? chunk)
@@ -123,8 +132,14 @@ namespace Automata.Game.Chunks
                 BlockID = blockID
             };
 
-            if (_Chunks.TryGetValue(origin, out IEntity? entity) && entity!.TryFind(out Chunk? chunk)) await chunk.Modifications.AddAsync(chunkModification);
-            else await _PendingModifications[_PendingModificationIndex].AddAsync((origin, chunkModification));
+            if (_Chunks.TryGetValue(origin, out IEntity? entity) && entity!.TryFind(out Chunk? chunk))
+            {
+                await chunk.Modifications.AddAsync(chunkModification);
+            }
+            else
+            {
+                await _PendingModifications[_PendingModificationIndex].AddAsync((origin, chunkModification));
+            }
         }
 
         public async ValueTask AllocateChunkModifications(Vector3i global, IEnumerable<(Vector3i, ushort)> modifications)
@@ -135,11 +150,13 @@ namespace Automata.Game.Chunks
                 Vector3i modificationOrigin = Vector3i.RoundBy(modificationGlobal, GenerationConstants.CHUNK_SIZE);
 
                 if (_Chunks.TryGetValue(modificationOrigin, out IEntity? entity) && entity!.TryFind(out Chunk? chunk))
+                {
                     await chunk.Modifications.AddAsync(new ChunkModification
                     {
                         BlockIndex = Vector3i.Project1D(Vector3i.Abs(modificationGlobal - modificationOrigin), GenerationConstants.CHUNK_SIZE),
                         BlockID = blockID
                     });
+                }
             }
         }
 
@@ -150,7 +167,10 @@ namespace Automata.Game.Chunks
 
         public IEnumerator<(Vector3i, IEntity)> GetEnumerator()
         {
-            foreach ((Vector3i origin, var entity) in _Chunks) yield return (origin, entity);
+            foreach ((Vector3i origin, var entity) in _Chunks)
+            {
+                yield return (origin, entity);
+            }
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

@@ -87,7 +87,10 @@ namespace Automata.Game.Chunks.Generation.Meshing
                 Direction faceDirection = (Direction)(1 << normalIndex);
 
                 // check if current index has face already
-                if (faces[index].HasDirection(faceDirection)) continue;
+                if (faces[index].HasDirection(faceDirection))
+                {
+                    continue;
+                }
 
                 // indicates whether the current face checking direction is negative or positive
                 bool isNegativeNormal = (normalIndex - 3) >= 0;
@@ -158,9 +161,15 @@ namespace Automata.Game.Chunks.Generation.Meshing
 
                             if (isTransparent)
                             {
-                                if (block.ID != facedBlockID) break;
+                                if (block.ID != facedBlockID)
+                                {
+                                    break;
+                                }
                             }
-                            else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockID, IBlockDefinition.Attribute.Transparent)) break;
+                            else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockID, IBlockDefinition.Attribute.Transparent))
+                            {
+                                break;
+                            }
                         }
                         else
                         {
@@ -174,14 +183,19 @@ namespace Automata.Game.Chunks.Generation.Meshing
                             // if opaque, traverse so long as facing block is transparent
                             if (isTransparent)
                             {
-                                if (block.ID != facedBlockID) break;
+                                if (block.ID != facedBlockID)
+                                {
+                                    break;
+                                }
                             }
                             else if (!BlockRegistry.Instance.CheckBlockHasProperty(facedBlockID, IBlockDefinition.Attribute.Transparent))
                             {
                                 if (!isNegativeNormal)
 
                                     // we've culled the current face, and faced block is opaque as well, so cull it's face to current.
+                                {
                                     faces[facedBlockIndex] |= (Direction)(1 << ((normalIndex + 3) % 6));
+                                }
 
                                 break;
                             }
@@ -191,10 +205,16 @@ namespace Automata.Game.Chunks.Generation.Meshing
                     }
 
                     // face is occluded
-                    if (traversals == 0) break;
+                    if (traversals == 0)
+                    {
+                        break;
+                    }
 
                     // if it's the first traversal and we've only made a 1x1x1 face, continue to test next axis
-                    else if ((traversals == 1) && (perpendicularNormalIndex == 1)) continue;
+                    else if ((traversals == 1) && (perpendicularNormalIndex == 1))
+                    {
+                        continue;
+                    }
 
                     Span<int> compressedVertices = _PackedVertexesByIteration[normalIndex];
                     int traversalComponentMask = GenerationConstants.CHUNK_SIZE_MASK << traversalNormalShift;

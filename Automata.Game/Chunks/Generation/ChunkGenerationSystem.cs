@@ -62,7 +62,10 @@ namespace Automata.Game.Chunks.Generation
                     Debug.Assert(pendingMesh.Chunk.State is GenerationState.GeneratingMesh);
                     entityManager.RegisterComponent(pendingMesh.Entity, new AllocatedMeshData<uint, PackedVertex>(pendingMesh.Data));
                 }
-                else pendingMesh.Data.Dispose();
+                else
+                {
+                    pendingMesh.Data.Dispose();
+                }
 
                 // we ALWAYS update chunk state, so we can properly dispose of it
                 // and be conscious of not doing so when its generating
@@ -72,6 +75,7 @@ namespace Automata.Game.Chunks.Generation
 
             // iterate over each valid chunk and process the generateable states
             foreach ((IEntity entity, Chunk chunk, Translation translation) in entityManager.GetEntitiesWithComponents<Chunk, Translation>())
+            {
                 switch (chunk.State)
                 {
                     case GenerationState.AwaitingTerrain:
@@ -94,6 +98,7 @@ namespace Automata.Game.Chunks.Generation
                         chunk.State += 1;
                         break;
                 }
+            }
 
             return ValueTask.CompletedTask;
         }
@@ -112,13 +117,20 @@ namespace Automata.Game.Chunks.Generation
                 // block ids for generating
                 Span<ushort> data = stackalloc ushort[GenerationConstants.CHUNK_SIZE_CUBED];
 
-                foreach (IGenerationStep generationStep in _BuildSteps) generationStep.Generate(origin, parameters, data);
+                foreach (IGenerationStep generationStep in _BuildSteps)
+                {
+                    generationStep.Generate(origin, parameters, data);
+                }
 
                 DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new BuildingTime(stopwatch.Elapsed));
                 stopwatch.Restart();
 
                 Palette<Block> palette = new Palette<Block>(GenerationConstants.CHUNK_SIZE_CUBED, new Block(BlockRegistry.AirID));
-                for (int index = 0; index < GenerationConstants.CHUNK_SIZE_CUBED; index++) palette[index] = new Block(data[index]);
+
+                for (int index = 0; index < GenerationConstants.CHUNK_SIZE_CUBED; index++)
+                {
+                    palette[index] = new Block(data[index]);
+                }
 
                 DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new InsertionTime(stopwatch.Elapsed));
                 return palette;
@@ -150,7 +162,10 @@ namespace Automata.Game.Chunks.Generation
             {
                 Vector3i offset = new Vector3i(x, y, z);
 
-                if (_CurrentWorld is null || !testStructure.CheckPlaceStructureAt(_CurrentWorld, random, origin + offset)) continue;
+                if (_CurrentWorld is null || !testStructure.CheckPlaceStructureAt(_CurrentWorld, random, origin + offset))
+                {
+                    continue;
+                }
 
                 foreach ((Vector3i local, ushort blockID) in testStructure.StructureBlocks)
                 {
@@ -158,14 +173,19 @@ namespace Automata.Game.Chunks.Generation
 
                     // see if we can allocate the modification directly to the chunk
                     if (Vector3b.All(modificationOffset >= 0) && Vector3b.All(modificationOffset < GenerationConstants.CHUNK_SIZE))
+                    {
                         await chunk.Modifications.AddAsync(new ChunkModification
                         {
                             BlockIndex = index,
                             BlockID = blockID
                         }).ConfigureAwait(false);
+                    }
 
                     // if not, just go ahead and delegate the modification allocation to the world.
-                    else await (_CurrentWorld as VoxelWorld)!.Chunks.AllocateChunkModification(origin + modificationOffset, blockID).ConfigureAwait(false);
+                    else
+                    {
+                        await (_CurrentWorld as VoxelWorld)!.Chunks.AllocateChunkModification(origin + modificationOffset, blockID).ConfigureAwait(false);
+                    }
                 }
             }
 

@@ -32,14 +32,22 @@ namespace Automata.Engine
             int hashCode = 17;
 
             foreach (Type type in types)
-                if (!typeof(Component).IsAssignableFrom(type)) throw new TypeLoadException($"All given types must implement {typeof(Component)}.");
-                else if (!_Types.Add(type)) throw new ArgumentException($"Cannot specify the same {nameof(Component)} type more than once.");
+            {
+                if (!typeof(Component).IsAssignableFrom(type))
+                {
+                    throw new TypeLoadException($"All given types must implement {typeof(Component)}.");
+                }
+                else if (!_Types.Add(type))
+                {
+                    throw new ArgumentException($"Cannot specify the same {nameof(Component)} type more than once.");
+                }
                 else
                 {
                     const int prime = 239;
 
                     hashCode *= prime + type.GetHashCode();
                 }
+            }
 
             _CompositeHashCode = hashCode;
         }

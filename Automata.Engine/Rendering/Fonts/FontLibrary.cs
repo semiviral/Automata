@@ -14,7 +14,11 @@ namespace Automata.Engine.Rendering.Fonts
         {
             get
             {
-                if (_Disposed) throw new ObjectDisposedException(nameof(FontFace));
+                if (_Disposed)
+                {
+                    throw new ObjectDisposedException(nameof(FontFace));
+                }
+
                 return _Handle;
             }
         }
@@ -35,7 +39,10 @@ namespace Automata.Engine.Rendering.Fonts
 
         private void Dispose(bool dispose)
         {
-            if (_Disposed || !dispose) return;
+            if (_Disposed || !dispose)
+            {
+                return;
+            }
 
             FreeType.ThrowIfNotOk(_CustomMemory ? FreeType.FT_Done_Library(Handle) : FreeType.FT_Done_FreeType(Handle));
 

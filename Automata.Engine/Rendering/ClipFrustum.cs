@@ -83,8 +83,12 @@ namespace Automata.Engine.Rendering
         public Frustum.Intersect Intersects(Vector3 point)
         {
             foreach (Plane plane in _Planes)
+            {
                 if (plane.Distance(point) < 0f)
+                {
                     return Frustum.Intersect.Outside;
+                }
+            }
 
             return Frustum.Intersect.Inside;
         }
@@ -97,8 +101,14 @@ namespace Automata.Engine.Rendering
             {
                 float distance = plane.Distance(sphere.Center);
 
-                if (distance < -sphere.Radius) return Frustum.Intersect.Outside;
-                else if (distance < sphere.Radius) result = Frustum.Intersect.Intersect;
+                if (distance < -sphere.Radius)
+                {
+                    return Frustum.Intersect.Outside;
+                }
+                else if (distance < sphere.Radius)
+                {
+                    result = Frustum.Intersect.Intersect;
+                }
             }
 
             return result;
@@ -109,8 +119,16 @@ namespace Automata.Engine.Rendering
             Frustum.Intersect result = Frustum.Intersect.Inside;
 
             foreach (Plane plane in _Planes)
-                if (plane.Distance(cube.GreaterSumVertex(plane.Normal)) < 0f) return Frustum.Intersect.Outside;
-                else if (plane.Distance(cube.LesserSumVertex(plane.Normal)) < 0f) result = Frustum.Intersect.Intersect;
+            {
+                if (plane.Distance(cube.GreaterSumVertex(plane.Normal)) < 0f)
+                {
+                    return Frustum.Intersect.Outside;
+                }
+                else if (plane.Distance(cube.LesserSumVertex(plane.Normal)) < 0f)
+                {
+                    result = Frustum.Intersect.Intersect;
+                }
+            }
 
             return result;
         }

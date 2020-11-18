@@ -41,7 +41,10 @@ namespace Automata.Engine
             {
                 get
                 {
-                    if ((_Index == 0u) || (_Index >= (uint)_Entity.Count)) ThrowHelper.ThrowInvalidOperationException("Enumerable has not been enumerated.");
+                    if ((_Index == 0u) || (_Index >= (uint)_Entity.Count))
+                    {
+                        ThrowHelper.ThrowInvalidOperationException("Enumerable has not been enumerated.");
+                    }
 
                     return _Current;
                 }
@@ -56,7 +59,10 @@ namespace Automata.Engine
 
             public bool MoveNext()
             {
-                if (_Index >= (uint)_Entity.Count) return false;
+                if (_Index >= (uint)_Entity.Count)
+                {
+                    return false;
+                }
 
                 _Current = _Entity[_Index];
                 _Index += 1u;

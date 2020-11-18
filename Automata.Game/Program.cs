@@ -47,8 +47,14 @@ static void InitializeLogger()
 
 static void InitializeBoundedPool()
 {
-    if (Settings.Instance.SingleThreadedGeneration) BoundedInvocationPool.Instance.ModifyPoolSize(1);
-    else BoundedInvocationPool.Instance.DefaultPoolSize();
+    if (Settings.Instance.SingleThreadedGeneration)
+    {
+        BoundedInvocationPool.Instance.ModifyPoolSize(1);
+    }
+    else
+    {
+        BoundedInvocationPool.Instance.DefaultPoolSize();
+    }
 
     BoundedInvocationPool.Instance.ExceptionOccurred += (_, exception) => Log.Error($"{exception.Message}\r\n{exception.StackTrace}");
 }

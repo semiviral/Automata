@@ -53,7 +53,12 @@ namespace Automata.Playground.OpenCL
             CL.GetDeviceIDs(Handle, (CLEnum)deviceType, deviceCount, handles, null);
 
             Device[] devices = new Device[deviceCount];
-            for (int index = 0; index < devices.Length; index++) devices[index] = new Device(CL, handles[index]);
+
+            for (int index = 0; index < devices.Length; index++)
+            {
+                devices[index] = new Device(CL, handles[index]);
+            }
+
             return devices;
         }
     }

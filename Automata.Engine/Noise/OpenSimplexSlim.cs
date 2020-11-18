@@ -58,7 +58,10 @@ namespace Automata.Engine.Noise
 
             t = CalculateTImpl(xy1 * xy1);
 
-            if (t < 0f) n.X = 0f;
+            if (t < 0f)
+            {
+                n.X = 0f;
+            }
             else
             {
                 t *= t;
@@ -67,7 +70,10 @@ namespace Automata.Engine.Noise
 
             t = CalculateTImpl(xy2 * xy2);
 
-            if (t < 0f) n.Y = 0f;
+            if (t < 0f)
+            {
+                n.Y = 0f;
+            }
             else
             {
                 t *= t;
@@ -76,7 +82,10 @@ namespace Automata.Engine.Noise
 
             t = CalculateTImpl(xy3 * xy3);
 
-            if (t < 0f) n.Z = 0f;
+            if (t < 0f)
+            {
+                n.Z = 0f;
+            }
             else
             {
                 t *= t;
@@ -188,7 +197,10 @@ namespace Automata.Engine.Noise
 
             t = CalculateTImpl(xyz0 * xyz0);
 
-            if (t < 0f) n.X = 0f;
+            if (t < 0f)
+            {
+                n.X = 0f;
+            }
             else
             {
                 t *= t;
@@ -197,7 +209,10 @@ namespace Automata.Engine.Noise
 
             t = CalculateTImpl(xyz1 * xyz1);
 
-            if (t < 0f) n.Y = 0f;
+            if (t < 0f)
+            {
+                n.Y = 0f;
+            }
             else
             {
                 t *= t;
@@ -206,7 +221,10 @@ namespace Automata.Engine.Noise
 
             t = CalculateTImpl(xyz2 * xyz2);
 
-            if (t < 0f) n.Z = 0f;
+            if (t < 0f)
+            {
+                n.Z = 0f;
+            }
             else
             {
                 t *= t;
@@ -215,7 +233,10 @@ namespace Automata.Engine.Noise
 
             t = CalculateTImpl(xyz3 * xyz3);
 
-            if (t < 0f) n.W = 0f;
+            if (t < 0f)
+            {
+                n.W = 0f;
+            }
             else
             {
                 t *= t;

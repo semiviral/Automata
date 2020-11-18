@@ -64,8 +64,12 @@ namespace Automata.Engine
         public TComponent? Find<TComponent>() where TComponent : Component
         {
             foreach (Component component in _Components)
+            {
                 if (component is TComponent componentT)
+                {
                     return componentT;
+                }
+            }
 
             return null;
         }
@@ -73,11 +77,13 @@ namespace Automata.Engine
         public bool TryFind<TComponent>([NotNullWhen(true)] out TComponent? result) where TComponent : Component
         {
             foreach (Component component in _Components)
+            {
                 if (component is TComponent componentT)
                 {
                     result = componentT;
                     return true;
                 }
+            }
 
             result = null;
             return false;
@@ -86,8 +92,12 @@ namespace Automata.Engine
         public bool Contains<TComponent>() where TComponent : Component
         {
             foreach (Component component in _Components)
+            {
                 if (component is TComponent)
+                {
                     return true;
+                }
+            }
 
             return false;
         }
@@ -99,22 +109,37 @@ namespace Automata.Engine
 
         void IEntity.Add(Component component)
         {
-            if (Contains(component.GetType())) ThrowHelper.ThrowArgumentException(component.GetType().Name, "Entity already contains component of type.");
-            else _Components.Add(component);
+            if (Contains(component.GetType()))
+            {
+                ThrowHelper.ThrowArgumentException(component.GetType().Name, "Entity already contains component of type.");
+            }
+            else
+            {
+                _Components.Add(component);
+            }
         }
 
         bool IEntity.Remove(Component component)
         {
             bool success = _Components.Remove(component);
-            if (success && component is IDisposable disposable) disposable.Dispose();
+
+            if (success && component is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+
             return success;
         }
 
         public Component? Find(Type type)
         {
             foreach (Component component in _Components)
+            {
                 if (type.IsInstanceOfType(component))
+                {
                     return component;
+                }
+            }
 
             return null;
         }
@@ -147,11 +172,18 @@ namespace Automata.Engine
 
         public void Dispose()
         {
-            if (Disposed) return;
+            if (Disposed)
+            {
+                return;
+            }
 
             foreach (Component component in _Components)
+            {
                 if (component is IDisposable disposable)
+                {
                     disposable.Dispose();
+                }
+            }
 
             _Components.Dispose();
 

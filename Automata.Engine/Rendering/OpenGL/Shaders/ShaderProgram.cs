@@ -49,7 +49,10 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
         {
             string infoLog = GL.GetProgramInfoLog(Handle);
 
-            if (!string.IsNullOrWhiteSpace(infoLog)) throw new ShaderLoadException(Type, infoLog);
+            if (!string.IsNullOrWhiteSpace(infoLog))
+            {
+                throw new ShaderLoadException(Type, infoLog);
+            }
         }
 
         public bool TrySetUniform(string name, int value)
@@ -60,7 +63,10 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
 
                 return true;
             }
-            else return false;
+            else
+            {
+                return false;
+            }
         }
 
         public bool TrySetUniform(string name, float value)
@@ -71,7 +77,10 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
 
                 return true;
             }
-            else return false;
+            else
+            {
+                return false;
+            }
         }
 
         public bool TrySetUniform(string name, Vector3 value)
@@ -82,7 +91,10 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
 
                 return true;
             }
-            else return false;
+            else
+            {
+                return false;
+            }
         }
 
         public bool TrySetUniform(string name, Vector4 value)
@@ -93,7 +105,10 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
 
                 return true;
             }
-            else return false;
+            else
+            {
+                return false;
+            }
         }
 
         public bool TrySetUniform(string name, Matrix4x4 value)
@@ -103,7 +118,10 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
                 GL.ProgramUniformMatrix4(Handle, location, 1, false, value.Unroll<Matrix4x4, float>());
                 return true;
             }
-            else return false;
+            else
+            {
+                return false;
+            }
         }
 
         private bool TryGetUniformLocation(string name, out int location) => _CachedUniforms.TryGetValue(name, out location);

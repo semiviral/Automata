@@ -34,7 +34,10 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
         {
             GL.GetProgramPipelineInfoLog(Handle, 2048u, out _, out string infoLog);
 
-            if (!string.IsNullOrWhiteSpace(infoLog)) throw new ShaderLoadException((ShaderType)0, infoLog);
+            if (!string.IsNullOrWhiteSpace(infoLog))
+            {
+                throw new ShaderLoadException((ShaderType)0, infoLog);
+            }
         }
 
 

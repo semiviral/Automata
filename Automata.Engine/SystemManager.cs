@@ -43,10 +43,17 @@ namespace Automata.Engine
         public async ValueTask Update(EntityManager entityManager, TimeSpan deltaTime)
         {
             foreach (ComponentSystem componentSystem in _ComponentSystems)
+            {
                 if (componentSystem.Enabled && VerifyHandledComponentsExistForSystem(entityManager, componentSystem))
+                {
                     await componentSystem.Update(entityManager, deltaTime).ConfigureAwait(false);
+                }
+            }
 
-            foreach (ComponentChangeable changeable in entityManager.GetComponentsExplicit<ComponentChangeable>()) changeable.Changed = false;
+            foreach (ComponentChangeable changeable in entityManager.GetComponentsExplicit<ComponentChangeable>())
+            {
+                changeable.Changed = false;
+            }
         }
 
         /// <summary>
@@ -143,11 +150,18 @@ namespace Automata.Engine
         {
             if (_HandledTypes.TryGetValue(componentSystem.GetType(), out ComponentTypes[]? handledTypesArray))
             {
-                if (handledTypesArray?.Length is null or 0) return true;
+                if (handledTypesArray?.Length is null or 0)
+                {
+                    return true;
+                }
             }
-            else return false;
+            else
+            {
+                return false;
+            }
 
             foreach (ComponentTypes handledTypes in handledTypesArray)
+            {
                 switch (handledTypes.Strategy)
                 {
                     case DistinctionStrategy.None when handledTypes.All(type => entityManager.GetComponentCount(type) == 0u):
@@ -155,6 +169,7 @@ namespace Automata.Engine
                     case DistinctionStrategy.All when handledTypes.All(type => entityManager.GetComponentCount(type) > 0u): return true;
                     default: continue;
                 }
+            }
 
             return false;
         }
@@ -169,13 +184,20 @@ namespace Automata.Engine
         private void DisposeInternal()
         {
             foreach (ComponentSystem componentSystem in _ComponentSystems)
+            {
                 if (componentSystem is IDisposable disposable)
+                {
                     disposable.Dispose();
+                }
+            }
         }
 
         public void Dispose()
         {
-            if (_Disposed) return;
+            if (_Disposed)
+            {
+                return;
+            }
 
             _Disposed = true;
 

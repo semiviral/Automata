@@ -21,7 +21,10 @@ namespace Automata.Engine.Memory
 
         public override MemoryHandle Pin(int elementIndex = 0)
         {
-            if ((elementIndex < 0) || (elementIndex >= _Length)) throw new ArgumentOutOfRangeException(nameof(elementIndex));
+            if ((elementIndex < 0) || (elementIndex >= _Length))
+            {
+                throw new ArgumentOutOfRangeException(nameof(elementIndex));
+            }
 
             return new MemoryHandle(_Pointer + elementIndex);
         }

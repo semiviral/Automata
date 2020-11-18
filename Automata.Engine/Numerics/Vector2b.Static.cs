@@ -16,7 +16,10 @@ namespace Automata.Engine.Numerics
 
         private static Vector2b EqualsImpl(Vector2b a, Vector2b b)
         {
-            if (Sse2.IsSupported) return (Vector2b)Sse2.CompareEqual((Vector128<byte>)a, (Vector128<byte>)b);
+            if (Sse2.IsSupported)
+            {
+                return (Vector2b)Sse2.CompareEqual((Vector128<byte>)a, (Vector128<byte>)b);
+            }
             else
             {
                 static Vector2b SoftwareFallback(Vector2b a0, Vector2b b0) => new Vector2b(a0.X == b0.X, a0.Y == b0.Y);

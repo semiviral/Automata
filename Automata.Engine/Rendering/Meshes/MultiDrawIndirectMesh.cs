@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Numerics;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
@@ -41,10 +42,22 @@ namespace Automata.Engine.Rendering.Meshes
             _VertexArrayObject.BindVertexBuffer(1u, _CommandBuffer, 0);
             _VertexArrayObject.BindVertexBuffer(2u, _ModelBuffer, 0);
 
-            if (typeof(TIndex) == typeof(byte)) _DrawElementsType = DrawElementsType.UnsignedByte;
-            else if (typeof(TIndex) == typeof(ushort)) _DrawElementsType = DrawElementsType.UnsignedShort;
-            else if (typeof(TIndex) == typeof(uint)) _DrawElementsType = DrawElementsType.UnsignedInt;
-            else throw new NotSupportedException("Does not support specified index type.");
+            if (typeof(TIndex) == typeof(byte))
+            {
+                _DrawElementsType = DrawElementsType.UnsignedByte;
+            }
+            else if (typeof(TIndex) == typeof(ushort))
+            {
+                _DrawElementsType = DrawElementsType.UnsignedShort;
+            }
+            else if (typeof(TIndex) == typeof(uint))
+            {
+                _DrawElementsType = DrawElementsType.UnsignedInt;
+            }
+            else
+            {
+                throw new NotSupportedException("Does not support specified index type.");
+            }
         }
 
         public void AllocateVertexAttributes(bool replace, params IVertexAttribute[] attributes) =>
@@ -69,6 +82,20 @@ namespace Automata.Engine.Rendering.Meshes
             _BufferSync.BusyWaitCPU();
 
             _VertexArrayObject.Bind();
+
+#if DEBUG
+
+            // verify vertex buffer bindings
+
+            _GL.GetInteger(GLEnum.VertexBindingBuffer, 0u, out int data);
+            _GL.GetInteger(GLEnum.VertexBindingBuffer, 1u, out int commands);
+            _GL.GetInteger(GLEnum.VertexBindingBuffer, 2u, out int models);
+
+            Debug.Assert((uint)data == _VertexAllocator.Handle);
+            Debug.Assert((uint)commands == _CommandBuffer.Handle);
+            Debug.Assert((uint)models == _ModelBuffer.Handle);
+#endif
+
             _CommandBuffer.Bind(BufferTargetARB.DrawIndirectBuffer);
             _GL.MultiDrawElementsIndirect(PrimitiveType.Triangles, _DrawElementsType, (void*)null!, DrawCommandCount, 0u);
 

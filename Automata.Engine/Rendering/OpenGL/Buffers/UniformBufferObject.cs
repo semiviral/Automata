@@ -20,8 +20,14 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             {
                 Debug.Assert((value % 16) == 0, "Offset is not aligned to a multiple of 16. This may be an error.");
 
-                if (!_Offsets.ContainsKey(uniform)) _Offsets.Add(uniform, value);
-                else _Offsets[uniform] = value;
+                if (!_Offsets.ContainsKey(uniform))
+                {
+                    _Offsets.Add(uniform, value);
+                }
+                else
+                {
+                    _Offsets[uniform] = value;
+                }
             }
         }
 
@@ -39,7 +45,10 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
         public UniformBufferObject(GL gl, uint bindingIndex, uint size, BufferStorageMask bufferStorageMask = _STORAGE_FLAGS) : base(gl)
         {
-            if (size > short.MaxValue) throw new ArgumentOutOfRangeException(nameof(size), "Size must be greater than zero and less than 16KB.");
+            if (size > short.MaxValue)
+            {
+                throw new ArgumentOutOfRangeException(nameof(size), "Size must be greater than zero and less than 16KB.");
+            }
 
             _Offsets = new Dictionary<string, int>();
 

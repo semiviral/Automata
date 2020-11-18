@@ -20,7 +20,12 @@ namespace Automata.Engine.OpenCL
             cl.GetPlatformIDs(platformCount, handles, null);
 
             Platform[] platforms = new Platform[platformCount];
-            for (int index = 0; index < platformCount; index++) platforms[index] = new Platform(cl, handles[index]);
+
+            for (int index = 0; index < platformCount; index++)
+            {
+                platforms[index] = new Platform(cl, handles[index]);
+            }
+
             return platforms;
         }
     }

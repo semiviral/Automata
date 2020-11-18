@@ -22,14 +22,20 @@ namespace Automata.Engine.Collections
         {
             get
             {
-                if (index >= Count) ThrowHelper.ThrowIndexOutOfRangeException();
+                if (index >= Count)
+                {
+                    ThrowHelper.ThrowIndexOutOfRangeException();
+                }
 
                 uint value = GetValue(index, _IndexBits, _IndexMask, _Palette);
                 return _LookupTable[(int)value];
             }
             set
             {
-                if (index >= Count) ThrowHelper.ThrowIndexOutOfRangeException();
+                if (index >= Count)
+                {
+                    ThrowHelper.ThrowIndexOutOfRangeException();
+                }
 
                 int paletteIndex = _LookupTable.IndexOf(value);
 
@@ -47,7 +53,10 @@ namespace Automata.Engine.Collections
 
         public Palette(int length, T defaultItem)
         {
-            if (length <= 0) throw new ArgumentOutOfRangeException(nameof(length), "Length must be non negative and greater than zero.");
+            if (length <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(length), "Length must be non negative and greater than zero.");
+            }
 
             Count = length;
             _IndexBits = 1;
@@ -63,8 +72,14 @@ namespace Automata.Engine.Collections
 
         public Palette(int length, IReadOnlyCollection<T> lookupTable)
         {
-            if (lookupTable.Count == 0) throw new ArgumentException("Lookup table cannot be empty.", nameof(lookupTable));
-            else if (length <= 0) throw new ArgumentOutOfRangeException(nameof(length), "Length must be non negative and greater than zero.");
+            if (lookupTable.Count == 0)
+            {
+                throw new ArgumentException("Lookup table cannot be empty.", nameof(lookupTable));
+            }
+            else if (length <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(length), "Length must be non negative and greater than zero.");
+            }
 
             Count = length;
             _IndexBits = 1;
@@ -72,7 +87,10 @@ namespace Automata.Engine.Collections
             _LookupTable = new List<T>(lookupTable);
 
             // ensure palette can fit lookup table
-            while (_IndexMask < lookupTable.Count) IncreaseIndexBits();
+            while (_IndexMask < lookupTable.Count)
+            {
+                IncreaseIndexBits();
+            }
 
             ReallocatePalette(Compute32BitSlices(_IndexBits, Count));
         }
@@ -86,7 +104,10 @@ namespace Automata.Engine.Collections
             _LookupTable.Add(item);
 
             // check if lookup table length exceeds palette
-            if (_LookupTable.Count <= _IndexMask) return;
+            if (_LookupTable.Count <= _IndexMask)
+            {
+                return;
+            }
 
             // expand palette
             byte oldBits = _IndexBits;
@@ -108,7 +129,10 @@ namespace Automata.Engine.Collections
 
         private void ReallocatePalette(int length)
         {
-            if (_Palette is not null) ArrayPool<uint>.Shared.Return(_Palette);
+            if (_Palette is not null)
+            {
+                ArrayPool<uint>.Shared.Return(_Palette);
+            }
 
             _Palette = ArrayPool<uint>.Shared.Rent(length);
             Array.Clear(_Palette, 0, _Palette.Length);
@@ -133,7 +157,10 @@ namespace Automata.Engine.Collections
 
         private void IncreaseIndexBits()
         {
-            if (_IndexBits == 32) throw new OverflowException($"Too many palette entries. Cannot exceed {int.MaxValue}.");
+            if (_IndexBits == 32)
+            {
+                throw new OverflowException($"Too many palette entries. Cannot exceed {int.MaxValue}.");
+            }
 
             _IndexBits <<= 1;
             ComputeMask();
@@ -142,7 +169,11 @@ namespace Automata.Engine.Collections
         private void ComputeMask()
         {
             _IndexMask = 0;
-            for (ushort bit = _IndexBits; bit > 0; bit >>= 1) _IndexMask |= bit;
+
+            for (ushort bit = _IndexBits; bit > 0; bit >>= 1)
+            {
+                _IndexMask |= bit;
+            }
         }
 
         private static ushort Compute32BitSlices(byte bits, int length) =>
@@ -150,7 +181,10 @@ namespace Automata.Engine.Collections
 
         public void CopyTo(Span<T> destination)
         {
-            if (destination.Length < Count) throw new ArgumentException("Destination span too short.");
+            if (destination.Length < Count)
+            {
+                throw new ArgumentException("Destination span too short.");
+            }
 
             int index = 0;
 
@@ -169,17 +203,25 @@ namespace Automata.Engine.Collections
         // todo optimize this with a struct enumerator
         public IEnumerator<T> GetEnumerator()
         {
-            if (_Palette is null) throw new InvalidOperationException("Palette is in an invalid state (no internal data).");
+            if (_Palette is null)
+            {
+                throw new InvalidOperationException("Palette is in an invalid state (no internal data).");
+            }
 
             int index = 0;
 
             foreach (uint value in _Palette)
+            {
                 for (int offset = 0; offset < _UINT_32_BITS; offset += _IndexBits)
                 {
                     yield return _LookupTable[(int)((value >> offset) & _IndexMask)];
 
-                    if ((index += 1) >= Count) yield break;
+                    if ((index += 1) >= Count)
+                    {
+                        yield break;
+                    }
                 }
+            }
         }
 
         #endregion

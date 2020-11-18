@@ -77,7 +77,10 @@ namespace Automata.Engine.Rendering
             DrawCalls = 0;
 
             // update viewport UBO
-            if (_NewAspectRatio > 0f) _Viewport.Write(0, new Vector4(0f, 0f, AutomataWindow.Instance.Size.X, AutomataWindow.Instance.Size.Y));
+            if (_NewAspectRatio > 0f)
+            {
+                _Viewport.Write(0, new Vector4(0f, 0f, AutomataWindow.Instance.Size.X, AutomataWindow.Instance.Size.Y));
+            }
 
             _Viewport.Bind();
 
@@ -98,12 +101,26 @@ namespace Automata.Engine.Rendering
                 {
                     Matrix4x4 view = Matrix4x4.Identity;
 
-                    if (cameraScale is not null) view *= Matrix4x4.CreateScale(cameraScale.Value);
-                    if (cameraRotation is not null) view *= Matrix4x4.CreateFromQuaternion(cameraRotation.Value);
-                    if (cameraTranslation is not null) view *= Matrix4x4.CreateTranslation(cameraTranslation.Value);
+                    if (cameraScale is not null)
+                    {
+                        view *= Matrix4x4.CreateScale(cameraScale.Value);
+                    }
+
+                    if (cameraRotation is not null)
+                    {
+                        view *= Matrix4x4.CreateFromQuaternion(cameraRotation.Value);
+                    }
+
+                    if (cameraTranslation is not null)
+                    {
+                        view *= Matrix4x4.CreateTranslation(cameraTranslation.Value);
+                    }
 
                     // if we've calculated a new matrix, invert it and apply to camera
-                    if ((view != Matrix4x4.Identity) && Matrix4x4.Invert(view, out Matrix4x4 inverted)) camera.View = inverted;
+                    if ((view != Matrix4x4.Identity) && Matrix4x4.Invert(view, out Matrix4x4 inverted))
+                    {
+                        camera.View = inverted;
+                    }
 
                     camera.Uniforms.Write(0, camera.View);
                 }
@@ -123,10 +140,14 @@ namespace Automata.Engine.Rendering
                 }
 
                 // if the camera doesn't have a projection, it doesn't make sense to try and render to it
-                if (camera.Projection is null) continue;
+                if (camera.Projection is null)
+                {
+                    continue;
+                }
 
                 // iterate each RenderMesh and check if the model matrix needs to be recalculated
                 foreach ((IEntity objectEntity, RenderModel renderModel) in entityManager.GetEntitiesWithComponents<RenderModel>())
+                {
                     if (((objectEntity.TryFind(out Translation? modelTranslation) && modelTranslation.Changed)
                          | (objectEntity.TryFind(out Rotation? modelRotation) && modelRotation.Changed)
                          | (objectEntity.TryFind(out Scale? modelScale) && modelScale.Changed))
@@ -134,10 +155,22 @@ namespace Automata.Engine.Rendering
                     {
                         renderModel.Model = Matrix4x4.Identity;
 
-                        if (modelTranslation is not null) renderModel.Model *= Matrix4x4.CreateTranslation(modelTranslation.Value);
-                        if (modelRotation is not null) renderModel.Model *= Matrix4x4.CreateFromQuaternion(modelRotation.Value);
-                        if (modelScale is not null) renderModel.Model *= Matrix4x4.CreateScale(modelScale.Value);
+                        if (modelTranslation is not null)
+                        {
+                            renderModel.Model *= Matrix4x4.CreateTranslation(modelTranslation.Value);
+                        }
+
+                        if (modelRotation is not null)
+                        {
+                            renderModel.Model *= Matrix4x4.CreateFromQuaternion(modelRotation.Value);
+                        }
+
+                        if (modelScale is not null)
+                        {
+                            renderModel.Model *= Matrix4x4.CreateScale(modelScale.Value);
+                        }
                     }
+                }
 
                 // bind camera's view data UBO and precalculate viewproj matrix
                 camera.Uniforms.Bind();
@@ -153,10 +186,16 @@ namespace Automata.Engine.Rendering
                     bool hasModel = objectEntity.TryFind(out RenderModel? renderModel);
                     Matrix4x4 modelViewProjection = (hasModel ? renderModel!.Model : Matrix4x4.Identity) * viewProjection;
 
-                    if (objectEntity.TryFind(out OcclusionBounds? bounds) && CheckClipFrustumOcclude(bounds, planes, modelViewProjection)) continue;
+                    if (objectEntity.TryFind(out OcclusionBounds? bounds) && CheckClipFrustumOcclude(bounds, planes, modelViewProjection))
+                    {
+                        continue;
+                    }
 
                     // conditionally update the currentMaterial if it doesn't match this entity's
-                    if (cachedMaterial is null || !material.Equals(cachedMaterial)) ApplyMaterial(material, ref cachedMaterial);
+                    if (cachedMaterial is null || !material.Equals(cachedMaterial))
+                    {
+                        ApplyMaterial(material, ref cachedMaterial);
+                    }
 
                     // we're about to render, so ensure all of the relevant uniforms are set
                     ShaderProgram vertexShader = cachedMaterial!.Pipeline.Stage(ShaderType.VertexShader);
@@ -185,7 +224,10 @@ namespace Automata.Engine.Rendering
 
         private static bool CheckClipFrustumOcclude(OcclusionBounds occlusionBounds, Span<Plane> planes, Matrix4x4 mvp)
         {
-            if (!_ENABLE_FRUSTUM_CULLING) return false;
+            if (!_ENABLE_FRUSTUM_CULLING)
+            {
+                return false;
+            }
 
             ClipFrustum frustum = new ClipFrustum(planes, mvp);
             Frustum.Intersect intersection = Frustum.Intersect.Outside;
@@ -203,7 +245,10 @@ namespace Automata.Engine.Rendering
 
         private static void ApplyMaterial(Material material, ref Material? old)
         {
-            if (material.Pipeline.Equals(old?.Pipeline)) return;
+            if (material.Pipeline.Equals(old?.Pipeline))
+            {
+                return;
+            }
 
             material.Pipeline.Bind();
 
@@ -212,9 +257,15 @@ namespace Automata.Engine.Rendering
 
             // if old isn't null, bind the old textures to the new pipeline
             if (old is not null)
+            {
                 foreach ((string key, Texture texture) in old.Textures)
+                {
                     if (!material.Textures.ContainsKey(key))
+                    {
                         material.Textures.Add(key, texture);
+                    }
+                }
+            }
 
             int index = 0;
 

@@ -31,6 +31,8 @@ namespace Automata.Engine.Rendering.OpenGL
             _VertexBufferObjectBindings = new Dictionary<uint, VertexBufferObjectBinding>();
 
             Handle = GL.CreateVertexArray();
+
+            Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, $"{nameof(VertexArrayObject)} 0x{Handle}", "Allocated new VAO."));
         }
 
 
@@ -77,6 +79,7 @@ namespace Automata.Engine.Rendering.OpenGL
                 vertexAttribute.CommitFormat(GL, Handle);
                 GL.VertexArrayAttribBinding(Handle, vertexAttribute.Index, vertexAttribute.BindingIndex);
 
+                // only set the divisor if it's not the default value
                 if (vertexAttribute.Divisor > 0u)
                 {
                     GL.VertexArrayBindingDivisor(Handle, vertexAttribute.BindingIndex, vertexAttribute.Divisor);
@@ -113,14 +116,7 @@ namespace Automata.Engine.Rendering.OpenGL
             {
                 GL.VertexArrayElementBuffer(Handle, ebo.Handle);
             }
-
-            CommitBufferBindings(ebo);
-            CommitVertexAttributes();
         }
-
-        private void CommitBufferBindings(BufferObject? ebo) { }
-
-        private void CommitVertexAttributes() { }
 
         #endregion
 

@@ -10,7 +10,10 @@ namespace Automata.Engine.Rendering.Fonts.FreeTypePrimitives
 
         public static void ThrowIfNotOk(FreeTypeError error)
         {
-            if (error is not FreeTypeError.Ok) throw new FreeTypeException(error);
+            if (error is not FreeTypeError.Ok)
+            {
+                throw new FreeTypeException(error);
+            }
         }
 
         [DllImport(_FREETYPE_DLL_IMPORT, CallingConvention = _CONVENTION)]

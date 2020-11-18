@@ -20,7 +20,10 @@ namespace Automata.Engine.Rendering.Fonts
         {
             get
             {
-                if (_Disposed) throw new ObjectDisposedException(nameof(FontFace));
+                if (_Disposed)
+                {
+                    throw new ObjectDisposedException(nameof(FontFace));
+                }
 
                 return _Face;
             }
@@ -30,13 +33,19 @@ namespace Automata.Engine.Rendering.Fonts
         {
             get
             {
-                if (_Disposed) throw new ObjectDisposedException(nameof(FontFace));
+                if (_Disposed)
+                {
+                    throw new ObjectDisposedException(nameof(FontFace));
+                }
 
                 return _Handle;
             }
             private set
             {
-                if (_Disposed) throw new ObjectDisposedException(nameof(FontFace));
+                if (_Disposed)
+                {
+                    throw new ObjectDisposedException(nameof(FontFace));
+                }
 
                 _Handle = value;
                 _Face = Marshal.PtrToStructure<FreeTypeFace>(value);
@@ -113,7 +122,10 @@ namespace Automata.Engine.Rendering.Fonts
 
         private void Dispose(bool dispose)
         {
-            if (_Disposed || !dispose) return;
+            if (_Disposed || !dispose)
+            {
+                return;
+            }
 
             FreeType.FT_Done_Face(Handle);
 

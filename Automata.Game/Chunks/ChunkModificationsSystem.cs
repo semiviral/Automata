@@ -29,10 +29,14 @@ namespace Automata.Game.Chunks
             stopwatch.Restart();
 
             foreach (Chunk chunk in entityManager.GetComponents<Chunk>())
+            {
                 if (chunk.State is GenerationState.AwaitingMesh or GenerationState.Finished
                     && Array.TrueForAll(chunk.Neighbors, neighbor => neighbor?.State is <= GenerationState.AwaitingMesh or GenerationState.Finished)
                     && TryProcessChunkModifications(chunk))
+                {
                     chunk.RemeshNeighborhood(true);
+                }
+            }
 
             DiagnosticsProvider.CommitData<ChunkModificationsDiagnosticGroup, TimeSpan>(new ChunkModificationTime(stopwatch.Elapsed));
             DiagnosticsPool.Stopwatches.Return(stopwatch);
@@ -43,7 +47,10 @@ namespace Automata.Game.Chunks
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool TryProcessChunkModifications(Chunk chunk)
         {
-            if (chunk.Blocks is null) ThrowHelper.ThrowNullReferenceException("Chunk must have blocks.");
+            if (chunk.Blocks is null)
+            {
+                ThrowHelper.ThrowNullReferenceException("Chunk must have blocks.");
+            }
 
             bool modified = false;
 

@@ -16,7 +16,10 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
 
         public Texture2D(GL gl, Vector2i size, WrapMode wrapMode, FilterMode filterMode, bool mipmap) : base(gl, TextureTarget.Texture2D)
         {
-            if (Vector2b.Any(size < 0)) throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
+            if (Vector2b.Any(size < 0))
+            {
+                throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
+            }
 
             Size = size;
 
@@ -24,13 +27,22 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             AssignTextureParameters(GetWrapModeAsGLEnum(wrapMode), GetFilterModeAsGLEnum(filterMode));
             GL.TextureStorage2D(Handle, 1, _InternalFormat, (uint)size.X, (uint)size.Y);
 
-            if (mipmap) GL.GenerateTextureMipmap(Handle);
+            if (mipmap)
+            {
+                GL.GenerateTextureMipmap(Handle);
+            }
         }
 
         public void SetPixels(Vector3i offset, Vector2i size, Span<TPixel> pixels)
         {
-            if (Vector3b.Any(offset < 0)) throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
-            else if (Vector2b.Any(size < 0)) throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0 and <TexSize");
+            if (Vector3b.Any(offset < 0))
+            {
+                throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
+            }
+            else if (Vector2b.Any(size < 0))
+            {
+                throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0 and <TexSize");
+            }
 
             GL.TextureSubImage2D(Handle, 0, offset.X, offset.Y, (uint)size.X, (uint)size.Y, _PixelFormat, _PixelType, pixels);
         }

@@ -37,7 +37,10 @@ namespace Automata.Game.Blocks
             BlockName = blockName;
             MeshingStrategyIndex = meshingStrategyIndex;
 
-            foreach (IBlockDefinition.Attribute property in properties) Attributes |= property;
+            foreach (IBlockDefinition.Attribute property in properties)
+            {
+                Attributes |= property;
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

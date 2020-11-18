@@ -22,7 +22,10 @@ namespace Automata.Engine.Benchmarks
         [GlobalCleanup]
         public void Cleanup()
         {
-            if (_Pointer.HasValue) Marshal.FreeHGlobal(_Pointer.Value);
+            if (_Pointer.HasValue)
+            {
+                Marshal.FreeHGlobal(_Pointer.Value);
+            }
         }
 
         [Benchmark]

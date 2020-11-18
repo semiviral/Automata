@@ -24,7 +24,10 @@ namespace Automata.Engine.OpenCL
         {
             Span<nuint> lengths = stackalloc nuint[lines.Length];
 
-            for (int index = 0; index < lines.Length; index++) lengths[index] = (nuint)lines[index].Length;
+            for (int index = 0; index < lines.Length; index++)
+            {
+                lengths[index] = (nuint)lines[index].Length;
+            }
 
             Span<int> temp = stackalloc int[1];
             nint handle = CL.CreateProgramWithSource(Handle, (uint)lines.Length, lines, lengths, temp);

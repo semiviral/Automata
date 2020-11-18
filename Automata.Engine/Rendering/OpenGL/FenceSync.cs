@@ -21,11 +21,13 @@ namespace Automata.Engine.Rendering.OpenGL
         public void BusyWaitCPU()
         {
             while (true)
+            {
                 switch (WaitCPU(1u, (uint)GLEnum.SyncFlushCommandsBit))
                 {
                     case SyncStatus.AlreadySignaled:
                     case SyncStatus.ConditionSatisfied: return;
                 }
+            }
         }
 
         public void Regenerate(uint flags = 0u)

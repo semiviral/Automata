@@ -17,7 +17,10 @@ namespace Automata.Engine.Rendering.OpenGL
 
         public void Dispose()
         {
-            if (Disposed) return;
+            if (Disposed)
+            {
+                return;
+            }
 
             DisposeInternal();
 

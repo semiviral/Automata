@@ -37,8 +37,14 @@ namespace Automata.Engine
         {
             get
             {
-                if (_Window is null) throw new InvalidOperationException("Window has not been created.");
-                else return _Window;
+                if (_Window is null)
+                {
+                    throw new InvalidOperationException("Window has not been created.");
+                }
+                else
+                {
+                    return _Window;
+                }
             }
         }
 
@@ -94,7 +100,10 @@ namespace Automata.Engine
 
             double refreshRate;
 
-            if (Window.Monitor.VideoMode.RefreshRate.HasValue) refreshRate = Window.Monitor.VideoMode.RefreshRate.Value;
+            if (Window.Monitor.VideoMode.RefreshRate.HasValue)
+            {
+                refreshRate = Window.Monitor.VideoMode.RefreshRate.Value;
+            }
             else
             {
                 refreshRate = default_refresh_rate;
@@ -120,16 +129,25 @@ namespace Automata.Engine
                     deltaTimer.Restart();
                     Window.DoEvents();
 
-                    if (InputManager.Instance.IsKeyPressed(Key.Escape)) Window.Close();
+                    if (InputManager.Instance.IsKeyPressed(Key.Escape))
+                    {
+                        Window.Close();
+                    }
 
-                    if (!Window.IsClosing) await World.GlobalUpdate(deltaTime);
+                    if (!Window.IsClosing)
+                    {
+                        await World.GlobalUpdate(deltaTime);
+                    }
 
                     InputManager.Instance.CheckAndExecuteInputActions();
 
                     Window.DoEvents();
                     Window.SwapBuffers();
 
-                    if (CheckWaitForNextMonitorRefresh()) WaitForNextMonitorRefresh(deltaTimer);
+                    if (CheckWaitForNextMonitorRefresh())
+                    {
+                        WaitForNextMonitorRefresh(deltaTimer);
+                    }
 
                     fps.Enqueue(1d / deltaTimer.Elapsed.TotalSeconds);
                     Title = $"Automata {fps.Average():0.00} FPS";

@@ -20,13 +20,20 @@ namespace Automata.Game.Chunks
 
         public void RemeshNeighborhood(bool remesh)
         {
-            if (!remesh) return;
+            if (!remesh)
+            {
+                return;
+            }
 
             State = GenerationState.AwaitingMesh;
 
             foreach (Chunk? neighbor in Neighbors)
+            {
                 if (neighbor?.State is > GenerationState.AwaitingMesh)
+                {
                     neighbor.State = GenerationState.AwaitingMesh;
+                }
+            }
         }
 
         public void SafeDispose()

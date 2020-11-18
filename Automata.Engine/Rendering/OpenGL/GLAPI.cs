@@ -21,7 +21,10 @@ namespace Automata.Engine.Rendering.OpenGL
             // configure debug callback
             GL.GetInteger(GetPName.ContextFlags, out int flags);
 
-            if (!((ContextFlags)flags).HasFlag(ContextFlags.Debug)) return;
+            if (!((ContextFlags)flags).HasFlag(ContextFlags.Debug))
+            {
+                return;
+            }
 
             GL.Enable(EnableCap.DebugOutput);
             GL.Enable(EnableCap.DebugOutputSynchronous);
@@ -45,7 +48,10 @@ namespace Automata.Engine.Rendering.OpenGL
         /// <exception cref="OpenGLException"></exception>
         public static void CheckForErrorsAndThrow(bool checkForErrors)
         {
-            if (!checkForErrors) return;
+            if (!checkForErrors)
+            {
+                return;
+            }
 
             GLEnum glError = Instance.GL.GetError();
 
@@ -56,7 +62,6 @@ namespace Automata.Engine.Rendering.OpenGL
             }
         }
 
-        public static void UnbindTexture() => Instance.GL.BindTexture(TextureTarget.Texture1D, 0);
         public static void UnbindProgramPipeline() => Instance.GL.BindProgramPipeline(0);
         public static void UnbindVertexArray() => Instance.GL.BindVertexArray(0);
         public static void UnbindBuffer(BufferTargetARB target) => Instance.GL.BindBuffer(target, 0);

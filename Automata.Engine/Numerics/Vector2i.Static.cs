@@ -32,7 +32,10 @@ namespace Automata.Engine.Numerics
 
         private static Vector2b EqualsImpl(Vector2i a, Vector2i b)
         {
-            if (Sse2.IsSupported) return (Vector2b)Sse2.CompareEqual((Vector128<int>)a, (Vector128<int>)b);
+            if (Sse2.IsSupported)
+            {
+                return (Vector2b)Sse2.CompareEqual((Vector128<int>)a, (Vector128<int>)b);
+            }
             else
             {
                 static Vector2b SoftwareFallback(Vector2i a0, Vector2i b0) => new Vector2b(a0.X == b0.X, a0.Y == b0.Y);
@@ -43,7 +46,10 @@ namespace Automata.Engine.Numerics
 
         private static Vector2b EqualsImpl(Vector2i a, int b)
         {
-            if (Sse2.IsSupported) return (Vector2b)Sse2.CompareEqual((Vector128<int>)a, Vector128.Create(b));
+            if (Sse2.IsSupported)
+            {
+                return (Vector2b)Sse2.CompareEqual((Vector128<int>)a, Vector128.Create(b));
+            }
             else
             {
                 static Vector2b SoftwareFallback(Vector2i a0, int b0) => new Vector2b(a0.X == b0, a0.Y == b0);
@@ -54,7 +60,10 @@ namespace Automata.Engine.Numerics
 
         private static Vector2b EqualsImpl(int a, Vector2i b)
         {
-            if (Sse2.IsSupported) return (Vector2b)Sse2.CompareEqual(Vector128.Create(a), (Vector128<int>)b);
+            if (Sse2.IsSupported)
+            {
+                return (Vector2b)Sse2.CompareEqual(Vector128.Create(a), (Vector128<int>)b);
+            }
             else
             {
                 static Vector2b SoftwareFallback(int a0, Vector2i b0) => new Vector2b(a0 == b0.X, a0 == b0.Y);
@@ -70,7 +79,10 @@ namespace Automata.Engine.Numerics
 
         private static Vector2i BitwiseAndImpl(Vector2i a, Vector2i b)
         {
-            if (Sse2.IsSupported) return (Vector2i)Sse2.And((Vector128<int>)a, (Vector128<int>)b);
+            if (Sse2.IsSupported)
+            {
+                return (Vector2i)Sse2.And((Vector128<int>)a, (Vector128<int>)b);
+            }
             else
             {
                 static Vector2i SoftwareFallback(Vector2i a0, Vector2i b0) => new Vector2i(a0.X & b0.X, a0.Y & b0.Y);
@@ -81,7 +93,10 @@ namespace Automata.Engine.Numerics
 
         private static Vector2i BitwiseAndImpl(Vector2i a, int b)
         {
-            if (Sse2.IsSupported) return (Vector2i)Sse2.And((Vector128<int>)a, Vector128.Create(b));
+            if (Sse2.IsSupported)
+            {
+                return (Vector2i)Sse2.And((Vector128<int>)a, Vector128.Create(b));
+            }
             else
             {
                 static Vector2i SoftwareFallback(Vector2i a0, int b0) => new Vector2i(a0.X & b0, a0.Y & b0);
@@ -92,7 +107,10 @@ namespace Automata.Engine.Numerics
 
         private static Vector2i BitwiseAndImpl(int a, Vector2i b)
         {
-            if (Sse2.IsSupported) return (Vector2i)Sse2.And(Vector128.Create(a), (Vector128<int>)b);
+            if (Sse2.IsSupported)
+            {
+                return (Vector2i)Sse2.And(Vector128.Create(a), (Vector128<int>)b);
+            }
             else
             {
                 static Vector2i SoftwareFallback(int a0, Vector2i b0) => new Vector2i(a0 & b0.X, a0 & b0.Y);
@@ -108,7 +126,10 @@ namespace Automata.Engine.Numerics
 
         private static Vector2i BitwiseOrImpl(Vector2i a, Vector2i b)
         {
-            if (Sse2.IsSupported) return (Vector2i)Sse2.Or((Vector128<int>)a, (Vector128<int>)b);
+            if (Sse2.IsSupported)
+            {
+                return (Vector2i)Sse2.Or((Vector128<int>)a, (Vector128<int>)b);
+            }
             else
             {
                 static Vector2i SoftwareFallback(Vector2i a0, Vector2i b0) => new Vector2i(a0.X | b0.X, a0.Y | b0.Y);
@@ -119,7 +140,10 @@ namespace Automata.Engine.Numerics
 
         private static Vector2i BitwiseOrImpl(Vector2i a, int b)
         {
-            if (Sse2.IsSupported) return (Vector2i)Sse2.Or((Vector128<int>)a, Vector128.Create(b));
+            if (Sse2.IsSupported)
+            {
+                return (Vector2i)Sse2.Or((Vector128<int>)a, Vector128.Create(b));
+            }
             else
             {
                 static Vector2i SoftwareFallback(Vector2i a0, int b0) => new Vector2i(a0.X | b0, a0.Y | b0);
@@ -130,7 +154,10 @@ namespace Automata.Engine.Numerics
 
         private static Vector2i BitwiseOrImpl(int a, Vector2i b)
         {
-            if (Sse2.IsSupported) return (Vector2i)Sse2.Or(Vector128.Create(a), (Vector128<int>)b);
+            if (Sse2.IsSupported)
+            {
+                return (Vector2i)Sse2.Or(Vector128.Create(a), (Vector128<int>)b);
+            }
             else
             {
                 static Vector2i SoftwareFallback(int a0, Vector2i b0) => new Vector2i(a0 | b0.X, a0 | b0.Y);
@@ -146,7 +173,10 @@ namespace Automata.Engine.Numerics
 
         private static Vector2i AddImpl(Vector2i a, Vector2i b)
         {
-            if (Sse2.IsSupported) return (Vector2i)Sse2.Add((Vector128<int>)a, (Vector128<int>)b);
+            if (Sse2.IsSupported)
+            {
+                return (Vector2i)Sse2.Add((Vector128<int>)a, (Vector128<int>)b);
+            }
             else
             {
                 static Vector2i SoftwareFallback(Vector2i a0, Vector2i b0) => new Vector2i(a0.X + b0.X, a0.Y + b0.Y);
@@ -157,7 +187,10 @@ namespace Automata.Engine.Numerics
 
         private static Vector2i AddImpl(Vector2i a, int b)
         {
-            if (Sse2.IsSupported) return (Vector2i)Sse2.Add((Vector128<int>)a, Vector128.Create(b));
+            if (Sse2.IsSupported)
+            {
+                return (Vector2i)Sse2.Add((Vector128<int>)a, Vector128.Create(b));
+            }
             else
             {
                 static Vector2i SoftwareFallback(Vector2i a0, int b0) => new Vector2i(a0.X + b0, a0.Y + b0);
@@ -168,7 +201,10 @@ namespace Automata.Engine.Numerics
 
         private static Vector2i AddImpl(int a, Vector2i b)
         {
-            if (Sse2.IsSupported) return (Vector2i)Sse2.Add(Vector128.Create(a), (Vector128<int>)b);
+            if (Sse2.IsSupported)
+            {
+                return (Vector2i)Sse2.Add(Vector128.Create(a), (Vector128<int>)b);
+            }
             else
             {
                 static Vector2i SoftwareFallback(int a0, Vector2i b0) => new Vector2i(a0 + b0.X, a0 + b0.Y);
@@ -184,7 +220,10 @@ namespace Automata.Engine.Numerics
 
         private static Vector2i SubtractImpl(Vector2i a, Vector2i b)
         {
-            if (Sse2.IsSupported) return (Vector2i)Sse2.Subtract((Vector128<int>)a, (Vector128<int>)b);
+            if (Sse2.IsSupported)
+            {
+                return (Vector2i)Sse2.Subtract((Vector128<int>)a, (Vector128<int>)b);
+            }
             else
             {
                 static Vector2i SoftwareFallback(Vector2i a0, Vector2i b0) => new Vector2i(a0.X - b0.X, a0.Y - b0.Y);
@@ -195,7 +234,10 @@ namespace Automata.Engine.Numerics
 
         private static Vector2i SubtractImpl(Vector2i a, int b)
         {
-            if (Sse2.IsSupported) return (Vector2i)Sse2.Subtract((Vector128<int>)a, Vector128.Create(b));
+            if (Sse2.IsSupported)
+            {
+                return (Vector2i)Sse2.Subtract((Vector128<int>)a, Vector128.Create(b));
+            }
             else
             {
                 static Vector2i SoftwareFallback(Vector2i a0, int b0) => new Vector2i(a0.X - b0, a0.Y - b0);
@@ -206,7 +248,10 @@ namespace Automata.Engine.Numerics
 
         private static Vector2i SubtractImpl(int a, Vector2i b)
         {
-            if (Sse2.IsSupported) return (Vector2i)Sse2.Subtract(Vector128.Create(a), (Vector128<int>)b);
+            if (Sse2.IsSupported)
+            {
+                return (Vector2i)Sse2.Subtract(Vector128.Create(a), (Vector128<int>)b);
+            }
             else
             {
                 static Vector2i SoftwareFallback(int a0, Vector2i b0) => new Vector2i(a0 - b0.X, a0 - b0.Y);
@@ -222,7 +267,10 @@ namespace Automata.Engine.Numerics
 
         private static Vector2i MultiplyImpl(Vector2i a, Vector2i b)
         {
-            if (Sse41.IsSupported) return (Vector2i)Sse41.MultiplyLow((Vector128<int>)a, (Vector128<int>)b);
+            if (Sse41.IsSupported)
+            {
+                return (Vector2i)Sse41.MultiplyLow((Vector128<int>)a, (Vector128<int>)b);
+            }
             else
             {
                 static Vector2i SoftwareFallback(Vector2i a0, Vector2i b0) => new Vector2i(a0.X * b0.X, a0.Y * b0.Y);
@@ -233,7 +281,10 @@ namespace Automata.Engine.Numerics
 
         private static Vector2i MultiplyImpl(Vector2i a, int b)
         {
-            if (Sse41.IsSupported) return (Vector2i)Sse41.MultiplyLow((Vector128<int>)a, Vector128.Create(b));
+            if (Sse41.IsSupported)
+            {
+                return (Vector2i)Sse41.MultiplyLow((Vector128<int>)a, Vector128.Create(b));
+            }
             else
             {
                 static Vector2i SoftwareFallback(Vector2i a0, int b0) => new Vector2i(a0.X * b0, a0.Y * b0);
@@ -244,7 +295,10 @@ namespace Automata.Engine.Numerics
 
         private static Vector2i MultiplyImpl(int a, Vector2i b)
         {
-            if (Sse41.IsSupported) return (Vector2i)Sse41.MultiplyLow(Vector128.Create(a), (Vector128<int>)b);
+            if (Sse41.IsSupported)
+            {
+                return (Vector2i)Sse41.MultiplyLow(Vector128.Create(a), (Vector128<int>)b);
+            }
             else
             {
                 static Vector2i SoftwareFallback(int a0, Vector2i b0) => new Vector2i(a0 * b0.X, a0 * b0.Y);
@@ -284,7 +338,10 @@ namespace Automata.Engine.Numerics
 
         private static Vector2b GreaterThanImpl(Vector2i a, Vector2i b)
         {
-            if (Sse2.IsSupported) return (Vector2b)Sse2.CompareGreaterThan((Vector128<int>)a, (Vector128<int>)b);
+            if (Sse2.IsSupported)
+            {
+                return (Vector2b)Sse2.CompareGreaterThan((Vector128<int>)a, (Vector128<int>)b);
+            }
             else
             {
                 static Vector2b SoftwareFallback(Vector2i a0, Vector2i b0) => new Vector2b(a0.X > b0.X, a0.Y > b0.Y);
@@ -295,7 +352,10 @@ namespace Automata.Engine.Numerics
 
         private static Vector2b GreaterThanImpl(Vector2i a, int b)
         {
-            if (Sse2.IsSupported) return (Vector2b)Sse2.CompareGreaterThan((Vector128<int>)a, Vector128.Create(b));
+            if (Sse2.IsSupported)
+            {
+                return (Vector2b)Sse2.CompareGreaterThan((Vector128<int>)a, Vector128.Create(b));
+            }
             else
             {
                 static Vector2b SoftwareFallback(Vector2i a0, int b0) => new Vector2b(a0.X > b0, a0.Y > b0);
@@ -306,7 +366,10 @@ namespace Automata.Engine.Numerics
 
         private static Vector2b GreaterThanImpl(int a, Vector2i b)
         {
-            if (Sse2.IsSupported) return (Vector2b)Sse2.CompareGreaterThan(Vector128.Create(a), (Vector128<int>)b);
+            if (Sse2.IsSupported)
+            {
+                return (Vector2b)Sse2.CompareGreaterThan(Vector128.Create(a), (Vector128<int>)b);
+            }
             else
             {
                 static Vector2b SoftwareFallback(int a0, Vector2i b0) => new Vector2b(a0 > b0.X, a0 > b0.Y);
@@ -317,7 +380,10 @@ namespace Automata.Engine.Numerics
 
         private static Vector2b LessThanImpl(Vector2i a, Vector2i b)
         {
-            if (Sse2.IsSupported) return (Vector2b)Sse2.CompareLessThan((Vector128<int>)a, (Vector128<int>)b);
+            if (Sse2.IsSupported)
+            {
+                return (Vector2b)Sse2.CompareLessThan((Vector128<int>)a, (Vector128<int>)b);
+            }
             else
             {
                 static Vector2b SoftwareFallback(Vector2i a0, Vector2i b0) => new Vector2b(a0.X < b0.X, a0.Y < b0.Y);
@@ -328,7 +394,10 @@ namespace Automata.Engine.Numerics
 
         private static Vector2b LessThanImpl(Vector2i a, int b)
         {
-            if (Sse2.IsSupported) return (Vector2b)Sse2.CompareLessThan((Vector128<int>)a, Vector128.Create(b));
+            if (Sse2.IsSupported)
+            {
+                return (Vector2b)Sse2.CompareLessThan((Vector128<int>)a, Vector128.Create(b));
+            }
             else
             {
                 static Vector2b SoftwareFallback(Vector2i a0, int b0) => new Vector2b(a0.X < b0, a0.Y < b0);
@@ -339,7 +408,10 @@ namespace Automata.Engine.Numerics
 
         private static Vector2b LessThanImpl(int a, Vector2i b)
         {
-            if (Sse2.IsSupported) return (Vector2b)Sse2.CompareLessThan(Vector128.Create(a), (Vector128<int>)b);
+            if (Sse2.IsSupported)
+            {
+                return (Vector2b)Sse2.CompareLessThan(Vector128.Create(a), (Vector128<int>)b);
+            }
             else
             {
                 static Vector2b SoftwareFallback(int a0, Vector2i b0) => new Vector2b(a0 < b0.X, a0 < b0.Y);

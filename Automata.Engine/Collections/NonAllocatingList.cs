@@ -24,12 +24,20 @@ namespace Automata.Engine.Collections
         {
             get
             {
-                if (index >= Count) ThrowHelper.ThrowIndexOutOfRangeException();
+                if (index >= Count)
+                {
+                    ThrowHelper.ThrowIndexOutOfRangeException();
+                }
+
                 return _InternalArray[index];
             }
             set
             {
-                if (index >= Count) ThrowHelper.ThrowIndexOutOfRangeException();
+                if (index >= Count)
+                {
+                    ThrowHelper.ThrowIndexOutOfRangeException();
+                }
+
                 _InternalArray[index] = value;
             }
         }
@@ -38,12 +46,20 @@ namespace Automata.Engine.Collections
         {
             get
             {
-                if (index >= Count) ThrowHelper.ThrowIndexOutOfRangeException();
+                if (index >= Count)
+                {
+                    ThrowHelper.ThrowIndexOutOfRangeException();
+                }
+
                 return _InternalArray[index];
             }
             set
             {
-                if (index >= Count) ThrowHelper.ThrowIndexOutOfRangeException();
+                if (index >= Count)
+                {
+                    ThrowHelper.ThrowIndexOutOfRangeException();
+                }
+
                 _InternalArray[index] = value;
             }
         }
@@ -55,7 +71,10 @@ namespace Automata.Engine.Collections
 
         public void Add(T item)
         {
-            if (Count >= _InternalArray.Length) EnsureCapacityOrResize(Count + 1);
+            if (Count >= _InternalArray.Length)
+            {
+                EnsureCapacityOrResize(Count + 1);
+            }
 
             _InternalArray[Count] = item;
             Count += 1;
@@ -65,11 +84,20 @@ namespace Automata.Engine.Collections
 
         public void Insert(int index, T item)
         {
-            if (index > Count) throw new ArgumentOutOfRangeException(nameof(index), "Must be non-negative and less than the size of the collection.");
-            else if (index == Count) EnsureCapacityOrResize(Count + 1);
+            if (index > Count)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index), "Must be non-negative and less than the size of the collection.");
+            }
+            else if (index == Count)
+            {
+                EnsureCapacityOrResize(Count + 1);
+            }
 
             // this copies everything from index..Count to index + 1
-            else if (index < Count) Array.Copy(_InternalArray, index, _InternalArray, index + 1, Count - index);
+            else if (index < Count)
+            {
+                Array.Copy(_InternalArray, index, _InternalArray, index + 1, Count - index);
+            }
 
             _InternalArray[index] = item;
             Count += 1;
@@ -77,16 +105,26 @@ namespace Automata.Engine.Collections
 
         public void InsertRange(int index, IEnumerable<T> items)
         {
-            if ((uint)index > (uint)Count) ThrowHelper.ThrowIndexOutOfRangeException();
+            if ((uint)index > (uint)Count)
+            {
+                ThrowHelper.ThrowIndexOutOfRangeException();
+            }
 
             if (items is ICollection<T> collection)
             {
                 int count = collection.Count;
 
-                if (count <= 0) return;
+                if (count <= 0)
+                {
+                    return;
+                }
 
                 EnsureCapacityOrResize(collection.Count + count);
-                if (index < Count) Array.Copy(_InternalArray, index, _InternalArray, index + count, Count - index);
+
+                if (index < Count)
+                {
+                    Array.Copy(_InternalArray, index, _InternalArray, index + count, Count - index);
+                }
 
                 // If we're inserting a List into itself, we want to be able to deal with that.
                 if (Equals(items))
@@ -97,7 +135,10 @@ namespace Automata.Engine.Collections
                     // Copy last part of _items back to inserted location
                     Array.Copy(_InternalArray, index + count, _InternalArray, index * 2, Count - index);
                 }
-                else collection.CopyTo(_InternalArray, index);
+                else
+                {
+                    collection.CopyTo(_InternalArray, index);
+                }
 
                 Count += count;
             }
@@ -105,13 +146,19 @@ namespace Automata.Engine.Collections
             {
                 using IEnumerator<T> en = items.GetEnumerator();
 
-                while (en.MoveNext()) Insert(index++, en.Current);
+                while (en.MoveNext())
+                {
+                    Insert(index++, en.Current);
+                }
             }
         }
 
         private void EnsureCapacityOrResize(int minimumCapacity)
         {
-            if (_InternalArray.Length >= minimumCapacity) return;
+            if (_InternalArray.Length >= minimumCapacity)
+            {
+                return;
+            }
 
             int idealCapacity = _InternalArray.Length is 0 ? _DEFAULT_CAPACITY : _InternalArray.Length * 2;
             int newCapacity = Math.Max(minimumCapacity, idealCapacity);
@@ -125,7 +172,10 @@ namespace Automata.Engine.Collections
         {
             int index = IndexOf(item);
 
-            if (index == -1) return false;
+            if (index == -1)
+            {
+                return false;
+            }
 
             RemoveAt(index);
             return true;
@@ -133,19 +183,28 @@ namespace Automata.Engine.Collections
 
         public void RemoveAt(int index)
         {
-            if (index >= Count) throw new ArgumentOutOfRangeException(nameof(index), "Must be non-negative and less than the size of the collection.");
+            if (index >= Count)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index), "Must be non-negative and less than the size of the collection.");
+            }
 
             Count -= 1;
 
             // copies all elements from after index to the index itself, overwriting it
-            if (index < Count) Array.Copy(_InternalArray, index + 1, _InternalArray, index, Count - index);
+            if (index < Count)
+            {
+                Array.Copy(_InternalArray, index + 1, _InternalArray, index, Count - index);
+            }
 
             _InternalArray[Count] = default!;
         }
 
         public void Clear()
         {
-            if (Count == 0) return;
+            if (Count == 0)
+            {
+                return;
+            }
 
             Array.Clear(_InternalArray, 0, Count);
             Count = 0;
@@ -173,7 +232,10 @@ namespace Automata.Engine.Collections
             {
                 get
                 {
-                    if ((_Index == 0u) || (_Index >= (uint)_List.Count)) ThrowHelper.ThrowInvalidOperationException("Enumerable has not been enumerated.");
+                    if ((_Index == 0u) || (_Index >= (uint)_List.Count))
+                    {
+                        ThrowHelper.ThrowInvalidOperationException("Enumerable has not been enumerated.");
+                    }
 
                     return _Current;
                 }
@@ -188,7 +250,10 @@ namespace Automata.Engine.Collections
 
             public bool MoveNext()
             {
-                if (_Index >= (uint)_List.Count) return false;
+                if (_Index >= (uint)_List.Count)
+                {
+                    return false;
+                }
 
                 _Current = _List._InternalArray[_Index];
                 _Index += 1u;
@@ -216,7 +281,10 @@ namespace Automata.Engine.Collections
 
         private void Dispose(bool disposing)
         {
-            if (!disposing || _Disposed) return;
+            if (!disposing || _Disposed)
+            {
+                return;
+            }
 
             Count = 0;
             ArrayPool<T>.Shared.Return(_InternalArray);

@@ -46,15 +46,22 @@ namespace Automata.Game.Chunks
             while (_ChunksRequiringRemesh.TryPeek(out Chunk? chunk)
                    && chunk!.State is not GenerationState.GeneratingMesh
                    && _ChunksRequiringRemesh.TryDequeue(out chunk))
+            {
                 if (chunk!.State is GenerationState.Finished)
+                {
                     chunk.State = GenerationState.AwaitingMesh;
+                }
+            }
 
             while (_ChunksPendingCleanup.TryPeek(out Chunk? chunk)
                    && Array.TrueForAll(chunk!.Neighbors, neighbor => neighbor?.State is null
                        or not GenerationState.GeneratingTerrain
                        and not GenerationState.GeneratingStructures
                        and not GenerationState.GeneratingMesh)
-                   && _ChunksPendingCleanup.TryPop(out chunk)) chunk!.SafeDispose();
+                   && _ChunksPendingCleanup.TryPop(out chunk))
+            {
+                chunk!.SafeDispose();
+            }
 
             // determine whether any chunk loaders have moved out far enough to recalculate their loaded chunk region
             if (CheckAndUpdateChunkLoaderPositions(entityManager))
@@ -77,7 +84,10 @@ namespace Automata.Game.Chunks
                 Vector3i translationInt32 = Vector3i.FromVector3(translation.Value).SetComponent(1, 0);
                 Vector3i difference = Vector3i.Abs(translationInt32 - chunkLoader.Origin);
 
-                if (!chunkLoader.Changed && Vector3b.All(difference < GenerationConstants.CHUNK_SIZE)) continue;
+                if (!chunkLoader.Changed && Vector3b.All(difference < GenerationConstants.CHUNK_SIZE))
+                {
+                    continue;
+                }
 
                 chunkLoader.Origin = Vector3i.RoundBy(translationInt32, GenerationConstants.CHUNK_SIZE);
                 updatedChunkPositions = true;
@@ -91,16 +101,26 @@ namespace Automata.Game.Chunks
             // this calculates new chunk allocations and current chunk deallocations
             HashSet<Vector3i> withinLoaderRange = new HashSet<Vector3i>(GetOriginsWithinLoaderRanges(entityManager.GetComponents<ChunkLoader>()));
 
-            foreach (Vector3i origin in withinLoaderRange.Except(VoxelWorld.Chunks.Origins)) VoxelWorld.Chunks.Allocate(entityManager, origin);
+            foreach (Vector3i origin in withinLoaderRange.Except(VoxelWorld.Chunks.Origins))
+            {
+                VoxelWorld.Chunks.Allocate(entityManager, origin);
+            }
 
             foreach (Vector3i origin in VoxelWorld.Chunks.Origins.Except(withinLoaderRange))
+            {
                 if (VoxelWorld.Chunks.TryDeallocate(entityManager, origin, out Chunk? chunk))
+                {
                     _ChunksPendingCleanup.Push(chunk);
+                }
+            }
 
             // here we update neighbors, and allocate (in a stack) all chunks that will require remeshing
             foreach ((Vector3i origin, IEntity entity) in VoxelWorld.Chunks)
             {
-                if (!entity.TryFind(out Chunk? chunk)) continue;
+                if (!entity.TryFind(out Chunk? chunk))
+                {
+                    continue;
+                }
 
                 // here we assign this chunk's neighbors
                 //
@@ -109,11 +129,18 @@ namespace Automata.Game.Chunks
                 // enter the 'GenerationState.Finished' state, it needs to be remeshed.
                 int neighborIndex = 0;
                 bool isNewChunk = chunk.State is GenerationState.Inactive;
-                if (isNewChunk) chunk.State += 1; // chunk is being processed, so is not inactive
+
+                if (isNewChunk)
+                {
+                    chunk.State += 1; // chunk is being processed, so is not inactive
+                }
 
                 foreach (Chunk? neighbor in GetNeighborsOfOrigin(origin))
                 {
-                    if (isNewChunk && neighbor?.State is > GenerationState.AwaitingMesh) _ChunksRequiringRemesh.Enqueue(neighbor);
+                    if (isNewChunk && neighbor?.State is > GenerationState.AwaitingMesh)
+                    {
+                        _ChunksRequiringRemesh.Enqueue(neighbor);
+                    }
 
                     chunk.Neighbors[neighborIndex] = neighbor;
                     neighborIndex += 1;
@@ -130,7 +157,9 @@ namespace Automata.Game.Chunks
                 for (int y = 0; y < GenerationConstants.WORLD_HEIGHT_IN_CHUNKS; y++)
                 for (int z = -chunkLoader.Radius; z < (chunkLoader.Radius + 1); z++)
                 for (int x = -chunkLoader.Radius; x < (chunkLoader.Radius + 1); x++)
+                {
                     yield return chunkLoaderOriginYAdjusted + (new Vector3i(x, y, z) * GenerationConstants.CHUNK_SIZE);
+                }
             }
         }
 

@@ -24,20 +24,40 @@ namespace Automata.Game.Chunks.Generation
                 for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++, heightmapIndex++, index++)
                 {
                     Vector3i global = origin + new Vector3i(x, y, z);
-                    if (y == 0) heightmap[heightmapIndex] = CalculateHeight(new Vector2(global.X, global.Z), parameters.Frequency, parameters.Persistence);
+
+                    if (y == 0)
+                    {
+                        heightmap[heightmapIndex] = CalculateHeight(new Vector2(global.X, global.Z), parameters.Frequency, parameters.Persistence);
+                    }
 
                     int noiseHeight = heightmap[heightmapIndex];
 
-                    if ((global.Y < 4) && (global.Y <= parameters.SeededRandom.Next(0, 4))) blocks[index] = BlockRegistry.Instance.GetBlockID("Core:Bedrock");
+                    if ((global.Y < 4) && (global.Y <= parameters.SeededRandom.Next(0, 4)))
+                    {
+                        blocks[index] = BlockRegistry.Instance.GetBlockID("Core:Bedrock");
+                    }
                     else if ((noiseHeight < origin.Y) || (CalculateCaveNoise(global, parameters) < parameters.CaveThreshold))
+                    {
                         blocks[index] = BlockRegistry.AirID;
-                    else if (global.Y == noiseHeight) blocks[index] = BlockRegistry.Instance.GetBlockID("Core:Grass");
+                    }
+                    else if (global.Y == noiseHeight)
+                    {
+                        blocks[index] = BlockRegistry.Instance.GetBlockID("Core:Grass");
+                    }
                     else if ((global.Y < noiseHeight) && (global.Y >= (noiseHeight - 3))) // lay dirt up to 3 blocks below noise height
+                    {
                         blocks[index] = parameters.SeededRandom.Next(0, 8) == 0
                             ? BlockRegistry.Instance.GetBlockID("Core:Dirt_Coarse")
                             : BlockRegistry.Instance.GetBlockID("Core:Dirt");
-                    else if (global.Y < (noiseHeight - 3)) blocks[index] = BlockRegistry.Instance.GetBlockID("Core:Stone");
-                    else blocks[index] = BlockRegistry.AirID;
+                    }
+                    else if (global.Y < (noiseHeight - 3))
+                    {
+                        blocks[index] = BlockRegistry.Instance.GetBlockID("Core:Stone");
+                    }
+                    else
+                    {
+                        blocks[index] = BlockRegistry.AirID;
+                    }
                 }
             }
         }

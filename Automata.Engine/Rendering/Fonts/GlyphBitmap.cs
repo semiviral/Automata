@@ -16,7 +16,10 @@ namespace Automata.Engine.Rendering.Fonts
         {
             get
             {
-                if (_Disposed) throw new ObjectDisposedException(nameof(GlyphBitmap));
+                if (_Disposed)
+                {
+                    throw new ObjectDisposedException(nameof(GlyphBitmap));
+                }
 
                 return _Bitmap;
             }
@@ -27,7 +30,10 @@ namespace Automata.Engine.Rendering.Fonts
             get => _Handle;
             set
             {
-                if (_Disposed) throw new ObjectDisposedException(nameof(GlyphBitmap));
+                if (_Disposed)
+                {
+                    throw new ObjectDisposedException(nameof(GlyphBitmap));
+                }
 
                 _Handle = value;
                 _Bitmap = Marshal.PtrToStructure<FreeTypeBitmap>(value);
@@ -57,7 +63,10 @@ namespace Automata.Engine.Rendering.Fonts
 
         public unsafe Span<byte> Buffer()
         {
-            if (Pitch < 0) throw new ArgumentOutOfRangeException(nameof(Pitch), "Pitch is negative.");
+            if (Pitch < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(Pitch), "Pitch is negative.");
+            }
 
             return new Span<byte>(Bitmap.Buffer.ToPointer(), (int)(Rows * Pitch));
         }
@@ -70,7 +79,10 @@ namespace Automata.Engine.Rendering.Fonts
 
         private void Dispose(bool dispose)
         {
-            if (_Disposed || !dispose) return;
+            if (_Disposed || !dispose)
+            {
+                return;
+            }
 
             _Disposed = true;
 

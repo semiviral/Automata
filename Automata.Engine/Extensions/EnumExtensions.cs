@@ -11,8 +11,12 @@ namespace Automata.Engine.Extensions
         public static IEnumerable<TEnum> GetFlags<TEnum>(this TEnum @enum) where TEnum : Enum
         {
             foreach (Enum? value in Enum.GetValues(typeof(TEnum)))
+            {
                 if (value is not null && @enum.HasFlag(value))
+                {
                     yield return (TEnum)value;
+                }
+            }
         }
     }
 }

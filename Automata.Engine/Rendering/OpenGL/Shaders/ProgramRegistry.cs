@@ -31,7 +31,10 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
             const string compound_shader_key_format = "{0}:{1}";
             string compoundProgramKey = string.Format(compound_shader_key_format, vertexShaderPath, fragmentShaderPath);
 
-            if (_CachedProgramPipelines.TryGetValue(compoundProgramKey, out ProgramPipeline? programPipeline)) return programPipeline;
+            if (_CachedProgramPipelines.TryGetValue(compoundProgramKey, out ProgramPipeline? programPipeline))
+            {
+                return programPipeline;
+            }
             else
             {
                 if (!_CachedVertexPrograms.TryGetValue(vertexShaderPath, out ShaderProgram? vertexShader))
@@ -57,7 +60,10 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
 
         public void Dispose()
         {
-            if (Disposed) return;
+            if (Disposed)
+            {
+                return;
+            }
 
             DisposeInternal();
             Disposed = true;
@@ -66,9 +72,20 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
 
         private void DisposeInternal()
         {
-            foreach ((_, ShaderProgram shaderProgram) in _CachedVertexPrograms) shaderProgram.Dispose();
-            foreach ((_, ShaderProgram shaderProgram) in _CachedFragmentPrograms) shaderProgram.Dispose();
-            foreach ((_, ProgramPipeline programPipeline) in _CachedProgramPipelines) programPipeline.Dispose();
+            foreach ((_, ShaderProgram shaderProgram) in _CachedVertexPrograms)
+            {
+                shaderProgram.Dispose();
+            }
+
+            foreach ((_, ShaderProgram shaderProgram) in _CachedFragmentPrograms)
+            {
+                shaderProgram.Dispose();
+            }
+
+            foreach ((_, ProgramPipeline programPipeline) in _CachedProgramPipelines)
+            {
+                programPipeline.Dispose();
+            }
         }
 
         #endregion

@@ -15,7 +15,10 @@ namespace Automata.Engine
 
         public static void RegisterWorld(string name, World world)
         {
-            if (Worlds.ContainsKey(name)) throw new ArgumentException(name);
+            if (Worlds.ContainsKey(name))
+            {
+                throw new ArgumentException(name);
+            }
 
             Worlds.Add(name, world);
 
@@ -26,12 +29,18 @@ namespace Automata.Engine
 
         public static async ValueTask GlobalUpdate(TimeSpan deltaTime)
         {
-            foreach (World world in Worlds.Values.Where(world => world.Active)) await world.Update(deltaTime);
+            foreach (World world in Worlds.Values.Where(world => world.Active))
+            {
+                await world.Update(deltaTime);
+            }
         }
 
         public static void DisposeWorlds()
         {
-            foreach ((_, World world) in Worlds) world.Dispose();
+            foreach ((_, World world) in Worlds)
+            {
+                world.Dispose();
+            }
         }
 
         #endregion
@@ -66,7 +75,10 @@ namespace Automata.Engine
 
         public void Dispose()
         {
-            if (_Disposed) return;
+            if (_Disposed)
+            {
+                return;
+            }
 
             DisposeInternal();
             GC.SuppressFinalize(this);

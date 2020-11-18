@@ -74,7 +74,10 @@ namespace Automata.Engine.Concurrency
             {
                 try
                 {
-                    if (_CancellationTokenSource.IsCancellationRequested) return;
+                    if (_CancellationTokenSource.IsCancellationRequested)
+                    {
+                        return;
+                    }
 
                     await _Semaphore.WaitAsync(CancellationToken).ConfigureAwait(false);
                     await invocation.Invoke(CancellationToken).ConfigureAwait(false);
@@ -91,10 +94,16 @@ namespace Automata.Engine.Concurrency
             _ModifyPoolReset.Wait(CancellationToken);
 
             // ensure the pool is actually accepting invocations
-            if (Size == 0) throw new InvalidOperationException($"Pool is empty. Call {nameof(DefaultPoolSize)}() or {nameof(ModifyPoolSize)}().");
+            if (Size == 0)
+            {
+                throw new InvalidOperationException($"Pool is empty. Call {nameof(DefaultPoolSize)}() or {nameof(ModifyPoolSize)}().");
+            }
 
             // dispatch work to ThreadPool
-            else Task.Run(Dispatch, CancellationToken);
+            else
+            {
+                Task.Run(Dispatch, CancellationToken);
+            }
         }
 
         /// <summary>
@@ -109,7 +118,10 @@ namespace Automata.Engine.Concurrency
         public void ModifyPoolSize(uint size)
         {
             // if size is already equal to new value, or we're cancelled, then return from method
-            if ((size == Size) || CancellationToken.IsCancellationRequested) return;
+            if ((size == Size) || CancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
 
             // wait on modification synchronization object
             _ModifyPoolReset.Wait(CancellationToken);
@@ -124,15 +136,22 @@ namespace Automata.Engine.Concurrency
                 //
                 // we can be sure no NEW work will be added, since we locked the
                 // modification synchronization object.
+            {
                 while (_Semaphore.CurrentCount < Size)
+                {
                     Thread.Sleep(1);
+                }
+            }
 
             // dispose old semaphore
             _Semaphore.Dispose();
 
             // if size is greater than zero, we create a new semaphore
             // if not, then there's no point since it would be empty.
-            if (size > 0) _Semaphore = new SemaphoreSlim((int)size);
+            if (size > 0)
+            {
+                _Semaphore = new SemaphoreSlim((int)size);
+            }
 
             // atomic write new size value
             Interlocked.Exchange(ref _Size, (int)size);
@@ -155,7 +174,10 @@ namespace Automata.Engine.Concurrency
         /// <param name="abort">Whether or not to abort all workers in the worker group.</param>
         public void Abort(bool abort)
         {
-            if (!abort) return;
+            if (!abort)
+            {
+                return;
+            }
 
             _CancellationTokenSource.Cancel();
 
