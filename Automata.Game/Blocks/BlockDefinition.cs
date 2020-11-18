@@ -1,26 +1,11 @@
-#region
-
 using System;
 using System.Runtime.CompilerServices;
 
 // ReSharper disable TypeParameterCanBeVariant
 
-#endregion
-
-
 namespace Automata.Game.Blocks
 {
     public interface IBlockDefinition
-    {
-        ushort ID { get; }
-        string BlockName { get; }
-        public int MeshingStrategyIndex { get; }
-        BlockDefinitionDefinition.Attribute Attributes { get; }
-
-        public bool HasAttribute(BlockDefinitionDefinition.Attribute attribute);
-    }
-
-    public sealed class BlockDefinitionDefinition : IBlockDefinition
     {
         [Flags]
         public enum Attribute
@@ -31,21 +16,31 @@ namespace Automata.Game.Blocks
             Collectible = 1 << 3
         }
 
+        ushort ID { get; }
+        string BlockName { get; }
+        public int MeshingStrategyIndex { get; }
+        Attribute Attributes { get; }
+
+        public bool HasAttribute(Attribute attribute);
+    }
+
+    public sealed class BlockDefinition : IBlockDefinition
+    {
         public ushort ID { get; }
         public string BlockName { get; }
         public int MeshingStrategyIndex { get; }
-        public Attribute Attributes { get; }
+        public IBlockDefinition.Attribute Attributes { get; }
 
-        public BlockDefinitionDefinition(ushort id, string blockName, int meshingStrategyIndex, params Attribute[] properties)
+        public BlockDefinition(ushort id, string blockName, int meshingStrategyIndex, params IBlockDefinition.Attribute[] properties)
         {
             ID = id;
             BlockName = blockName;
             MeshingStrategyIndex = meshingStrategyIndex;
 
-            foreach (Attribute property in properties) Attributes |= property;
+            foreach (IBlockDefinition.Attribute property in properties) Attributes |= property;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool HasAttribute(Attribute flag) => (Attributes & flag) == flag;
+        public bool HasAttribute(IBlockDefinition.Attribute flag) => (Attributes & flag) == flag;
     }
 }

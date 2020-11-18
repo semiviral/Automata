@@ -1,10 +1,5 @@
-#region
-
 using System.Diagnostics;
 using Automata.Engine.Collections;
-
-#endregion
-
 
 namespace Automata.Engine.Diagnostics
 {

@@ -1,11 +1,6 @@
-#region
-
 using System.Numerics;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
-
-#endregion
-
 
 // ReSharper disable CompareOfFloatsByEqualityOperator
 

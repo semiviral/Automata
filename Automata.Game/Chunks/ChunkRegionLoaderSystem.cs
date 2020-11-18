@@ -1,5 +1,3 @@
-#region
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -15,9 +13,6 @@ using Automata.Game.Chunks.Generation;
 using DiagnosticsProviderNS;
 using Serilog;
 using Silk.NET.Input.Common;
-
-#endregion
-
 
 namespace Automata.Game.Chunks
 {

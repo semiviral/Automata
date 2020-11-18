@@ -9,7 +9,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 {
     public class UniformBufferObject : OpenGLObject
     {
-        private const BufferStorageMask _STORAGE_FLAGS = BufferStorageMask.MapWriteBit | BufferStorageMask.DynamicStorageBit;
+        private const BufferStorageMask _STORAGE_FLAGS = BufferStorageMask.DynamicStorageBit | BufferStorageMask.MapWriteBit;
 
         private readonly Dictionary<string, int> _Offsets;
 

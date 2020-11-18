@@ -1,12 +1,7 @@
-#region
-
 using System;
 using Automata.Engine.Numerics;
 using Silk.NET.OpenGL;
 using SixLabors.ImageSharp.PixelFormats;
-
-#endregion
-
 
 namespace Automata.Engine.Rendering.OpenGL.Textures
 {

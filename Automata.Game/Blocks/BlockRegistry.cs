@@ -1,5 +1,3 @@
-#region
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -11,23 +9,18 @@ using Automata.Game.Chunks.Generation.Meshing;
 using Automata.Game.Resources;
 using Serilog;
 
-#endregion
-
-
 // ReSharper disable MemberCanBePrivate.Global
 
 namespace Automata.Game.Blocks
 {
     public class BlockRegistry : Singleton<BlockRegistry>
     {
-        private static readonly IReadOnlyDictionary<string, BlockDefinitionDefinition.Attribute> _AttributeAliases =
-            new Dictionary<string, BlockDefinitionDefinition.Attribute>
+        private static readonly IReadOnlyDictionary<string, IBlockDefinition.Attribute> _AttributeAliases =
+            new Dictionary<string, IBlockDefinition.Attribute>
             {
-                {
-                    "Default", BlockDefinitionDefinition.Attribute.Collectible
-                               | BlockDefinitionDefinition.Attribute.Collideable
-                               | BlockDefinitionDefinition.Attribute.Destructible
-                }
+                ["Default"] = IBlockDefinition.Attribute.Collectible
+                              | IBlockDefinition.Attribute.Collideable
+                              | IBlockDefinition.Attribute.Destructible
             };
 
         public static ushort AirID;
@@ -58,7 +51,7 @@ namespace Automata.Game.Blocks
                 {
                     if (blockDefinition.Name is null) continue;
 
-                    BlockDefinitionDefinition.Attribute attributes = 0;
+                    IBlockDefinition.Attribute attributes = 0;
 
                     if (blockDefinition.Attributes is not null && !TryParseAttributes(blockDefinition.Attributes, out attributes)) continue;
 
@@ -84,30 +77,29 @@ namespace Automata.Game.Blocks
             }
         }
 
-        private bool TryParseAttributes(IEnumerable<string> attributes, [MaybeNullWhen(false)] out BlockDefinitionDefinition.Attribute result)
+        private bool TryParseAttributes(IEnumerable<string> attributes, [MaybeNullWhen(false)] out IBlockDefinition.Attribute result)
         {
-            result = (BlockDefinitionDefinition.Attribute)0;
+            result = (IBlockDefinition.Attribute)0;
 
             foreach (string attribute in attributes)
                 if (attribute.StartsWith("Alias"))
                 {
                     string aliasName = attribute.Substring(attribute.IndexOf(' ') + 1);
 
-                    if (_AttributeAliases.TryGetValue(aliasName, out BlockDefinitionDefinition.Attribute aliasAttribute)) result |= aliasAttribute;
+                    if (_AttributeAliases.TryGetValue(aliasName, out IBlockDefinition.Attribute aliasAttribute)) result |= aliasAttribute;
                     else
                     {
                         Log.Error(string.Format(_LogFormat,
-                            $"Failed to parse {nameof(BlockDefinitionDefinition.Attribute)}: alias \"{aliasName}\" does not exist."));
+                            $"Failed to parse {nameof(IBlockDefinition.Attribute)}: alias \"{aliasName}\" does not exist."));
 
                         return false;
                     }
                 }
-                else if (Enum.TryParse(typeof(BlockDefinitionDefinition.Attribute), attribute, true, out object? parsed))
-                    result |= (BlockDefinitionDefinition.Attribute)parsed!;
+                else if (Enum.TryParse(typeof(IBlockDefinition.Attribute), attribute, true, out object? parsed)) result |= (IBlockDefinition.Attribute)parsed!;
                 else
                 {
                     Log.Error(string.Format(_LogFormat,
-                        $"Failed to parse {nameof(BlockDefinitionDefinition.Attribute)}: attribute \"{attribute}\" does not exist."));
+                        $"Failed to parse {nameof(IBlockDefinition.Attribute)}: attribute \"{attribute}\" does not exist."));
 
                     return false;
                 }
@@ -115,7 +107,7 @@ namespace Automata.Game.Blocks
             return true;
         }
 
-        public ushort RegisterBlock(string group, string blockName, BlockDefinitionDefinition.Attribute attributes, string? meshingStrategy)
+        public ushort RegisterBlock(string group, string blockName, IBlockDefinition.Attribute attributes, string? meshingStrategy)
         {
             const string group_with_block_name_format = "{0}:{1}";
 
@@ -125,7 +117,7 @@ namespace Automata.Game.Blocks
             string groupedName = string.Format(group_with_block_name_format, group, blockName);
 
             int strategyIndex = ChunkMesher.MeshingStrategies.GetMeshingStrategyIndex(meshingStrategy ?? ChunkMesher.DEFAULT_STRATEGY);
-            IBlockDefinition blockDefinition = new BlockDefinitionDefinition(blockID, groupedName, strategyIndex, attributes);
+            IBlockDefinition blockDefinition = new BlockDefinition(blockID, groupedName, strategyIndex, attributes);
 
             Blocks.Add(blockDefinition);
             BlocksIndexer.Add(groupedName, blockID);
@@ -160,6 +152,6 @@ namespace Automata.Game.Blocks
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool CheckBlockHasProperty(ushort blockID, BlockDefinitionDefinition.Attribute attribute) => Blocks[blockID].HasAttribute(attribute);
+        public bool CheckBlockHasProperty(ushort blockID, IBlockDefinition.Attribute attribute) => Blocks[blockID].HasAttribute(attribute);
     }
 }

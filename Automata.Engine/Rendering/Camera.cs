@@ -1,10 +1,8 @@
-#region
 
 using System.Numerics;
 using Automata.Engine.Components;
 using Automata.Engine.Rendering.OpenGL.Buffers;
 
-#endregion
 
 
 namespace Automata.Engine.Rendering

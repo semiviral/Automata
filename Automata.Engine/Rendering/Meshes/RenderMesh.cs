@@ -1,10 +1,5 @@
-#region
-
 using System;
 using Automata.Engine.Components;
-
-#endregion
-
 
 namespace Automata.Engine.Rendering.Meshes
 {

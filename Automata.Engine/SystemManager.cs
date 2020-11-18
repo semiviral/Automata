@@ -1,5 +1,3 @@
-#region
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,9 +6,6 @@ using System.Threading.Tasks;
 using Automata.Engine.Collections;
 using Automata.Engine.Components;
 using Serilog;
-
-#endregion
-
 
 namespace Automata.Engine
 {

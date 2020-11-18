@@ -1,5 +1,3 @@
-#region
-
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -9,9 +7,6 @@ using System.Runtime.CompilerServices;
 using Silk.NET.Input;
 using Silk.NET.Input.Common;
 using Silk.NET.Windowing.Common;
-
-#endregion
-
 
 namespace Automata.Engine.Input
 {

@@ -66,7 +66,7 @@ static void InitializeWindow()
     AutomataWindow.Instance.Closing += ApplicationCloseCallback;
 }
 
-static unsafe void InitializeWorld(out World world)
+static void InitializeWorld(out World world)
 {
     world = new VoxelWorld(true);
     world.SystemManager.RegisterSystem<InputSystem, FirstOrderSystem>(SystemRegistrationOrder.Before);
@@ -78,20 +78,20 @@ static unsafe void InitializeWorld(out World world)
     allocatedMeshingSystem.AllocateVertexAttributes(true, true,
 
         // vert
-        new VertexAttribute<int>(0u, 1u, 0u),
+        new VertexAttribute<int>(0u, 1u, 0u, 0u),
 
         // uv
-        new VertexAttribute<int>(1u, 1u, 4u),
+        new VertexAttribute<int>(1u, 1u, 4u, 0u),
 
         // drawID
         new VertexAttribute<uint>(2u, 1u, (uint)Marshal.OffsetOf<DrawElementsIndirectCommand>(nameof(DrawElementsIndirectCommand.BaseInstance)), 1u, 1u),
 
         // model
-        new VertexAttribute<float>(3u + 0u, 4u, (uint)(sizeof(Vector4) * 0), 2u, 1u),
-        new VertexAttribute<float>(3u + 1u, 4u, (uint)(sizeof(Vector4) * 1), 2u, 1u),
-        new VertexAttribute<float>(3u + 2u, 4u, (uint)(sizeof(Vector4) * 2), 2u, 1u),
-        new VertexAttribute<float>(3u + 3u, 4u, (uint)(sizeof(Vector4) * 3), 2u, 1u)
-        );
+        new VertexAttribute<float>(3u + 0u, 4u, (uint)Marshal.OffsetOf<Matrix4x4>(nameof(Matrix4x4.M11)), 2u, 1u),
+        new VertexAttribute<float>(3u + 1u, 4u, (uint)Marshal.OffsetOf<Matrix4x4>(nameof(Matrix4x4.M21)), 2u, 1u),
+        new VertexAttribute<float>(3u + 2u, 4u, (uint)Marshal.OffsetOf<Matrix4x4>(nameof(Matrix4x4.M31)), 2u, 1u),
+        new VertexAttribute<float>(3u + 3u, 4u, (uint)Marshal.OffsetOf<Matrix4x4>(nameof(Matrix4x4.M41)), 2u, 1u)
+    );
 
     allocatedMeshingSystem.SetTexture("Blocks", TextureAtlas.Instance.Blocks!);
 
@@ -135,13 +135,13 @@ static void InitializePlayer(EntityManager entityManager)
         Value = new Vector3(0f, 96f, 0f)
     });
 
-    // entityManager.CreateEntity(new Chunk
-    // {
-    //     State = GenerationState.AwaitingTerrain
-    // }, new Translation
-    // {
-    //     Value = new Vector3(32f, 96f, 32f)
-    // });
+    entityManager.CreateEntity(new Chunk
+    {
+        State = GenerationState.AwaitingTerrain
+    }, new Translation
+    {
+        Value = new Vector3(32f, 96f, 32f)
+    });
 }
 
 #endregion

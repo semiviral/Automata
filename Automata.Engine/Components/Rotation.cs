@@ -1,9 +1,4 @@
-#region
-
 using System.Numerics;
-
-#endregion
-
 
 namespace Automata.Engine.Components
 {

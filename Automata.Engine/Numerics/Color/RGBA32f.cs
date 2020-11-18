@@ -1,11 +1,6 @@
-#region
-
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
-
-#endregion
-
 
 namespace Automata.Engine.Numerics.Color
 {

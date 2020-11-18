@@ -1,4 +1,3 @@
-#region
 
 using System;
 using System.Runtime.CompilerServices;
@@ -7,7 +6,6 @@ using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Game.Blocks;
 
-#endregion
 
 
 namespace Automata.Game.Chunks.Generation.Meshing
@@ -58,7 +56,7 @@ namespace Automata.Game.Chunks.Generation.Meshing
                     int localPosition = x | (y << GenerationConstants.CHUNK_SIZE_SHIFT) | (z << (GenerationConstants.CHUNK_SIZE_SHIFT * 2));
 
                     meshingStrategy.Mesh(blocks, faces, indexes, vertexes, neighbors, index, localPosition, block,
-                        blockRegistry.CheckBlockHasProperty(block.ID, BlockDefinitionDefinition.Attribute.Transparent));
+                        blockRegistry.CheckBlockHasProperty(block.ID, IBlockDefinition.Attribute.Transparent));
                 }
 
                 return new NonAllocatingQuadsMeshData<uint, PackedVertex>(indexes, vertexes);

@@ -1,11 +1,6 @@
-#region
-
 using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-
-#endregion
-
 
 namespace Automata.Engine.Noise
 {

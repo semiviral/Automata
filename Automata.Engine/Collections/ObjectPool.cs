@@ -1,10 +1,5 @@
-#region
-
 using System;
 using System.Collections.Concurrent;
-
-#endregion
-
 
 namespace Automata.Engine.Collections
 {

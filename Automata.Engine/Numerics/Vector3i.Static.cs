@@ -1,5 +1,3 @@
-#region
-
 using System;
 using System.Numerics;
 using System.Runtime.Intrinsics;
@@ -8,9 +6,6 @@ using System.Runtime.Intrinsics.X86;
 // ReSharper disable UnusedMember.Global
 // ReSharper disable InconsistentNaming
 // ReSharper disable RedundantCast
-
-#endregion
-
 
 namespace Automata.Engine.Numerics
 {

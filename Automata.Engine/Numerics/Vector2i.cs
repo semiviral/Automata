@@ -1,14 +1,9 @@
-#region
-
 using System;
 using System.Drawing;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
-
-#endregion
-
 
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable UnusedMember.Global

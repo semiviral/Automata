@@ -13,7 +13,7 @@ namespace Automata.Engine.Rendering.OpenGL
         public bool Normalized { get; }
         public unsafe uint Stride => (uint)(Dimensions * sizeof(TComponent));
 
-        public VertexAttribute(uint index, uint dimensions, uint offset, uint bindingIndex = 0u, uint divisor = 0u, bool normalized = false)
+        public VertexAttribute(uint index, uint dimensions, uint offset, uint bindingIndex, uint divisor = 0u, bool normalized = false)
         {
             Index = index;
             Dimensions = (int)dimensions;

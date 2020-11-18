@@ -1,5 +1,6 @@
 using System;
 using Automata.Engine.Components;
+using Automata.Engine.Rendering.OpenGL.Buffers;
 
 namespace Automata.Engine.Rendering.OpenGL
 {
@@ -7,9 +8,9 @@ namespace Automata.Engine.Rendering.OpenGL
         where TIndex : unmanaged
         where TVertex : unmanaged
     {
-        private AllocationWrapper<TIndex, TVertex>? _Allocation;
+        private MeshArrayMemory<TIndex, TVertex>? _Allocation;
 
-        public AllocationWrapper<TIndex, TVertex>? Allocation
+        public MeshArrayMemory<TIndex, TVertex>? Allocation
         {
             get => _Allocation;
             set
@@ -27,8 +28,11 @@ namespace Automata.Engine.Rendering.OpenGL
 
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), _Allocation);
 
-        public static bool operator ==(MultiDrawIndirectAllocation<TIndex, TVertex>? left, MultiDrawIndirectAllocation<TIndex, TVertex>? right) => Equals(left, right);
-        public static bool operator !=(MultiDrawIndirectAllocation<TIndex, TVertex>? left, MultiDrawIndirectAllocation<TIndex, TVertex>? right) => !Equals(left, right);
+        public static bool operator ==(MultiDrawIndirectAllocation<TIndex, TVertex>? left, MultiDrawIndirectAllocation<TIndex, TVertex>? right) =>
+            Equals(left, right);
+
+        public static bool operator !=(MultiDrawIndirectAllocation<TIndex, TVertex>? left, MultiDrawIndirectAllocation<TIndex, TVertex>? right) =>
+            !Equals(left, right);
 
         #endregion
 

@@ -1,13 +1,8 @@
-#region
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using Automata.Engine.Collections;
 using Automata.Engine.Components;
-
-#endregion
-
 
 namespace Automata.Engine
 {

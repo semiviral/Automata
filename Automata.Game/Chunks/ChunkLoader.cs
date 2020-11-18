@@ -1,10 +1,5 @@
-#region
-
 using Automata.Engine.Components;
 using Automata.Engine.Numerics;
-
-#endregion
-
 
 namespace Automata.Game.Chunks
 {

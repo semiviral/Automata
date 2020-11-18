@@ -1,9 +1,4 @@
-#region
-
 using System;
-
-#endregion
-
 
 namespace Automata.Engine
 {

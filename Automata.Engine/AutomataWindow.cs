@@ -1,5 +1,3 @@
-#region
-
 using System;
 using System.Diagnostics;
 using System.Drawing;
@@ -17,9 +15,6 @@ using Silk.NET.Input.Common;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing.Common;
 using ErrorCode = Silk.NET.GLFW.ErrorCode;
-
-#endregion
-
 
 namespace Automata.Engine
 {

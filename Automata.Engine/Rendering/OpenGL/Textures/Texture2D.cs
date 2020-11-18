@@ -1,5 +1,3 @@
-#region
-
 using System;
 using Automata.Engine.Extensions;
 using Automata.Engine.Numerics;
@@ -7,9 +5,6 @@ using Silk.NET.OpenGL;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-
-#endregion
-
 
 namespace Automata.Engine.Rendering.OpenGL.Textures
 {

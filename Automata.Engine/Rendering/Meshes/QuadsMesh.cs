@@ -1,12 +1,7 @@
-#region
-
 using System;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
 using Silk.NET.OpenGL;
-
-#endregion
-
 
 namespace Automata.Engine.Rendering.Meshes
 {

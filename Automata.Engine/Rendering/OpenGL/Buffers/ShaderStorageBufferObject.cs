@@ -5,9 +5,6 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 {
     public class ShaderStorageBufferObject<T> : OpenGLObject where T : unmanaged
     {
-        private const MapBufferAccessMask _MAPPING_FLAGS = MapBufferAccessMask.MapWriteBit;
-        private const BufferStorageMask _STORAGE_FLAGS = BufferStorageMask.DynamicStorageBit | (BufferStorageMask)_MAPPING_FLAGS;
-
         public uint BindingIndex { get; }
         public uint Size { get; private set; }
 

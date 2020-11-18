@@ -1,14 +1,8 @@
-// ReSharper disable InconsistentNaming
-// ReSharper disable UnusedMember.Global
-
-
-#region
-
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
-#endregion
-
+// ReSharper disable InconsistentNaming
+// ReSharper disable UnusedMember.Global
 
 namespace Automata.Engine.Numerics
 {

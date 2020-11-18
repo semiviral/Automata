@@ -1,18 +1,27 @@
+using System;
 using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.OpenGL
 {
-    public class FenceSync : OpenGLObject
+    public class FenceSync : IDisposable
     {
-        public FenceSync(GL gl, uint flags = 0u) : base(gl) => Handle = (uint)GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, flags);
+        private readonly GL _GL;
 
-        public void WaitGPU(ulong timeout, uint flags = 0u) => GL.WaitSync((nint)Handle, flags, timeout);
-        public SyncStatus WaitCPU(ulong timeout, uint flags = 0u) => (SyncStatus)GL.ClientWaitSync((nint)Handle, flags, timeout);
+        public nint Handle { get; }
+
+        public FenceSync(GL gl, uint flags = 0u)
+        {
+            _GL = gl;
+            Handle = gl.FenceSync(SyncCondition.SyncGpuCommandsComplete, flags);
+        }
+
+        public void WaitGPU(ulong timeout, uint flags = 0u) => _GL.WaitSync(Handle, flags, timeout);
+        public SyncStatus WaitCPU(ulong timeout, uint flags = 0u) => (SyncStatus)_GL.ClientWaitSync(Handle, flags, timeout);
 
         public void BusyWaitCPU()
         {
             while (true)
-                switch ((SyncStatus)GL.ClientWaitSync((nint)Handle, (uint)GLEnum.SyncFlushCommandsBit, 1))
+                switch (WaitCPU(1u, (uint)GLEnum.SyncFlushCommandsBit))
                 {
                     case SyncStatus.AlreadySignaled:
                     case SyncStatus.ConditionSatisfied: return;
@@ -21,14 +30,18 @@ namespace Automata.Engine.Rendering.OpenGL
 
         public void Regenerate(uint flags = 0u)
         {
-            GL.DeleteSync((nint)Handle);
-            GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, flags);
+            _GL.DeleteSync((nint)Handle);
+            _GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, flags);
         }
 
 
         #region IDisposable
 
-        protected override void DisposeInternal() => GL.DeleteSync((nint)Handle);
+        public void Dispose()
+        {
+            _GL.DeleteSync((nint)Handle);
+            GC.SuppressFinalize(this);
+        }
 
         #endregion
     }

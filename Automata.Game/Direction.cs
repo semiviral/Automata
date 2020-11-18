@@ -1,5 +1,3 @@
-#region
-
 using System;
 using System.Runtime.CompilerServices;
 using Automata.Engine.Numerics;
@@ -7,9 +5,6 @@ using Automata.Engine.Numerics;
 // ReSharper disable UnusedMember.Global
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable UnusedType.Global
-
-#endregion
-
 
 namespace Automata.Game
 {

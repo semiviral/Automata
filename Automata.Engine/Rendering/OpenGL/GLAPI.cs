@@ -1,13 +1,8 @@
-#region
-
 using System;
 using Serilog;
 using Silk.NET.Core.Native;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing.Common;
-
-#endregion
-
 
 namespace Automata.Engine.Rendering.OpenGL
 {

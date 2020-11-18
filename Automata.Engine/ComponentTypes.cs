@@ -1,12 +1,7 @@
-#region
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using Automata.Engine.Components;
-
-#endregion
-
 
 namespace Automata.Engine
 {
@@ -25,6 +20,8 @@ namespace Automata.Engine
         private readonly HashSet<Type> _Types;
 
         public DistinctionStrategy Strategy { get; }
+
+        public int Count => _Types.Count;
 
         public ComponentTypes(DistinctionStrategy strategy, params Type[] types)
         {
@@ -48,8 +45,6 @@ namespace Automata.Engine
         }
 
         public override int GetHashCode() => _CompositeHashCode;
-
-        public int Count => _Types.Count;
 
 
         #region IEnumerable

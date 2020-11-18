@@ -1,9 +1,4 @@
-#region
-
 using System.Runtime.InteropServices;
-
-#endregion
-
 
 namespace Automata.Engine.Numerics.Color
 {
