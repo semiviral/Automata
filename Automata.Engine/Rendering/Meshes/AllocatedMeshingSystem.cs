@@ -20,25 +20,6 @@ namespace Automata.Engine.Rendering.Meshes
         private MultiDrawIndirectMesh<TIndex, TVertex>? _MultiDrawIndirectMesh;
         private Material? _MultiDrawIndirectMeshMaterial;
 
-        public void SetTexture(string key, Texture texture)
-        {
-            if (_MultiDrawIndirectMeshMaterial is null) ThrowHelper.ThrowNullReferenceException(nameof(_MultiDrawIndirectMeshMaterial));
-
-            if (!_MultiDrawIndirectMeshMaterial!.Textures.ContainsKey(key)) _MultiDrawIndirectMeshMaterial.Textures.Add(key, texture);
-            else _MultiDrawIndirectMeshMaterial.Textures[key] = texture;
-        }
-
-        public void AllocateVertexAttributes(bool replace, bool finalize, params IVertexAttribute[] attributes)
-        {
-            if (_MultiDrawIndirectMesh is null) ThrowHelper.ThrowNullReferenceException(nameof(_MultiDrawIndirectMesh));
-
-            _MultiDrawIndirectMesh!.AllocateVertexAttributes(replace, attributes);
-            if (finalize) _MultiDrawIndirectMesh!.FinalizeVertexArrayObject();
-        }
-
-
-        #region ComponentSystem
-
         public override void Registered(EntityManager entityManager)
         {
             _MultiDrawIndirectMeshMaterial =
@@ -84,7 +65,21 @@ namespace Automata.Engine.Rendering.Meshes
             return ValueTask.CompletedTask;
         }
 
-        #endregion
+        public void SetTexture(string key, Texture texture)
+        {
+            if (_MultiDrawIndirectMeshMaterial is null) ThrowHelper.ThrowNullReferenceException(nameof(_MultiDrawIndirectMeshMaterial));
+
+            if (!_MultiDrawIndirectMeshMaterial!.Textures.ContainsKey(key)) _MultiDrawIndirectMeshMaterial.Textures.Add(key, texture);
+            else _MultiDrawIndirectMeshMaterial.Textures[key] = texture;
+        }
+
+        public void AllocateVertexAttributes(bool replace, bool finalize, params IVertexAttribute[] attributes)
+        {
+            if (_MultiDrawIndirectMesh is null) ThrowHelper.ThrowNullReferenceException(nameof(_MultiDrawIndirectMesh));
+
+            _MultiDrawIndirectMesh!.AllocateVertexAttributes(replace, attributes);
+            if (finalize) _MultiDrawIndirectMesh!.FinalizeVertexArrayObject();
+        }
 
 
         #region Data Processing
@@ -136,15 +131,17 @@ namespace Automata.Engine.Rendering.Meshes
 
             // create index buffer array memory
             int indexCount = pendingData.Indexes.Count * 6;
-            BufferArrayMemory indexArrayMemory = _MultiDrawIndirectMesh.RentIndexBufferArrayMemory((nuint)sizeof(TIndex), (nuint)(indexCount * sizeof(TIndex)));
-            MemoryMarshal.AsBytes(pendingData.Indexes.Segment).CopyTo(indexArrayMemory.MemoryOwner.Memory.Span);
+
+            BufferArrayMemory<TIndex> indexArrayMemory = _MultiDrawIndirectMesh.RentIndexBufferArrayMemory((nuint)sizeof(TIndex),
+                MemoryMarshal.Cast<QuadIndexes<TIndex>, TIndex>(pendingData.Indexes.Segment));
 
             // create vertex buffer array memory
             int vertexCount = pendingData.Vertexes.Count * 4;
-            BufferArrayMemory vertexArrayMemory = _MultiDrawIndirectMesh.RentVertexBufferArrayMemory(0u, (nuint)(vertexCount * sizeof(TVertex)));
-            MemoryMarshal.AsBytes(pendingData.Vertexes.Segment).CopyTo(vertexArrayMemory.MemoryOwner.Memory.Span);
 
-            drawIndirectAllocation.Allocation = new AllocationWrapper(indexArrayMemory, vertexArrayMemory);
+            BufferArrayMemory<TVertex> vertexArrayMemory = _MultiDrawIndirectMesh.RentVertexBufferArrayMemory(0u,
+                MemoryMarshal.Cast<QuadVertexes<TVertex>, TVertex>(pendingData.Vertexes.Segment));
+
+            drawIndirectAllocation.Allocation = new AllocationWrapper<TIndex, TVertex>(indexArrayMemory, vertexArrayMemory);
 
             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(AllocatedMeshingSystem<TIndex, TVertex>),
                 $"Allocated new {nameof(DrawIndirectAllocation<TIndex, TVertex>)}: indexes ({indexCount}, {indexArrayMemory.MemoryOwner.Memory.Length} bytes), vertexes ({vertexCount}, {vertexArrayMemory.MemoryOwner.Memory.Length} bytes)"));

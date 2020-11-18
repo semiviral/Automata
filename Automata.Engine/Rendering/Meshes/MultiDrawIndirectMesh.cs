@@ -7,8 +7,8 @@ using Silk.NET.OpenGL;
 namespace Automata.Engine.Rendering.Meshes
 {
     public class MultiDrawIndirectMesh<TIndex, TVertex> : IMesh
-        where TIndex : unmanaged, IEquatable<TIndex>
-        where TVertex : unmanaged, IEquatable<TVertex>
+        where TIndex : unmanaged
+        where TVertex : unmanaged
     {
         private readonly GL _GL;
         private readonly BufferAllocator _IndexAllocator;
@@ -80,8 +80,11 @@ namespace Automata.Engine.Rendering.Meshes
 
         #region Renting
 
-        public BufferArrayMemory RentIndexBufferArrayMemory(nuint alignment, nuint length) => new BufferArrayMemory(_IndexAllocator, alignment, length);
-        public BufferArrayMemory RentVertexBufferArrayMemory(nuint alignment, nuint length) => new BufferArrayMemory(_VertexAllocator, alignment, length);
+        public BufferArrayMemory<TIndex> RentIndexBufferArrayMemory(nuint alignment, ReadOnlySpan<TIndex> data) =>
+            new BufferArrayMemory<TIndex>(_IndexAllocator, alignment, data);
+
+        public BufferArrayMemory<TVertex> RentVertexBufferArrayMemory(nuint alignment, ReadOnlySpan<TVertex> data) =>
+            new BufferArrayMemory<TVertex>(_VertexAllocator, alignment, data);
 
         #endregion
 

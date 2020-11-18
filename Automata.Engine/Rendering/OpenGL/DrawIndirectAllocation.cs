@@ -4,12 +4,12 @@ using Automata.Engine.Components;
 namespace Automata.Engine.Rendering.OpenGL
 {
     public class DrawIndirectAllocation<TIndex, TVertex> : ComponentChangeable, IEquatable<DrawIndirectAllocation<TIndex, TVertex>>, IDisposable
-        where TIndex : unmanaged, IEquatable<TIndex>
-        where TVertex : unmanaged, IEquatable<TVertex>
+        where TIndex : unmanaged
+        where TVertex : unmanaged
     {
-        private AllocationWrapper? _Allocation;
+        private AllocationWrapper<TIndex, TVertex>? _Allocation;
 
-        public AllocationWrapper? Allocation
+        public AllocationWrapper<TIndex, TVertex>? Allocation
         {
             get => _Allocation;
             set
