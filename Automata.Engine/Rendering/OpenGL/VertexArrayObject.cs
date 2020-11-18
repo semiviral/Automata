@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Automata.Engine.Collections;
@@ -47,13 +48,18 @@ namespace Automata.Engine.Rendering.OpenGL
             if (_VertexBufferObjectBindings.ContainsKey(bindingIndex))
                 _VertexBufferObjectBindings[bindingIndex] = new VertexBufferObjectBinding(vbo.Handle, vertexOffset);
             else _VertexBufferObjectBindings.Add(bindingIndex, new VertexBufferObjectBinding(vbo.Handle, vertexOffset));
+
+            Log.Verbose(String.Format(FormatHelper.DEFAULT_LOGGING, nameof(VertexArrayObject),
+                $"Allocated new VBO binding (VAO 0x{Handle:x}): Handle 0x{vbo.Handle:x}, BindingIndex {bindingIndex}, VertexOffset {vertexOffset}"));
         }
 
         public void Finalize(BufferObject? ebo)
         {
-            foreach (IVertexAttribute vertexAttribute in _VertexAttributes.OrderBy(attribute => attribute.BindingIndex))
-            {
+            // reset all strides before we process vertex attributes
+            foreach (VertexBufferObjectBinding binding in _VertexBufferObjectBindings.Values) binding.Stride = 0u;
 
+            foreach (IVertexAttribute vertexAttribute in _VertexAttributes)
+            {
                 vertexAttribute.CommitFormat(GL, Handle);
                 GL.EnableVertexArrayAttrib(Handle, vertexAttribute.Index);
                 GL.VertexArrayAttribBinding(Handle, vertexAttribute.Index, vertexAttribute.BindingIndex);
@@ -64,12 +70,17 @@ namespace Automata.Engine.Rendering.OpenGL
             }
 
             foreach ((uint bindingIndex, VertexBufferObjectBinding binding) in _VertexBufferObjectBindings)
+            {
                 GL.VertexArrayVertexBuffer(Handle, bindingIndex, binding.Handle, binding.VertexOffset, binding.Stride);
+
+                Log.Verbose(String.Format(FormatHelper.DEFAULT_LOGGING, nameof(VertexArrayObject),
+                    $"Bound VBO (VAO 0x{Handle:x}): Handle 0x{binding.Handle:x}, BindingIndex {bindingIndex}, Stride {binding.Stride}, VertexOffset {binding.VertexOffset}"));
+            }
 
             if (ebo is not null) GL.VertexArrayElementBuffer(Handle, ebo.Handle);
 
             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(VertexArrayObject),
-                $"Finalized (0x{Handle:x}): attributes {_VertexAttributes.Count}\r\n\t{string.Join(",\r\n\t", _VertexAttributes)}"));
+                $"Finalized (VAO 0x{Handle:x}): {_VertexAttributes.Count} attributes\r\n\t{string.Join(",\r\n\t", _VertexAttributes)}"));
         }
 
         #endregion

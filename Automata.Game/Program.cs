@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using Automata.Engine;
 using Automata.Engine.Components;
 using Automata.Engine.Concurrency;
@@ -76,7 +77,7 @@ static void InitializeWorld(out World world)
     allocatedMeshingSystem.AllocateVertexAttributes(true, true,
         new VertexAttribute<int>(0u, 1u, 0u),
         new VertexAttribute<int>(1u, 1u, 4u),
-        new VertexAttribute<uint>(2u, 1u, 0u, 1u, 1u));
+        new VertexAttribute<uint>(2u, 1u, (uint)Marshal.OffsetOf<DrawElementsIndirectCommand>(nameof(DrawElementsIndirectCommand.BaseInstance)), 1u, 1u));
     allocatedMeshingSystem.SetTexture("Blocks", TextureAtlas.Instance.Blocks!);
 
     // world.SystemManager.RegisterSystem<ChunkRegionLoaderSystem, DefaultOrderSystem>(SystemRegistrationOrder.Before);
@@ -118,6 +119,14 @@ static void InitializePlayer(EntityManager entityManager)
     {
         Value = new Vector3(0f, 96f, 0f)
     });
+
+    // entityManager.CreateEntity(new Chunk
+    // {
+    //     State = GenerationState.AwaitingTerrain
+    // }, new Translation
+    // {
+    //     Value = new Vector3(32f, 96f, 32f)
+    // });
 }
 
 #endregion

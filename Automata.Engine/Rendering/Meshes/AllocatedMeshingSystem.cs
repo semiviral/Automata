@@ -78,7 +78,7 @@ namespace Automata.Engine.Rendering.Meshes
                 }
 
                 GenerateDrawElementsIndirectCommands(allocations.Segment);
-                _MultiDrawIndirectMesh!.SetSSBOModelsData(models.Segment);
+                _MultiDrawIndirectMesh!.AllocateModelsData(models.Segment);
             }
 
             return ValueTask.CompletedTask;
@@ -132,7 +132,7 @@ namespace Automata.Engine.Rendering.Meshes
                 drawIndirectAllocation = entityManager.RegisterComponent<DrawIndirectAllocation<TIndex, TVertex>>(entity);
 
             drawIndirectAllocation.Allocation?.Dispose();
-            _MultiDrawIndirectMesh.WaitForBufferFreeSync();
+            _MultiDrawIndirectMesh.WaitForBufferSync();
 
             // create index buffer array memory
             int indexCount = pendingData.Indexes.Count * 6;

@@ -11,14 +11,13 @@ namespace Automata.Engine.Rendering.Meshes
         where TVertex : unmanaged, IEquatable<TVertex>
     {
         private readonly GL _GL;
-        private readonly BufferObject _CommandBuffer;
         private readonly BufferAllocator _IndexAllocator;
         private readonly BufferAllocator _VertexAllocator;
         private readonly VertexArrayObject _VertexArrayObject;
-        private readonly ShaderStorageBufferObject<Matrix4x4> _Models;
+        private readonly BufferObject<DrawElementsIndirectCommand> _CommandBuffer;
+        private readonly BufferObject<Matrix4x4> _ModelBuffer;
+        private readonly FenceSync _BufferSync;
         private readonly DrawElementsType _DrawElementsType;
-
-        private nint _BufferSync;
 
         public Guid ID { get; }
         public Layer Layer { get; }
@@ -31,14 +30,16 @@ namespace Automata.Engine.Rendering.Meshes
             Layer = layers;
 
             _GL = gl;
-            _CommandBuffer = new BufferObject(gl);
             _IndexAllocator = new BufferAllocator(gl, indexAllocatorSize);
             _VertexAllocator = new BufferAllocator(gl, vertexAllocatorSize);
             _VertexArrayObject = new VertexArrayObject(gl);
-            _Models = new ShaderStorageBufferObject<Matrix4x4>(gl, 5u);
+            _CommandBuffer = new BufferObject<DrawElementsIndirectCommand>(gl);
+            _ModelBuffer = new BufferObject<Matrix4x4>(gl);
+            _BufferSync = new FenceSync(gl);
 
             _VertexArrayObject.BindVertexBuffer(0u, _VertexAllocator, 0);
             _VertexArrayObject.BindVertexBuffer(1u, _CommandBuffer, 0);
+            _VertexArrayObject.BindVertexBuffer(2u, _ModelBuffer, 0);
 
             if (typeof(TIndex) == typeof(byte)) _DrawElementsType = DrawElementsType.UnsignedByte;
             else if (typeof(TIndex) == typeof(ushort)) _DrawElementsType = DrawElementsType.UnsignedShort;
@@ -57,21 +58,20 @@ namespace Automata.Engine.Rendering.Meshes
             _CommandBuffer.SetData(commands, BufferDraw.StaticDraw);
         }
 
-        public void SetSSBOModelsData(Span<Matrix4x4> models) => _Models.SetData(models);
+        public void AllocateModelsData(Span<Matrix4x4> models) => _ModelBuffer.SetData(models, BufferDraw.StaticDraw);
 
         public unsafe void Draw()
         {
-            WaitForBufferFreeSync();
+            _BufferSync.BusyWaitCPU();
 
-            _Models.Bind();
             _VertexArrayObject.Bind();
             _CommandBuffer.Bind(BufferTargetARB.DrawIndirectBuffer);
-
             _GL.MultiDrawElementsIndirect(PrimitiveType.Triangles, _DrawElementsType, (void*)null!, DrawCommandCount, 0u);
 
-            RegenerateBufferSync();
+            _BufferSync.Regenerate();
         }
 
+        public void WaitForBufferSync() => _BufferSync.BusyWaitCPU();
 
         #region Renting
 
@@ -81,37 +81,9 @@ namespace Automata.Engine.Rendering.Meshes
         #endregion
 
 
-        #region BufferSync
-
-        public void WaitForBufferFreeSync()
-        {
-            if (_BufferSync is 0) return;
-
-            while (true)
-                switch ((SyncStatus)_GL.ClientWaitSync(_BufferSync, (uint)GLEnum.SyncFlushCommandsBit, 1))
-                {
-                    case SyncStatus.AlreadySignaled:
-                    case SyncStatus.ConditionSatisfied: return;
-                }
-        }
-
-        private void RegenerateBufferSync()
-        {
-            DisposeBufferSync();
-            _BufferSync = _GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, 0u);
-        }
-
-        private void DisposeBufferSync()
-        {
-            if (_BufferSync is not 0) _GL.DeleteSync(_BufferSync);
-        }
-
-        #endregion
-
-
         public void Dispose()
         {
-            DisposeBufferSync();
+            _BufferSync.Dispose();
             _CommandBuffer.Dispose();
             _IndexAllocator.Dispose();
             _VertexAllocator.Dispose();

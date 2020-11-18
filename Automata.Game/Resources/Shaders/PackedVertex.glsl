@@ -2,9 +2,9 @@
 
 out gl_PerVertex { vec4 gl_Position; };
 
-layout (location = 1) in int vert;
-layout (location = 2) in int uv;
-layout (location = 0) in uint drawID;
+layout (location = 0) in int vert;
+layout (location = 1) in int uv;
+layout (location = 2) in uint drawID;
 
 layout (std430, binding = 5) buffer models
 {
