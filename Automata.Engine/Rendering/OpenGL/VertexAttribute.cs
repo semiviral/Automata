@@ -3,7 +3,7 @@ using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.OpenGL
 {
-    public record VertexAttribute<TComponent> : IVertexAttribute where TComponent : unmanaged
+    public record VertexAttribute<TPrimitive> : IVertexAttribute where TPrimitive : unmanaged
     {
         public uint Index { get; }
         public int Dimensions { get; }
@@ -11,7 +11,7 @@ namespace Automata.Engine.Rendering.OpenGL
         public uint BindingIndex { get; }
         public uint Divisor { get; }
         public bool Normalized { get; }
-        public unsafe uint Stride => (uint)(Dimensions * sizeof(TComponent));
+        public unsafe uint Stride => (uint)(Dimensions * sizeof(TPrimitive));
 
         public VertexAttribute(uint index, uint dimensions, uint offset, uint bindingIndex, uint divisor = 0u, bool normalized = false)
         {
@@ -25,28 +25,28 @@ namespace Automata.Engine.Rendering.OpenGL
 
         public void CommitFormat(GL gl, uint vao)
         {
-            if (typeof(TComponent) == typeof(int)) gl.VertexArrayAttribIFormat(vao, Index, Dimensions, VertexAttribIType.Int, Offset);
-            else if (typeof(TComponent) == typeof(uint)) gl.VertexArrayAttribIFormat(vao, Index, Dimensions, VertexAttribIType.UnsignedInt, Offset);
-            else if (typeof(TComponent) == typeof(short)) gl.VertexArrayAttribIFormat(vao, Index, Dimensions, VertexAttribIType.Short, Offset);
-            else if (typeof(TComponent) == typeof(ushort)) gl.VertexArrayAttribIFormat(vao, Index, Dimensions, VertexAttribIType.UnsignedShort, Offset);
-            else if (typeof(TComponent) == typeof(sbyte)) gl.VertexArrayAttribIFormat(vao, Index, Dimensions, VertexAttribIType.Byte, Offset);
-            else if (typeof(TComponent) == typeof(byte)) gl.VertexArrayAttribIFormat(vao, Index, Dimensions, VertexAttribIType.UnsignedByte, Offset);
-            else if (typeof(TComponent) == typeof(float)) gl.VertexArrayAttribFormat(vao, Index, Dimensions, VertexAttribType.Float, Normalized, Offset);
-            else if (typeof(TComponent) == typeof(double)) gl.VertexArrayAttribLFormat(vao, Index, Dimensions, VertexAttribLType.Double, Offset);
-            else throw new NotSupportedException($"{nameof(TComponent)} is of unsupported type '{typeof(TComponent)}'. Must be a primitive.");
+            if (typeof(TPrimitive) == typeof(int)) gl.VertexArrayAttribIFormat(vao, Index, Dimensions, VertexAttribIType.Int, Offset);
+            else if (typeof(TPrimitive) == typeof(uint)) gl.VertexArrayAttribIFormat(vao, Index, Dimensions, VertexAttribIType.UnsignedInt, Offset);
+            else if (typeof(TPrimitive) == typeof(short)) gl.VertexArrayAttribIFormat(vao, Index, Dimensions, VertexAttribIType.Short, Offset);
+            else if (typeof(TPrimitive) == typeof(ushort)) gl.VertexArrayAttribIFormat(vao, Index, Dimensions, VertexAttribIType.UnsignedShort, Offset);
+            else if (typeof(TPrimitive) == typeof(sbyte)) gl.VertexArrayAttribIFormat(vao, Index, Dimensions, VertexAttribIType.Byte, Offset);
+            else if (typeof(TPrimitive) == typeof(byte)) gl.VertexArrayAttribIFormat(vao, Index, Dimensions, VertexAttribIType.UnsignedByte, Offset);
+            else if (typeof(TPrimitive) == typeof(float)) gl.VertexArrayAttribFormat(vao, Index, Dimensions, VertexAttribType.Float, Normalized, Offset);
+            else if (typeof(TPrimitive) == typeof(double)) gl.VertexArrayAttribLFormat(vao, Index, Dimensions, VertexAttribLType.Double, Offset);
+            else throw new NotSupportedException($"{nameof(TPrimitive)} is of unsupported type '{typeof(TPrimitive)}'. Must be a primitive.");
         }
 
         public void CommitFormatDirect(GL gl)
         {
-            if (typeof(TComponent) == typeof(int)) gl.VertexAttribIFormat(Index, Dimensions, VertexAttribIType.Int, Offset);
-            else if (typeof(TComponent) == typeof(uint)) gl.VertexAttribIFormat(Index, Dimensions, VertexAttribIType.UnsignedInt, Offset);
-            else if (typeof(TComponent) == typeof(short)) gl.VertexAttribIFormat(Index, Dimensions, VertexAttribIType.Short, Offset);
-            else if (typeof(TComponent) == typeof(ushort)) gl.VertexAttribIFormat(Index, Dimensions, VertexAttribIType.UnsignedShort, Offset);
-            else if (typeof(TComponent) == typeof(sbyte)) gl.VertexAttribIFormat(Index, Dimensions, VertexAttribIType.Byte, Offset);
-            else if (typeof(TComponent) == typeof(byte)) gl.VertexAttribIFormat(Index, Dimensions, VertexAttribIType.UnsignedByte, Offset);
-            else if (typeof(TComponent) == typeof(float)) gl.VertexAttribFormat(Index, Dimensions, VertexAttribType.Float, Normalized, Offset);
-            else if (typeof(TComponent) == typeof(double)) gl.VertexAttribLFormat(Index, Dimensions, VertexAttribLType.Double, Offset);
-            else throw new NotSupportedException($"{nameof(TComponent)} is of unsupported type '{typeof(TComponent)}'. Must be a primitive.");
+            if (typeof(TPrimitive) == typeof(int)) gl.VertexAttribIFormat(Index, Dimensions, VertexAttribIType.Int, Offset);
+            else if (typeof(TPrimitive) == typeof(uint)) gl.VertexAttribIFormat(Index, Dimensions, VertexAttribIType.UnsignedInt, Offset);
+            else if (typeof(TPrimitive) == typeof(short)) gl.VertexAttribIFormat(Index, Dimensions, VertexAttribIType.Short, Offset);
+            else if (typeof(TPrimitive) == typeof(ushort)) gl.VertexAttribIFormat(Index, Dimensions, VertexAttribIType.UnsignedShort, Offset);
+            else if (typeof(TPrimitive) == typeof(sbyte)) gl.VertexAttribIFormat(Index, Dimensions, VertexAttribIType.Byte, Offset);
+            else if (typeof(TPrimitive) == typeof(byte)) gl.VertexAttribIFormat(Index, Dimensions, VertexAttribIType.UnsignedByte, Offset);
+            else if (typeof(TPrimitive) == typeof(float)) gl.VertexAttribFormat(Index, Dimensions, VertexAttribType.Float, Normalized, Offset);
+            else if (typeof(TPrimitive) == typeof(double)) gl.VertexAttribLFormat(Index, Dimensions, VertexAttribLType.Double, Offset);
+            else throw new NotSupportedException($"{nameof(TPrimitive)} is of unsupported type '{typeof(TPrimitive)}'. Must be a primitive.");
         }
 
 

@@ -95,7 +95,7 @@ static void InitializeWorld(out World world)
 
     allocatedMeshingSystem.SetTexture("Blocks", TextureAtlas.Instance.Blocks!);
 
-    // world.SystemManager.RegisterSystem<ChunkRegionLoaderSystem, DefaultOrderSystem>(SystemRegistrationOrder.Before);
+    world.SystemManager.RegisterSystem<ChunkRegionLoaderSystem, DefaultOrderSystem>(SystemRegistrationOrder.Before);
     world.SystemManager.RegisterSystem<ChunkModificationsSystem, DefaultOrderSystem>(SystemRegistrationOrder.Before);
     world.SystemManager.RegisterSystem<ChunkGenerationSystem, DefaultOrderSystem>(SystemRegistrationOrder.Before);
     World.RegisterWorld("Overworld", world);
@@ -127,21 +127,21 @@ static void InitializePlayer(EntityManager entityManager)
 #endif
         });
 
-    entityManager.CreateEntity(new Chunk
-    {
-        State = GenerationState.AwaitingTerrain
-    }, new Translation
-    {
-        Value = new Vector3(0f, 96f, 0f)
-    });
-
-    entityManager.CreateEntity(new Chunk
-    {
-        State = GenerationState.AwaitingTerrain
-    }, new Translation
-    {
-        Value = new Vector3(32f, 96f, 32f)
-    });
+    // entityManager.CreateEntity(new Chunk
+    // {
+    //     State = GenerationState.AwaitingTerrain
+    // }, new Translation
+    // {
+    //     Value = new Vector3(0f, 96f, 0f)
+    // });
+    //
+    // entityManager.CreateEntity(new Chunk
+    // {
+    //     State = GenerationState.AwaitingTerrain
+    // }, new Translation
+    // {
+    //     Value = new Vector3(32f, 96f, 32f)
+    // });
 }
 
 #endregion
