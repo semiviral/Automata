@@ -8,7 +8,7 @@ using Automata.Engine.Components;
 #endregion
 
 
-namespace Automata.Engine.Systems
+namespace Automata.Engine
 {
     public enum DistinctionStrategy
     {

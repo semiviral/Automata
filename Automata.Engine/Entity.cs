@@ -4,7 +4,7 @@ using System.Linq;
 using Automata.Engine.Collections;
 using Automata.Engine.Components;
 
-namespace Automata.Engine.Entities
+namespace Automata.Engine
 {
     internal sealed class Entity : IEntity
     {

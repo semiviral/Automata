@@ -9,7 +9,7 @@ using Automata.Engine.Components;
 #endregion
 
 
-namespace Automata.Engine.Entities
+namespace Automata.Engine
 {
     public sealed class EntityManager : IDisposable
     {

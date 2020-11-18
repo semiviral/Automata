@@ -1,9 +1,4 @@
-#region
-
 using Silk.NET.GLFW;
-
-#endregion
-
 
 namespace Automata.Engine.Rendering.GLFW
 {

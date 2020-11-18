@@ -7,13 +7,12 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Automata.Engine.Collections;
 using Automata.Engine.Components;
-using Automata.Engine.Entities;
 using Serilog;
 
 #endregion
 
 
-namespace Automata.Engine.Systems
+namespace Automata.Engine
 {
     public enum SystemRegistrationOrder : byte
     {

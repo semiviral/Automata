@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Automata.Engine.Components;
 
-namespace Automata.Engine.Entities
+namespace Automata.Engine
 {
     public interface IEntity : IEquatable<IEntity>, IDisposable
     {

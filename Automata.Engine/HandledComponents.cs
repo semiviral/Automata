@@ -5,7 +5,7 @@ using System;
 #endregion
 
 
-namespace Automata.Engine.Systems
+namespace Automata.Engine
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     public class HandledComponents : Attribute
