@@ -29,11 +29,14 @@ namespace Automata.Engine.Rendering.Meshes
             else _MultiDrawIndirectMeshMaterial.Textures[key] = texture;
         }
 
+
         #region ComponentSystem
 
         public override void Registered(EntityManager entityManager)
         {
-            _MultiDrawIndirectMeshMaterial = new Material(ProgramRegistry.Instance.Load("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl"));
+            _MultiDrawIndirectMeshMaterial =
+                new Material(ProgramRegistry.Instance.Load("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl"));
+
             _MultiDrawIndirectMesh = new MultiDrawIndirectMesh<TIndex, TVertex>(GLAPI.Instance.GL, 750_000_000, 500_000_000);
 
             _MultiDrawIndirectMesh.AllocateVertexAttributes(true,

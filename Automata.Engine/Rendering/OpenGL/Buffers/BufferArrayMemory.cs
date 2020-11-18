@@ -9,7 +9,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
     {
         public IMemoryOwner<T> MemoryOwner { get; }
         public nuint Index { get; }
-        
+
         public uint Count => (uint)MemoryOwner.Memory.Length;
 
         public BufferArrayMemory(AllocationRenter<T> renter, nuint alignment, ReadOnlySpan<T> data)

@@ -1,5 +1,4 @@
 using System;
-using Automata.Engine.Rendering.Meshes;
 
 namespace Automata.Engine.Rendering.OpenGL.Buffers
 {

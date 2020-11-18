@@ -72,6 +72,7 @@ static void InitializeWorld(out World world)
     world.SystemManager.RegisterSystem<InputSystem, FirstOrderSystem>(SystemRegistrationOrder.Before);
     world.SystemManager.RegisterSystem<RenderSystem, LastOrderSystem>(SystemRegistrationOrder.Before);
     world.SystemManager.RegisterSystem<AllocatedMeshingSystem<uint, PackedVertex>, RenderSystem>(SystemRegistrationOrder.Before);
+
     // world.SystemManager.RegisterSystem<ChunkRegionLoaderSystem, DefaultOrderSystem>(SystemRegistrationOrder.Before);
     world.SystemManager.RegisterSystem<ChunkModificationsSystem, DefaultOrderSystem>(SystemRegistrationOrder.Before);
     world.SystemManager.RegisterSystem<ChunkGenerationSystem, DefaultOrderSystem>(SystemRegistrationOrder.Before);
@@ -107,7 +108,10 @@ static void InitializePlayer(EntityManager entityManager)
     entityManager.CreateEntity(new Chunk
     {
         State = GenerationState.AwaitingTerrain
-    }, new Translation {Value = new Vector3(0f, 96f, 0f)});
+    }, new Translation
+    {
+        Value = new Vector3(0f, 96f, 0f)
+    });
 }
 
 #endregion
