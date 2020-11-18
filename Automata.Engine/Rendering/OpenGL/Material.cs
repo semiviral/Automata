@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Automata.Engine.Collections;
 using Automata.Engine.Components;
@@ -7,15 +8,15 @@ using Automata.Engine.Rendering.OpenGL.Textures;
 
 namespace Automata.Engine.Rendering.OpenGL
 {
-    public class Material : Component, IEquatable<Material>, IDisposable
+    public class Material : Component, IEquatable<Material>
     {
         public ProgramPipeline Pipeline { get; set; }
-        public NonAllocatingList<Texture> Textures { get; }
+        public Dictionary<string, Texture> Textures { get; }
 
         public Material(ProgramPipeline pipeline)
         {
             Pipeline = pipeline;
-            Textures = new NonAllocatingList<Texture>();
+            Textures = new Dictionary<string, Texture>();
         }
 
         public bool Equals(Material? other) => other is not null && Pipeline.Equals(other.Pipeline) && Textures.SequenceEqual(other.Textures);
@@ -25,11 +26,5 @@ namespace Automata.Engine.Rendering.OpenGL
 
         public static bool operator ==(Material? left, Material? right) => Equals(left, right);
         public static bool operator !=(Material? left, Material? right) => !Equals(left, right);
-
-        public void Dispose()
-        {
-            Textures.Dispose();
-            GC.SuppressFinalize(this);
-        }
     }
 }

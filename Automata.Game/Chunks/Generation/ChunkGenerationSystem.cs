@@ -52,7 +52,7 @@ namespace Automata.Game.Chunks.Generation
                 Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(DiagnosticsPool), string.Join(", ", states)));
             }, Key.ShiftLeft, Key.V));
 
-            _CurrentWorld!.SystemManager.GetSystem<AllocatedMeshingSystem<uint, PackedVertex>>().SetTextureAtSlot(0, TextureAtlas.Instance.Blocks!);
+            _CurrentWorld!.SystemManager.GetSystem<AllocatedMeshingSystem<uint, PackedVertex>>().SetTexture("Blocks", TextureAtlas.Instance.Blocks!);
         }
 
         [HandledComponents(DistinctionStrategy.All, typeof(Translation), typeof(Chunk))]

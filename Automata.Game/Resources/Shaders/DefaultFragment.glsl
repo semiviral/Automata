@@ -1,6 +1,6 @@
 #version 450 core
 
-uniform sampler2DArray _tex0;
+uniform sampler2DArray tex_Blocks;
 
 layout (location = 0) in fragment
 {
@@ -12,10 +12,10 @@ out vec4 color;
 
 void main()
 {
-    vec4 tex = texture(_tex0, fragment.uv);
+    vec4 texColor = texture(tex_Blocks, fragment.uv);
 
-    if (tex.a == 0.0)
+    if (texColor.a == 0.0)
         discard;
 
-    color = tex * vec4(fragment.color, 1.0);
+    color = texColor * vec4(fragment.color, 1.0);
 }

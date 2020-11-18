@@ -12,6 +12,7 @@ using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
 using Automata.Engine.Rendering.OpenGL.Shaders;
+using Automata.Engine.Rendering.OpenGL.Textures;
 using Automata.Engine.Systems;
 using Silk.NET.Input.Common;
 using Silk.NET.OpenGL;
@@ -204,46 +205,29 @@ namespace Automata.Engine.Rendering
 
         private static void ApplyMaterial(Material material, ref Material? old)
         {
-            bool updatedPipeline = false;
-            ShaderProgram? newFragmentShader = null;
+            if (material.Pipeline.Equals(old?.Pipeline)) return;
 
-            if (!material.Pipeline.Equals(old?.Pipeline))
+            material.Pipeline.Bind();
+
+            // set fragment shader so we can bind textures quicker
+            ShaderProgram newFragmentShader = material.Pipeline.Stage(ShaderType.FragmentShader);
+
+            // if old isn't null, bind the old textures to the new pipeline
+            if (old is not null)
+                foreach ((string key, Texture texture) in old.Textures)
+                    if (!material.Textures.ContainsKey(key))
+                        material.Textures.Add(key, texture);
+
+            int index = 0;
+
+            foreach ((string key, Texture texture) in material.Textures)
             {
-                material.Pipeline.Bind();
-
-                // set fragment shader so we can bind textures quicker
-                newFragmentShader = material.Pipeline.Stage(ShaderType.FragmentShader);
-
-                // if old isn't null, bind the old textures to the new pipeline
-                if (old is not null)
-                    for (int index = 0; index < old.Textures.Count; index++)
-                    {
-                        old.Textures[index].Bind(TextureUnit.Texture0 + index);
-                        newFragmentShader.TrySetUniform($"_tex{index}", index);
-                    }
-
-                updatedPipeline = true;
+                texture.Bind(TextureUnit.Texture0 + index);
+                newFragmentShader!.TrySetUniform($"tex_{key}", index);
+                index += 1;
             }
 
-            // if newFragmentShader is null, then we didn't bind a new pipeline, so use old one
-            newFragmentShader ??= old!.Pipeline.Stage(ShaderType.FragmentShader);
-            int oldTextureCount = old?.Textures.Count ?? material.Textures.Count;
-            bool updatedTextures = false;
-
-            for (int index = 0; index < material.Textures.Count; index++)
-            {
-                // only update textures that are different
-                if ((index < oldTextureCount) && material.Textures[index].Equals(old?.Textures[index])) continue;
-
-                material.Textures[index].Bind(TextureUnit.Texture0 + index);
-                newFragmentShader.TrySetUniform($"_tex{index}", index);
-
-                // we've updated a texture, so set flag
-                updatedTextures = true;
-            }
-
-            // if we've loaded any new material data, replace old material.
-            if (updatedPipeline || updatedTextures) old = material;
+            old = material;
         }
 
         private void GameWindowResized(object sender, Vector2i newSize) => _NewAspectRatio = (float)newSize.X / (float)newSize.Y;

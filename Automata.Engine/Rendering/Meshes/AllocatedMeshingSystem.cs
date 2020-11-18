@@ -21,12 +21,12 @@ namespace Automata.Engine.Rendering.Meshes
         private MultiDrawIndirectMesh<TIndex, TVertex>? _MultiDrawIndirectMesh;
         private Material? _MultiDrawIndirectMeshMaterial;
 
-        public void SetTextureAtSlot(int index, Texture texture)
+        public void SetTexture(string key, Texture texture)
         {
-            // todo make settings textures dynamic
-            // perhaps use a dictionary instead of a list, and then we can
-            // set the uniforms in the shader by the key of the texture
-            _MultiDrawIndirectMeshMaterial!.Textures.Add(texture);
+            if (_MultiDrawIndirectMeshMaterial is null) ThrowHelper.ThrowNullReferenceException(nameof(_MultiDrawIndirectMeshMaterial));
+
+            if (!_MultiDrawIndirectMeshMaterial!.Textures.ContainsKey(key)) _MultiDrawIndirectMeshMaterial.Textures.Add(key, texture);
+            else _MultiDrawIndirectMeshMaterial.Textures[key] = texture;
         }
 
         #region ComponentSystem
