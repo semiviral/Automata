@@ -30,10 +30,10 @@ namespace Automata.Engine.Rendering.Meshes
             Layer = layers;
 
             _GL = gl;
+            _CommandBuffer = new BufferObject<DrawElementsIndirectCommand>(gl);
             _IndexAllocator = new BufferAllocator(gl, indexAllocatorSize);
             _VertexAllocator = new BufferAllocator(gl, vertexAllocatorSize);
             _VertexArrayObject = new VertexArrayObject(gl);
-            _CommandBuffer = new BufferObject<DrawElementsIndirectCommand>(gl);
             _ModelBuffer = new BufferObject<Matrix4x4>(gl);
             _BufferSync = new FenceSync(gl);
 
@@ -47,10 +47,10 @@ namespace Automata.Engine.Rendering.Meshes
             else throw new NotSupportedException("Does not support specified index type.");
         }
 
-        public void FinalizeVertexArrayObject() => _VertexArrayObject.Finalize(_IndexAllocator);
-
         public void AllocateVertexAttributes(bool replace, params IVertexAttribute[] attributes) =>
             _VertexArrayObject.AllocateVertexAttributes(replace, attributes);
+
+        public void FinalizeVertexArrayObject() => _VertexArrayObject.Finalize(_IndexAllocator);
 
         public void AllocateDrawElementsIndirectCommands(Span<DrawElementsIndirectCommand> commands)
         {
@@ -59,6 +59,10 @@ namespace Automata.Engine.Rendering.Meshes
         }
 
         public void AllocateModelsData(Span<Matrix4x4> models) => _ModelBuffer.SetData(models, BufferDraw.StaticDraw);
+        public void WaitForBufferSync() => _BufferSync.BusyWaitCPU();
+
+
+        #region IMesh
 
         public unsafe void Draw()
         {
@@ -71,7 +75,8 @@ namespace Automata.Engine.Rendering.Meshes
             _BufferSync.Regenerate();
         }
 
-        public void WaitForBufferSync() => _BufferSync.BusyWaitCPU();
+        #endregion
+
 
         #region Renting
 

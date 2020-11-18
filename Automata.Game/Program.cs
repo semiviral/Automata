@@ -66,7 +66,7 @@ static void InitializeWindow()
     AutomataWindow.Instance.Closing += ApplicationCloseCallback;
 }
 
-static void InitializeWorld(out World world)
+static unsafe void InitializeWorld(out World world)
 {
     world = new VoxelWorld(true);
     world.SystemManager.RegisterSystem<InputSystem, FirstOrderSystem>(SystemRegistrationOrder.Before);
@@ -74,10 +74,25 @@ static void InitializeWorld(out World world)
     world.SystemManager.RegisterSystem<AllocatedMeshingSystem<uint, PackedVertex>, RenderSystem>(SystemRegistrationOrder.Before);
 
     AllocatedMeshingSystem<uint, PackedVertex> allocatedMeshingSystem = world.SystemManager.GetSystem<AllocatedMeshingSystem<uint, PackedVertex>>();
+
     allocatedMeshingSystem.AllocateVertexAttributes(true, true,
+
+        // vert
         new VertexAttribute<int>(0u, 1u, 0u),
+
+        // uv
         new VertexAttribute<int>(1u, 1u, 4u),
-        new VertexAttribute<uint>(2u, 1u, (uint)Marshal.OffsetOf<DrawElementsIndirectCommand>(nameof(DrawElementsIndirectCommand.BaseInstance)), 1u, 1u));
+
+        // drawID
+        new VertexAttribute<uint>(2u, 1u, (uint)Marshal.OffsetOf<DrawElementsIndirectCommand>(nameof(DrawElementsIndirectCommand.BaseInstance)), 1u, 1u),
+
+        // model
+        new VertexAttribute<float>(3u + 0u, 4u, (uint)(sizeof(Vector4) * 0), 2u, 1u),
+        new VertexAttribute<float>(3u + 1u, 4u, (uint)(sizeof(Vector4) * 1), 2u, 1u),
+        new VertexAttribute<float>(3u + 2u, 4u, (uint)(sizeof(Vector4) * 2), 2u, 1u),
+        new VertexAttribute<float>(3u + 3u, 4u, (uint)(sizeof(Vector4) * 3), 2u, 1u)
+        );
+
     allocatedMeshingSystem.SetTexture("Blocks", TextureAtlas.Instance.Blocks!);
 
     // world.SystemManager.RegisterSystem<ChunkRegionLoaderSystem, DefaultOrderSystem>(SystemRegistrationOrder.Before);
