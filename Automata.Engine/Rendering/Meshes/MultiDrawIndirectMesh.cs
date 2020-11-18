@@ -15,6 +15,7 @@ namespace Automata.Engine.Rendering.Meshes
         private readonly BufferAllocator _IndexAllocator;
         private readonly BufferAllocator _VertexAllocator;
         private readonly VertexArrayObject _VertexArrayObject;
+        private readonly DrawElementsType _DrawElementsType;
 
         private nint _BufferSync;
 
@@ -32,6 +33,11 @@ namespace Automata.Engine.Rendering.Meshes
             _IndexAllocator = new BufferAllocator(gl, indexAllocatorSize);
             _VertexAllocator = new BufferAllocator(gl, vertexAllocatorSize);
             _VertexArrayObject = new VertexArrayObject(gl);
+
+            if (typeof(TIndex) == typeof(byte)) _DrawElementsType = DrawElementsType.UnsignedByte;
+            else if (typeof(TIndex) == typeof(ushort)) _DrawElementsType = DrawElementsType.UnsignedShort;
+            else if (typeof(TIndex) == typeof(uint)) _DrawElementsType = DrawElementsType.UnsignedInt;
+            else throw new NotSupportedException("Does not support specified index type.");
         }
 
         public void FinalizeVertexArrayObject(int vertexOffset) => _VertexArrayObject.Finalize(_VertexAllocator, _IndexAllocator, vertexOffset);
@@ -48,7 +54,7 @@ namespace Automata.Engine.Rendering.Meshes
             _CommandBuffer.Bind();
             _VertexArrayObject.Bind();
 
-            _GL.MultiDrawElementsIndirect(PrimitiveType.Triangles, DrawElementsType.UnsignedInt, (void*)null!, _CommandBuffer.Count, 0u);
+            _GL.MultiDrawElementsIndirect(PrimitiveType.Triangles, _DrawElementsType, (void*)null!, _CommandBuffer.Count, 0u);
 
             RegenerateBufferSync();
         }

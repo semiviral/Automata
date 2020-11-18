@@ -8,6 +8,7 @@ using Automata.Engine.Entities;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
 using Automata.Engine.Rendering.OpenGL.Shaders;
+using Automata.Engine.Rendering.OpenGL.Textures;
 using Automata.Engine.Systems;
 using Microsoft.Toolkit.HighPerformance.Extensions;
 
@@ -18,9 +19,21 @@ namespace Automata.Engine.Rendering.Meshes
         where TVertex : unmanaged, IEquatable<TVertex>
     {
         private MultiDrawIndirectMesh<TIndex, TVertex>? _MultiDrawIndirectMesh;
+        private Material? _MultiDrawIndirectMeshMaterial;
+
+        public void SetTextureAtSlot(int index, Texture texture)
+        {
+            // todo make settings textures dynamic
+            // perhaps use a dictionary instead of a list, and then we can
+            // set the uniforms in the shader by the key of the texture
+            _MultiDrawIndirectMeshMaterial!.Textures.Add(texture);
+        }
+
+        #region ComponentSystem
 
         public override void Registered(EntityManager entityManager)
         {
+            _MultiDrawIndirectMeshMaterial = new Material(ProgramRegistry.Instance.Load("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl"));
             _MultiDrawIndirectMesh = new MultiDrawIndirectMesh<TIndex, TVertex>(GLAPI.Instance.GL, 750_000_000, 500_000_000);
 
             _MultiDrawIndirectMesh.AllocateVertexAttributes(true,
@@ -32,11 +45,10 @@ namespace Automata.Engine.Rendering.Meshes
 
             _MultiDrawIndirectMesh.FinalizeVertexArrayObject(0);
 
-            Material material = new Material(ProgramRegistry.Instance.Load("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl"));
             //material.Textures.Add(TextureAtlas.Instance.Blocks!);
 
             entityManager.CreateEntity(
-                material,
+                _MultiDrawIndirectMeshMaterial,
                 new RenderMesh
                 {
                     Mesh = _MultiDrawIndirectMesh
@@ -59,6 +71,11 @@ namespace Automata.Engine.Rendering.Meshes
             return ValueTask.CompletedTask;
         }
 
+        #endregion
+
+
+        #region Data Processing
+
         private unsafe void GenerateDrawElementsIndirectCommands(IEnumerable<DrawIndirectAllocation<TIndex, TVertex>> drawIndirectAllocations)
         {
             if (_MultiDrawIndirectMesh is null) ThrowHelper.ThrowNullReferenceException(nameof(_MultiDrawIndirectMesh));
@@ -71,18 +88,15 @@ namespace Automata.Engine.Rendering.Meshes
                 DrawIndirectAllocation<TIndex, TVertex> drawIndirectAllocation = allocations[index];
                 if (drawIndirectAllocation.Allocation is null) ThrowHelper.ThrowNullReferenceException(nameof(drawIndirectAllocation.Allocation));
 
-                uint indexesStart = (uint)(drawIndirectAllocation.Allocation!.IndexesArrayMemory.Index / sizeof(uint));
-                uint vertexesStart = (uint)drawIndirectAllocation.Allocation!.VertexArrayMemory.Index;
+                nuint indexesStart = drawIndirectAllocation.Allocation!.IndexesArrayMemory.Index / (nuint)sizeof(TIndex);
+                nuint vertexesStart = drawIndirectAllocation.Allocation!.VertexArrayMemory.Index;
 
-                commands[index] = new DrawElementsIndirectCommand(drawIndirectAllocation.Allocation!.VertexArrayMemory.Count, 1u, indexesStart, vertexesStart,
-                    (uint)index);
+                commands[index] = new DrawElementsIndirectCommand(drawIndirectAllocation.Allocation!.VertexArrayMemory.Count, 1u,
+                    (uint)indexesStart, (uint)vertexesStart, (uint)index);
             }
 
             _MultiDrawIndirectMesh!.AllocateDrawElementsIndirectCommands(commands);
         }
-
-
-        #region Mesh Preparation
 
         private void ProcessMeshData(EntityManager entityManager, IEntity entity, NonAllocatingQuadsMeshData<TIndex, TVertex> pendingData)
         {

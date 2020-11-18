@@ -25,13 +25,13 @@ namespace Automata.Game.Chunks.Generation
     public class ChunkGenerationSystem : ComponentSystem
     {
         private readonly IOrderedCollection<IGenerationStep> _BuildSteps;
-        private readonly ConcurrentChannel<(IEntity, Chunk, NonAllocatingQuadsMeshData<PackedVertex>)> _PendingMeshes;
+        private readonly ConcurrentChannel<(IEntity, Chunk, NonAllocatingQuadsMeshData<uint, PackedVertex>)> _PendingMeshes;
 
         public ChunkGenerationSystem()
         {
             _BuildSteps = new OrderedLinkedList<IGenerationStep>();
             _BuildSteps.AddLast(new TerrainGenerationStep());
-            _PendingMeshes = new ConcurrentChannel<(IEntity, Chunk, NonAllocatingQuadsMeshData<PackedVertex>)>(true, false);
+            _PendingMeshes = new ConcurrentChannel<(IEntity, Chunk, NonAllocatingQuadsMeshData<uint, PackedVertex>)>(true, false);
 
             DiagnosticsProvider.EnableGroup<ChunkGenerationDiagnosticGroup>();
         }
@@ -51,18 +51,20 @@ namespace Automata.Game.Chunks.Generation
                 IEnumerable<(GenerationState, int)> states = entityManager.GetComponents<Chunk>().Select(chunk => (chunk.State, chunk.TimesMeshed));
                 Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(DiagnosticsPool), string.Join(", ", states)));
             }, Key.ShiftLeft, Key.V));
+
+            _CurrentWorld!.SystemManager.GetSystem<AllocatedMeshingSystem<uint, PackedVertex>>().SetTextureAtSlot(0, TextureAtlas.Instance.Blocks!);
         }
 
         [HandledComponents(DistinctionStrategy.All, typeof(Translation), typeof(Chunk))]
         public override ValueTask Update(EntityManager entityManager, TimeSpan delta)
         {
             // empty channel of any pending meshes, apply the meshes, and update the material
-            while (_PendingMeshes.TryTake(out (IEntity Entity, Chunk Chunk, NonAllocatingQuadsMeshData<PackedVertex> Data) pendingMesh))
+            while (_PendingMeshes.TryTake(out (IEntity Entity, Chunk Chunk, NonAllocatingQuadsMeshData<uint, PackedVertex> Data) pendingMesh))
             {
                 if (!pendingMesh.Entity.Disposed)
                 {
                     Debug.Assert(pendingMesh.Chunk.State is GenerationState.GeneratingMesh);
-                    entityManager.RegisterComponent(pendingMesh.Entity, new AllocatedMeshData(pendingMesh.Data));
+                    entityManager.RegisterComponent(pendingMesh.Entity, new AllocatedMeshData<uint, PackedVertex>(pendingMesh.Data));
                 }
                 else pendingMesh.Data.Dispose();
 
@@ -187,7 +189,7 @@ namespace Automata.Game.Chunks.Generation
             Stopwatch stopwatch = DiagnosticsPool.Stopwatches.Rent();
             stopwatch.Restart();
 
-            NonAllocatingQuadsMeshData<PackedVertex> pendingQuads = ChunkMesher.GeneratePackedMesh(chunk.Blocks, chunk.NeighborBlocks().ToArray());
+            NonAllocatingQuadsMeshData<uint, PackedVertex> pendingQuads = ChunkMesher.GeneratePackedMesh(chunk.Blocks, chunk.NeighborBlocks().ToArray());
             await _PendingMeshes.AddAsync((entity, chunk, pendingQuads)).ConfigureAwait(false);
 
             DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new MeshingTime(stopwatch.Elapsed));

@@ -77,7 +77,7 @@ namespace Automata.Game.Chunks.Generation.Meshing
             -GenerationConstants.CHUNK_SIZE
         };
 
-        public void Mesh(Span<Block> blocks, Span<Direction> faces, ICollection<QuadIndexes> indexes, ICollection<QuadVertexes<PackedVertex>> vertexes,
+        public void Mesh(Span<Block> blocks, Span<Direction> faces, ICollection<QuadIndexes<uint>> indexes, ICollection<QuadVertexes<PackedVertex>> vertexes,
             IReadOnlyList<Palette<Block>?> neighbors, int index, int localPosition, Block block, bool isTransparent)
         {
             // iterate once over all 6 faces of given cubic space
@@ -210,7 +210,7 @@ namespace Automata.Game.Chunks.Generation.Meshing
 
                     uint indexesStart = (uint)(vertexes.Count * 4);
 
-                    indexes.Add(new QuadIndexes(
+                    indexes.Add(new QuadIndexes<uint>(
                         indexesStart + 0u,
                         indexesStart + 1u,
                         indexesStart + 3u,

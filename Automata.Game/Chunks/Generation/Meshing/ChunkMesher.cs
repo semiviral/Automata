@@ -30,15 +30,15 @@ namespace Automata.Game.Chunks.Generation.Meshing
             };
 
         [SkipLocalsInit]
-        public static unsafe NonAllocatingQuadsMeshData<PackedVertex> GeneratePackedMesh(Palette<Block> blocksPalette, Palette<Block>?[] neighbors)
+        public static unsafe NonAllocatingQuadsMeshData<uint, PackedVertex> GeneratePackedMesh(Palette<Block> blocksPalette, Palette<Block>?[] neighbors)
         {
             try
             {
                 if ((blocksPalette.LookupTableSize == 1) && (blocksPalette.GetLookupIndex(0).ID == BlockRegistry.AirID))
-                    return NonAllocatingQuadsMeshData<PackedVertex>.Empty;
+                    return NonAllocatingQuadsMeshData<uint, PackedVertex>.Empty;
 
                 BlockRegistry blockRegistry = BlockRegistry.Instance;
-                NonAllocatingList<QuadIndexes> indexes = new NonAllocatingList<QuadIndexes>(_DEFAULT_INDEXES_CAPACITY);
+                NonAllocatingList<QuadIndexes<uint>> indexes = new NonAllocatingList<QuadIndexes<uint>>(_DEFAULT_INDEXES_CAPACITY);
                 NonAllocatingList<QuadVertexes<PackedVertex>> vertexes = new NonAllocatingList<QuadVertexes<PackedVertex>>(_DEFAULT_VERTEXES_CAPACITY);
                 Span<Block> blocks = stackalloc Block[GenerationConstants.CHUNK_SIZE_CUBED];
                 Span<Direction> faces = stackalloc Direction[GenerationConstants.CHUNK_SIZE_CUBED];
@@ -61,12 +61,12 @@ namespace Automata.Game.Chunks.Generation.Meshing
                         blockRegistry.CheckBlockHasProperty(block.ID, BlockDefinitionDefinition.Attribute.Transparent));
                 }
 
-                return new NonAllocatingQuadsMeshData<PackedVertex>(indexes, vertexes);
+                return new NonAllocatingQuadsMeshData<uint, PackedVertex>(indexes, vertexes);
             }
             catch (Exception exception)
             {
                 if (exception is IndexOutOfRangeException or InvalidOperationException && blocksPalette.Count is 0)
-                    return NonAllocatingQuadsMeshData<PackedVertex>.Empty;
+                    return NonAllocatingQuadsMeshData<uint, PackedVertex>.Empty;
                 else throw;
             }
         }

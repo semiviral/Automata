@@ -138,7 +138,7 @@ namespace Automata.Engine.Collections
             Count -= 1;
 
             // copies all elements from after index to the index itself, overwriting it
-            if (index < Count) Array.Copy(_InternalArray, index + 1, _InternalArray, index, Count - (index + 1));
+            if (index < Count) Array.Copy(_InternalArray, index + 1, _InternalArray, index, Count - index);
 
             _InternalArray[Count] = default!;
         }

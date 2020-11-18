@@ -10,7 +10,9 @@ using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.Meshes
 {
-    public class QuadsMesh<TVertex> : IMesh where TVertex : unmanaged
+    public abstract class QuadsMesh<TIndex, TVertex> : IMesh
+        where TIndex : unmanaged, IEquatable<TIndex>
+        where TVertex : unmanaged, IEquatable<TVertex>
     {
         private readonly GL _GL;
 
@@ -28,16 +30,11 @@ namespace Automata.Engine.Rendering.Meshes
             ID = Guid.NewGuid();
             Visible = true;
             Layer = layer;
-            BufferObject = new BufferObject<Quad<TVertex>>(gl);
+            BufferObject = new BufferObject<Quad<TIndex, TVertex>>(gl);
             VertexArrayObject = new VertexArrayObject(gl);
         }
 
-        public unsafe void Draw()
-        {
-            VertexArrayObject.Bind();
-
-            _GL.DrawElements(PrimitiveType.Triangles, IndexesCount, DrawElementsType.UnsignedInt, (void*)null!);
-        }
+        public abstract void Draw();
 
         public void Dispose()
         {

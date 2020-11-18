@@ -1,7 +1,7 @@
 using System;
 using System.Buffers;
 
-namespace Automata.Engine.Rendering.Meshes
+namespace Automata.Engine.Rendering.OpenGL.Buffers
 {
     public delegate IMemoryOwner<T> AllocationRenter<T>(int length, nuint alignment, out nuint index, bool clear = false) where T : unmanaged;
 
@@ -9,14 +9,14 @@ namespace Automata.Engine.Rendering.Meshes
     {
         public IMemoryOwner<T> MemoryOwner { get; }
         public nuint Index { get; }
-        public uint Count { get; }
+        
+        public uint Count => (uint)MemoryOwner.Memory.Length;
 
         public BufferArrayMemory(AllocationRenter<T> renter, nuint alignment, ReadOnlySpan<T> data)
         {
             MemoryOwner = renter(data.Length, alignment, out nuint index);
             data.CopyTo(MemoryOwner.Memory.Span);
             Index = index;
-            Count = (uint)data.Length;
         }
 
         public void Dispose()

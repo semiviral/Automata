@@ -1,16 +1,19 @@
 ﻿using System.Drawing;
+using System.Numerics;
 using Automata.Engine;
 using Automata.Engine.Components;
 using Automata.Engine.Concurrency;
 using Automata.Engine.Entities;
 using Automata.Engine.Input;
 using Automata.Engine.Rendering;
+using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Systems;
 using Automata.Game;
 using Automata.Game.Blocks;
 using Automata.Game.Chunks;
 using Automata.Game.Chunks.Generation;
+using Automata.Game.Chunks.Generation.Meshing;
 using Serilog;
 using Silk.NET.Windowing.Common;
 
@@ -68,8 +71,8 @@ static void InitializeWorld(out World world)
     world = new VoxelWorld(true);
     world.SystemManager.RegisterSystem<InputSystem, FirstOrderSystem>(SystemRegistrationOrder.Before);
     world.SystemManager.RegisterSystem<RenderSystem, LastOrderSystem>(SystemRegistrationOrder.Before);
-    world.SystemManager.RegisterSystem<AllocatedMeshingSystem, RenderSystem>(SystemRegistrationOrder.Before);
-    world.SystemManager.RegisterSystem<ChunkRegionLoaderSystem, DefaultOrderSystem>(SystemRegistrationOrder.Before);
+    world.SystemManager.RegisterSystem<AllocatedMeshingSystem<uint, PackedVertex>, RenderSystem>(SystemRegistrationOrder.Before);
+    // world.SystemManager.RegisterSystem<ChunkRegionLoaderSystem, DefaultOrderSystem>(SystemRegistrationOrder.Before);
     world.SystemManager.RegisterSystem<ChunkModificationsSystem, DefaultOrderSystem>(SystemRegistrationOrder.Before);
     world.SystemManager.RegisterSystem<ChunkGenerationSystem, DefaultOrderSystem>(SystemRegistrationOrder.Before);
     World.RegisterWorld("Overworld", world);
@@ -101,10 +104,10 @@ static void InitializePlayer(EntityManager entityManager)
 #endif
         });
 
-    // entityManager.CreateEntity(new Chunk
-    // {
-    //     State = GenerationState.AwaitingTerrain
-    // }, new Translation());
+    entityManager.CreateEntity(new Chunk
+    {
+        State = GenerationState.AwaitingTerrain
+    }, new Translation {Value = new Vector3(0f, 96f, 0f)});
 }
 
 #endregion
