@@ -57,8 +57,8 @@ namespace Automata.Engine.Rendering.OpenGL
                 _VertexBufferObjectBindings.Add(bindingIndex, new VertexBufferObjectBinding(vbo.Handle, vertexOffset));
             }
 
-            Log.Verbose(String.Format(FormatHelper.DEFAULT_LOGGING, nameof(VertexArrayObject),
-                $"Allocated new VBO binding (VAO 0x{Handle:x}): Handle 0x{vbo.Handle:x}, BindingIndex {bindingIndex}, VertexOffset {vertexOffset}"));
+            Log.Verbose(String.Format(FormatHelper.DEFAULT_LOGGING, $"{nameof(VertexArrayObject)} 0x{Handle}",
+                $"Allocated new VBO binding: Handle 0x{vbo.Handle:x}, BindingIndex {bindingIndex}, VertexOffset {vertexOffset}"));
         }
 
         #endregion
@@ -68,20 +68,21 @@ namespace Automata.Engine.Rendering.OpenGL
 
         public void Finalize(BufferObject? ebo)
         {
-            CommitBufferBindings(ebo);
-            CommitVertexAttributes();
-
-            Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(VertexArrayObject),
-                $"Finalized (VAO 0x{Handle:x}): {_VertexAttributes.Count} attributes\r\n\t{string.Join(",\r\n\t", _VertexAttributes)}"));
-        }
-
-        private void CommitBufferBindings(BufferObject? ebo)
-        {
             // calculate strides for new VBO bindings
             Dictionary<uint, uint> strides = new Dictionary<uint, uint>();
 
             foreach (IVertexAttribute vertexAttribute in _VertexAttributes)
             {
+                GL.EnableVertexArrayAttrib(Handle, vertexAttribute.Index);
+                vertexAttribute.CommitFormat(GL, Handle);
+                GL.VertexArrayAttribBinding(Handle, vertexAttribute.Index, vertexAttribute.BindingIndex);
+
+                if (vertexAttribute.Divisor > 0u)
+                {
+                    GL.VertexArrayBindingDivisor(Handle, vertexAttribute.BindingIndex, vertexAttribute.Divisor);
+                }
+
+                // set or add stride by binding index of vertex attribute
                 if (strides.ContainsKey(vertexAttribute.BindingIndex))
                 {
                     strides[vertexAttribute.BindingIndex] += vertexAttribute.Stride;
@@ -90,6 +91,9 @@ namespace Automata.Engine.Rendering.OpenGL
                 {
                     strides.Add(vertexAttribute.BindingIndex, vertexAttribute.Stride);
                 }
+
+                Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, $"{nameof(VertexArrayObject)} 0x{Handle}",
+                    $"Committed vertex attribute: {vertexAttribute}"));
             }
 
             // commit VBO bindings
@@ -101,30 +105,22 @@ namespace Automata.Engine.Rendering.OpenGL
                 // bind given VBO binding
                 GL.VertexArrayVertexBuffer(Handle, bindingIndex, binding.Handle, binding.VertexOffset, binding.Stride);
 
-                Log.Verbose(String.Format(FormatHelper.DEFAULT_LOGGING, nameof(VertexArrayObject),
-                    $"Bound VBO (VAO 0x{Handle:x}): Handle 0x{binding.Handle:x}, BindingIndex {bindingIndex}, Stride {stride}, VertexOffset {binding.VertexOffset}"));
+                Log.Verbose(String.Format(FormatHelper.DEFAULT_LOGGING, $"{nameof(VertexArrayObject)} 0x{Handle}",
+                    $"Bound VBO: Handle 0x{binding.Handle:x}, BindingIndex {bindingIndex}, Stride {stride}, VertexOffset {binding.VertexOffset}"));
             }
 
             if (ebo is not null)
             {
                 GL.VertexArrayElementBuffer(Handle, ebo.Handle);
             }
+
+            CommitBufferBindings(ebo);
+            CommitVertexAttributes();
         }
 
-        private void CommitVertexAttributes()
-        {
-            foreach (IVertexAttribute vertexAttribute in _VertexAttributes)
-            {
-                GL.EnableVertexArrayAttrib(Handle, vertexAttribute.Index);
-                vertexAttribute.CommitFormat(GL, Handle);
-                GL.VertexArrayAttribBinding(Handle, vertexAttribute.Index, vertexAttribute.BindingIndex);
+        private void CommitBufferBindings(BufferObject? ebo) { }
 
-                if (vertexAttribute.Divisor > 0u)
-                {
-                    GL.VertexArrayBindingDivisor(Handle, vertexAttribute.BindingIndex, vertexAttribute.Divisor);
-                }
-            }
-        }
+        private void CommitVertexAttributes() { }
 
         #endregion
 
