@@ -6,16 +6,22 @@ layout (location = 0) in int vert;
 layout (location = 1) in int uv;
 layout (location = 2) in mat4 model;
 
+layout (std140, binding = 0) uniform builtins
+{
+    vec4 _viewport;
+    vec4 _params;
+    mat4 _proj;
+    mat4 _view;
+    mat4 _mvp;
+    mat4 _obj;
+    mat4 _world;
+};
+
 layout (location = 0) out fragment
 {
     vec3 uv;
     vec3 color;
 } fragment;
-
-uniform mat4 _vp;
-uniform mat4 _mvp;
-uniform mat4 _view;
-uniform mat4 _proj;
 
 void main()
 {

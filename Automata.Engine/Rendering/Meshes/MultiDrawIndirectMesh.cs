@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Numerics;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
@@ -10,19 +11,15 @@ namespace Automata.Engine.Rendering.Meshes
         where TIndex : unmanaged
         where TVertex : unmanaged
     {
+        private readonly FenceSync _BufferSync;
+        private readonly BufferObject<DrawElementsIndirectCommand> _CommandBuffer;
+        private readonly DrawElementsType _DrawElementsType;
         private readonly GL _GL;
         private readonly BufferAllocator _IndexAllocator;
+        private readonly BufferObject<Matrix4x4> _ModelBuffer;
         private readonly BufferAllocator _VertexAllocator;
         private readonly VertexArrayObject _VertexArrayObject;
-        private readonly BufferObject<DrawElementsIndirectCommand> _CommandBuffer;
-        private readonly BufferObject<Matrix4x4> _ModelBuffer;
-        private readonly FenceSync _BufferSync;
-        private readonly DrawElementsType _DrawElementsType;
-
-        public Guid ID { get; }
-        public Layer Layer { get; }
         public uint DrawCommandCount { get; private set; }
-        public bool Visible => DrawCommandCount > 0u;
 
         public MultiDrawIndirectMesh(GL gl, uint indexAllocatorSize, uint vertexAllocatorSize, Layer layers = Layer.Layer0)
         {
@@ -78,6 +75,10 @@ namespace Automata.Engine.Rendering.Meshes
             _VertexAllocator.ValidateBlocks();
         }
 
+        public Guid ID { get; }
+        public Layer Layer { get; }
+        public bool Visible => DrawCommandCount > 0u;
+
 
         #region IMesh
 
@@ -108,17 +109,6 @@ namespace Automata.Engine.Rendering.Meshes
         #endregion
 
 
-        #region Renting
-
-        public BufferArrayMemory<TIndex> RentIndexBufferArrayMemory(nuint alignment, ReadOnlySpan<TIndex> data) =>
-            new BufferArrayMemory<TIndex>(_IndexAllocator, alignment, data);
-
-        public BufferArrayMemory<TVertex> RentVertexBufferArrayMemory(nuint alignment, ReadOnlySpan<TVertex> data) =>
-            new BufferArrayMemory<TVertex>(_VertexAllocator, alignment, data);
-
-        #endregion
-
-
         public void Dispose()
         {
             _BufferSync.Dispose();
@@ -130,5 +120,16 @@ namespace Automata.Engine.Rendering.Meshes
 
             GC.SuppressFinalize(this);
         }
+
+
+        #region Renting
+
+        public BufferArrayMemory<TIndex> RentIndexBufferArrayMemory(nuint alignment, ReadOnlySpan<TIndex> data) =>
+            new(_IndexAllocator, alignment, data);
+
+        public BufferArrayMemory<TVertex> RentVertexBufferArrayMemory(nuint alignment, ReadOnlySpan<TVertex> data) =>
+            new(_VertexAllocator, alignment, data);
+
+        #endregion
     }
 }

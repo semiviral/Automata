@@ -75,7 +75,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
             uint length = Size - (uint)offset;
             void* pointer = GL.MapNamedBufferRange(Handle, offset, length, (uint)MapBufferAccessMask.MapWriteBit);
-            MemoryMarshal.Cast<T, byte>(data).CopyTo(new Span<byte>(pointer, (int)length));
+            MemoryMarshal.AsBytes(data).CopyTo(new Span<byte>(pointer, (int)length));
             GL.UnmapNamedBuffer(Handle);
         }
 

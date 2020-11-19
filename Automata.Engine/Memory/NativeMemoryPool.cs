@@ -13,13 +13,14 @@ namespace Automata.Engine.Memory
     {
         private sealed record MemoryBlock(nuint Index, nuint Size, bool Owned);
 
-        private readonly LinkedList<MemoryBlock> _MemoryMap;
         private readonly object _AccessLock;
+
+        private readonly LinkedList<MemoryBlock> _MemoryMap;
         private readonly byte* _Pointer;
 
-        public nuint Size { get; }
-
         private int _RentedBlocks;
+
+        public nuint Size { get; }
         public int RentedBlocks => _RentedBlocks;
 
         public NativeMemoryPool(byte* pointer, nuint size)
@@ -30,6 +31,28 @@ namespace Automata.Engine.Memory
             _MemoryMap.AddFirst(new MemoryBlock(0u, size, false));
             _AccessLock = new object();
             _Pointer = pointer;
+        }
+
+        private LinkedListNode<MemoryBlock> SafeGetFirstNode() => _MemoryMap.First ?? throw new InvalidOperationException("Memory pool is in invalid state.");
+
+        public void ValidateBlocks()
+        {
+            lock (_AccessLock)
+            {
+                nuint index = 0;
+
+                foreach (MemoryBlock memoryBlock in _MemoryMap)
+                {
+                    if (memoryBlock.Index != index)
+                    {
+                        throw new ArgumentOutOfRangeException(nameof(memoryBlock.Index), $"{nameof(MemoryBlock)} index does not follow previous block.");
+                    }
+                    else
+                    {
+                        index += memoryBlock.Size;
+                    }
+                }
+            }
         }
 
 
@@ -46,6 +69,8 @@ namespace Automata.Engine.Memory
         /// <returns><see cref="IMemoryOwner{T}" /> wrapping an arbitrary region of pool memory.</returns>
         public IMemoryOwner<T> Rent<T>(int size, nuint alignment, [MaybeNullWhen(false)] out nuint index, bool clear = false) where T : unmanaged
         {
+            index = 0u;
+
             switch (size)
             {
                 case < 0: throw new ArgumentOutOfRangeException(nameof(size), "Size must be non-negative.");
@@ -66,6 +91,7 @@ namespace Automata.Engine.Memory
                         continue;
                     }
 
+                    index = current.Value.Index;
                     IMemoryOwner<T> memoryOwner = CreateMemoryOwner<T>(index, size);
 
                     if (clear)
@@ -73,7 +99,6 @@ namespace Automata.Engine.Memory
                         memoryOwner.Memory.Span.Clear();
                     }
 
-                    index = current.Value.Index;
                     return memoryOwner;
                 } while ((current = current!.Next) is not null);
             }
@@ -180,7 +205,7 @@ namespace Automata.Engine.Memory
             // T will not often be the same size as _Pointer (i.e. a byte), so it's important to take care in calling this
             // method with a valid index and size that won't misalign. With this in mind, ensure that instantiating the
             // NativeMemoryManager ALWAYS uses the units-of-T size.
-            NativeMemoryManager<T> memoryManager = new NativeMemoryManager<T>((T*)(_Pointer + index), size);
+            NativeMemoryManager<T> memoryManager = new((T*)(_Pointer + index), size);
             IMemoryOwner<T> memoryOwner = new NativeMemoryOwner<T>(this, index, memoryManager.Memory);
             Interlocked.Increment(ref _RentedBlocks);
 
@@ -236,28 +261,5 @@ namespace Automata.Engine.Memory
         }
 
         #endregion
-
-
-        private LinkedListNode<MemoryBlock> SafeGetFirstNode() => _MemoryMap.First ?? throw new InvalidOperationException("Memory pool is in invalid state.");
-
-        public void ValidateBlocks()
-        {
-            lock (_AccessLock)
-            {
-                nuint index = 0;
-
-                foreach (MemoryBlock memoryBlock in _MemoryMap)
-                {
-                    if (memoryBlock.Index != index)
-                    {
-                        throw new ArgumentOutOfRangeException(nameof(memoryBlock.Index), $"{nameof(MemoryBlock)} index does not follow previous block.");
-                    }
-                    else
-                    {
-                        index += memoryBlock.Size;
-                    }
-                }
-            }
-        }
     }
 }
