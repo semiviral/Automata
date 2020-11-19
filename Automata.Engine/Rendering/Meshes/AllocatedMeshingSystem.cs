@@ -1,6 +1,5 @@
 using System;
 using System.Buffers;
-using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -56,11 +55,7 @@ namespace Automata.Engine.Rendering.Meshes
 
             if (recreateCommandBuffer)
             {
-                Stopwatch stopwatch = Stopwatch.StartNew();
-
                 ProcessDrawElementsIndirectAllocationsImpl(entityManager);
-
-                Log.Information($"{stopwatch.Elapsed.TotalMilliseconds:0.00}ms");
             }
 
             return ValueTask.CompletedTask;
@@ -111,6 +106,9 @@ namespace Automata.Engine.Rendering.Meshes
         [SkipLocalsInit]
         private unsafe void ProcessDrawElementsIndirectAllocationsImpl(EntityManager entityManager)
         {
+            // rent from array pools to avoid allocations where possible
+            // we could use stackalloc here, and work with spans directly, but that's liable to end up in a StackOverflowException
+            // for very large render distances.
             int drawIndirectAllocationsCount = (int)entityManager.GetComponentCount<DrawElementsIndirectAllocation<TIndex, TVertex>>();
             DrawElementsIndirectCommand[] commands = ArrayPool<DrawElementsIndirectCommand>.Shared.Rent(drawIndirectAllocationsCount);
             Matrix4x4[] models = ArrayPool<Matrix4x4>.Shared.Rent(drawIndirectAllocationsCount);
@@ -134,9 +132,9 @@ namespace Automata.Engine.Rendering.Meshes
                 index += 1;
             }
 
+            // make sure we slice the rentals here, since they're subject to arbitrary sizing rules (and may not be the exact requested minimum size).
             _MultiDrawIndirectMesh!.AllocateDrawCommands(new Span<DrawElementsIndirectCommand>(commands).Slice(0, drawIndirectAllocationsCount));
             _MultiDrawIndirectMesh!.AllocateModelsData(new Span<Matrix4x4>(models).Slice(0, drawIndirectAllocationsCount));
-
             ArrayPool<DrawElementsIndirectCommand>.Shared.Return(commands);
             ArrayPool<Matrix4x4>.Shared.Return(models);
 

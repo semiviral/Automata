@@ -289,6 +289,6 @@ namespace Automata.Engine.Rendering
             GC.SuppressFinalize(this);
         }
 
-        #endregion
+        #endregion IDisposable
     }
 }

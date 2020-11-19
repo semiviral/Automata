@@ -26,8 +26,7 @@ namespace Automata.Engine
 
     public class AutomataWindow : Singleton<AutomataWindow>
     {
-        private readonly APIVersion _FallbackOGLVersion = new APIVersion(3, 3);
-        private readonly APIVersion _PreferredOGLVersion = new APIVersion(4, 3);
+        private readonly APIVersion _PreferredOGLVersion = new APIVersion(4, 6);
 
         private TimeSpan _MinimumFrameTime;
 
