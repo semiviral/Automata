@@ -8,11 +8,14 @@ using Automata.Engine.Collections;
 using Automata.Engine.Input;
 using Automata.Engine.Numerics;
 using Automata.Engine.Rendering.OpenGL;
+using Automata.Engine.Rendering.Vulkan;
 using Serilog;
 using Silk.NET.Core.Contexts;
 using Silk.NET.GLFW;
 using Silk.NET.Input.Common;
+using Silk.NET.OpenAL;
 using Silk.NET.OpenGL;
+using Silk.NET.Vulkan;
 using Silk.NET.Windowing.Common;
 using ErrorCode = Silk.NET.GLFW.ErrorCode;
 
@@ -24,9 +27,10 @@ namespace Automata.Engine
 
     public delegate void WindowClosingEventHandler(object sender);
 
-    public class AutomataWindow : Singleton<AutomataWindow>
+    public class AutomataWindow : Singleton<AutomataWindow>, IDisposable
     {
-        private readonly APIVersion _PreferredOGLVersion = new(4, 6);
+        private readonly APIVersion _PreferredOGLVersion = new APIVersion(4, 6);
+        private readonly APIVersion _PreferredVulkanVersion = new APIVersion(1, 2);
 
         private TimeSpan _MinimumFrameTime;
 
@@ -62,12 +66,19 @@ namespace Automata.Engine
 
         #region Creation
 
-        public void CreateWindow(WindowOptions windowOptions)
+
+
+        public void CreateWindow(WindowOptions windowOptions, ContextAPI contextAPI)
         {
             IWindow ConstructWindow(WindowOptions options)
             {
-                options.API = new GraphicsAPI(ContextAPI.OpenGL, ContextProfile.Core, ContextFlags.ForwardCompatible | ContextFlags.Debug,
-                    _PreferredOGLVersion);
+
+                options.API = contextAPI switch
+                {
+                    ContextAPI.OpenGL => new GraphicsAPI(contextAPI, ContextProfile.Core, ContextFlags.Debug, _PreferredOGLVersion),
+                    ContextAPI.Vulkan => new GraphicsAPI(contextAPI, ContextProfile.Core, ContextFlags.Debug, _PreferredVulkanVersion),
+                    _ => throw new NotImplementedException()
+                };
 
                 IWindow window = Silk.NET.Windowing.Window.Create(options);
                 window.Resize += OnWindowResized;
@@ -202,6 +213,23 @@ namespace Automata.Engine
                     $"{OpenGLObject.ObjectsAlive.Count} OF '{nameof(OpenGLObject)}' LEFT ALIVE AT PROGRAM EXIT:\r\n\t{string.Join("\r\n\t", OpenGLObject.ObjectsAlive.Values)}"));
             }
 #endif
+        }
+
+        #endregion
+
+
+        #region IDisposable
+
+        public bool Disposed { get; private set; }
+
+        public void Dispose()
+        {
+            if (Disposed) return;
+
+            _Window?.Dispose();
+
+            GC.SuppressFinalize(this);
+            Disposed = true;
         }
 
         #endregion

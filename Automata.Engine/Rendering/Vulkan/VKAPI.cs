@@ -108,6 +108,14 @@ namespace Automata.Engine.Rendering.Vulkan
 
         public VKAPI() => VK = Vk.GetApi();
 
+        public VulkanInstance GenerateNewInstance() => new VulkanInstance(Instance.VK, "Automata.Game", new Version32(0u, 1u, 0u), "Automata.Engine",
+            new Version32(0u, 1u, 0u), Vk.Version12, _InstanceExtensions, true, _ValidationLayers);
+
+        public VulkanInstance GenerateNewInstance(string applicationName, Version32 applicationVersion, string engineName, Version32 engineVersion,
+            Version32 apiVersion, string[] requestedExtensions, bool validation, string[] validationLayers) =>
+            new VulkanInstance(VK, applicationName, applicationVersion, engineName, engineVersion, apiVersion, requestedExtensions, validation,
+                validationLayers);
+
         public static unsafe string[] GetRequiredExtensions(string[] requestedExtensions)
         {
             string[] requiredExtensions = SilkMarshal.MarshalPtrToStringArray(

@@ -9,12 +9,14 @@ using Automata.Engine.Rendering;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Shaders;
+using Automata.Engine.Rendering.Vulkan;
 using Automata.Game;
 using Automata.Game.Blocks;
 using Automata.Game.Chunks;
 using Automata.Game.Chunks.Generation;
 using Automata.Game.Chunks.Generation.Meshing;
 using Serilog;
+using Silk.NET.Vulkan;
 using Silk.NET.Windowing.Common;
 
 Main();
@@ -29,9 +31,15 @@ void Main()
     InitializeLogger();
     InitializeBoundedPool();
     InitializeWindow();
-    BlockRegistry.Instance.LazyInitialize();
-    InitializeWorld(out World world);
-    InitializePlayer(world.EntityManager);
+
+
+    VulkanInstance instance = VKAPI.Instance.GenerateNewInstance();
+
+
+
+    //BlockRegistry.Instance.LazyInitialize();
+    //InitializeWorld(out World world);
+    //InitializePlayer(world.EntityManager);
 }
 
 static void ApplicationCloseCallback(object sender)
@@ -39,8 +47,8 @@ static void ApplicationCloseCallback(object sender)
     World.DisposeWorlds();
     ProgramRegistry.Instance.Dispose();
     TextureAtlas.Instance.Blocks?.Dispose();
-    GLAPI.Instance.GL.Dispose();
     BoundedInvocationPool.Instance.Cancel();
+    AutomataWindow.Instance.Dispose();
 }
 
 #endregion
@@ -82,7 +90,7 @@ static void InitializeWindow()
     options.VSync = Settings.Instance.VSync ? VSyncMode.On : VSyncMode.Off;
     options.PreferredDepthBufferBits = 24;
 
-    AutomataWindow.Instance.CreateWindow(options);
+    AutomataWindow.Instance.CreateWindow(options, ContextAPI.Vulkan);
     AutomataWindow.Instance.Closing += ApplicationCloseCallback;
 }
 

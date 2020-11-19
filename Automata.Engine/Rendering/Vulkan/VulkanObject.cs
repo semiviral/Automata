@@ -4,7 +4,9 @@ namespace Automata.Engine.Rendering.Vulkan
 {
     public abstract class VulkanObject
     {
-        protected Vk VK { get; }
+        protected readonly Vk VK;
+
+        public nuint Handle { get; protected init; }
 
         public VulkanObject(Vk vk) => VK = vk;
     }

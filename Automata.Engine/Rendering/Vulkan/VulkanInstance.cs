@@ -2,16 +2,17 @@ using System.Runtime.InteropServices;
 using Automata.Engine.Extensions;
 using Serilog;
 using Silk.NET.Core.Native;
+using Silk.NET.GLFW;
 using Silk.NET.Vulkan;
-using Silk.NET.Vulkan.Extensions.KHR;
 
 namespace Automata.Engine.Rendering.Vulkan
 {
-    public class VulkanInstance : VulkanObject
+    public record VulkanInstance
     {
         private static readonly string _LogFormat = string.Format(FormatHelper.DEFAULT_LOGGING, nameof(VulkanInstance), "{0}");
 
         private readonly Instance _VKInstance;
+        private readonly Vk _VK;
 
         public string ApplicationName { get; }
         public Version32 ApplicationVersion { get; }
@@ -20,10 +21,13 @@ namespace Automata.Engine.Rendering.Vulkan
         public Version32 APIVersion { get; }
         public SwapchainExtension SwapchainExtension { get; }
         public SurfaceExtension SurfaceExtension { get; }
+        public VkHandle Handle { get; }
 
         public VulkanInstance(Vk vk, string applicationName, Version32 applicationVersion, string engineName, Version32 engineVersion, Version32 apiVersion,
-            string[] requestedExtensions, bool validation, string[] validationLayers) : base(vk)
+            string[] requestedExtensions, bool validation, string[] validationLayers)
         {
+            _VK = vk;
+
             ApplicationName = applicationName;
             ApplicationVersion = applicationVersion;
             EngineName = engineName;
@@ -31,6 +35,7 @@ namespace Automata.Engine.Rendering.Vulkan
             APIVersion = apiVersion;
 
             _VKInstance = Create(requestedExtensions, validation, validationLayers);
+            Handle = _VKInstance.ToHandle();
 
             if (!TryGetInstanceExtension(out SwapchainExtension? swapchainExtension))
             {
@@ -85,13 +90,13 @@ namespace Automata.Engine.Rendering.Vulkan
 
             if (validation)
             {
-                VKAPI.Validate(VK, ref instanceCreateInfo, validationLayers);
+                VKAPI.Validate(_VK, ref instanceCreateInfo, validationLayers);
             }
 
             Log.Information(string.Format(_LogFormat, "allocating instance."));
             Result result;
 
-            if ((result = VK.CreateInstance(ref instanceCreateInfo, ref VKAPI.AllocationCallback, out Instance instance)) != Result.Success)
+            if ((result = _VK.CreateInstance(ref instanceCreateInfo, ref VKAPI.AllocationCallback, out Instance instance)) != Result.Success)
             {
                 throw new VulkanException(result, "Failed to create Vulkan instance.");
             }
@@ -103,9 +108,9 @@ namespace Automata.Engine.Rendering.Vulkan
             return instance;
         }
 
-        public bool TryGetInstanceExtension<T>(out T? extenstion) where T : NativeExtension<Vk> => VK.TryGetInstanceExtension(_VKInstance, out extenstion);
+        public bool TryGetInstanceExtension<T>(out T? extenstion) where T : NativeExtension<Vk> => _VK.TryGetInstanceExtension(_VKInstance, out extenstion);
 
         public bool TryGetDeviceExtension<T>(out T? extension, Device device) where T : NativeExtension<Vk> =>
-            VK.TryGetDeviceExtension(_VKInstance, device, out extension);
+            _VK.TryGetDeviceExtension(_VKInstance, device, out extension);
     }
 }
