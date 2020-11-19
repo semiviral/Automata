@@ -79,15 +79,26 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
         }
 
 
+        #region IDisposable
+
+        protected override void DisposeInternal() => GL.DeleteTexture(Handle);
+
+        #endregion
+
+
         #region Binding
 
-        public abstract void Bind(TextureUnit unit);
+        /// <summary>
+        ///     Binds the texture to the given texture unit.
+        /// </summary>
+        /// <param name="unit">Texture unit for binding the texture to.</param>
+        public abstract void Bind(uint unit);
 
         /// <summary>
         /// </summary>
         /// <param name="gl">The <see cref="GL" /> to queue the command from.</param>
-        /// <param name="first">The first texture unit to start binding from.</param>
-        /// <param name="textures">The textures to bind.</param>
+        /// <param name="first">First texture unit to start binding from.</param>
+        /// <param name="textures">Textures to bind.</param>
         [SkipLocalsInit]
         public static unsafe void BindMany(GL gl, uint first, ICollection<Texture> textures)
         {
@@ -137,13 +148,6 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
 
         public static bool operator ==(Texture? left, Texture? right) => Equals(left, right);
         public static bool operator !=(Texture? left, Texture? right) => !Equals(left, right);
-
-        #endregion
-
-
-        #region IDisposable
-
-        protected override void DisposeInternal() => GL.DeleteTexture(Handle);
 
         #endregion
     }

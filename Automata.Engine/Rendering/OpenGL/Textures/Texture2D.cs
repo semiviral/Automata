@@ -47,17 +47,13 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             GL.TextureSubImage2D(Handle, 0, offset.X, offset.Y, (uint)size.X, (uint)size.Y, _PixelFormat, _PixelType, pixels);
         }
 
-        public sealed override void Bind(TextureUnit unit)
-        {
-            GL.ActiveTexture(unit);
-            GL.BindTextureUnit((uint)unit, Handle);
-        }
+        public sealed override void Bind(uint unit) => GL.BindTextureUnit(unit, Handle);
 
         public static Texture2D<TPixel> Load(string path, WrapMode wrapMode, FilterMode filterMode, bool mipmap)
         {
             using Image<TPixel> image = Image.Load<TPixel>(path);
             image.Mutate(img => img.Flip(FlipMode.Vertical));
-            Texture2D<TPixel> texture = new Texture2D<TPixel>(new Vector2i(image.Width, image.Height), wrapMode, filterMode, mipmap);
+            Texture2D<TPixel> texture = new(new Vector2i(image.Width, image.Height), wrapMode, filterMode, mipmap);
             texture.SetPixels(Vector3i.Zero, new Vector2i(image.Width, image.Height), image.GetPixelSpan());
 
             return texture;

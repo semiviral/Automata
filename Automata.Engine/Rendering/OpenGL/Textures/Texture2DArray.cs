@@ -39,10 +39,6 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             GL.TextureSubImage3D(Handle, 0, offset.X, offset.Y, offset.Z, (uint)size.X, (uint)size.Y, 1u, _PixelFormat, _PixelType, pixels);
         }
 
-        public sealed override void Bind(TextureUnit unit)
-        {
-            GL.ActiveTexture(unit);
-            GL.BindTextureUnit((uint)unit, Handle);
-        }
+        public sealed override void Bind(uint unit) => GL.BindTextureUnit(unit, Handle);
     }
 }
