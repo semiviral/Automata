@@ -1,5 +1,5 @@
 ﻿using System;
-using Automata.Playground.OpenCL;
+using Automata.Engine.OpenCL;
 using Silk.NET.OpenCL;
 
 CL cl;
