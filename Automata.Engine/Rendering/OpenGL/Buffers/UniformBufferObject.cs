@@ -9,6 +9,8 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 {
     public class UniformBufferObject : OpenGLObject
     {
+        private const int _ALIGNMENT = 16;
+
         private const BufferStorageMask _STORAGE_FLAGS = BufferStorageMask.DynamicStorageBit | BufferStorageMask.MapWriteBit;
 
         private readonly Dictionary<string, int> _Offsets;
@@ -18,7 +20,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             get => _Offsets[uniform];
             init
             {
-                Debug.Assert((value % 16) == 0, "Offset is not aligned to a multiple of 16. This may be an error.");
+                Debug.Assert((value % _ALIGNMENT) == 0, "Offset is not aligned to a multiple of 16. This may be an error.");
 
                 if (!_Offsets.ContainsKey(uniform))
                 {
@@ -61,7 +63,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
         public unsafe void Write<T>(int offset, T data) where T : unmanaged
         {
-            Debug.Assert((offset % 16) == 0, "Offset is not aligned to a multiple of 16. This may be an error.");
+            Debug.Assert((offset % _ALIGNMENT) == 0, "Offset is not aligned to a multiple of 16. This may be an error.");
 
             uint length = Size - (uint)offset;
             void* pointer = GL.MapNamedBufferRange(Handle, offset, length, (uint)MapBufferAccessMask.MapWriteBit);
@@ -71,7 +73,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
         public unsafe void Write<T>(int offset, Span<T> data) where T : unmanaged
         {
-            Debug.Assert((offset % 16) == 0, "Offset is not aligned to a multiple of 16. This may be an error.");
+            Debug.Assert((offset % _ALIGNMENT) == 0, "Offset is not aligned to a multiple of 16. This may be an error.");
 
             uint length = Size - (uint)offset;
             void* pointer = GL.MapNamedBufferRange(Handle, offset, length, (uint)MapBufferAccessMask.MapWriteBit);

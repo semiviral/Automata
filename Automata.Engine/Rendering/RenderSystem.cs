@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Automata.Engine.Components;
@@ -32,15 +33,15 @@ namespace Automata.Engine.Rendering
         private const int _BUILT_IN_MODEL_UNIFORMS_OFFSET = 160;
         private const int _BUILT_IN_MODEL_UNIFORMS_SIZE = 192;
         private const int _BUILT_IN_UNIFORMS_SIZE = _BUILT_IN_VIEWPORT_UNIFORMS_SIZE + _BUILT_IN_CAMERA_UNIFORMS_SIZE + _BUILT_IN_MODEL_UNIFORMS_SIZE;
+        private readonly UniformBufferObject _BuiltInUniforms;
 
         private readonly GL _GL;
-        private readonly UniformBufferObject _BuiltInUniforms;
 
         private float _NewAspectRatio;
 
         public ulong DrawCalls { get; private set; }
 
-        public unsafe RenderSystem()
+        public RenderSystem()
         {
             GameWindowResized(null!, AutomataWindow.Instance.Size);
             AutomataWindow.Instance.Resized += GameWindowResized;
@@ -79,6 +80,7 @@ namespace Automata.Engine.Rendering
             }, Key.F4);
         }
 
+        [SkipLocalsInit]
         [HandledComponents(DistinctionStrategy.All, typeof(Camera))]
         public override unsafe ValueTask Update(EntityManager entityManager, TimeSpan delta)
         {
@@ -168,39 +170,6 @@ namespace Automata.Engine.Rendering
         private bool IsNewViewport() => _NewAspectRatio is not 0f;
 
 
-        #region Update Model
-
-        private static void CheckUpdateModelTransforms(IEntity objectEntity, RenderModel renderModel)
-        {
-            if ((!(objectEntity.TryFind(out Translation? modelTranslation) && modelTranslation.Changed)
-                 & !(objectEntity.TryFind(out Rotation? modelRotation) && modelRotation.Changed)
-                 & !(objectEntity.TryFind(out Scale? modelScale) && modelScale.Changed))
-                && !renderModel.Changed)
-            {
-                return;
-            }
-
-            renderModel.Model = Matrix4x4.Identity;
-
-            if (modelTranslation is not null)
-            {
-                renderModel.Model *= Matrix4x4.CreateTranslation(modelTranslation.Value);
-            }
-
-            if (modelRotation is not null)
-            {
-                renderModel.Model *= Matrix4x4.CreateFromQuaternion(modelRotation.Value);
-            }
-
-            if (modelScale is not null)
-            {
-                renderModel.Model *= Matrix4x4.CreateScale(modelScale.Value);
-            }
-        }
-
-        #endregion
-
-
         #region Occlusion
 
         private static bool CheckClipFrustumOccludeEntity(IEntity entity, Span<Plane> planes, Matrix4x4 mvp)
@@ -229,7 +198,7 @@ namespace Automata.Engine.Rendering
 
         #region State Change
 
-        private static void ApplyMaterial(Material material, ref Material? old)
+        private void ApplyMaterial(Material material, ref Material? old)
         {
             if (material.Pipeline.Equals(old?.Pipeline))
             {
@@ -255,9 +224,10 @@ namespace Automata.Engine.Rendering
 
             int index = 0;
 
-            foreach ((string key, Texture texture) in material.Textures)
+            Texture.BindMany(_GL, 0u, material.Textures.Values);
+
+            foreach ((string key, _) in material.Textures)
             {
-                texture.Bind(TextureUnit.Texture0 + index);
                 newFragmentShader!.TrySetUniform($"tex_{key}", index);
                 index += 1;
             }
@@ -266,24 +236,6 @@ namespace Automata.Engine.Rendering
         }
 
         #endregion
-
-
-        #region Events
-
-        private void GameWindowResized(object sender, Vector2i newSize) => _NewAspectRatio = (float)newSize.X / (float)newSize.Y;
-
-        #endregion
-
-
-        #region IDisposable
-
-        public void Dispose()
-        {
-            _BuiltInUniforms.Dispose();
-            GC.SuppressFinalize(this);
-        }
-
-        #endregion IDisposable
 
 
         #region Uniforms
@@ -376,5 +328,56 @@ namespace Automata.Engine.Rendering
         }
 
         #endregion
+
+
+        #region Update Model
+
+        private static void CheckUpdateModelTransforms(IEntity objectEntity, RenderModel renderModel)
+        {
+            if ((!(objectEntity.TryFind(out Translation? modelTranslation) && modelTranslation.Changed)
+                 & !(objectEntity.TryFind(out Rotation? modelRotation) && modelRotation.Changed)
+                 & !(objectEntity.TryFind(out Scale? modelScale) && modelScale.Changed))
+                && !renderModel.Changed)
+            {
+                return;
+            }
+
+            renderModel.Model = Matrix4x4.Identity;
+
+            if (modelTranslation is not null)
+            {
+                renderModel.Model *= Matrix4x4.CreateTranslation(modelTranslation.Value);
+            }
+
+            if (modelRotation is not null)
+            {
+                renderModel.Model *= Matrix4x4.CreateFromQuaternion(modelRotation.Value);
+            }
+
+            if (modelScale is not null)
+            {
+                renderModel.Model *= Matrix4x4.CreateScale(modelScale.Value);
+            }
+        }
+
+        #endregion
+
+
+        #region Events
+
+        private void GameWindowResized(object sender, Vector2i newSize) => _NewAspectRatio = (float)newSize.X / (float)newSize.Y;
+
+        #endregion
+
+
+        #region IDisposable
+
+        public void Dispose()
+        {
+            _BuiltInUniforms.Dispose();
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion IDisposable
     }
 }

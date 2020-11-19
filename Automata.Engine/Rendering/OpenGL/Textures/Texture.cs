@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Silk.NET.OpenGL;
 using SixLabors.ImageSharp.PixelFormats;
 
 namespace Automata.Engine.Rendering.OpenGL.Textures
 {
-    public abstract class Texture : OpenGLObject, IEquatable<Texture>, IDisposable
+    public abstract class Texture : OpenGLObject, IEquatable<Texture>
     {
         public enum FilterMode
         {
@@ -79,7 +81,49 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
 
         #region Binding
 
-        public abstract void Bind(TextureUnit textureSlot);
+        public abstract void Bind(TextureUnit unit);
+
+        /// <summary>
+        /// </summary>
+        /// <param name="gl">The <see cref="GL" /> to queue the command from.</param>
+        /// <param name="first">The first texture unit to start binding from.</param>
+        /// <param name="textures">The textures to bind.</param>
+        [SkipLocalsInit]
+        public static unsafe void BindMany(GL gl, uint first, ICollection<Texture> textures)
+        {
+            Span<uint> handles = stackalloc uint[textures.Count];
+
+            int index = 0;
+
+            foreach (Texture texture in textures)
+            {
+                handles[index] = texture.Handle;
+                index += 1;
+            }
+
+            BindManyInternal(gl, first, handles);
+        }
+
+        /// <summary>
+        ///     Binds many textures in one GL call.
+        /// </summary>
+        /// <param name="gl">The <see cref="GL" /> to queue the command from.</param>
+        /// <param name="first">The first texture unit to start binding from.</param>
+        /// <param name="textures">The textures to bind.</param>
+        [SkipLocalsInit]
+        public static unsafe void BindMany(GL gl, uint first, Span<Texture> textures)
+        {
+            Span<uint> handles = stackalloc uint[textures.Length];
+
+            for (int index = 0; index < textures.Length; index++)
+            {
+                handles[index] = textures[index].Handle;
+            }
+
+            BindManyInternal(gl, first, handles);
+        }
+
+        private static void BindManyInternal(GL gl, uint first, Span<uint> handles) => gl.BindTextures(first, (uint)handles.Length, handles);
 
         #endregion
 
