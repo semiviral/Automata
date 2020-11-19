@@ -1,8 +1,9 @@
 using System;
+using System.Diagnostics;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Automata.Engine.Collections;
 using Automata.Engine.Input;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
@@ -54,20 +55,11 @@ namespace Automata.Engine.Rendering.Meshes
 
             if (recreateCommandBuffer)
             {
-                using NonAllocatingList<MultiDrawIndirectAllocation<TIndex, TVertex>> allocations =
-                    new NonAllocatingList<MultiDrawIndirectAllocation<TIndex, TVertex>>();
+                Stopwatch stopwatch = Stopwatch.StartNew();
 
-                using NonAllocatingList<Matrix4x4> models = new NonAllocatingList<Matrix4x4>();
+                ProcessDrawElementsIndirectAllocationsImpl(entityManager);
 
-                foreach ((IEntity entity, MultiDrawIndirectAllocation<TIndex, TVertex> allocation) in
-                    entityManager.GetEntitiesWithComponents<MultiDrawIndirectAllocation<TIndex, TVertex>>())
-                {
-                    allocations.Add(allocation);
-                    models.Add(entity.Find<RenderModel>()?.Model ?? Matrix4x4.Identity);
-                }
-
-                GenerateDrawElementsIndirectCommands(allocations.Segment);
-                _MultiDrawIndirectMesh!.AllocateModelsData(models.Segment);
+                Log.Information($"{stopwatch.Elapsed.TotalMilliseconds:0.00}ms");
             }
 
             return ValueTask.CompletedTask;
@@ -115,30 +107,34 @@ namespace Automata.Engine.Rendering.Meshes
 
         #region Data Processing
 
-        private unsafe void GenerateDrawElementsIndirectCommands(Span<MultiDrawIndirectAllocation<TIndex, TVertex>> allocations)
+        [SkipLocalsInit]
+        private unsafe void ProcessDrawElementsIndirectAllocationsImpl(EntityManager entityManager)
         {
-            if (_MultiDrawIndirectMesh is null)
+            int drawIndirectAllocationsCount = (int)entityManager.GetComponentCount<DrawElementsIndirectAllocation<TIndex, TVertex>>();
+            Span<DrawElementsIndirectCommand> commands = stackalloc DrawElementsIndirectCommand[drawIndirectAllocationsCount];
+            Span<Matrix4x4> models = stackalloc Matrix4x4[drawIndirectAllocationsCount];
+
+            int index = 0;
+
+            foreach ((IEntity entity, DrawElementsIndirectAllocation<TIndex, TVertex> allocation) in
+                entityManager.GetEntitiesWithComponents<DrawElementsIndirectAllocation<TIndex, TVertex>>())
             {
-                ThrowHelper.ThrowNullReferenceException(nameof(_MultiDrawIndirectMesh));
-            }
-
-            Span<DrawElementsIndirectCommand> commands = stackalloc DrawElementsIndirectCommand[allocations.Length];
-
-            for (uint index = 0; index < allocations.Length; index++)
-            {
-                MultiDrawIndirectAllocation<TIndex, TVertex> multiDrawIndirectAllocation = allocations[(int)index];
-
-                if (multiDrawIndirectAllocation.Allocation is null)
+                if (allocation.Allocation is null)
                 {
-                    throw new NullReferenceException("Allocation should not be null at this point.");
+                    ThrowHelper.ThrowNullReferenceException("Allocation should not be null at this point.");
                 }
 
-                commands[(int)index] = new DrawElementsIndirectCommand(multiDrawIndirectAllocation.Allocation.VertexArrayMemory.Count, 1u,
-                    (uint)(multiDrawIndirectAllocation.Allocation.IndexesArrayMemory.Index / (nuint)sizeof(TIndex)),
-                    (uint)(multiDrawIndirectAllocation.Allocation.VertexArrayMemory.Index / (nuint)sizeof(TVertex)), index);
+                commands[index] = new DrawElementsIndirectCommand(allocation.Allocation!.VertexArrayMemory.Count, 1u,
+                    (uint)(allocation.Allocation!.IndexesArrayMemory.Index / (nuint)sizeof(TIndex)),
+                    (uint)(allocation.Allocation!.VertexArrayMemory.Index / (nuint)sizeof(TVertex)), (uint)index);
+
+                models[index] = entity.Find<RenderModel>()?.Model ?? Matrix4x4.Identity;
+
+                index += 1;
             }
 
-            _MultiDrawIndirectMesh!.AllocateDrawElementsIndirectCommands(commands);
+            _MultiDrawIndirectMesh!.AllocateDrawCommands(commands);
+            _MultiDrawIndirectMesh!.AllocateModelsData(models);
 
             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(AllocatedMeshingSystem<TIndex, TVertex>),
                 $"Allocated {commands.Length} {nameof(DrawElementsIndirectCommand)}"));
@@ -156,9 +152,9 @@ namespace Automata.Engine.Rendering.Meshes
             }
 
             // if the entity doesn't have the required component, make sure we add it
-            if (!entity.TryFind(out MultiDrawIndirectAllocation<TIndex, TVertex>? drawIndirectAllocation))
+            if (!entity.TryFind(out DrawElementsIndirectAllocation<TIndex, TVertex>? drawIndirectAllocation))
             {
-                drawIndirectAllocation = entityManager.RegisterComponent<MultiDrawIndirectAllocation<TIndex, TVertex>>(entity);
+                drawIndirectAllocation = entityManager.RegisterComponent<DrawElementsIndirectAllocation<TIndex, TVertex>>(entity);
             }
 
             // we make sure to dispose the old allocation to free the memory in the pool
@@ -176,7 +172,7 @@ namespace Automata.Engine.Rendering.Meshes
             drawIndirectAllocation.Allocation = new MeshArrayMemory<TIndex, TVertex>(indexArrayMemory, vertexArrayMemory);
 
             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(AllocatedMeshingSystem<TIndex, TVertex>),
-                $"Allocated new {nameof(MultiDrawIndirectAllocation<TIndex, TVertex>)}: {indexArrayMemory.MemoryOwner.Memory.Length} indexes, {vertexArrayMemory.MemoryOwner.Memory.Length} vertexes"));
+                $"Allocated new {nameof(DrawElementsIndirectAllocation<TIndex, TVertex>)}: {indexArrayMemory.MemoryOwner.Memory.Length} indexes, {vertexArrayMemory.MemoryOwner.Memory.Length} vertexes"));
 
             return true;
         }

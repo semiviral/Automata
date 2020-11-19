@@ -4,7 +4,7 @@ using Automata.Engine.Rendering.OpenGL.Buffers;
 
 namespace Automata.Engine.Rendering.OpenGL
 {
-    public class MultiDrawIndirectAllocation<TIndex, TVertex> : ComponentChangeable, IEquatable<MultiDrawIndirectAllocation<TIndex, TVertex>>, IDisposable
+    public class DrawElementsIndirectAllocation<TIndex, TVertex> : ComponentChangeable, IEquatable<DrawElementsIndirectAllocation<TIndex, TVertex>>, IDisposable
         where TIndex : unmanaged
         where TVertex : unmanaged
     {
@@ -23,15 +23,15 @@ namespace Automata.Engine.Rendering.OpenGL
 
         #region IEquatable
 
-        public bool Equals(MultiDrawIndirectAllocation<TIndex, TVertex>? other) => other is not null && (_Allocation == other._Allocation);
-        public override bool Equals(object? obj) => obj is MultiDrawIndirectAllocation<TIndex, TVertex> other && Equals(other);
+        public bool Equals(DrawElementsIndirectAllocation<TIndex, TVertex>? other) => other is not null && (_Allocation == other._Allocation);
+        public override bool Equals(object? obj) => obj is DrawElementsIndirectAllocation<TIndex, TVertex> other && Equals(other);
 
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode());
 
-        public static bool operator ==(MultiDrawIndirectAllocation<TIndex, TVertex>? left, MultiDrawIndirectAllocation<TIndex, TVertex>? right) =>
+        public static bool operator ==(DrawElementsIndirectAllocation<TIndex, TVertex>? left, DrawElementsIndirectAllocation<TIndex, TVertex>? right) =>
             Equals(left, right);
 
-        public static bool operator !=(MultiDrawIndirectAllocation<TIndex, TVertex>? left, MultiDrawIndirectAllocation<TIndex, TVertex>? right) =>
+        public static bool operator !=(DrawElementsIndirectAllocation<TIndex, TVertex>? left, DrawElementsIndirectAllocation<TIndex, TVertex>? right) =>
             !Equals(left, right);
 
         #endregion

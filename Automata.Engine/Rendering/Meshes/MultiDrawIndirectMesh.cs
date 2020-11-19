@@ -64,7 +64,7 @@ namespace Automata.Engine.Rendering.Meshes
 
         public void FinalizeVertexArrayObject() => _VertexArrayObject.Finalize(_IndexAllocator);
 
-        public void AllocateDrawElementsIndirectCommands(Span<DrawElementsIndirectCommand> commands)
+        public void AllocateDrawCommands(Span<DrawElementsIndirectCommand> commands)
         {
             DrawCommandCount = (uint)commands.Length;
             _CommandBuffer.SetData(commands, BufferDraw.StaticDraw);

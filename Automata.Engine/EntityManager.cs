@@ -54,6 +54,9 @@ namespace Automata.Engine
 
         public uint GetComponentCount(Type type) => _ComponentCounts.TryGetValue(type, out uint count) ? count : 0u;
 
+        public uint GetComponentCount<TComponent>() where TComponent : Component =>
+            _ComponentCounts.TryGetValue(typeof(TComponent), out uint count) ? count : 0u;
+
 
         #region Entity Create / Remove
 
