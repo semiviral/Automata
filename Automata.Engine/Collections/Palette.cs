@@ -183,7 +183,7 @@ namespace Automata.Engine.Collections
         {
             if (destination.Length < Count)
             {
-                throw new ArgumentException("Destination span too short.");
+                throw new ArgumentException("Destination too small.");
             }
 
             int index = 0;

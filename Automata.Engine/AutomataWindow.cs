@@ -68,6 +68,7 @@ namespace Automata.Engine
         public GL GetOpenGLContext() => GL.GetApi(Window.GLContext);
         public IVkSurface GetSurface() => Window.VkSurface ?? throw new NullReferenceException(nameof(Window.VkSurface));
 
+
         #region Creation
 
         public void CreateWindow(WindowOptions windowOptions)

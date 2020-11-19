@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
-using Automata.Engine.Extensions;
 using Automata.Engine.Rendering.DirectX;
 using Serilog;
 using Silk.NET.Core.Native;
@@ -128,11 +126,11 @@ namespace Automata.Engine.Rendering.Vulkan
             VerifyValidationLayerSupport(vk, validationLayers);
 
             instanceCreateInfo.EnabledLayerCount = (uint)validationLayers.Length;
-                instanceCreateInfo.PpEnabledLayerNames = (byte**)SilkMarshal.MarshalStringArrayToPtr(validationLayers);
+            instanceCreateInfo.PpEnabledLayerNames = (byte**)SilkMarshal.MarshalStringArrayToPtr(validationLayers);
 
-                DebugUtilsMessengerCreateInfoEXT debugMessengerCreationInfo = new DebugUtilsMessengerCreateInfoEXT();
-                PopulateDebugMessengerCreateInfo(ref debugMessengerCreationInfo, _MESSAGE_SEVERITY_IMPORTANT);
-                instanceCreateInfo.PNext = &debugMessengerCreationInfo;
+            DebugUtilsMessengerCreateInfoEXT debugMessengerCreationInfo = new DebugUtilsMessengerCreateInfoEXT();
+            PopulateDebugMessengerCreateInfo(ref debugMessengerCreationInfo, _MESSAGE_SEVERITY_IMPORTANT);
+            instanceCreateInfo.PNext = &debugMessengerCreationInfo;
         }
 
         private static unsafe void VerifyValidationLayerSupport(Vk vk, IEnumerable<string> validationLayers)
@@ -143,6 +141,7 @@ namespace Automata.Engine.Rendering.Vulkan
             vk.EnumerateInstanceLayerProperties(ref layerCount, ref layerProperties[0]);
 
             HashSet<string?> layers = new HashSet<string?>();
+
             foreach (LayerProperties layerPropertiesElement in layerProperties)
             {
                 layers.Add(Marshal.PtrToStringAnsi((nint)layerPropertiesElement.LayerName));
@@ -151,7 +150,9 @@ namespace Automata.Engine.Rendering.Vulkan
             foreach (string validationLayer in validationLayers)
             {
                 if (!layers.Contains(validationLayer))
+                {
                     throw new VulkanException(Result.ErrorLayerNotPresent, $"Validation layer '{validationLayer}' not present.");
+                }
             }
         }
 

@@ -103,6 +103,7 @@ namespace Automata.Engine.Rendering.Meshes
 
         public void FinalizeVertexArrayObject() => _MultiDrawIndirectMesh!.FinalizeVertexArrayObject();
 
+
         #region Data Processing
 
         private unsafe void GenerateDrawElementsIndirectCommands(Span<MultiDrawIndirectAllocation<TIndex, TVertex>> allocations)
@@ -155,7 +156,7 @@ namespace Automata.Engine.Rendering.Meshes
             drawIndirectAllocation.Allocation?.Dispose();
             _MultiDrawIndirectMesh.WaitForBufferSync();
 
-            // todo copy all of this data on a separate thread, with sync
+            // todo copy all of this data on a separate thread, with sync obj maybe
 
             BufferArrayMemory<TIndex> indexArrayMemory = _MultiDrawIndirectMesh.RentIndexBufferArrayMemory((nuint)sizeof(TIndex),
                 MemoryMarshal.Cast<QuadIndexes<TIndex>, TIndex>(pendingData.Indexes.Segment));
