@@ -1,4 +1,5 @@
 using System;
+using Serilog;
 using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.OpenGL
@@ -24,6 +25,7 @@ namespace Automata.Engine.Rendering.OpenGL
 
             DisposeInternal();
 
+            Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, $"{nameof(OpenGLObject)} 0x{Handle:x})", "OpenGL object disposed."));
             GC.SuppressFinalize(this);
             Disposed = true;
         }

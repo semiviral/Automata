@@ -12,13 +12,15 @@ namespace Automata.Engine.Rendering.OpenGL
         private sealed class VertexBufferObjectBinding
         {
             public uint Handle { get; }
-            public uint Stride { get; set; }
             public int VertexOffset { get; }
+            public uint Divisor { get; }
+            public uint Stride { get; set; }
 
-            public VertexBufferObjectBinding(uint handle, int vertexOffset)
+            public VertexBufferObjectBinding(uint handle, int vertexOffset = 0, uint divisor = 0u)
             {
                 Handle = handle;
                 VertexOffset = vertexOffset;
+                Divisor = divisor;
             }
         }
 
@@ -48,15 +50,15 @@ namespace Automata.Engine.Rendering.OpenGL
             _VertexAttributes.AddRange(vertexAttributes);
         }
 
-        public void BindVertexBuffer(uint bindingIndex, BufferObject vbo, int vertexOffset)
+        public void BindVertexBuffer(uint bindingIndex, BufferObject vbo, int vertexOffset = 0, uint divisor = 0u)
         {
             if (_VertexBufferObjectBindings.ContainsKey(bindingIndex))
             {
-                _VertexBufferObjectBindings[bindingIndex] = new VertexBufferObjectBinding(vbo.Handle, vertexOffset);
+                _VertexBufferObjectBindings[bindingIndex] = new VertexBufferObjectBinding(vbo.Handle, vertexOffset, divisor);
             }
             else
             {
-                _VertexBufferObjectBindings.Add(bindingIndex, new VertexBufferObjectBinding(vbo.Handle, vertexOffset));
+                _VertexBufferObjectBindings.Add(bindingIndex, new VertexBufferObjectBinding(vbo.Handle, vertexOffset, divisor));
             }
 
             Log.Verbose(String.Format(FormatHelper.DEFAULT_LOGGING, $"{nameof(VertexArrayObject)} 0x{Handle}",
@@ -78,12 +80,6 @@ namespace Automata.Engine.Rendering.OpenGL
                 GL.EnableVertexArrayAttrib(Handle, vertexAttribute.Index);
                 vertexAttribute.CommitFormat(GL, Handle);
                 GL.VertexArrayAttribBinding(Handle, vertexAttribute.Index, vertexAttribute.BindingIndex);
-
-                // only set the divisor if it's not the default value
-                if (vertexAttribute.Divisor > 0u)
-                {
-                    GL.VertexArrayBindingDivisor(Handle, vertexAttribute.BindingIndex, vertexAttribute.Divisor);
-                }
 
                 // set or add stride by binding index of vertex attribute
                 if (strides.ContainsKey(vertexAttribute.BindingIndex))
@@ -108,8 +104,13 @@ namespace Automata.Engine.Rendering.OpenGL
                 // bind given VBO binding
                 GL.VertexArrayVertexBuffer(Handle, bindingIndex, binding.Handle, binding.VertexOffset, binding.Stride);
 
+                if (binding.Divisor is not 0u)
+                {
+                    GL.VertexArrayBindingDivisor(Handle, bindingIndex, binding.Divisor);
+                }
+
                 Log.Verbose(String.Format(FormatHelper.DEFAULT_LOGGING, $"{nameof(VertexArrayObject)} 0x{Handle}",
-                    $"Bound VBO: Handle 0x{binding.Handle:x}, BindingIndex {bindingIndex}, Stride {stride}, VertexOffset {binding.VertexOffset}"));
+                    $"Bound VBO: Handle 0x{binding.Handle:x}, BindingIndex {bindingIndex}, Stride {stride}, VertexOffset {binding.VertexOffset}, Divisor {binding.Divisor}"));
             }
 
             if (ebo is not null)

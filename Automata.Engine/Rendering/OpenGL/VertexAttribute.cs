@@ -9,17 +9,15 @@ namespace Automata.Engine.Rendering.OpenGL
         public int Dimensions { get; }
         public uint Offset { get; }
         public uint BindingIndex { get; }
-        public uint Divisor { get; }
         public bool Normalized { get; }
         public unsafe uint Stride => (uint)(Dimensions * sizeof(TPrimitive));
 
-        public VertexAttribute(uint index, uint dimensions, uint offset, uint bindingIndex, uint divisor = 0u, bool normalized = false)
+        public VertexAttribute(uint index, uint dimensions, uint offset, uint bindingIndex, bool normalized = false)
         {
             Index = index;
             Dimensions = (int)dimensions;
             Offset = offset;
             BindingIndex = bindingIndex;
-            Divisor = divisor;
             Normalized = normalized;
         }
 
@@ -110,10 +108,9 @@ namespace Automata.Engine.Rendering.OpenGL
                                                                && (Index == other.Index)
                                                                && (Dimensions == other.Dimensions)
                                                                && (Offset == other.Offset)
-                                                               && (Divisor == other.Divisor)
                                                                && (Normalized == other.Normalized);
 
-        public override int GetHashCode() => HashCode.Combine(Index, Dimensions, Offset, Divisor, Normalized);
+        public override int GetHashCode() => HashCode.Combine(Index, Dimensions, Offset, Normalized);
 
         #endregion
     }

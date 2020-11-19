@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
 using Silk.NET.OpenGL;
@@ -25,7 +26,7 @@ namespace Automata.Engine.Rendering.Meshes
         public uint DrawCommandCount { get; private set; }
         public bool Visible => DrawCommandCount > 0u;
 
-        public MultiDrawIndirectMesh(GL gl, uint indexAllocatorSize, uint vertexAllocatorSize, Layer layers = Layer.Layer0)
+        public unsafe MultiDrawIndirectMesh(GL gl, uint indexAllocatorSize, uint vertexAllocatorSize, Layer layers = Layer.Layer0)
         {
             ID = Guid.NewGuid();
             Layer = layers;
@@ -38,9 +39,41 @@ namespace Automata.Engine.Rendering.Meshes
             _ModelBuffer = new BufferObject<Matrix4x4>(gl);
             _BufferSync = new FenceSync(gl);
 
-            _VertexArrayObject.BindVertexBuffer(0u, _VertexAllocator, 0);
-            _VertexArrayObject.BindVertexBuffer(1u, _CommandBuffer, 0);
-            _VertexArrayObject.BindVertexBuffer(2u, _ModelBuffer, 0);
+            _VertexArrayObject.BindVertexBuffer(0u, _VertexAllocator);
+            _VertexArrayObject.BindVertexBuffer(1u, _CommandBuffer, 0, 1u);
+            _VertexArrayObject.BindVertexBuffer(2u, _ModelBuffer, 0, 1u);
+
+            // _GL.VertexArrayVertexBuffer(_VertexArrayObject.Handle, 0u, _VertexAllocator.Handle, 0, 8u);
+            // _GL.VertexArrayVertexBuffer(_VertexArrayObject.Handle, 1u, _CommandBuffer.Handle, 0, (uint)sizeof(DrawElementsIndirectCommand));
+            // _GL.VertexArrayVertexBuffer(_VertexArrayObject.Handle, 2u, _ModelBuffer.Handle, 0, (uint)sizeof(Matrix4x4));
+            // _GL.VertexArrayElementBuffer(_VertexArrayObject.Handle, _IndexAllocator.Handle);
+            //
+            // _GL.EnableVertexArrayAttrib(_VertexArrayObject.Handle, 0u);
+            // _GL.EnableVertexArrayAttrib(_VertexArrayObject.Handle, 1u);
+            // _GL.EnableVertexArrayAttrib(_VertexArrayObject.Handle, 2u);
+            // _GL.EnableVertexArrayAttrib(_VertexArrayObject.Handle, 3u);
+            // _GL.EnableVertexArrayAttrib(_VertexArrayObject.Handle, 4u);
+            // _GL.EnableVertexArrayAttrib(_VertexArrayObject.Handle, 5u);
+            // _GL.EnableVertexArrayAttrib(_VertexArrayObject.Handle, 6u);
+            //
+            // _GL.VertexArrayAttribIFormat(_VertexArrayObject.Handle, 0u, 1, VertexAttribIType.Int, 0u);
+            // _GL.VertexArrayAttribIFormat(_VertexArrayObject.Handle, 1u, 1, VertexAttribIType.Int, 4u);
+            // _GL.VertexArrayAttribIFormat(_VertexArrayObject.Handle, 2u, 1, VertexAttribIType.UnsignedInt, (uint)Marshal.OffsetOf<DrawElementsIndirectCommand>(nameof(DrawElementsIndirectCommand.BaseInstance)));
+            // _GL.VertexArrayAttribFormat(_VertexArrayObject.Handle, 3u + 0u, 4, VertexAttribType.Float, false, 0u);
+            // _GL.VertexArrayAttribFormat(_VertexArrayObject.Handle, 3u + 1u, 4, VertexAttribType.Float, false, 16u);
+            // _GL.VertexArrayAttribFormat(_VertexArrayObject.Handle, 3u + 2u, 4, VertexAttribType.Float, false, 32u);
+            // _GL.VertexArrayAttribFormat(_VertexArrayObject.Handle, 3u + 3u, 4, VertexAttribType.Float, false, 48u);
+            //
+            // _GL.VertexArrayAttribBinding(_VertexArrayObject.Handle, 0u, 0u);
+            // _GL.VertexArrayAttribBinding(_VertexArrayObject.Handle, 1u, 0u);
+            // _GL.VertexArrayAttribBinding(_VertexArrayObject.Handle, 2u, 1u);
+            // _GL.VertexArrayAttribBinding(_VertexArrayObject.Handle, 3u, 2u);
+            // _GL.VertexArrayAttribBinding(_VertexArrayObject.Handle, 4u, 2u);
+            // _GL.VertexArrayAttribBinding(_VertexArrayObject.Handle, 5u, 2u);
+            // _GL.VertexArrayAttribBinding(_VertexArrayObject.Handle, 6u, 2u);
+            //
+            // // todo binding divisor should be apart of VertexBufferObjectBinding
+            // _GL.VertexArrayBindingDivisor(_VertexArrayObject.Handle, 2u, 1u);
 
             if (typeof(TIndex) == typeof(byte))
             {
