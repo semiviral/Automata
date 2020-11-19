@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Numerics;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
@@ -38,8 +37,8 @@ namespace Automata.Engine.Rendering.Meshes
             _ModelBuffer = new BufferObject<Matrix4x4>(gl);
             _BufferSync = new FenceSync(gl);
 
-            _VertexArrayObject.BindVertexBuffer(0u, _VertexAllocator);
-            _VertexArrayObject.BindVertexBuffer(1u, _ModelBuffer, 0, 1u);
+            _VertexArrayObject.AllocateVertexBufferBinding(0u, _VertexAllocator);
+            _VertexArrayObject.AllocateVertexBufferBinding(1u, _ModelBuffer, 0, 1u);
 
             // _GL.VertexArrayVertexBuffer(_VertexArrayObject.Handle, 0u, _VertexAllocator.Handle, 0, 8u);
             // _GL.VertexArrayVertexBuffer(_VertexArrayObject.Handle, 1u, _CommandBuffer.Handle, 0, (uint)sizeof(DrawElementsIndirectCommand));
@@ -116,6 +115,7 @@ namespace Automata.Engine.Rendering.Meshes
             _CommandBuffer.Bind(BufferTargetARB.DrawIndirectBuffer);
 
 #if DEBUG
+
             // void VerifyVertexBufferBinding(uint index, BufferObject buffer)
             // {
             //     _GL.GetInteger(, index, out int actual);

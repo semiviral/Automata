@@ -6,13 +6,6 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
 {
     public class ProgramRegistry : Singleton<ProgramRegistry>, IDisposable
     {
-        public const string RESERVED_UNIFORM_NAME_MATRIX_MVP = "_mvp";
-        public const string RESERVED_UNIFORM_NAME_MATRIX_WORLD = "_world";
-        public const string RESERVED_UNIFORM_NAME_MATRIX_OBJECT = "_object";
-        public const string RESERVED_UNIFORM_NAME_VEC3_CAMERA_WORLD_POSITION = "_camera";
-        public const string RESERVED_UNIFORM_NAME_VEC4_CAMERA_PROJECTION_PARAMS = "_projectionParams";
-        public const string RESERVED_UNIFORM_NAME_VEC4_VIEWPORT = "_viewport";
-
         private readonly Dictionary<string, ShaderProgram> _CachedVertexPrograms;
         private readonly Dictionary<string, ShaderProgram> _CachedFragmentPrograms;
         private readonly Dictionary<string, ProgramPipeline> _CachedProgramPipelines;
@@ -33,7 +26,7 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
 
             if (_CachedProgramPipelines.TryGetValue(compoundProgramKey, out ProgramPipeline? programPipeline))
             {
-                return programPipeline;
+                return programPipeline!;
             }
             else
             {
@@ -49,7 +42,7 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
                     _CachedFragmentPrograms.Add(fragmentShaderPath, fragmentShader);
                 }
 
-                programPipeline = new ProgramPipeline(GLAPI.Instance.GL, vertexShader, fragmentShader);
+                programPipeline = new ProgramPipeline(GLAPI.Instance.GL, vertexShader!, fragmentShader!);
                 _CachedProgramPipelines.Add(compoundProgramKey, programPipeline);
                 return programPipeline;
             }

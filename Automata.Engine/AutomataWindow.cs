@@ -200,12 +200,10 @@ namespace Automata.Engine
             Closing?.Invoke(this);
 
 #if DEBUG
-            int objectsAliveCount = OpenGLObject.ObjectsAlive.Count;
-
-            if (objectsAliveCount > 0)
+            if (OpenGLObject.ObjectsAlive.Count > 0)
             {
-                Log.Error(string.Format(FormatHelper.DEFAULT_LOGGING, "OPENGL DEBUGGER",
-                    $"{objectsAliveCount} OF '{nameof(OpenGLObject)}' LEFT ALIVE AT PROGRAM EXIT."));
+                Log.Error(string.Format(FormatHelper.DEFAULT_LOGGING, "OPENGL OBJECT TRACE",
+                    $"{OpenGLObject.ObjectsAlive.Count} OF '{nameof(OpenGLObject)}' LEFT ALIVE AT PROGRAM EXIT:\r\n\t{string.Join("\r\n\t", OpenGLObject.ObjectsAlive.Values)}"));
             }
 #endif
         }

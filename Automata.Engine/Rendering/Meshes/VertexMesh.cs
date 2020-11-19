@@ -26,7 +26,7 @@ namespace Automata.Engine.Rendering.Meshes
 
             BufferObject = new BufferObject<TVertex>(gl);
             VertexArrayObject = new VertexArrayObject(gl);
-            VertexArrayObject.BindVertexBuffer(0u, BufferObject, 0);
+            VertexArrayObject.AllocateVertexBufferBinding(0u, BufferObject);
         }
 
         public void Draw()

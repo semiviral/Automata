@@ -22,12 +22,12 @@ namespace Automata.Engine.Rendering.OpenGL
 
         public OpenGLObject(GL gl)
         {
-            GL = gl;
-
 #if DEBUG
             _RandomKey = (uint)RandomNumberGenerator.GetInt32(int.MinValue, int.MaxValue);
             _ObjectsAlive.TryAdd(_RandomKey, this);
 #endif
+
+            GL = gl;
         }
 
 

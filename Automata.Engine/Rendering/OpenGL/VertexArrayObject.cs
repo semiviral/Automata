@@ -50,19 +50,19 @@ namespace Automata.Engine.Rendering.OpenGL
             _VertexAttributes.AddRange(vertexAttributes);
         }
 
-        public void BindVertexBuffer(uint bindingIndex, BufferObject vbo, int vertexOffset = 0, uint divisor = 0u)
+        public void AllocateVertexBufferBinding(uint bindingIndex, BufferObject buffer, int vertexOffset = 0, uint divisor = 0u)
         {
             if (_VertexBufferObjectBindings.ContainsKey(bindingIndex))
             {
-                _VertexBufferObjectBindings[bindingIndex] = new VertexBufferObjectBinding(vbo.Handle, vertexOffset, divisor);
+                _VertexBufferObjectBindings[bindingIndex] = new VertexBufferObjectBinding(buffer.Handle, vertexOffset, divisor);
             }
             else
             {
-                _VertexBufferObjectBindings.Add(bindingIndex, new VertexBufferObjectBinding(vbo.Handle, vertexOffset, divisor));
+                _VertexBufferObjectBindings.Add(bindingIndex, new VertexBufferObjectBinding(buffer.Handle, vertexOffset, divisor));
             }
 
             Log.Verbose(String.Format(FormatHelper.DEFAULT_LOGGING, $"{nameof(VertexArrayObject)} 0x{Handle}",
-                $"Allocated new VBO binding: Handle 0x{vbo.Handle:x}, BindingIndex {bindingIndex}, VertexOffset {vertexOffset}"));
+                $"Allocated new VBO binding: Handle 0x{buffer.Handle:x}, BindingIndex {bindingIndex}, VertexOffset {vertexOffset}"));
         }
 
         #endregion

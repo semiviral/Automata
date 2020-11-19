@@ -9,7 +9,6 @@ using Automata.Engine.Rendering;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Shaders;
-using Automata.Engine.Rendering.Vulkan;
 using Automata.Game;
 using Automata.Game.Blocks;
 using Automata.Game.Chunks;
@@ -20,6 +19,7 @@ using Silk.NET.Windowing.Common;
 
 Main();
 await AutomataWindow.Instance.Run();
+
 
 #region Main
 
