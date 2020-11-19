@@ -3,11 +3,14 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Automata.Engine.Collections;
+using Automata.Engine.Input;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
 using Automata.Engine.Rendering.OpenGL.Shaders;
 using Automata.Engine.Rendering.OpenGL.Textures;
+using Microsoft.Toolkit.HighPerformance.Extensions;
 using Serilog;
+using Silk.NET.Input.Common;
 
 namespace Automata.Engine.Rendering.Meshes
 {
@@ -31,6 +34,10 @@ namespace Automata.Engine.Rendering.Meshes
                 {
                     Mesh = _MultiDrawIndirectMesh
                 });
+
+#if DEBUG
+            InputManager.Instance.RegisterInputAction(() => _MultiDrawIndirectMesh?.ValidateAllocatorBlocks(), Key.F9);
+#endif
         }
 
         public override ValueTask Update(EntityManager entityManager, TimeSpan delta)
@@ -69,6 +76,9 @@ namespace Automata.Engine.Rendering.Meshes
             return ValueTask.CompletedTask;
         }
 
+
+        #region State
+
         public void SetTexture(string key, Texture texture)
         {
             if (_MultiDrawIndirectMeshMaterial is null)
@@ -102,6 +112,8 @@ namespace Automata.Engine.Rendering.Meshes
         }
 
         public void FinalizeVertexArrayObject() => _MultiDrawIndirectMesh!.FinalizeVertexArrayObject();
+
+        #endregion
 
 
         #region Data Processing

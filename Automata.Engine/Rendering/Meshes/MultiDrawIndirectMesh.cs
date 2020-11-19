@@ -73,6 +73,11 @@ namespace Automata.Engine.Rendering.Meshes
         public void AllocateModelsData(Span<Matrix4x4> models) => _ModelBuffer.SetData(models, BufferDraw.StaticDraw);
         public void WaitForBufferSync() => _BufferSync.BusyWaitCPU();
 
+        public void ValidateAllocatorBlocks()
+        {
+            _IndexAllocator.ValidateBlocks();
+            _VertexAllocator.ValidateBlocks();
+        }
 
         #region IMesh
 

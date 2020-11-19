@@ -98,6 +98,22 @@ namespace Automata.Engine.Tests
             Debug.Assert(index5 == 20u);
         }
 
+        [Fact]
+        public void TestMultiRentAndReturnWithValidation()
+        {
+            using IMemoryOwner<byte> memoryOwner1 = _NativeMemoryPool.Rent<byte>(1000, (nuint)sizeof(double), out _);
+            using IMemoryOwner<int> memoryOwner2 = _NativeMemoryPool.Rent<int>(1000, (nuint)sizeof(double), out _);
+            using IMemoryOwner<ushort> memoryOwner3 = _NativeMemoryPool.Rent<ushort>(1000, (nuint)sizeof(double), out _);
+            using IMemoryOwner<short> memoryOwner40 = _NativeMemoryPool.Rent<short>(1000, (nuint)sizeof(uint), out _);
+            _NativeMemoryPool.Rent<short>(1000, (nuint)sizeof(uint), out _).Dispose();
+            _NativeMemoryPool.Rent<short>(1000, (nuint)sizeof(uint), out _).Dispose();
+            using IMemoryOwner<float> memoryOwner5 = _NativeMemoryPool.Rent<float>(1000, (nuint)sizeof(double), out _);
+            using IMemoryOwner<uint> memoryOwner6 = _NativeMemoryPool.Rent<uint>(1000, (nuint)sizeof(ushort), out _);
+            using IMemoryOwner<ulong> memoryOwner7 = _NativeMemoryPool.Rent<ulong>(1000, (nuint)sizeof(double), out _);
+
+            _NativeMemoryPool.ValidateBlocks();
+        }
+
         private void RentMemoryAndTest<T>(int length) where T : unmanaged
         {
             int rentedBlocksBefore = _NativeMemoryPool.RentedBlocks;

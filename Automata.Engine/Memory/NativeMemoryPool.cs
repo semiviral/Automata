@@ -116,9 +116,10 @@ namespace Automata.Engine.Memory
                             {
                                 nuint beforeBlockIndex = current.Value.Index;
                                 nuint beforeBlockSize = alignmentPadding;
+                                nuint newCurrentSize = current.Value.Size - alignmentPadding;
 
                                 _MemoryMap.AddBefore(current, new MemoryBlock(beforeBlockIndex, beforeBlockSize, false));
-                                current.Value = current.Value with { Index = alignedIndex, Size = sizeInBytes, Owned = true };
+                                current.Value = current.Value with { Index = alignedIndex, Size = newCurrentSize, Owned = true };
                             }
 
                             nuint afterBlockIndex = current.Value.Index + sizeInBytes;
@@ -213,16 +214,38 @@ namespace Automata.Engine.Memory
                     nuint newIndex = before.Value.Index;
                     nuint newLength = before.Value.Size + current.Value.Size;
                     current.Value = current.Value with { Index = newIndex, Size = newLength };
+                    _MemoryMap.Remove(before);
                 }
 
                 if (after?.Value.Owned is false)
                 {
                     nuint newLength = current.Value.Size + after.Value.Size;
                     current.Value = current.Value with { Size = newLength };
+                    _MemoryMap.Remove(after);
                 }
             }
 
             Interlocked.Decrement(ref _RentedBlocks);
+        }
+
+        public void ValidateBlocks()
+        {
+            lock (_AccessLock)
+            {
+                nuint index = 0;
+
+                foreach (MemoryBlock memoryBlock in _MemoryMap)
+                {
+                    if (memoryBlock.Index != index)
+                    {
+                        ThrowHelper.ThrowArgumentOutOfRangeException(nameof(memoryBlock.Index), $"{nameof(MemoryBlock)} index does not follow previous block.");
+                    }
+                    else
+                    {
+                        index += memoryBlock.Size;
+                    }
+                }
+            }
         }
     }
 }
