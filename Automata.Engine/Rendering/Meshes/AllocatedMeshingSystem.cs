@@ -8,7 +8,6 @@ using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
 using Automata.Engine.Rendering.OpenGL.Shaders;
 using Automata.Engine.Rendering.OpenGL.Textures;
-using Microsoft.Toolkit.HighPerformance.Extensions;
 using Serilog;
 using Silk.NET.Input.Common;
 
@@ -35,9 +34,7 @@ namespace Automata.Engine.Rendering.Meshes
                     Mesh = _MultiDrawIndirectMesh
                 });
 
-#if DEBUG
             InputManager.Instance.RegisterInputAction(() => _MultiDrawIndirectMesh?.ValidateAllocatorBlocks(), Key.F9);
-#endif
         }
 
         public override ValueTask Update(EntityManager entityManager, TimeSpan delta)

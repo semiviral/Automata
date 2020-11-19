@@ -79,6 +79,7 @@ namespace Automata.Engine.Rendering.Meshes
             _VertexAllocator.ValidateBlocks();
         }
 
+
         #region IMesh
 
         public unsafe void Draw()
