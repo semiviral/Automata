@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Numerics;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
@@ -40,38 +41,6 @@ namespace Automata.Engine.Rendering.Meshes
             _VertexArrayObject.AllocateVertexBufferBinding(0u, _VertexAllocator);
             _VertexArrayObject.AllocateVertexBufferBinding(1u, _ModelBuffer, 0, 1u);
 
-            // _GL.VertexArrayVertexBuffer(_VertexArrayObject.Handle, 0u, _VertexAllocator.Handle, 0, 8u);
-            // _GL.VertexArrayVertexBuffer(_VertexArrayObject.Handle, 1u, _CommandBuffer.Handle, 0, (uint)sizeof(DrawElementsIndirectCommand));
-            // _GL.VertexArrayVertexBuffer(_VertexArrayObject.Handle, 2u, _ModelBuffer.Handle, 0, (uint)sizeof(Matrix4x4));
-            // _GL.VertexArrayElementBuffer(_VertexArrayObject.Handle, _IndexAllocator.Handle);
-            //
-            // _GL.EnableVertexArrayAttrib(_VertexArrayObject.Handle, 0u);
-            // _GL.EnableVertexArrayAttrib(_VertexArrayObject.Handle, 1u);
-            // _GL.EnableVertexArrayAttrib(_VertexArrayObject.Handle, 2u);
-            // _GL.EnableVertexArrayAttrib(_VertexArrayObject.Handle, 3u);
-            // _GL.EnableVertexArrayAttrib(_VertexArrayObject.Handle, 4u);
-            // _GL.EnableVertexArrayAttrib(_VertexArrayObject.Handle, 5u);
-            // _GL.EnableVertexArrayAttrib(_VertexArrayObject.Handle, 6u);
-            //
-            // _GL.VertexArrayAttribIFormat(_VertexArrayObject.Handle, 0u, 1, VertexAttribIType.Int, 0u);
-            // _GL.VertexArrayAttribIFormat(_VertexArrayObject.Handle, 1u, 1, VertexAttribIType.Int, 4u);
-            // _GL.VertexArrayAttribIFormat(_VertexArrayObject.Handle, 2u, 1, VertexAttribIType.UnsignedInt, (uint)Marshal.OffsetOf<DrawElementsIndirectCommand>(nameof(DrawElementsIndirectCommand.BaseInstance)));
-            // _GL.VertexArrayAttribFormat(_VertexArrayObject.Handle, 3u + 0u, 4, VertexAttribType.Float, false, 0u);
-            // _GL.VertexArrayAttribFormat(_VertexArrayObject.Handle, 3u + 1u, 4, VertexAttribType.Float, false, 16u);
-            // _GL.VertexArrayAttribFormat(_VertexArrayObject.Handle, 3u + 2u, 4, VertexAttribType.Float, false, 32u);
-            // _GL.VertexArrayAttribFormat(_VertexArrayObject.Handle, 3u + 3u, 4, VertexAttribType.Float, false, 48u);
-            //
-            // _GL.VertexArrayAttribBinding(_VertexArrayObject.Handle, 0u, 0u);
-            // _GL.VertexArrayAttribBinding(_VertexArrayObject.Handle, 1u, 0u);
-            // _GL.VertexArrayAttribBinding(_VertexArrayObject.Handle, 2u, 1u);
-            // _GL.VertexArrayAttribBinding(_VertexArrayObject.Handle, 3u, 2u);
-            // _GL.VertexArrayAttribBinding(_VertexArrayObject.Handle, 4u, 2u);
-            // _GL.VertexArrayAttribBinding(_VertexArrayObject.Handle, 5u, 2u);
-            // _GL.VertexArrayAttribBinding(_VertexArrayObject.Handle, 6u, 2u);
-            //
-            // // todo binding divisor should be apart of VertexBufferObjectBinding
-            // _GL.VertexArrayBindingDivisor(_VertexArrayObject.Handle, 2u, 1u);
-
             if (typeof(TIndex) == typeof(byte))
             {
                 _DrawElementsType = DrawElementsType.UnsignedByte;
@@ -111,19 +80,19 @@ namespace Automata.Engine.Rendering.Meshes
         {
             _BufferSync.BusyWaitCPU();
 
+            _GL.VertexArrayVertexBuffer(_VertexArrayObject.Handle, 1u, _ModelBuffer.Handle, 0, (uint)sizeof(Matrix4x4));
             _VertexArrayObject.Bind();
             _CommandBuffer.Bind(BufferTargetARB.DrawIndirectBuffer);
 
 #if DEBUG
+            void VerifyVertexBufferBinding(uint index, BufferObject buffer)
+            {
+                _GL.GetInteger(GLEnum.VertexBindingBuffer, index, out int actual);
+                Debug.Assert((uint)actual == buffer.Handle, $"VertexBindingBuffer index {index} is not set to the correct buffer.");
+            }
 
-            // void VerifyVertexBufferBinding(uint index, BufferObject buffer)
-            // {
-            //     _GL.GetInteger(, index, out int actual);
-            //     Debug.Assert((uint)actual == buffer.Handle, $"VertexBindingBuffer index {index} is not set to the correct buffer.");
-            // }
-            //
-            // VerifyVertexBufferBinding(0u, _VertexAllocator);
-            // VerifyVertexBufferBinding(1u, _ModelBuffer);
+            VerifyVertexBufferBinding(0u, _VertexAllocator);
+            VerifyVertexBufferBinding(1u, _ModelBuffer);
 #endif
 
             _GL.MultiDrawElementsIndirect(PrimitiveType.Triangles, _DrawElementsType, (void*)null!, DrawCommandCount, 0u);

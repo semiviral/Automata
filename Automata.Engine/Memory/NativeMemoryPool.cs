@@ -198,7 +198,7 @@ namespace Automata.Engine.Memory
                 } while ((current = current!.Next) is not null);
 
                 ThrowHelper.ThrowArgumentOutOfRangeException(nameof(index), "No memory block starts at index.");
-                return null!; // this return should never be hit
+                return null!;
             }
 
             lock (_AccessLock)
