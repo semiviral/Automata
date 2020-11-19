@@ -183,8 +183,8 @@ namespace Automata.Engine.Rendering
                     .Where(result => result.Component1.ShouldRender && ((camera.RenderedLayers & result.Component1.Mesh!.Layer) > 0))
                     .OrderBy(result => result.Component2.Pipeline.Handle))
                 {
-                    bool hasModel = objectEntity.TryFind(out RenderModel? renderModel);
-                    Matrix4x4 modelViewProjection = (hasModel ? renderModel!.Model : Matrix4x4.Identity) * viewProjection;
+                    bool hasRenderModel = objectEntity.TryFind(out RenderModel? renderModel);
+                    Matrix4x4 modelViewProjection = (hasRenderModel ? renderModel!.Model : Matrix4x4.Identity) * viewProjection;
 
                     if (objectEntity.TryFind(out OcclusionBounds? bounds) && CheckClipFrustumOcclude(bounds, planes, modelViewProjection))
                     {
@@ -204,7 +204,7 @@ namespace Automata.Engine.Rendering
                     vertexShader.TrySetUniform("_vp", viewProjection);
                     vertexShader.TrySetUniform("_mvp", modelViewProjection);
 
-                    if (hasModel)
+                    if (hasRenderModel)
                     {
                         Matrix4x4.Invert(renderModel!.Model, out Matrix4x4 modelInverted);
                         vertexShader.TrySetUniform("_object", modelInverted);

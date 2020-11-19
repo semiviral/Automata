@@ -35,9 +35,6 @@ namespace Automata.Engine.Input
 
         private IInputContext? _InputContext;
 
-        // todo make this private, and add hooks at the class-level
-        // we don't really want to expose total control of this as an API feature
-
         public InputManager()
         {
             _Keyboards = new List<IKeyboard>();

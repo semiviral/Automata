@@ -26,7 +26,7 @@ namespace Automata.Engine.Rendering.OpenGL
         public bool Equals(MultiDrawIndirectAllocation<TIndex, TVertex>? other) => other is not null && (_Allocation == other._Allocation);
         public override bool Equals(object? obj) => obj is MultiDrawIndirectAllocation<TIndex, TVertex> other && Equals(other);
 
-        public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), _Allocation);
+        public override int GetHashCode() => HashCode.Combine(base.GetHashCode());
 
         public static bool operator ==(MultiDrawIndirectAllocation<TIndex, TVertex>? left, MultiDrawIndirectAllocation<TIndex, TVertex>? right) =>
             Equals(left, right);

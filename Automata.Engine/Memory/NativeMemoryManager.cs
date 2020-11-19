@@ -36,7 +36,7 @@ namespace Automata.Engine.Memory
 
         #region IDisposable
 
-        protected override void Dispose(bool disposing) => throw new NotImplementedException();
+        protected override void Dispose(bool disposing) => throw new NotSupportedException();
 
         #endregion
     }

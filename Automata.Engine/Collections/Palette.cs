@@ -14,7 +14,7 @@ namespace Automata.Engine.Collections
 
         private byte _IndexBits;
         private uint _IndexMask;
-        private uint[]? _Palette;
+        private uint[]? _InternalArray;
 
         public int Count { get; }
 
@@ -27,7 +27,7 @@ namespace Automata.Engine.Collections
                     ThrowHelper.ThrowIndexOutOfRangeException();
                 }
 
-                uint value = GetValue(index, _IndexBits, _IndexMask, _Palette);
+                uint value = GetValue(index, _IndexBits, _IndexMask, _InternalArray);
                 return _LookupTable[(int)value];
             }
             set
@@ -45,7 +45,7 @@ namespace Automata.Engine.Collections
                     paletteIndex = _LookupTable.IndexOf(value);
                 }
 
-                SetValue(index, (uint)paletteIndex, _IndexBits, _IndexMask, _Palette);
+                SetValue(index, (uint)paletteIndex, _IndexBits, _IndexMask, _InternalArray);
             }
         }
 
@@ -119,23 +119,23 @@ namespace Automata.Engine.Collections
 
             for (int index = 0; index < Count; index++)
             {
-                uint value = GetValue(index, oldBits, oldMask, _Palette);
+                uint value = GetValue(index, oldBits, oldMask, _InternalArray);
                 SetValue(index, value, _IndexBits, _IndexMask, palette);
             }
 
             ReallocatePalette(palette.Length);
-            palette.CopyTo(_Palette);
+            palette.CopyTo(_InternalArray);
         }
 
         private void ReallocatePalette(int length)
         {
-            if (_Palette is not null)
+            if (_InternalArray is not null)
             {
-                ArrayPool<uint>.Shared.Return(_Palette);
+                ArrayPool<uint>.Shared.Return(_InternalArray);
             }
 
-            _Palette = ArrayPool<uint>.Shared.Rent(length);
-            Array.Clear(_Palette, 0, _Palette.Length);
+            _InternalArray = ArrayPool<uint>.Shared.Rent(length);
+            Array.Clear(_InternalArray, 0, _InternalArray.Length);
         }
 
         private static void SetValue(int index, uint lookupIndex, byte bits, uint mask, Span<uint> palette)
@@ -198,30 +198,76 @@ namespace Automata.Engine.Collections
 
         #region IEnumerable
 
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => new Enumerator(this);
+        public IEnumerator<T> GetEnumerator() => new Enumerator(this);
 
-        // todo optimize this with a struct enumerator
-        public IEnumerator<T> GetEnumerator()
+        public struct Enumerator : IEnumerator<T>
         {
-            if (_Palette is null)
-            {
-                throw new InvalidOperationException("Palette is in an invalid state (no internal data).");
-            }
+            private readonly Palette<T> _Palette;
+            private int _Index;
+            private int _Offset;
+            private T? _Current;
 
-            int index = 0;
+            public T Current => _Current!;
 
-            foreach (uint value in _Palette)
+            object? IEnumerator.Current
             {
-                for (int offset = 0; offset < _UINT_32_BITS; offset += _IndexBits)
+                get
                 {
-                    yield return _LookupTable[(int)((value >> offset) & _IndexMask)];
-
-                    if ((index += 1) >= Count)
+                    if (((uint)_Index == 0u) || ((uint)_Index >= (uint)_Palette.Count))
                     {
-                        yield break;
+                        ThrowHelper.ThrowInvalidOperationException("Enumerable has not been enumerated.");
                     }
+
+                    return _Current;
                 }
             }
+
+            internal Enumerator(Palette<T> palette)
+            {
+                if (palette._InternalArray is null)
+                {
+                    throw new InvalidOperationException("Palette is in an invalid state (no internal data).");
+                }
+
+                _Palette = palette;
+                _Index = 0;
+                _Offset = 0;
+                _Current = default;
+            }
+
+            public bool MoveNext()
+            {
+                if ((uint)_Index >= (uint)_Palette._InternalArray!.Length)
+                {
+                    return false;
+                }
+
+                int lookupIndex = (int)((_Palette._InternalArray![_Index] >> _Offset) & _Palette._IndexMask);
+                _Current = _Palette._LookupTable[lookupIndex];
+                _Offset += _Palette._IndexBits;
+
+                if ((uint)_Offset >= _UINT_32_BITS)
+                {
+                    _Index += 1;
+                    _Offset = 0;
+                }
+
+                return true;
+            }
+
+            void IEnumerator.Reset()
+            {
+                _Index = 0;
+                _Current = default;
+            }
+
+
+            #region IDisposable
+
+            public void Dispose() { }
+
+            #endregion
         }
 
         #endregion
@@ -231,11 +277,11 @@ namespace Automata.Engine.Collections
 
         public void Dispose()
         {
-            if (_Palette is not null)
+            if (_InternalArray is not null)
             {
                 _LookupTable.Clear();
-                ArrayPool<uint>.Shared.Return(_Palette);
-                _Palette = null;
+                ArrayPool<uint>.Shared.Return(_InternalArray);
+                _InternalArray = null;
             }
 
             GC.SuppressFinalize(this);

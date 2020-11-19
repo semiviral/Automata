@@ -13,7 +13,7 @@ namespace Automata.Engine.Rendering.OpenGL
         public unsafe GLAPI()
         {
             // validate dependency or throw
-            GL = AutomataWindow.Instance.GetGL();
+            GL = AutomataWindow.Instance.GetOpenGLContext();
 
             string version = GL.GetString(StringName.Version);
             Log.Information(string.Format(_LogFormat, $"OpenGL version {version}"));

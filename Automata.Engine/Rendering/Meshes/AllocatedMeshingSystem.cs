@@ -101,6 +101,7 @@ namespace Automata.Engine.Rendering.Meshes
             }
         }
 
+        public void FinalizeVertexArrayObject() => _MultiDrawIndirectMesh!.FinalizeVertexArrayObject();
 
         #region Data Processing
 
@@ -150,18 +151,17 @@ namespace Automata.Engine.Rendering.Meshes
                 drawIndirectAllocation = entityManager.RegisterComponent<MultiDrawIndirectAllocation<TIndex, TVertex>>(entity);
             }
 
-            // we make sure to dispose the old allocation to
-            // free the memory in the pool
+            // we make sure to dispose the old allocation to free the memory in the pool
             drawIndirectAllocation.Allocation?.Dispose();
             _MultiDrawIndirectMesh.WaitForBufferSync();
+
+            // todo copy all of this data on a separate thread, with sync
 
             BufferArrayMemory<TIndex> indexArrayMemory = _MultiDrawIndirectMesh.RentIndexBufferArrayMemory((nuint)sizeof(TIndex),
                 MemoryMarshal.Cast<QuadIndexes<TIndex>, TIndex>(pendingData.Indexes.Segment));
 
             BufferArrayMemory<TVertex> vertexArrayMemory = _MultiDrawIndirectMesh.RentVertexBufferArrayMemory((nuint)sizeof(TVertex),
                 MemoryMarshal.Cast<QuadVertexes<TVertex>, TVertex>(pendingData.Vertexes.Segment));
-
-            int byteLength = vertexArrayMemory.MemoryOwner.Memory.Length * sizeof(TVertex);
 
             drawIndirectAllocation.Allocation = new MeshArrayMemory<TIndex, TVertex>(indexArrayMemory, vertexArrayMemory);
 

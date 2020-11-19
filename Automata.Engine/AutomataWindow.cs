@@ -49,9 +49,6 @@ namespace Automata.Engine
             }
         }
 
-        // todo better handle this, it's nullable
-        public IVkSurface Surface => Window.VkSurface!;
-
         public Vector2i Size { get => (Vector2i)Window.Size; set => Window.Size = (Size)value; }
 
         public Vector2i Position { get => (Vector2i)Window.Position; set => Window.Position = (Point)value; }
@@ -68,11 +65,17 @@ namespace Automata.Engine
         public event WindowFocusChangedEventHandler? FocusChanged;
         public event WindowClosingEventHandler? Closing;
 
+        public GL GetOpenGLContext() => GL.GetApi(Window.GLContext);
+        public IVkSurface GetSurface() => Window.VkSurface ?? throw new NullReferenceException(nameof(Window.VkSurface));
+
+        #region Creation
+
         public void CreateWindow(WindowOptions windowOptions)
         {
             IWindow ConstructWindow(WindowOptions options)
             {
-                options.API = GraphicsAPI.DefaultVulkan;// new GraphicsAPI(ContextAPI.OpenGL, ContextProfile.Core, ContextFlags.ForwardCompatible | ContextFlags.Debug, useOGLFallbackVersion ? _FallbackOGLVersion : _PreferredOGLVersion);
+                options.API = new GraphicsAPI(ContextAPI.OpenGL, ContextProfile.Core, ContextFlags.ForwardCompatible | ContextFlags.Debug,
+                    _PreferredOGLVersion);
 
                 IWindow window = Silk.NET.Windowing.Window.Create(options);
                 window.Resize += OnWindowResized;
@@ -116,6 +119,11 @@ namespace Automata.Engine
             _MinimumFrameTime = TimeSpan.FromSeconds(1d / refreshRate);
             Log.Information(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(AutomataWindow), $"VSync framerate configured to {refreshRate} FPS."));
         }
+
+        #endregion
+
+
+        #region Runtime
 
         public async Task Run()
         {
@@ -170,7 +178,10 @@ namespace Automata.Engine
             SpinWait.SpinUntil(MinimumFrameTimeElapsed);
         }
 
-        public GL GetGL() => GL.GetApi(Window.GLContext);
+        #endregion
+
+
+        #region Event Callbacks
 
         private void OnWindowResized(Size size)
         {
@@ -191,5 +202,7 @@ namespace Automata.Engine
             World.DisposeWorlds();
             ProgramRegistry.Instance.Dispose();
         }
+
+        #endregion
     }
 }

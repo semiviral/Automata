@@ -113,7 +113,7 @@ namespace Automata.Engine.Rendering.Vulkan
         public static unsafe string[] GetRequiredExtensions(string[] requestedExtensions)
         {
             string[] requiredExtensions = SilkMarshal.MarshalPtrToStringArray(
-                (nint)AutomataWindow.Instance.Surface.GetRequiredExtensions(out uint extensionCount),
+                (nint)AutomataWindow.Instance.GetSurface().GetRequiredExtensions(out uint extensionCount),
                 (int)extensionCount);
 
             string[] extensions = new string[requiredExtensions.Length + requestedExtensions.Length];
@@ -254,7 +254,7 @@ namespace Automata.Engine.Rendering.Vulkan
         {
             Log.Information(string.Format(_VulkanSurfaceCreationFormat, $"retrieving surface from '{nameof(AutomataWindow)}'"));
 
-            _Surface = AutomataWindow.Instance.Surface.Create(VKInstance.ToHandle(), (AllocationCallbacks*)null!).ToSurface();
+            _Surface = AutomataWindow.Instance.GetSurface().Create(VKInstance.ToHandle(), (AllocationCallbacks*)null!).ToSurface();
         }
 
         #endregion
