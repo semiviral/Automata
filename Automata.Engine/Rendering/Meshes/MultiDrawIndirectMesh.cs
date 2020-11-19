@@ -82,21 +82,21 @@ namespace Automata.Engine.Rendering.Meshes
             _BufferSync.BusyWaitCPU();
 
             _VertexArrayObject.Bind();
+            _CommandBuffer.Bind(BufferTargetARB.DrawIndirectBuffer);
 
 #if DEBUG
 
-            // verify vertex buffer bindings
+            void VerifyVertexBufferBinding(uint index, BufferObject buffer)
+            {
+                _GL.GetInteger(GLEnum.VertexBindingBuffer, index, out int actual);
+                Debug.Assert((uint)actual == buffer.Handle, $"VertexBindingBuffer index {index} is not set to the correct buffer.");
+            }
 
-            _GL.GetInteger(GLEnum.VertexBindingBuffer, 0u, out int data);
-            _GL.GetInteger(GLEnum.VertexBindingBuffer, 1u, out int commands);
-            _GL.GetInteger(GLEnum.VertexBindingBuffer, 2u, out int models);
-
-            Debug.Assert((uint)data == _VertexAllocator.Handle);
-            Debug.Assert((uint)commands == _CommandBuffer.Handle);
-            Debug.Assert((uint)models == _ModelBuffer.Handle);
+            VerifyVertexBufferBinding(0u, _VertexAllocator);
+            VerifyVertexBufferBinding(1u, _CommandBuffer);
+            VerifyVertexBufferBinding(2u, _ModelBuffer);
 #endif
 
-            _CommandBuffer.Bind(BufferTargetARB.DrawIndirectBuffer);
             _GL.MultiDrawElementsIndirect(PrimitiveType.Triangles, _DrawElementsType, (void*)null!, DrawCommandCount, 0u);
 
             _BufferSync.Regenerate();

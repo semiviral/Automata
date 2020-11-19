@@ -10,6 +10,7 @@ using Automata.Engine.Numerics;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Shaders;
 using Serilog;
+using Silk.NET.Core.Contexts;
 using Silk.NET.GLFW;
 using Silk.NET.Input.Common;
 using Silk.NET.OpenGL;
@@ -48,6 +49,9 @@ namespace Automata.Engine
             }
         }
 
+        // todo better handle this, it's nullable
+        public IVkSurface Surface => Window.VkSurface!;
+
         public Vector2i Size { get => (Vector2i)Window.Size; set => Window.Size = (Size)value; }
 
         public Vector2i Position { get => (Vector2i)Window.Position; set => Window.Position = (Point)value; }
@@ -66,10 +70,9 @@ namespace Automata.Engine
 
         public void CreateWindow(WindowOptions windowOptions)
         {
-            IWindow ConstructWindow(WindowOptions options, bool useOGLFallbackVersion)
+            IWindow ConstructWindow(WindowOptions options)
             {
-                options.API = new GraphicsAPI(ContextAPI.OpenGL, ContextProfile.Core, ContextFlags.ForwardCompatible | ContextFlags.Debug,
-                    useOGLFallbackVersion ? _FallbackOGLVersion : _PreferredOGLVersion);
+                options.API = GraphicsAPI.DefaultVulkan;// new GraphicsAPI(ContextAPI.OpenGL, ContextProfile.Core, ContextFlags.ForwardCompatible | ContextFlags.Debug, useOGLFallbackVersion ? _FallbackOGLVersion : _PreferredOGLVersion);
 
                 IWindow window = Silk.NET.Windowing.Window.Create(options);
                 window.Resize += OnWindowResized;
@@ -81,7 +84,7 @@ namespace Automata.Engine
 
             try
             {
-                _Window = ConstructWindow(windowOptions, false);
+                _Window = ConstructWindow(windowOptions);
                 _Window.Initialize();
             }
             catch (GlfwException glfwException) when (glfwException.ErrorCode is ErrorCode.VersionUnavailable)

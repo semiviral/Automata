@@ -123,14 +123,7 @@ namespace Automata.Engine.Rendering.OpenGL
 
         #region Binding
 
-        public void Bind()
-        {
-            // foreach ((_, VertexBufferObjectBinding binding) in _VertexBufferObjectBindings)
-            //     GL.BindBuffer(BufferTargetARB.ArrayBuffer, binding.Handle);
-
-            GL.BindVertexArray(Handle);
-        }
-
+        public void Bind() => GL.BindVertexArray(Handle);
         public void Unbind() => GL.BindVertexArray(0);
 
         #endregion

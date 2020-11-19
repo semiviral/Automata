@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Automata.Engine;
 using Automata.Engine.Components;
 using Automata.Engine.Concurrency;
@@ -8,22 +9,32 @@ using Automata.Engine.Input;
 using Automata.Engine.Rendering;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
+using Automata.Engine.Rendering.Vulkan;
 using Automata.Game;
 using Automata.Game.Blocks;
 using Automata.Game.Chunks;
 using Automata.Game.Chunks.Generation;
 using Automata.Game.Chunks.Generation.Meshing;
 using Serilog;
+using Silk.NET.Vulkan;
 using Silk.NET.Windowing.Common;
 
-Settings.Load();
-InitializeLogger();
-InitializeBoundedPool();
-InitializeWindow();
-BlockRegistry.Instance.LazyInitialize();
-InitializeWorld(out World world);
-InitializePlayer(world.EntityManager);
+Main();
 await AutomataWindow.Instance.Run();
+
+#region Main
+
+void Main()
+{
+    Settings.Load();
+    InitializeLogger();
+    InitializeBoundedPool();
+    InitializeWindow();
+    VKAPI.Instance.DefaultInitialize();
+    //BlockRegistry.Instance.LazyInitialize();
+    //InitializeWorld(out World world);
+    //InitializePlayer(world.EntityManager);
+}
 
 static void ApplicationCloseCallback(object sender)
 {
@@ -31,6 +42,7 @@ static void ApplicationCloseCallback(object sender)
     GLAPI.Instance.GL.Dispose();
 }
 
+#endregion
 
 #region Initialization
 
@@ -67,6 +79,7 @@ static void InitializeWindow()
     options.Position = new Point(500, 100);
     options.VSync = Settings.Instance.VSync ? VSyncMode.On : VSyncMode.Off;
     options.PreferredDepthBufferBits = 24;
+    options.API = GraphicsAPI.DefaultVulkan;
 
     AutomataWindow.Instance.CreateWindow(options);
     AutomataWindow.Instance.Closing += ApplicationCloseCallback;
@@ -76,30 +89,30 @@ static void InitializeWorld(out World world)
 {
     world = new VoxelWorld(true);
     world.SystemManager.RegisterSystem<InputSystem, FirstOrderSystem>(SystemRegistrationOrder.Before);
-    world.SystemManager.RegisterSystem<RenderSystem, LastOrderSystem>(SystemRegistrationOrder.Before);
-    world.SystemManager.RegisterSystem<AllocatedMeshingSystem<uint, PackedVertex>, RenderSystem>(SystemRegistrationOrder.Before);
+    // world.SystemManager.RegisterSystem<RenderSystem, LastOrderSystem>(SystemRegistrationOrder.Before);
+    // world.SystemManager.RegisterSystem<AllocatedMeshingSystem<uint, PackedVertex>, RenderSystem>(SystemRegistrationOrder.Before);
 
-    AllocatedMeshingSystem<uint, PackedVertex> allocatedMeshingSystem = world.SystemManager.GetSystem<AllocatedMeshingSystem<uint, PackedVertex>>();
-
-    allocatedMeshingSystem.AllocateVertexAttributes(true, true,
-
-        // vert
-        new VertexAttribute<int>(0u, 1u, 0u, 0u),
-
-        // uv
-        new VertexAttribute<int>(1u, 1u, 4u, 0u),
-
-        // drawID
-        new VertexAttribute<uint>(2u, 1u, (uint)Marshal.OffsetOf<DrawElementsIndirectCommand>(nameof(DrawElementsIndirectCommand.BaseInstance)), 1u, 1u),
-
-        // model
-        new VertexAttribute<float>(3u + 0u, 4u, (uint)Marshal.OffsetOf<Matrix4x4>(nameof(Matrix4x4.M11)), 2u, 1u),
-        new VertexAttribute<float>(3u + 1u, 4u, (uint)Marshal.OffsetOf<Matrix4x4>(nameof(Matrix4x4.M21)), 2u, 1u),
-        new VertexAttribute<float>(3u + 2u, 4u, (uint)Marshal.OffsetOf<Matrix4x4>(nameof(Matrix4x4.M31)), 2u, 1u),
-        new VertexAttribute<float>(3u + 3u, 4u, (uint)Marshal.OffsetOf<Matrix4x4>(nameof(Matrix4x4.M41)), 2u, 1u)
-    );
-
-    allocatedMeshingSystem.SetTexture("Blocks", TextureAtlas.Instance.Blocks!);
+    // AllocatedMeshingSystem<uint, PackedVertex> allocatedMeshingSystem = world.SystemManager.GetSystem<AllocatedMeshingSystem<uint, PackedVertex>>();
+    //
+    // allocatedMeshingSystem.AllocateVertexAttributes(true, true,
+    //
+    //     // vert
+    //     new VertexAttribute<int>(0u, 1u, 0u, 0u),
+    //
+    //     // uv
+    //     new VertexAttribute<int>(1u, 1u, 4u, 0u),
+    //
+    //     // drawID
+    //     new VertexAttribute<uint>(2u, 1u, (uint)Marshal.OffsetOf<DrawElementsIndirectCommand>(nameof(DrawElementsIndirectCommand.BaseInstance)), 1u, 1u),
+    //
+    //     // model
+    //     new VertexAttribute<float>(3u + 0u, 4u, (uint)Marshal.OffsetOf<Matrix4x4>(nameof(Matrix4x4.M11)), 2u, 1u),
+    //     new VertexAttribute<float>(3u + 1u, 4u, (uint)Marshal.OffsetOf<Matrix4x4>(nameof(Matrix4x4.M21)), 2u, 1u),
+    //     new VertexAttribute<float>(3u + 2u, 4u, (uint)Marshal.OffsetOf<Matrix4x4>(nameof(Matrix4x4.M31)), 2u, 1u),
+    //     new VertexAttribute<float>(3u + 3u, 4u, (uint)Marshal.OffsetOf<Matrix4x4>(nameof(Matrix4x4.M41)), 2u, 1u)
+    // );
+    //
+    // allocatedMeshingSystem.SetTexture("Blocks", TextureAtlas.Instance.Blocks!);
 
     world.SystemManager.RegisterSystem<ChunkRegionLoaderSystem, DefaultOrderSystem>(SystemRegistrationOrder.Before);
     world.SystemManager.RegisterSystem<ChunkModificationsSystem, DefaultOrderSystem>(SystemRegistrationOrder.Before);
@@ -132,22 +145,6 @@ static void InitializePlayer(EntityManager entityManager)
             Radius = Settings.Instance.GenerationRadius
 #endif
         });
-
-    // entityManager.CreateEntity(new Chunk
-    // {
-    //     State = GenerationState.AwaitingTerrain
-    // }, new Translation
-    // {
-    //     Value = new Vector3(0f, 96f, 0f)
-    // });
-    //
-    // entityManager.CreateEntity(new Chunk
-    // {
-    //     State = GenerationState.AwaitingTerrain
-    // }, new Translation
-    // {
-    //     Value = new Vector3(32f, 96f, 32f)
-    // });
 }
 
 #endregion
