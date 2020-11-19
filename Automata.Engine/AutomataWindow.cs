@@ -47,21 +47,14 @@ namespace Automata.Engine
             }
         }
 
-        public Vector2i Size { get => (Vector2i)Window.Size; set => Window.Size = (Size)value; }
-
-        public Vector2i Position { get => (Vector2i)Window.Position; set => Window.Position = (Point)value; }
-
-        public Vector2i Center => Size / 2;
-
         public string Title { get => Window.Title; set => Window.Title = value; }
+        public Vector2i Size { get => (Vector2i)Window.Size; set => Window.Size = (Size)value; }
+        public Vector2i Position { get => (Vector2i)Window.Position; set => Window.Position = (Point)value; }
+        public Vector2i Center => Size / 2;
 
         public bool Focused { get; private set; }
 
         public AutomataWindow() => Focused = true;
-
-        public event WindowResizedEventHandler? Resized;
-        public event WindowFocusChangedEventHandler? FocusChanged;
-        public event WindowClosingEventHandler? Closing;
 
         public GL GetOpenGLContext() => GL.GetApi(Window.GLContext);
         public IVkSurface GetSurface() => Window.VkSurface ?? throw new NullReferenceException(nameof(Window.VkSurface));
@@ -180,7 +173,11 @@ namespace Automata.Engine
         #endregion
 
 
-        #region Event Callbacks
+        #region Events
+
+        public event WindowResizedEventHandler? Resized;
+        public event WindowFocusChangedEventHandler? FocusChanged;
+        public event WindowClosingEventHandler? Closing;
 
         private void OnWindowResized(Size size)
         {

@@ -32,12 +32,10 @@ namespace Automata.Engine
 
         public static void RegisterWorld(string name, World world)
         {
-            if (Worlds.ContainsKey(name))
+            if (Worlds.TryAdd(name, world))
             {
                 throw new ArgumentException(name);
             }
-
-            Worlds.Add(name, world);
 
             Log.Information($"({nameof(World)}) Registered {nameof(World)}: '{name}' {world.GetType()}");
         }

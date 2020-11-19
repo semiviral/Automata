@@ -111,11 +111,11 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
             }
         }
 
-        public bool TrySetUniform(string name, Matrix4x4 value)
+        public bool TrySetUniform(string name, Matrix4x4 value, bool transpose = false)
         {
             if (TryGetUniformLocation(name, out int location))
             {
-                GL.ProgramUniformMatrix4(Handle, location, 1, false, value.Unroll<Matrix4x4, float>());
+                GL.ProgramUniformMatrix4(Handle, location, 1, transpose, value.Unroll<Matrix4x4, float>());
                 return true;
             }
             else

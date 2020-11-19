@@ -18,8 +18,8 @@ namespace Automata.Engine.Rendering.Vulkan
         public string EngineName { get; }
         public Version32 EngineVersion { get; }
         public Version32 APIVersion { get; }
-        public KhrSwapchain Swapchain { get; }
-        public KhrSurface Surface { get; }
+        public SwapchainExtension SwapchainExtension { get; }
+        public SurfaceExtension SurfaceExtension { get; }
 
         public VulkanInstance(Vk vk, string applicationName, Version32 applicationVersion, string engineName, Version32 engineVersion, Version32 apiVersion,
             string[] requestedExtensions, bool validation, string[] validationLayers) : base(vk)
@@ -32,22 +32,22 @@ namespace Automata.Engine.Rendering.Vulkan
 
             _VKInstance = Create(requestedExtensions, validation, validationLayers);
 
-            if (!TryGetInstanceExtension(out KhrSwapchain? swapchain))
+            if (!TryGetInstanceExtension(out SwapchainExtension? swapchainExtension))
             {
                 throw new VulkanException(Result.ErrorExtensionNotPresent, "KHR_swapchain extension not found.");
             }
             else
             {
-                Swapchain = swapchain!;
+                SwapchainExtension = swapchainExtension!;
             }
 
-            if (!TryGetInstanceExtension(out KhrSurface? surface))
+            if (!TryGetInstanceExtension(out SurfaceExtension? surfaceExtension))
             {
-                throw new VulkanException(Result.ErrorExtensionNotPresent, "KHR_surface extension not found.");
+                throw new VulkanException(Result.ErrorExtensionNotPresent, $"{SurfaceExtension.EXTENSION_NAME} extension not found.");
             }
             else
             {
-                Surface = surface!;
+                SurfaceExtension = surfaceExtension!;
             }
 
             // todo extend this debug info
