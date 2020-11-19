@@ -8,6 +8,7 @@ using Automata.Engine.Input;
 using Automata.Engine.Rendering;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
+using Automata.Engine.Rendering.OpenGL.Shaders;
 using Automata.Engine.Rendering.Vulkan;
 using Automata.Game;
 using Automata.Game.Blocks;
@@ -19,7 +20,6 @@ using Silk.NET.Windowing.Common;
 
 Main();
 await AutomataWindow.Instance.Run();
-
 
 #region Main
 
@@ -36,8 +36,11 @@ void Main()
 
 static void ApplicationCloseCallback(object sender)
 {
-    BoundedInvocationPool.Instance.Cancel();
+    World.DisposeWorlds();
+    ProgramRegistry.Instance.Dispose();
+    TextureAtlas.Instance.Blocks?.Dispose();
     GLAPI.Instance.GL.Dispose();
+    BoundedInvocationPool.Instance.Cancel();
 }
 
 #endregion
@@ -100,14 +103,11 @@ static void InitializeWorld(out World world)
         // uv
         new VertexAttribute<int>(1u, 1u, 4u, 0u),
 
-        // drawID
-        new VertexAttribute<uint>(2u, 1u, (uint)Marshal.OffsetOf<DrawElementsIndirectCommand>(nameof(DrawElementsIndirectCommand.BaseInstance)), 1u),
-
         // model
-        new VertexAttribute<float>(3u + 0u, 4u, (uint)Marshal.OffsetOf<Matrix4x4>(nameof(Matrix4x4.M11)), 2u),
-        new VertexAttribute<float>(3u + 1u, 4u, (uint)Marshal.OffsetOf<Matrix4x4>(nameof(Matrix4x4.M21)), 2u),
-        new VertexAttribute<float>(3u + 2u, 4u, (uint)Marshal.OffsetOf<Matrix4x4>(nameof(Matrix4x4.M31)), 2u),
-        new VertexAttribute<float>(3u + 3u, 4u, (uint)Marshal.OffsetOf<Matrix4x4>(nameof(Matrix4x4.M41)), 2u)
+        new VertexAttribute<float>(2u + 0u, 4u, (uint)Marshal.OffsetOf<Matrix4x4>(nameof(Matrix4x4.M11)), 1u),
+        new VertexAttribute<float>(2u + 1u, 4u, (uint)Marshal.OffsetOf<Matrix4x4>(nameof(Matrix4x4.M21)), 1u),
+        new VertexAttribute<float>(2u + 2u, 4u, (uint)Marshal.OffsetOf<Matrix4x4>(nameof(Matrix4x4.M31)), 1u),
+        new VertexAttribute<float>(2u + 3u, 4u, (uint)Marshal.OffsetOf<Matrix4x4>(nameof(Matrix4x4.M41)), 1u)
     );
 
     allocatedMeshingSystem.SetTexture("Blocks", TextureAtlas.Instance.Blocks!);

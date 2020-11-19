@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics;
 using System.Numerics;
-using System.Runtime.InteropServices;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
 using Silk.NET.OpenGL;
@@ -26,7 +25,7 @@ namespace Automata.Engine.Rendering.Meshes
         public uint DrawCommandCount { get; private set; }
         public bool Visible => DrawCommandCount > 0u;
 
-        public unsafe MultiDrawIndirectMesh(GL gl, uint indexAllocatorSize, uint vertexAllocatorSize, Layer layers = Layer.Layer0)
+        public MultiDrawIndirectMesh(GL gl, uint indexAllocatorSize, uint vertexAllocatorSize, Layer layers = Layer.Layer0)
         {
             ID = Guid.NewGuid();
             Layer = layers;
@@ -40,8 +39,7 @@ namespace Automata.Engine.Rendering.Meshes
             _BufferSync = new FenceSync(gl);
 
             _VertexArrayObject.BindVertexBuffer(0u, _VertexAllocator);
-            _VertexArrayObject.BindVertexBuffer(1u, _CommandBuffer, 0, 1u);
-            _VertexArrayObject.BindVertexBuffer(2u, _ModelBuffer, 0, 1u);
+            _VertexArrayObject.BindVertexBuffer(1u, _ModelBuffer, 0, 1u);
 
             // _GL.VertexArrayVertexBuffer(_VertexArrayObject.Handle, 0u, _VertexAllocator.Handle, 0, 8u);
             // _GL.VertexArrayVertexBuffer(_VertexArrayObject.Handle, 1u, _CommandBuffer.Handle, 0, (uint)sizeof(DrawElementsIndirectCommand));
@@ -118,16 +116,14 @@ namespace Automata.Engine.Rendering.Meshes
             _CommandBuffer.Bind(BufferTargetARB.DrawIndirectBuffer);
 
 #if DEBUG
-
-            void VerifyVertexBufferBinding(uint index, BufferObject buffer)
-            {
-                _GL.GetInteger(GLEnum.VertexBindingBuffer, index, out int actual);
-                Debug.Assert((uint)actual == buffer.Handle, $"VertexBindingBuffer index {index} is not set to the correct buffer.");
-            }
-
-            VerifyVertexBufferBinding(0u, _VertexAllocator);
-            VerifyVertexBufferBinding(1u, _CommandBuffer);
-            VerifyVertexBufferBinding(2u, _ModelBuffer);
+            // void VerifyVertexBufferBinding(uint index, BufferObject buffer)
+            // {
+            //     _GL.GetInteger(, index, out int actual);
+            //     Debug.Assert((uint)actual == buffer.Handle, $"VertexBindingBuffer index {index} is not set to the correct buffer.");
+            // }
+            //
+            // VerifyVertexBufferBinding(0u, _VertexAllocator);
+            // VerifyVertexBufferBinding(1u, _ModelBuffer);
 #endif
 
             _GL.MultiDrawElementsIndirect(PrimitiveType.Triangles, _DrawElementsType, (void*)null!, DrawCommandCount, 0u);
@@ -156,6 +152,7 @@ namespace Automata.Engine.Rendering.Meshes
             _IndexAllocator.Dispose();
             _VertexAllocator.Dispose();
             _VertexArrayObject.Dispose();
+            _ModelBuffer.Dispose();
 
             GC.SuppressFinalize(this);
         }

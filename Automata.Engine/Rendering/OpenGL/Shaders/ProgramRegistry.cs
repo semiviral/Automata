@@ -65,13 +65,6 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
                 return;
             }
 
-            DisposeInternal();
-            Disposed = true;
-            GC.SuppressFinalize(this);
-        }
-
-        private void DisposeInternal()
-        {
             foreach ((_, ShaderProgram shaderProgram) in _CachedVertexPrograms)
             {
                 shaderProgram.Dispose();
@@ -86,6 +79,9 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
             {
                 programPipeline.Dispose();
             }
+
+            Disposed = true;
+            GC.SuppressFinalize(this);
         }
 
         #endregion

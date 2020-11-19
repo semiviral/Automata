@@ -8,7 +8,6 @@ using Automata.Engine.Collections;
 using Automata.Engine.Input;
 using Automata.Engine.Numerics;
 using Automata.Engine.Rendering.OpenGL;
-using Automata.Engine.Rendering.OpenGL.Shaders;
 using Serilog;
 using Silk.NET.Core.Contexts;
 using Silk.NET.GLFW;
@@ -200,8 +199,15 @@ namespace Automata.Engine
         {
             Closing?.Invoke(this);
 
-            World.DisposeWorlds();
-            ProgramRegistry.Instance.Dispose();
+#if DEBUG
+            int objectsAliveCount = OpenGLObject.ObjectsAlive.Count;
+
+            if (objectsAliveCount > 0)
+            {
+                Log.Error(string.Format(FormatHelper.DEFAULT_LOGGING, "OPENGL DEBUGGER",
+                    $"{objectsAliveCount} OF '{nameof(OpenGLObject)}' LEFT ALIVE AT PROGRAM EXIT."));
+            }
+#endif
         }
 
         #endregion

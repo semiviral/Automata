@@ -18,7 +18,7 @@ using Plane = Automata.Engine.Numerics.Shapes.Plane;
 
 namespace Automata.Engine.Rendering
 {
-    public class RenderSystem : ComponentSystem
+    public class RenderSystem : ComponentSystem, IDisposable
     {
         private const bool _ENABLE_BACK_FACE_CULLING = false;
         private const bool _ENABLE_FRUSTUM_CULLING = true;
@@ -280,5 +280,16 @@ namespace Automata.Engine.Rendering
         }
 
         private void GameWindowResized(object sender, Vector2i newSize) => _NewAspectRatio = (float)newSize.X / (float)newSize.Y;
+
+
+        #region IDisposable
+
+        public void Dispose()
+        {
+            _Viewport.Dispose();
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
     }
 }
