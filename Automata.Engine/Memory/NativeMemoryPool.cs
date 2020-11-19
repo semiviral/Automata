@@ -54,12 +54,7 @@ namespace Automata.Engine.Memory
 
             lock (_AccessLock)
             {
-                LinkedListNode<MemoryBlock>? current = _MemoryMap.First;
-
-                if (current is null)
-                {
-                    throw new InvalidOperationException("Memory pool is in invalid state.");
-                }
+                LinkedListNode<MemoryBlock>? current = SafeGetFirstNode();
 
                 do
                 {
@@ -227,12 +222,7 @@ namespace Automata.Engine.Memory
 
         private LinkedListNode<MemoryBlock> GetMemoryBlockAtIndex(nuint index)
         {
-            LinkedListNode<MemoryBlock>? current = _MemoryMap.First;
-
-            if (current is null)
-            {
-                throw new InvalidOperationException("Memory pool is in invalid state.");
-            }
+            LinkedListNode<MemoryBlock>? current = SafeGetFirstNode();
 
             do
             {
@@ -247,6 +237,8 @@ namespace Automata.Engine.Memory
 
         #endregion
 
+
+        private LinkedListNode<MemoryBlock> SafeGetFirstNode() => _MemoryMap.First ?? throw new InvalidOperationException("Memory pool is in invalid state.");
 
         public void ValidateBlocks()
         {
