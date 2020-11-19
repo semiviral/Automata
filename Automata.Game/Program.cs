@@ -51,7 +51,7 @@ static void ApplicationCloseCallback(object sender)
 static void InitializeLogger()
 {
     Log.Logger = new LoggerConfiguration()
-        .MinimumLevel.Verbose()
+        .MinimumLevel.Debug()
         .WriteTo.Console()
         .WriteTo.Async(config => config.File("log.txt"))
         .CreateLogger();

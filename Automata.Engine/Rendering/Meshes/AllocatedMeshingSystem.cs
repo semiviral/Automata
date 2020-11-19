@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -111,8 +112,8 @@ namespace Automata.Engine.Rendering.Meshes
         private unsafe void ProcessDrawElementsIndirectAllocationsImpl(EntityManager entityManager)
         {
             int drawIndirectAllocationsCount = (int)entityManager.GetComponentCount<DrawElementsIndirectAllocation<TIndex, TVertex>>();
-            Span<DrawElementsIndirectCommand> commands = stackalloc DrawElementsIndirectCommand[drawIndirectAllocationsCount];
-            Span<Matrix4x4> models = stackalloc Matrix4x4[drawIndirectAllocationsCount];
+            DrawElementsIndirectCommand[] commands = ArrayPool<DrawElementsIndirectCommand>.Shared.Rent(drawIndirectAllocationsCount);
+            Matrix4x4[] models = ArrayPool<Matrix4x4>.Shared.Rent(drawIndirectAllocationsCount);
 
             int index = 0;
 
@@ -133,8 +134,11 @@ namespace Automata.Engine.Rendering.Meshes
                 index += 1;
             }
 
-            _MultiDrawIndirectMesh!.AllocateDrawCommands(commands);
-            _MultiDrawIndirectMesh!.AllocateModelsData(models);
+            _MultiDrawIndirectMesh!.AllocateDrawCommands(new Span<DrawElementsIndirectCommand>(commands).Slice(0, drawIndirectAllocationsCount));
+            _MultiDrawIndirectMesh!.AllocateModelsData(new Span<Matrix4x4>(models).Slice(0, drawIndirectAllocationsCount));
+
+            ArrayPool<DrawElementsIndirectCommand>.Shared.Return(commands);
+            ArrayPool<Matrix4x4>.Shared.Return(models);
 
             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(AllocatedMeshingSystem<TIndex, TVertex>),
                 $"Allocated {commands.Length} {nameof(DrawElementsIndirectCommand)}"));
