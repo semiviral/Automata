@@ -26,7 +26,7 @@ namespace Automata.Engine
 
     public class AutomataWindow : Singleton<AutomataWindow>
     {
-        private readonly APIVersion _PreferredOGLVersion = new APIVersion(4, 6);
+        private readonly APIVersion _PreferredOGLVersion = new(4, 6);
 
         private TimeSpan _MinimumFrameTime;
 
@@ -124,12 +124,12 @@ namespace Automata.Engine
 
         #region Runtime
 
-        public async Task Run()
+        public async Task RunAsync()
         {
             try
             {
-                Stopwatch deltaTimer = new Stopwatch();
-                BoundedConcurrentQueue<double> fps = new BoundedConcurrentQueue<double>(60);
+                Stopwatch deltaTimer = new();
+                BoundedConcurrentQueue<double> fps = new(60);
                 fps.Enqueue(0d); // so we don't get a 'Sequence contains no elements' exception.
 
                 while (!Window.IsClosing)
@@ -146,7 +146,7 @@ namespace Automata.Engine
 
                     if (!Window.IsClosing)
                     {
-                        await World.GlobalUpdate(deltaTime);
+                        await World.GlobalUpdateAsync(deltaTime);
                     }
 
                     InputManager.Instance.CheckAndExecuteInputActions();

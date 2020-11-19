@@ -18,7 +18,7 @@ namespace Automata.Engine
         /// <summary>
         ///     Method called once per frame.
         /// </summary>
-        public virtual ValueTask Update(EntityManager entityManager, TimeSpan delta) => ValueTask.CompletedTask;
+        public virtual ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta) => ValueTask.CompletedTask;
 
         protected TComponentSystem? GetSystem<TComponentSystem>() where TComponentSystem : ComponentSystem =>
             _CurrentWorld?.SystemManager.GetSystem<TComponentSystem>();

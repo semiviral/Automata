@@ -18,7 +18,7 @@ using Serilog;
 using Silk.NET.Windowing.Common;
 
 Main();
-await AutomataWindow.Instance.Run();
+await AutomataWindow.Instance.RunAsync();
 
 
 #region Main

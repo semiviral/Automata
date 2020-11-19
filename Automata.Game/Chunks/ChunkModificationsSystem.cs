@@ -23,7 +23,7 @@ namespace Automata.Game.Chunks
         }
 
         [HandledComponents(DistinctionStrategy.All, typeof(Chunk))]
-        public override ValueTask Update(EntityManager entityManager, TimeSpan delta)
+        public override ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta)
         {
             Stopwatch stopwatch = DiagnosticsPool.Stopwatches.Rent();
             stopwatch.Restart();

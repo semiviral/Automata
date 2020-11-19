@@ -38,7 +38,7 @@ namespace Automata.Engine.Rendering.Meshes
             InputManager.Instance.RegisterInputAction(() => _MultiDrawIndirectMesh?.ValidateAllocatorBlocks(), Key.F9);
         }
 
-        public override ValueTask Update(EntityManager entityManager, TimeSpan delta)
+        public override ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta)
         {
             bool recreateCommandBuffer = false;
 

@@ -13,7 +13,7 @@ namespace Automata.Engine.Input
 
         [HandledComponents(DistinctionStrategy.All, typeof(Rotation), typeof(MouseListener)),
          HandledComponents(DistinctionStrategy.All, typeof(Translation), typeof(KeyboardListener))]
-        public override ValueTask Update(EntityManager entityManager, TimeSpan delta)
+        public override ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta)
         {
             HandleMouseListeners(entityManager, delta);
             HandleKeyboardListeners(entityManager, delta);

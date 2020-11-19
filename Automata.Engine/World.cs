@@ -9,6 +9,23 @@ namespace Automata.Engine
 {
     public class World : IDisposable
     {
+        public EntityManager EntityManager { get; }
+        public SystemManager SystemManager { get; }
+        public bool Active { get; set; }
+
+        static World() => Worlds = new Dictionary<string, World>();
+
+        protected World(bool active)
+        {
+            SystemManager = new SystemManager(this);
+            EntityManager = new EntityManager();
+
+            Active = active;
+        }
+
+        protected virtual async ValueTask UpdateAsync(TimeSpan deltaTime) => await SystemManager.UpdateAsync(EntityManager, deltaTime);
+
+
         #region Static
 
         private static Dictionary<string, World> Worlds { get; }
@@ -27,11 +44,11 @@ namespace Automata.Engine
 
         public static bool TryGetWorld(string name, [NotNullWhen(true)] out World? world) => Worlds.TryGetValue(name, out world);
 
-        public static async ValueTask GlobalUpdate(TimeSpan deltaTime)
+        public static async ValueTask GlobalUpdateAsync(TimeSpan deltaTime)
         {
             foreach (World world in Worlds.Values.Where(world => world.Active))
             {
-                await world.Update(deltaTime);
+                await world.UpdateAsync(deltaTime);
             }
         }
 
@@ -44,23 +61,6 @@ namespace Automata.Engine
         }
 
         #endregion
-
-
-        public EntityManager EntityManager { get; }
-        public SystemManager SystemManager { get; }
-        public bool Active { get; set; }
-
-        static World() => Worlds = new Dictionary<string, World>();
-
-        protected World(bool active)
-        {
-            SystemManager = new SystemManager(this);
-            EntityManager = new EntityManager();
-
-            Active = active;
-        }
-
-        protected virtual async ValueTask Update(TimeSpan deltaTime) => await SystemManager.Update(EntityManager, deltaTime);
 
 
         #region IDisposable

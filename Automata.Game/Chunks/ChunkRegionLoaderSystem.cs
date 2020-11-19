@@ -18,8 +18,8 @@ namespace Automata.Game.Chunks
 {
     public class ChunkRegionLoaderSystem : ComponentSystem
     {
-        private readonly Queue<Chunk> _ChunksRequiringRemesh;
         private readonly Stack<Chunk> _ChunksPendingCleanup;
+        private readonly Queue<Chunk> _ChunksRequiringRemesh;
 
         private VoxelWorld VoxelWorld => _CurrentWorld as VoxelWorld ?? throw new InvalidOperationException("Must be in VoxelWorld.");
 
@@ -38,7 +38,7 @@ namespace Automata.Game.Chunks
         }
 
         [HandledComponents(DistinctionStrategy.All, typeof(Translation), typeof(ChunkLoader))]
-        public override async ValueTask Update(EntityManager entityManager, TimeSpan delta)
+        public override async ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta)
         {
             Stopwatch stopwatch = DiagnosticsPool.Stopwatches.Rent();
             stopwatch.Restart();
@@ -99,7 +99,7 @@ namespace Automata.Game.Chunks
         private void RecalculateChunkRegions(EntityManager entityManager)
         {
             // this calculates new chunk allocations and current chunk deallocations
-            HashSet<Vector3i> withinLoaderRange = new HashSet<Vector3i>(GetOriginsWithinLoaderRanges(entityManager.GetComponents<ChunkLoader>()));
+            HashSet<Vector3i> withinLoaderRange = new(GetOriginsWithinLoaderRanges(entityManager.GetComponents<ChunkLoader>()));
 
             foreach (Vector3i origin in withinLoaderRange.Except(VoxelWorld.Chunks.Origins))
             {
@@ -152,7 +152,7 @@ namespace Automata.Game.Chunks
         {
             foreach (ChunkLoader chunkLoader in enumerable)
             {
-                Vector3i chunkLoaderOriginYAdjusted = new Vector3i(chunkLoader.Origin.X, 0, chunkLoader.Origin.Z);
+                Vector3i chunkLoaderOriginYAdjusted = new(chunkLoader.Origin.X, 0, chunkLoader.Origin.Z);
 
                 for (int y = 0; y < GenerationConstants.WORLD_HEIGHT_IN_CHUNKS; y++)
                 for (int z = -chunkLoader.Radius; z < (chunkLoader.Radius + 1); z++)

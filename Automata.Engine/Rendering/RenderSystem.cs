@@ -81,7 +81,7 @@ namespace Automata.Engine.Rendering
         }
 
         [SkipLocalsInit, HandledComponents(DistinctionStrategy.All, typeof(Camera))]
-        public override unsafe ValueTask Update(EntityManager entityManager, TimeSpan delta)
+        public override unsafe ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta)
         {
             _GL.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
             Span<Plane> planes = stackalloc Plane[Frustum.TOTAL_PLANES];
@@ -205,32 +205,17 @@ namespace Automata.Engine.Rendering
             }
 
             material.Pipeline.Bind();
-
-            // set fragment shader so we can bind textures quicker
+            Texture.BindMany(_GL, 0u, material.Textures.Values);
             ShaderProgram newFragmentShader = material.Pipeline.Stage(ShaderType.FragmentShader);
-
-            // if old isn't null, bind the old textures to the new pipeline
-            if (old is not null)
-            {
-                foreach ((string key, Texture texture) in old.Textures)
-                {
-                    if (!material.Textures.ContainsKey(key))
-                    {
-                        material.Textures.Add(key, texture);
-                    }
-                }
-            }
-
             int index = 0;
 
-            Texture.BindMany(_GL, 0u, material.Textures.Values);
-
-            foreach ((string key, Texture texture) in material.Textures)
+            foreach (string key in material.Textures.Keys)
             {
                 newFragmentShader!.TrySetUniform($"tex_{key}", index);
                 index += 1;
             }
 
+            // we've finished binding the new material, so replace the old's reference
             old = material;
         }
 

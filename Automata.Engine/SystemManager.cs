@@ -26,8 +26,8 @@ namespace Automata.Engine
     public sealed class SystemManager : IDisposable
     {
         private readonly IOrderedCollection<ComponentSystem> _ComponentSystems;
-        private readonly Dictionary<Type, ComponentTypes[]> _HandledTypes;
         private readonly World _CurrentWorld;
+        private readonly Dictionary<Type, ComponentTypes[]> _HandledTypes;
 
         public SystemManager(World currentWorld)
         {
@@ -40,13 +40,13 @@ namespace Automata.Engine
             RegisterSystem<LastOrderSystem>(SystemRegistrationOrder.Last);
         }
 
-        public async ValueTask Update(EntityManager entityManager, TimeSpan deltaTime)
+        public async ValueTask UpdateAsync(EntityManager entityManager, TimeSpan deltaTime)
         {
             foreach (ComponentSystem componentSystem in _ComponentSystems)
             {
                 if (componentSystem.Enabled && VerifyHandledComponentsExistForSystem(entityManager, componentSystem))
                 {
-                    await componentSystem.Update(entityManager, deltaTime).ConfigureAwait(false);
+                    await componentSystem.UpdateAsync(entityManager, deltaTime).ConfigureAwait(false);
                 }
             }
 
@@ -71,7 +71,7 @@ namespace Automata.Engine
             where TSystem : ComponentSystem, new()
             where TUpdateAround : ComponentSystem
         {
-            TSystem componentSystem = new TSystem();
+            TSystem componentSystem = new();
 
             switch (order)
             {
@@ -91,7 +91,7 @@ namespace Automata.Engine
 
         private void RegisterSystem<TSystem>(SystemRegistrationOrder order) where TSystem : ComponentSystem, new()
         {
-            TSystem componentSystem = new TSystem();
+            TSystem componentSystem = new();
 
             switch (order)
             {
@@ -119,7 +119,7 @@ namespace Automata.Engine
 
         private static IEnumerable<ComponentTypes> GetHandledTypes<TSystem>() where TSystem : ComponentSystem, new()
         {
-            MethodBase? methodBase = typeof(TSystem).GetMethod(nameof(ComponentSystem.Update));
+            MethodBase? methodBase = typeof(TSystem).GetMethod(nameof(ComponentSystem.UpdateAsync));
 
             return methodBase is not null
                 ? methodBase.GetCustomAttributes<HandledComponents>().Select(handlesComponents => handlesComponents.Types)
