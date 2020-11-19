@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
@@ -24,12 +25,16 @@ namespace Automata.Engine.Rendering
         private const bool _ENABLE_BACK_FACE_CULLING = false;
         private const bool _ENABLE_FRUSTUM_CULLING = true;
 
-        private const int _BUILT_IN_VIEWPORT_OFFSET = 0;
+        private const int _BUILT_IN_VIEWPORT_UNIFORMS_OFFSET = 0;
+        private const int _BUILT_IN_VIEWPORT_UNIFORMS_SIZE = 16;
         private const int _BUILT_IN_CAMERA_UNIFORMS_OFFSET = 16;
+        private const int _BUILT_IN_CAMERA_UNIFORMS_SIZE = 144;
         private const int _BUILT_IN_MODEL_UNIFORMS_OFFSET = 160;
-        private readonly UniformBufferObject _BuiltInUniforms;
+        private const int _BUILT_IN_MODEL_UNIFORMS_SIZE = 192;
+        private const int _BUILT_IN_UNIFORMS_SIZE = _BUILT_IN_VIEWPORT_UNIFORMS_SIZE + _BUILT_IN_CAMERA_UNIFORMS_SIZE + _BUILT_IN_MODEL_UNIFORMS_SIZE;
 
         private readonly GL _GL;
+        private readonly UniformBufferObject _BuiltInUniforms;
 
         private float _NewAspectRatio;
 
@@ -52,7 +57,7 @@ namespace Automata.Engine.Rendering
                 _GL.Enable(EnableCap.CullFace);
             }
 
-            _BuiltInUniforms = new UniformBufferObject(_GL, 0u, (uint)((2 * sizeof(Vector4)) + (5 * sizeof(Matrix4x4))));
+            _BuiltInUniforms = new UniformBufferObject(_GL, 0u, (uint)_BUILT_IN_UNIFORMS_SIZE);
         }
 
         public override void Registered(EntityManager entityManager)
@@ -124,9 +129,7 @@ namespace Automata.Engine.Rendering
 
                 // iterate every valid entity and try to render it
                 // we also sort the entities by their render pipeline ID, so we can avoid doing a ton of rebinding
-                foreach ((IEntity objectEntity, RenderMesh renderMesh, Material material) in entityManager.GetEntitiesWithComponents<RenderMesh, Material>()
-                    .Where(result => result.Component1.ShouldRender && ((camera.RenderedLayers & result.Component1.Mesh!.Layer) > 0))
-                    .OrderBy(result => result.Component2.Pipeline.Handle))
+                foreach ((IEntity objectEntity, RenderMesh renderMesh, Material material) in GetRenderableEntities(entityManager, camera))
                 {
                     Matrix4x4 model = objectEntity.Find<RenderModel>()?.Model ?? Matrix4x4.Identity;
                     Matrix4x4 modelViewProjection = model * viewProjection;
@@ -156,6 +159,11 @@ namespace Automata.Engine.Rendering
 
             return ValueTask.CompletedTask;
         }
+
+        private static IEnumerable<(IEntity, RenderMesh, Material)> GetRenderableEntities(EntityManager entityManager, Camera camera) =>
+            entityManager.GetEntitiesWithComponents<RenderMesh, Material>()
+                .Where(result => result.Component1.ShouldRender && ((camera.RenderedLayers & result.Component1.Mesh!.Layer) > 0))
+                .OrderBy(result => result.Component2.Pipeline.Handle);
 
         private bool IsNewViewport() => _NewAspectRatio is not 0f;
 
@@ -283,7 +291,7 @@ namespace Automata.Engine.Rendering
         private void UpdateViewport()
         {
             Vector4 viewport = new(0f, 0f, AutomataWindow.Instance.Size.X, AutomataWindow.Instance.Size.Y);
-            _BuiltInUniforms.Write(_BUILT_IN_VIEWPORT_OFFSET, viewport);
+            _BuiltInUniforms.Write(_BUILT_IN_VIEWPORT_UNIFORMS_OFFSET, viewport);
         }
 
         private static void WriteCameraUniforms(Span<byte> destination, Vector4 parameters, Matrix4x4 projection, Matrix4x4 view)
