@@ -4,13 +4,15 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
-// ReSharper disable InconsistentlySynchronizedField
 // ReSharper disable ConditionIsAlwaysTrueOrFalse
 
 namespace Automata.Engine.Memory
 {
     public unsafe class NativeMemoryPool
     {
+        /// <summary>
+        ///     Record used to track memory allocations within the pool.
+        /// </summary>
         private sealed record MemoryBlock(nuint Index, nuint Size, bool Owned);
 
         private readonly object _AccessLock;
@@ -20,7 +22,17 @@ namespace Automata.Engine.Memory
 
         private int _RentedBlocks;
 
+        /// <summary>
+        ///     Size (in bytes) of the memory pool.
+        /// </summary>
+        /// <remarks>
+        ///     This value is immutable, externally and internally.
+        /// </remarks>
         public nuint Size { get; }
+
+        /// <summary>
+        ///     Count of the current owned blocks in the pool.
+        /// </summary>
         public int RentedBlocks => _RentedBlocks;
 
         public NativeMemoryPool(byte* pointer, nuint size)
@@ -35,6 +47,10 @@ namespace Automata.Engine.Memory
 
         private LinkedListNode<MemoryBlock> SafeGetFirstNode() => _MemoryMap.First ?? throw new InvalidOperationException("Memory pool is in invalid state.");
 
+        /// <summary>
+        ///     Validates all memory blocks currently in the pool. This is a diagnostic method.
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when a block's index doesn't match the previous block's index + size.</exception>
         public void ValidateBlocks()
         {
             lock (_AccessLock)
@@ -96,9 +112,12 @@ namespace Automata.Engine.Memory
 
                     if (clear)
                     {
+                        // this can be pretty expensive, so make sure we only clear when the user wants to
                         memoryOwner.Memory.Span.Clear();
                     }
 
+                    // make sure we decrement the rented blocks counter
+                    Interlocked.Increment(ref _RentedBlocks);
                     return memoryOwner;
                 } while ((current = current!.Next) is not null);
             }
@@ -128,14 +147,13 @@ namespace Automata.Engine.Memory
             }
             else if (current.Value.Size > sizeInBytes)
             {
+                // allocate new block after current with remaining length
                 nuint afterBlockIndex = current.Value.Index + sizeInBytes;
                 nuint afterBlockLength = current.Value.Size - sizeInBytes;
-
-                // collapse current block to correct length
-                current.Value = current.Value with { Size = sizeInBytes, Owned = true };
-
-                // allocate new block after current with remaining length
                 _MemoryMap.AddAfter(current, new MemoryBlock(afterBlockIndex, afterBlockLength, false));
+
+                // modify current block to reflect proper size
+                current.Value = current.Value with { Size = sizeInBytes, Owned = true };
             }
             else
             {
@@ -175,11 +193,13 @@ namespace Automata.Engine.Memory
                     current.Value = current.Value with { Index = alignedIndex, Size = newCurrentSize, Owned = true };
                 }
 
+                // allocate block after current to hold remaining length
                 nuint afterBlockIndex = current.Value.Index + sizeInBytes;
                 nuint afterBlockSize = current.Value.Size - sizeInBytes;
-
-                current.Value = current.Value with { Size = sizeInBytes, Owned = true };
                 _MemoryMap.AddAfter(current, new MemoryBlock(afterBlockIndex, afterBlockSize, false));
+
+                // modify current block to reflect proper size
+                current.Value = current.Value with { Size = sizeInBytes, Owned = true };
             }
             else
             {
@@ -207,7 +227,6 @@ namespace Automata.Engine.Memory
             // NativeMemoryManager ALWAYS uses the units-of-T size.
             NativeMemoryManager<T> memoryManager = new((T*)(_Pointer + index), size);
             IMemoryOwner<T> memoryOwner = new NativeMemoryOwner<T>(this, index, memoryManager.Memory);
-            Interlocked.Increment(ref _RentedBlocks);
 
             return memoryOwner;
         }
@@ -226,6 +245,7 @@ namespace Automata.Engine.Memory
                 LinkedListNode<MemoryBlock>? after = current.Next;
                 current.Value = current.Value with { Owned = false };
 
+                // attempt to merge current block & its precedent node
                 if (before?.Value.Owned is false)
                 {
                     nuint newIndex = before.Value.Index;
@@ -234,6 +254,7 @@ namespace Automata.Engine.Memory
                     _MemoryMap.Remove(before);
                 }
 
+                // attempt to merge current block & its antecedent node
                 if (after?.Value.Owned is false)
                 {
                     nuint newLength = current.Value.Size + after.Value.Size;
@@ -242,6 +263,7 @@ namespace Automata.Engine.Memory
                 }
             }
 
+            // make sure we decrement the rented blocks counter
             Interlocked.Decrement(ref _RentedBlocks);
         }
 

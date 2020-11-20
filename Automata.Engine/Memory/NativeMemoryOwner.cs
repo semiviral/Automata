@@ -3,6 +3,10 @@ using System.Buffers;
 
 namespace Automata.Engine.Memory
 {
+    /// <summary>
+    ///     Used internally to properly track and dispose of rented memory blocks.
+    /// </summary>
+    /// <typeparam name="T">Unmanaged type of the <see cref="IMemoryOwner{T}"/>.</typeparam>
     internal sealed record NativeMemoryOwner<T> : IMemoryOwner<T> where T : unmanaged
     {
         private readonly NativeMemoryPool _NativeMemoryPool;
