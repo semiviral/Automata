@@ -78,7 +78,7 @@ namespace Automata.Engine.Memory
         ///     Attempts to rent a sector of memory from the pool.
         /// </summary>
         /// <param name="size">Size of the rental in units of <see cref="T" />.</param>
-        /// <param name="alignment">The alignment of the rental index in bytes.</param>
+        /// <param name="alignment">The alignment of the rental index in bytes. This can be 0u for no alignment.</param>
         /// <param name="index">The resulting index of the rental, from the start of the pool's pointer.</param>
         /// <param name="clear">Whether to clear the resulting rental before returning the <see cref="IMemoryOwner{T}" />.</param>
         /// <typeparam name="T">The unmanaged type to return <see cref="IMemoryOwner{T}" /> as.</typeparam>
