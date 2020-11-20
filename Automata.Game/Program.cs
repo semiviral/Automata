@@ -33,7 +33,9 @@ void Main()
     InitializeWindow();
 
 
-    VulkanInstance instance = VKAPI.Instance.GenerateNewInstance();
+    VulkanInstance instance = VKAPI.Instance.GenerateNewInstance(AutomataWindow.Instance.GetSurface());
+    SurfaceExtension surfaceExtension = instance.GetInstanceExtension<SurfaceExtension>();
+    VulkanDebugMessenger debugMessenger = new VulkanDebugMessenger(instance);
 
 
 

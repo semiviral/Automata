@@ -8,6 +8,6 @@ namespace Automata.Engine.Rendering.Vulkan
 
         public nuint Handle { get; protected init; }
 
-        public VulkanObject(Vk vk) => VK = vk;
+        protected VulkanObject(Vk vk) => VK = vk;
     }
 }

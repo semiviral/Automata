@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Automata.Engine.Rendering.DirectX;
 using Serilog;
+using Silk.NET.Core.Contexts;
 using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
@@ -21,20 +22,7 @@ namespace Automata.Engine.Rendering.Vulkan
 
         private const int _MAX_FRAMES_IN_FLIGHT = 2;
 
-        private const DebugUtilsMessageSeverityFlagsEXT _MESSAGE_SEVERITY_ALL =
-            DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityErrorBitExt
-            | DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityWarningBitExt
-            | DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityInfoBitExt
-            | DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityVerboseBitExt;
 
-        private const DebugUtilsMessageSeverityFlagsEXT _MESSAGE_SEVERITY_GENERAL =
-            DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityErrorBitExt
-            | DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityWarningBitExt
-            | DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityInfoBitExt;
-
-        private const DebugUtilsMessageSeverityFlagsEXT _MESSAGE_SEVERITY_IMPORTANT =
-            DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityErrorBitExt
-            | DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityWarningBitExt;
 
         private static readonly string _VulkanSurfaceCreationFormat = $"({nameof(VKAPI)}) Creating surface: {{0}}";
         private static readonly string _VulkanDebugMessengerCreationFormat = $"({nameof(VKAPI)}) Creating debug messenger: {{0}}";
@@ -108,22 +96,21 @@ namespace Automata.Engine.Rendering.Vulkan
 
         public VKAPI() => VK = Vk.GetApi();
 
-        public VulkanInstance GenerateNewInstance() => new VulkanInstance(Instance.VK, "Automata.Game", new Version32(0u, 1u, 0u), "Automata.Engine",
-            new Version32(0u, 1u, 0u), Vk.Version12, _InstanceExtensions, true, _ValidationLayers);
+        public VulkanInstance GenerateNewInstance(IVkSurface vkSurface) => new VulkanInstance(Instance.VK, vkSurface, "Automata.Game", new Version32(0u, 1u, 0u),
+            "Automata.Engine", new Version32(0u, 1u, 0u), Vk.Version12, _InstanceExtensions, true, _ValidationLayers);
 
-        public VulkanInstance GenerateNewInstance(string applicationName, Version32 applicationVersion, string engineName, Version32 engineVersion,
-            Version32 apiVersion, string[] requestedExtensions, bool validation, string[] validationLayers) =>
-            new VulkanInstance(VK, applicationName, applicationVersion, engineName, engineVersion, apiVersion, requestedExtensions, validation,
+        public VulkanInstance GenerateNewInstance(IVkSurface vkSurface, string applicationName, Version32 applicationVersion, string engineName,
+            Version32 engineVersion, Version32 apiVersion, string[] requestedExtensions, bool validation, string[] validationLayers) =>
+            new VulkanInstance(VK, vkSurface, applicationName, applicationVersion, engineName, engineVersion, apiVersion, requestedExtensions, validation,
                 validationLayers);
 
-        public static unsafe string[] GetRequiredExtensions(string[] requestedExtensions)
+        public static unsafe string[] GetRequiredExtensions(IVkSurface vkSurface, string[] requestedExtensions)
         {
-            string[] requiredExtensions = SilkMarshal.MarshalPtrToStringArray(
-                (nint)AutomataWindow.Instance.GetSurface().GetRequiredExtensions(out uint extensionCount),
+            string[] requiredExtensions = SilkMarshal.MarshalPtrToStringArray((nint)vkSurface.GetRequiredExtensions(out uint extensionCount),
                 (int)extensionCount);
 
             string[] extensions = new string[requiredExtensions.Length + requestedExtensions.Length];
-            requestedExtensions.CopyTo(extensions, requestedExtensions.Length);
+            requestedExtensions.CopyTo(extensions, requiredExtensions.Length);
             requiredExtensions.CopyTo(extensions, 0);
 
             return extensions;
@@ -136,9 +123,10 @@ namespace Automata.Engine.Rendering.Vulkan
             instanceCreateInfo.EnabledLayerCount = (uint)validationLayers.Length;
             instanceCreateInfo.PpEnabledLayerNames = (byte**)SilkMarshal.MarshalStringArrayToPtr(validationLayers);
 
-            DebugUtilsMessengerCreateInfoEXT debugMessengerCreationInfo = new DebugUtilsMessengerCreateInfoEXT();
-            PopulateDebugMessengerCreateInfo(ref debugMessengerCreationInfo, _MESSAGE_SEVERITY_IMPORTANT);
-            instanceCreateInfo.PNext = &debugMessengerCreationInfo;
+            // todo fix this for debugging
+            // DebugUtilsMessengerCreateInfoEXT debugMessengerCreationInfo = new DebugUtilsMessengerCreateInfoEXT();
+            // PopulateDebugMessengerCreateInfo(ref debugMessengerCreationInfo, _MESSAGE_SEVERITY_IMPORTANT);
+            // instanceCreateInfo.PNext = &debugMessengerCreationInfo;
         }
 
         private static unsafe void VerifyValidationLayerSupport(Vk vk, IEnumerable<string> validationLayers)
@@ -168,11 +156,7 @@ namespace Automata.Engine.Rendering.Vulkan
         {
             Log.Information($"({nameof(VKAPI)}) Initializing Vulkan: -begin-");
 
-            VulkanInstance vulkanInstance = new VulkanInstance(VK, "Automata.Game", new Version32(0, 1, 0), "Automata.Engine", new Version32(0, 1, 0),
-                Vk.Version12, _InstanceExtensions, _ENABLE_VULKAN_VALIDATION, _ValidationLayers);
 
-            CreateSurface();
-            SetupDebugMessenger();
             SelectPhysicalDevice();
             CreateLogicalDevice();
             CreateSwapChain();
@@ -255,89 +239,6 @@ namespace Automata.Engine.Rendering.Vulkan
 
             _CurrentFrame = (_CurrentFrame + 1) % _MAX_FRAMES_IN_FLIGHT;
         }
-
-
-        #region Create Surface
-
-        private unsafe void CreateSurface()
-        {
-            Log.Information(string.Format(_VulkanSurfaceCreationFormat, $"retrieving surface from '{nameof(AutomataWindow)}'"));
-
-            _Surface = AutomataWindow.Instance.GetSurface().Create(VKInstance.ToHandle(), (AllocationCallbacks*)null!).ToSurface();
-        }
-
-        #endregion
-
-
-        #region Debug Messenger
-
-        private unsafe void SetupDebugMessenger()
-        {
-            Log.Information(string.Format(_VulkanDebugMessengerCreationFormat, "-begin-"));
-
-            if (!_ENABLE_VULKAN_VALIDATION || !VK.TryGetExtension(out _ExtDebugUtils))
-            {
-                throw new Exception("Failed to get extension for debug messenger.");
-            }
-
-            Log.Information(string.Format(_VulkanDebugMessengerCreationFormat, "initializing creation info."));
-
-            DebugUtilsMessengerCreateInfoEXT createInfo = new DebugUtilsMessengerCreateInfoEXT();
-            PopulateDebugMessengerCreateInfo(ref createInfo, _MESSAGE_SEVERITY_IMPORTANT);
-
-            Log.Information(string.Format(_VulkanDebugMessengerCreationFormat, "assigning debug messenger."));
-
-            fixed (DebugUtilsMessengerEXT* debugMessenger = &_DebugMessenger)
-            {
-                if (_ExtDebugUtils.CreateDebugUtilsMessenger(VKInstance, &createInfo, (AllocationCallbacks*)null!, debugMessenger)
-                    != Result.Success)
-                {
-                    throw new Exception($"Failed to create '{typeof(DebugUtilsMessengerEXT)}'");
-                }
-            }
-
-            Log.Information(string.Format(_VulkanDebugMessengerCreationFormat, "-success-"));
-        }
-
-        private static unsafe void PopulateDebugMessengerCreateInfo(ref DebugUtilsMessengerCreateInfoEXT createInfo,
-            DebugUtilsMessageSeverityFlagsEXT messageSeverityFlags)
-        {
-            static uint DebugCallback(DebugUtilsMessageSeverityFlagsEXT messageSeverity, DebugUtilsMessageTypeFlagsEXT messageType,
-                DebugUtilsMessengerCallbackDataEXT* callbackData, void* userData)
-            {
-                string messageFormat = $"({nameof(VKAPI)}) {{0}}: {{1}}";
-
-                switch (messageSeverity)
-                {
-                    case DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityVerboseBitExt:
-                        Log.Verbose(string.Format(messageFormat, messageType, Marshal.PtrToStringAnsi((IntPtr)callbackData->PMessage)));
-                        break;
-                    case DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityInfoBitExt:
-                        Log.Information(string.Format(messageFormat, messageType, Marshal.PtrToStringAnsi((IntPtr)callbackData->PMessage)));
-                        break;
-                    case DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityWarningBitExt:
-                        Log.Warning(string.Format(messageFormat, messageType, Marshal.PtrToStringAnsi((IntPtr)callbackData->PMessage)));
-                        break;
-                    case DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityErrorBitExt:
-                        Log.Error(string.Format(messageFormat, messageType, Marshal.PtrToStringAnsi((IntPtr)callbackData->PMessage)));
-                        break;
-                    default: throw new ArgumentOutOfRangeException(nameof(messageSeverity), messageSeverity, null);
-                }
-
-                return Vk.False;
-            }
-
-            createInfo.SType = StructureType.DebugUtilsMessengerCreateInfoExt;
-            createInfo.MessageSeverity = messageSeverityFlags;
-
-            createInfo.MessageType = DebugUtilsMessageTypeFlagsEXT.DebugUtilsMessageTypeGeneralBitExt
-                                     | DebugUtilsMessageTypeFlagsEXT.DebugUtilsMessageTypeValidationBitExt
-                                     | DebugUtilsMessageTypeFlagsEXT.DebugUtilsMessageTypePerformanceBitExt;
-
-            createInfo.PfnUserCallback = FuncPtr.Of<DebugUtilsMessengerCallbackFunctionEXT>(DebugCallback);
-        }
-
-        #endregion
 
 
         #region Physical Device Selection
