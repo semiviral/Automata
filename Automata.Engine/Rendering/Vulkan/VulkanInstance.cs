@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Automata.Engine.Extensions;
 using Serilog;
@@ -5,6 +7,7 @@ using Silk.NET.Core.Contexts;
 using Silk.NET.Core.Native;
 using Silk.NET.GLFW;
 using Silk.NET.Vulkan;
+using Silk.NET.Vulkan.Extensions.KHR;
 
 namespace Automata.Engine.Rendering.Vulkan
 {
@@ -38,22 +41,22 @@ namespace Automata.Engine.Rendering.Vulkan
             _VKInstance = Create(vkSurface, requestedExtensions, validation, validationLayers);
             Handle = _VKInstance.ToHandle();
 
-            if (!TryGetInstanceExtension(out SwapchainExtension? swapchainExtension))
+            if (TryGetInstanceExtension(out SwapchainExtension? swapchainExtension))
+            {
+                SwapchainExtension = swapchainExtension;
+            }
+            else
             {
                 throw new VulkanException(Result.ErrorExtensionNotPresent, "KHR_swapchain extension not found.");
             }
-            else
-            {
-                SwapchainExtension = swapchainExtension!;
-            }
 
-            if (!TryGetInstanceExtension(out SurfaceExtension? surfaceExtension))
+            if (TryGetInstanceExtension(out SurfaceExtension? surfaceExtension))
+            {
+                SurfaceExtension = surfaceExtension;
+            }
+            else
             {
                 throw new VulkanException(Result.ErrorExtensionNotPresent, $"{SurfaceExtension.EXTENSION_NAME} extension not found.");
-            }
-            else
-            {
-                SurfaceExtension = surfaceExtension!;
             }
 
             // todo extend this debug info
@@ -77,7 +80,8 @@ namespace Automata.Engine.Rendering.Vulkan
 
             string[] requiredExtensions = VKAPI.GetRequiredExtensions(vkSurface, requestedExtensions);
             nint requiredExtensionsPointer = SilkMarshal.MarshalStringArrayToPtr(requiredExtensions);
-            string[] requiedExtensions = SilkMarshal.MarshalPtrToStringArray(requiredExtensionsPointer, requestedExtensions.Length);
+            nint enabledLayerNames = 0x0;
+            int enabledLayerCount = 0;
 
             InstanceCreateInfo createInfo = new InstanceCreateInfo
             {
@@ -85,17 +89,24 @@ namespace Automata.Engine.Rendering.Vulkan
                 PApplicationInfo = &applicationInfo,
                 PpEnabledExtensionNames = (byte**)requiredExtensionsPointer,
                 EnabledExtensionCount = (uint)requiredExtensions.Length,
-                EnabledLayerCount = 0,
                 PpEnabledLayerNames = (byte**)null!,
+                EnabledLayerCount = 0,
                 PNext = (void*)null!
             };
 
             if (validation)
             {
-                VKAPI.Validate(VK, ref createInfo, validationLayers);
+                VKAPI.VerifyValidationLayerSupport(VK, validationLayers);
+
+                enabledLayerNames = SilkMarshal.MarshalStringArrayToPtr(validationLayers);
+                enabledLayerCount = validationLayers.Length;
+                createInfo.PpEnabledLayerNames = (byte**)enabledLayerNames;
+                createInfo.EnabledLayerCount = (uint)enabledLayerCount;
             }
 
             Log.Information(string.Format(_LogFormat, "allocating instance."));
+
+            // todo for some reason the safe ref/ref/out version of this function doesn't work
             Instance instance;
             Result result = VK.CreateInstance(&createInfo, (AllocationCallbacks*)null!, &instance);
 
@@ -107,6 +118,11 @@ namespace Automata.Engine.Rendering.Vulkan
             Marshal.FreeHGlobal(applicationName);
             Marshal.FreeHGlobal(engineName);
             SilkMarshal.FreeStringArrayPtr(requiredExtensionsPointer, requestedExtensions.Length);
+
+            if (enabledLayerNames is not 0x0 && enabledLayerCount is not 0)
+            {
+                SilkMarshal.FreeStringArrayPtr(enabledLayerNames, enabledLayerCount);
+            }
 
             return instance;
         }
@@ -123,9 +139,10 @@ namespace Automata.Engine.Rendering.Vulkan
             }
         }
 
-        public bool TryGetInstanceExtension<T>(out T? extenstion) where T : NativeExtension<Vk> => VK.TryGetInstanceExtension(_VKInstance, out extenstion);
+        public bool TryGetInstanceExtension<T>([NotNullWhen(true)] out T? extenstion) where T : NativeExtension<Vk> =>
+            VK.TryGetInstanceExtension(_VKInstance, out extenstion);
 
-        public bool TryGetDeviceExtension<T>(out T? extension, Device device) where T : NativeExtension<Vk> =>
+        public bool TryGetDeviceExtension<T>(Device device, [NotNullWhen(true)] out T? extension) where T : NativeExtension<Vk> =>
             VK.TryGetDeviceExtension(_VKInstance, device, out extension);
 
 

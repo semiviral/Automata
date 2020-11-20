@@ -1,3 +1,4 @@
+using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using Automata.Engine.Extensions;
@@ -23,7 +24,7 @@ namespace Automata.Engine.Noise
 
         #region Simplex2D
 
-        private static readonly Vector2[] _Grad2D =
+        private static ReadOnlySpan<Vector2> Grad2D => new[]
         {
             new Vector2(-1f, -1f),
             new Vector2(1f, -1f),
@@ -105,7 +106,7 @@ namespace Automata.Engine.Noise
             hash = hash * hash * hash * 60493;
             hash = (hash >> 13) ^ hash;
 
-            Vector2 g = _Grad2D[hash & 7];
+            Vector2 g = Grad2D[hash & 7];
 
             return (xy0 * g).Sum();
         }
@@ -119,7 +120,7 @@ namespace Automata.Engine.Noise
         private const float _G3 = 1f / 6f;
         private const float _G33 = (_G3 * 3f) - 1f;
 
-        private static readonly Vector3[] _Grad3D =
+        private static ReadOnlySpan<Vector3> Grad3D => new[]
         {
             new Vector3(1f, 1f, 0f),
             new Vector3(-1f, 1f, 0f),
@@ -257,7 +258,7 @@ namespace Automata.Engine.Noise
             hash = hash * hash * hash * 60493;
             hash = (hash >> 13) ^ hash;
 
-            Vector3 g = _Grad3D[hash & 15];
+            Vector3 g = Grad3D[hash & 15];
 
             return (xyz0 * g).Sum();
         }

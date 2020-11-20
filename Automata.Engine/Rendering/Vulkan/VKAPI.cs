@@ -116,20 +116,7 @@ namespace Automata.Engine.Rendering.Vulkan
             return extensions;
         }
 
-        public static unsafe void Validate(Vk vk, ref InstanceCreateInfo instanceCreateInfo, string[] validationLayers)
-        {
-            VerifyValidationLayerSupport(vk, validationLayers);
-
-            instanceCreateInfo.EnabledLayerCount = (uint)validationLayers.Length;
-            instanceCreateInfo.PpEnabledLayerNames = (byte**)SilkMarshal.MarshalStringArrayToPtr(validationLayers);
-
-            // todo fix this for debugging
-            // DebugUtilsMessengerCreateInfoEXT debugMessengerCreationInfo = new DebugUtilsMessengerCreateInfoEXT();
-            // PopulateDebugMessengerCreateInfo(ref debugMessengerCreationInfo, _MESSAGE_SEVERITY_IMPORTANT);
-            // instanceCreateInfo.PNext = &debugMessengerCreationInfo;
-        }
-
-        private static unsafe void VerifyValidationLayerSupport(Vk vk, IEnumerable<string> validationLayers)
+        public static unsafe void VerifyValidationLayerSupport(Vk vk, IEnumerable<string> validationLayers)
         {
             uint layerCount = 0u;
             vk.EnumerateInstanceLayerProperties(&layerCount, (LayerProperties*)null!);

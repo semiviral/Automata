@@ -5,42 +5,23 @@ using System.Collections.Generic;
 
 namespace Automata.Engine.Collections
 {
-    public class NonAllocatingList<T> : IList<T>, IDisposable where T : IEquatable<T>
+    public class NonAllocatingList<T> : IList<T>, IEquatable<NonAllocatingList<T>>, IDisposable where T : IEquatable<T>
     {
         private const int _DEFAULT_CAPACITY = 1;
 
         public static readonly NonAllocatingList<T> Empty = new NonAllocatingList<T>(0);
 
         private T[] _InternalArray;
-        private bool _Disposed;
 
-        public bool IsReadOnly => false;
-        public bool IsEmpty => Count <= 0;
+        public bool Disposed { get; private set; }
+
         public Span<T> Segment => new Span<T>(_InternalArray, 0, Count);
+        public bool IsReadOnly => Disposed;
+        public bool IsEmpty => Count <= 0;
 
         public int Count { get; private set; }
 
-        public T this[int index]
-        {
-            get
-            {
-                if (index >= Count)
-                {
-                    ThrowHelper.ThrowIndexOutOfRangeException();
-                }
-
-                return _InternalArray[index];
-            }
-            set
-            {
-                if (index >= Count)
-                {
-                    ThrowHelper.ThrowIndexOutOfRangeException();
-                }
-
-                _InternalArray[index] = value;
-            }
-        }
+        public T this[int index] { get => _InternalArray[(uint)index]; set => _InternalArray[(uint)index] = value; }
 
         public T this[uint index]
         {
@@ -67,8 +48,6 @@ namespace Automata.Engine.Collections
         public NonAllocatingList() : this(_DEFAULT_CAPACITY) { }
         public NonAllocatingList(int minimumCapacity) => _InternalArray = ArrayPool<T>.Shared.Rent(minimumCapacity);
 
-        public bool Contains(T item) => (Count != 0) && (IndexOf(item) != -1);
-
         public void Add(T item)
         {
             if (Count >= _InternalArray.Length)
@@ -80,13 +59,13 @@ namespace Automata.Engine.Collections
             Count += 1;
         }
 
-        public void AddRange(IEnumerable<T> items) => InsertRange(Count, items);
+        public void AddRange(ReadOnlySpan<T> items) => InsertRange(Count, items);
 
         public void Insert(int index, T item)
         {
             if (index > Count)
             {
-                throw new ArgumentOutOfRangeException(nameof(index), "Must be non-negative and less than the size of the collection.");
+                ThrowHelper.ThrowIndexOutOfRangeException();
             }
             else if (index == Count)
             {
@@ -96,61 +75,35 @@ namespace Automata.Engine.Collections
             // this copies everything from index..Count to index + 1
             else if (index < Count)
             {
-                Array.Copy(_InternalArray, index, _InternalArray, index + 1, Count - index);
+                Segment.Slice(index).CopyTo(_InternalArray.AsSpan().Slice(index + 1));
             }
 
             _InternalArray[index] = item;
             Count += 1;
         }
 
-        public void InsertRange(int index, IEnumerable<T> items)
+        public void InsertRange(int index, ReadOnlySpan<T> items)
         {
             if ((uint)index > (uint)Count)
             {
                 ThrowHelper.ThrowIndexOutOfRangeException();
             }
 
-            if (items is ICollection<T> collection)
+            // ensure we have enough capacity to insert the items
+            int endIndex = index + items.Length;
+            EnsureCapacityOrResize(endIndex);
+
+            Span<T> internalSpan = _InternalArray.AsSpan();
+
+            if (index != Count)
             {
-                int count = collection.Count;
-
-                if (count <= 0)
-                {
-                    return;
-                }
-
-                EnsureCapacityOrResize(collection.Count + count);
-
-                if (index < Count)
-                {
-                    Array.Copy(_InternalArray, index, _InternalArray, index + count, Count - index);
-                }
-
-                // If we're inserting a List into itself, we want to be able to deal with that.
-                if (Equals(items))
-                {
-                    // Copy first part of _items to insert location
-                    Array.Copy(_InternalArray, 0, _InternalArray, index, index);
-
-                    // Copy last part of _items back to inserted location
-                    Array.Copy(_InternalArray, index + count, _InternalArray, index * 2, Count - index);
-                }
-                else
-                {
-                    collection.CopyTo(_InternalArray, index);
-                }
-
-                Count += count;
+                // make space for the insertion, copying the elements past it
+                internalSpan.Slice(index, Count).CopyTo(internalSpan.Slice(endIndex));
             }
-            else
-            {
-                using IEnumerator<T> en = items.GetEnumerator();
 
-                while (en.MoveNext())
-                {
-                    Insert(index++, en.Current);
-                }
-            }
+            // copy items to range
+            items.CopyTo(internalSpan.Slice(index));
+            Count += items.Length;
         }
 
         private void EnsureCapacityOrResize(int minimumCapacity)
@@ -164,7 +117,7 @@ namespace Automata.Engine.Collections
             int newCapacity = Math.Max(minimumCapacity, idealCapacity);
 
             T[] newArray = ArrayPool<T>.Shared.Rent(newCapacity);
-            Array.Copy(_InternalArray, 0, newArray, 0, Count);
+            Segment.CopyTo(newArray);
             _InternalArray = newArray;
         }
 
@@ -185,7 +138,7 @@ namespace Automata.Engine.Collections
         {
             if (index >= Count)
             {
-                throw new ArgumentOutOfRangeException(nameof(index), "Must be non-negative and less than the size of the collection.");
+                ThrowHelper.ThrowIndexOutOfRangeException();
             }
 
             Count -= 1;
@@ -193,11 +146,15 @@ namespace Automata.Engine.Collections
             // copies all elements from after index to the index itself, overwriting it
             if (index < Count)
             {
-                Array.Copy(_InternalArray, index + 1, _InternalArray, index, Count - index);
+                Segment.Slice(index + 1).CopyTo(_InternalArray.AsSpan().Slice(index));
             }
 
             _InternalArray[Count] = default!;
         }
+
+        public bool Contains(T item) => (Count != 0) && (IndexOf(item) != -1);
+        public int IndexOf(T item) => Segment.IndexOf(item);
+        public void CopyTo(T[] array, int arrayIndex) => Segment.CopyTo(new Span<T>(array, arrayIndex, array.Length - arrayIndex));
 
         public void Clear()
         {
@@ -206,12 +163,9 @@ namespace Automata.Engine.Collections
                 return;
             }
 
-            Array.Clear(_InternalArray, 0, Count);
+            Segment.Clear();
             Count = 0;
         }
-
-        public void CopyTo(T[] array, int arrayIndex) => Array.Copy(_InternalArray, 0, array, arrayIndex, Count);
-        public int IndexOf(T item) => Array.IndexOf(_InternalArray, item);
 
 
         #region IEnumerable
@@ -277,25 +231,56 @@ namespace Automata.Engine.Collections
         #endregion
 
 
+        #region IEquatable
+
+        public override bool Equals(object? obj) => obj is NonAllocatingList<T> other && Equals(other);
+
+        public bool Equals(NonAllocatingList<T>? other)
+        {
+            if (other is null || (other.Count != Count))
+            {
+                return false;
+            }
+            else
+            {
+                ReadOnlySpan<T> thisSegment = Segment;
+                ReadOnlySpan<T> otherSegment = other.Segment;
+
+                for (int index = 0; index < Count; index++)
+                {
+                    if (!thisSegment[index].Equals(otherSegment[index]))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        #endregion
+
+
         #region IDisposable
 
-        private void Dispose(bool disposing)
+        public void Dispose()
         {
-            if (!disposing || _Disposed)
+            if (Disposed)
             {
                 return;
             }
 
+            DisposeInternal();
+
+            GC.SuppressFinalize(this);
+            Disposed = true;
+        }
+
+        private void DisposeInternal()
+        {
             Count = 0;
             ArrayPool<T>.Shared.Return(_InternalArray);
             _InternalArray = default!;
-            _Disposed = true;
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
         }
 
         #endregion

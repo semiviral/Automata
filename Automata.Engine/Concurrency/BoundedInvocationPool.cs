@@ -7,13 +7,17 @@ namespace Automata.Engine.Concurrency
     /// <summary>
     ///     Used to safely wrap a Task-returning method onto the <see cref="BoundedInvocationPool" />.
     /// </summary>
-    /// <param name="cancellationToken"><see cref="CancellationToken" /> that the <see cref="BoundedInvocationPool" /> uses.</param>
+    /// <param name="cancellationToken">
+    ///     <see cref="CancellationToken" /> that the <see cref="BoundedInvocationPool" /> uses.
+    /// </param>
     public delegate Task AsyncReferenceInvocation(CancellationToken cancellationToken);
 
     /// <summary>
     ///     Used to safely wrap a Task-returning method onto the <see cref="BoundedInvocationPool" />.
     /// </summary>
-    /// <param name="cancellationToken"><see cref="CancellationToken" /> that the <see cref="BoundedInvocationPool" /> uses.</param>
+    /// <param name="cancellationToken">
+    ///     <see cref="CancellationToken" /> that the <see cref="BoundedInvocationPool" /> uses.
+    /// </param>
     public delegate ValueTask AsyncValueInvocation(CancellationToken cancellationToken);
 
     public class BoundedInvocationPool : Singleton<BoundedInvocationPool>
@@ -29,7 +33,7 @@ namespace Automata.Engine.Concurrency
         private readonly ManualResetEventSlim _ModifyPoolReset;
 
         /// <summary>
-        ///     Synchronization object to control the level of concurrency.
+        ///     Synchronization object used to control the level of concurrency.
         /// </summary>
         private SemaphoreSlim _Semaphore;
 
@@ -93,13 +97,11 @@ namespace Automata.Engine.Concurrency
             // ensure the pool size isn't being modified
             _ModifyPoolReset.Wait(CancellationToken);
 
-            // ensure the pool is actually accepting invocations
+            // ensure the pool is actually accepting invocations and dispatch
             if (Size == 0)
             {
                 throw new InvalidOperationException($"Pool is empty. Call {nameof(DefaultPoolSize)}() or {nameof(ModifyPoolSize)}().");
             }
-
-            // dispatch work to ThreadPool
             else
             {
                 Task.Run(Dispatch, CancellationToken);
@@ -166,12 +168,12 @@ namespace Automata.Engine.Concurrency
         public void Cancel() => _CancellationTokenSource.Cancel();
 
         /// <summary>
-        ///     Aggressively abort all workers.
+        ///     Aggressively abort all invocations.
         /// </summary>
         /// <remarks>
-        ///     Only use this method in emergency situations. Undefined behaviour occurs when threads stop executing abruptly.
+        ///     Only use this method in emergency situations. Undefined behaviour occurs.
         /// </remarks>
-        /// <param name="abort">Whether or not to abort all workers in the worker group.</param>
+        /// <param name="abort">Whether or not to abort all invocations.</param>
         public void Abort(bool abort)
         {
             if (!abort)

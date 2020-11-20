@@ -18,6 +18,6 @@ namespace Automata.Engine
         public static void ThrowInsufficientMemoryException(string? message) => throw new InsufficientMemoryException(message);
 
         public static void ThrowIndexOutOfRangeException() =>
-            throw new IndexOutOfRangeException("Index must be non-zero and less than the size of the collection.");
+            throw new IndexOutOfRangeException("Index must be non-negative and less than the size of the collection.");
     }
 }

@@ -24,7 +24,7 @@ namespace Automata.Engine.Rendering.OpenGL
             GL = gl;
         }
 #if DEBUG
-        private static readonly ConcurrentDictionary<uint, OpenGLObject> _ObjectsAlive = new();
+        private static readonly ConcurrentDictionary<uint, OpenGLObject> _ObjectsAlive = new ConcurrentDictionary<uint, OpenGLObject>();
         public static IReadOnlyDictionary<uint, OpenGLObject> ObjectsAlive => _ObjectsAlive;
         private readonly uint _RandomKey;
 #endif

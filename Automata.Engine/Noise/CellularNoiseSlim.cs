@@ -29,7 +29,7 @@ namespace Automata.Engine.Noise
         private const int _Y_PRIME = 31337;
         private const int _Z_PRIME = 6971;
 
-        private static readonly Vector3[] _cell3D =
+        private static ReadOnlySpan<Vector3> Cell3D => new[]
         {
             new Vector3(-0.7292736885f, -0.6618439697f, 0.1735581948f),
             new Vector3(0.790292081f, -0.5480887466f, -0.2739291014f),
@@ -337,7 +337,7 @@ namespace Automata.Engine.Noise
                     for (int yi = yr - 1; yi <= (yr + 1); yi++)
                     for (int zi = zr - 1; zi <= (zr + 1); zi++)
                     {
-                        Vector3 vec = _cell3D[Hash3D(seed, xi, yi, zi) & 255];
+                        Vector3 vec = Cell3D[Hash3D(seed, xi, yi, zi) & 255];
 
                         float vecX = (xi - x) + (vec.X * jitter);
                         float vecY = (yi - y) + (vec.Y * jitter);
@@ -360,7 +360,7 @@ namespace Automata.Engine.Noise
                     for (int yi = yr - 1; yi <= (yr + 1); yi++)
                     for (int zi = zr - 1; zi <= (zr + 1); zi++)
                     {
-                        Vector3 vec = _cell3D[Hash3D(seed, xi, yi, zi) & 255];
+                        Vector3 vec = Cell3D[Hash3D(seed, xi, yi, zi) & 255];
 
                         float vecX = (xi - x) + (vec.X * jitter);
                         float vecY = (yi - y) + (vec.Y * jitter);
@@ -383,7 +383,7 @@ namespace Automata.Engine.Noise
                     for (int yi = yr - 1; yi <= (yr + 1); yi++)
                     for (int zi = zr - 1; zi <= (zr + 1); zi++)
                     {
-                        Vector3 vec = _cell3D[Hash3D(seed, xi, yi, zi) & 255];
+                        Vector3 vec = Cell3D[Hash3D(seed, xi, yi, zi) & 255];
 
                         float vecX = (xi - x) + (vec.X * jitter);
                         float vecY = (yi - y) + (vec.Y * jitter);

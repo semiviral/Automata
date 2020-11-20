@@ -10,7 +10,7 @@ namespace Automata.Game.Chunks.Generation.Meshing
 {
     public struct CubeMeshingStrategy : IMeshingStrategy
     {
-        private static readonly int[][] _PackedVertexesByIteration =
+        private static ReadOnlySpan<int[]> PackedVertexesByIteration => new[]
         {
             // 3   0
             //
@@ -67,7 +67,7 @@ namespace Automata.Game.Chunks.Generation.Meshing
             }
         };
 
-        private static readonly int[] _IndexStepByNormalIndex =
+        private static ReadOnlySpan<int> IndexStepByNormalIndex => new[]
         {
             1,
             GenerationConstants.CHUNK_SIZE_SQUARED,
@@ -119,7 +119,7 @@ namespace Automata.Game.Chunks.Generation.Meshing
                     int traversalNormalAxisValue = (localPosition >> traversalNormalShift) & GenerationConstants.CHUNK_SIZE_MASK;
 
                     // amount by integer to add to current index to get 3D->1D position of traversal position
-                    int traversalIndexStep = _IndexStepByNormalIndex[traversalNormalIndex];
+                    int traversalIndexStep = IndexStepByNormalIndex[traversalNormalIndex];
 
                     // current traversal index, which is increased by traversalIndexStep every iteration the for loop below
                     int traversalIndex = index + (traversals * traversalIndexStep);
@@ -174,7 +174,7 @@ namespace Automata.Game.Chunks.Generation.Meshing
                         else
                         {
                             // amount by integer to add to current traversal index to get 3D->1D position of facing block
-                            int facedBlockIndex = traversalIndex + _IndexStepByNormalIndex[normalIndex];
+                            int facedBlockIndex = traversalIndex + IndexStepByNormalIndex[normalIndex];
 
                             // if so, index into block ids and set facingBlockId
                             ushort facedBlockID = blocks[facedBlockIndex].ID;
@@ -216,7 +216,7 @@ namespace Automata.Game.Chunks.Generation.Meshing
                         continue;
                     }
 
-                    Span<int> compressedVertices = _PackedVertexesByIteration[normalIndex];
+                    Span<int> compressedVertices = PackedVertexesByIteration[normalIndex];
                     int traversalComponentMask = GenerationConstants.CHUNK_SIZE_MASK << traversalNormalShift;
                     int unaryTraversalComponentMask = ~traversalComponentMask;
 
