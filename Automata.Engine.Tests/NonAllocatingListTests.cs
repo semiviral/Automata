@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Automata.Engine.Collections;
 using Xunit;
 
@@ -152,6 +153,29 @@ namespace Automata.Engine.Tests
             list.Clear();
 
             Debug.Assert(list.Count is 0);
+        }
+
+        [Fact]
+        public void Fill()
+        {
+            using NonAllocatingList<uint> list = new()
+            {
+                0u,
+                1u,
+                2u,
+                3u,
+                4u,
+                5u,
+                6u,
+                7u,
+                8u,
+                9u,
+                10u
+            };
+
+            list.Fill(1u);
+
+            Debug.Assert(Enumerable.Repeat(1u, 11).SequenceEqual(list));
         }
 
         [Fact]
