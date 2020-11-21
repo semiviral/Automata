@@ -48,10 +48,11 @@ namespace Automata.Engine.Rendering.Meshes
                 if (TryAllocateMesh(entityManager, entity, mesh.Data))
                 {
                     ConfigureMaterial(entityManager, entity);
+                    recreateCommandBuffer = true;
                 }
 
                 entityManager.RemoveComponent<AllocatedMeshData<TIndex, TVertex>>(entity);
-                recreateCommandBuffer = true;
+                Log.Information(entityManager.GetComponentCount<AllocatedMeshData<TIndex, TVertex>>().ToString());
             }
 
             if (recreateCommandBuffer)

@@ -60,6 +60,7 @@ namespace Automata.Game.Chunks.Generation
                 {
                     Debug.Assert(pendingMesh.Chunk.State is GenerationState.GeneratingMesh);
                     entityManager.RegisterComponent(pendingMesh.Entity, new AllocatedMeshData<uint, PackedVertex>(pendingMesh.Data));
+                    Log.Information(entityManager.GetComponentCount<AllocatedMeshData<uint, PackedVertex>>().ToString());
                 }
                 else
                 {

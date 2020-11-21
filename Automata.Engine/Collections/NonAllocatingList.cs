@@ -136,20 +136,22 @@ namespace Automata.Engine.Collections
 
         public void RemoveAt(int index)
         {
-            if (index >= Count)
+            if (index > Count)
             {
                 ThrowHelper.ThrowIndexOutOfRangeException();
             }
 
-            Count -= 1;
-
             // copies all elements from after index to the index itself, overwriting it
-            if (index < Count)
+            if (index <= Count)
             {
                 Segment.Slice(index + 1).CopyTo(_InternalArray.AsSpan().Slice(index));
             }
+            else
+            {
+                _InternalArray[index] = default!;
+            }
 
-            _InternalArray[Count] = default!;
+            Count -= 1;
         }
 
         public bool Contains(T item) => (Count != 0) && (IndexOf(item) != -1);

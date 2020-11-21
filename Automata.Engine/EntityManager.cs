@@ -51,21 +51,6 @@ namespace Automata.Engine
         }
 
 
-        #region IDisposable
-
-        public void Dispose()
-        {
-            foreach (IEntity entity in _Entities)
-            {
-                entity.Dispose();
-            }
-
-            _Entities.Dispose();
-        }
-
-        #endregion
-
-
         #region Entity Create / Remove
 
         public IEntity CreateEntity(params Component[] components)
@@ -441,7 +426,7 @@ namespace Automata.Engine
             Type type = component.GetType();
             _ComponentCounts[type] -= 1;
 
-            Debug.Assert(_ComponentCounts[type] >= 0, $"{nameof(EntityManager)} component count for '{type.FullName}' is in an invalid state.");
+            Debug.Assert(_ComponentCounts[type] >= 0, $"{nameof(EntityManager)} component count for '{type.Name}' is in an invalid state.");
         }
 
         private void DecrementComponentCount<TComponent>() where TComponent : Component
@@ -449,13 +434,28 @@ namespace Automata.Engine
             _ComponentCounts[typeof(TComponent)] -= 1;
 
             Debug.Assert(_ComponentCounts[typeof(TComponent)] >= 0,
-                $"{nameof(EntityManager)} component count for '{typeof(TComponent).FullName}' is in an invalid state.");
+                $"{nameof(EntityManager)} component count for '{typeof(TComponent).Name}' is in an invalid state.");
         }
 
         public nint GetComponentCount(Type type) => _ComponentCounts.TryGetValue(type, out nint count) ? count : 0;
 
         public nint GetComponentCount<TComponent>() where TComponent : Component =>
             _ComponentCounts.TryGetValue(typeof(TComponent), out nint count) ? count : 0;
+
+        #endregion
+
+
+        #region IDisposable
+
+        public void Dispose()
+        {
+            foreach (IEntity entity in _Entities)
+            {
+                entity.Dispose();
+            }
+
+            _Entities.Dispose();
+        }
 
         #endregion
     }

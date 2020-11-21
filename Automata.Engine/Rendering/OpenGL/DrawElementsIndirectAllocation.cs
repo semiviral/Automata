@@ -20,13 +20,6 @@ namespace Automata.Engine.Rendering.OpenGL
         }
 
 
-        #region IDisposable
-
-        protected override void CleanupManagedResources() => Allocation?.Dispose();
-
-        #endregion
-
-
         #region IEquatable
 
         public bool Equals(DrawElementsIndirectAllocation<TIndex, TVertex>? other) => other is not null && (_Allocation == other._Allocation);
@@ -39,6 +32,13 @@ namespace Automata.Engine.Rendering.OpenGL
 
         public static bool operator !=(DrawElementsIndirectAllocation<TIndex, TVertex>? left, DrawElementsIndirectAllocation<TIndex, TVertex>? right) =>
             !Equals(left, right);
+
+        #endregion
+
+
+        #region IDisposable
+
+        protected override void CleanupManagedResources() => Allocation?.Dispose();
 
         #endregion
     }
