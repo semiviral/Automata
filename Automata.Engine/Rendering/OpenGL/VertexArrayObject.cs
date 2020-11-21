@@ -132,7 +132,7 @@ namespace Automata.Engine.Rendering.OpenGL
 
         #region IDisposable
 
-        protected override void DisposeInternal()
+        protected override void SafeDispose()
         {
             _VertexAttributes.Dispose();
             GL.DeleteVertexArray(Handle);

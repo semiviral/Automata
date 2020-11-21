@@ -129,7 +129,7 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
 
         #region IDisposable
 
-        protected override void DisposeInternal() => GL.DeleteProgram(Handle);
+        protected override void SafeDispose() => GL.DeleteProgram(Handle);
 
         #endregion
 

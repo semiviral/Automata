@@ -120,6 +120,7 @@ namespace Automata.Engine.Rendering.Meshes
                 entityManager.GetEntitiesWithComponents<DrawElementsIndirectAllocation<TIndex, TVertex>>())
             {
                 Debug.Assert(drawIndirectAllocationsCount == (int)entityManager.GetComponentCount<DrawElementsIndirectAllocation<TIndex, TVertex>>());
+                Debug.Assert(index < (int)entityManager.GetComponentCount<DrawElementsIndirectAllocation<TIndex, TVertex>>());
                 Debug.Assert(allocation.Allocation is not null);
 
                 commands[index] = new DrawElementsIndirectCommand(allocation.Allocation!.VertexArrayMemory.Count, 1u,

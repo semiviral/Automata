@@ -81,7 +81,7 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
 
         #region IDisposable
 
-        protected override void DisposeInternal() => GL.DeleteTexture(Handle);
+        protected override void SafeDispose() => GL.DeleteTexture(Handle);
 
         #endregion
 

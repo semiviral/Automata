@@ -65,7 +65,7 @@ namespace Automata.Engine
 
         private bool _Disposed;
 
-        protected virtual void DisposeInternal()
+        protected virtual void SafeDispose()
         {
             EntityManager.Dispose();
             SystemManager.Dispose();
@@ -78,7 +78,7 @@ namespace Automata.Engine
                 return;
             }
 
-            DisposeInternal();
+            SafeDispose();
             GC.SuppressFinalize(this);
             _Disposed = true;
         }

@@ -270,13 +270,13 @@ namespace Automata.Engine.Collections
                 return;
             }
 
-            DisposeInternal();
+            SafeDispose();
 
             GC.SuppressFinalize(this);
             Disposed = true;
         }
 
-        private void DisposeInternal()
+        private void SafeDispose()
         {
             Count = 0;
             ArrayPool<T>.Shared.Return(_InternalArray);

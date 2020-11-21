@@ -39,7 +39,7 @@ namespace Automata.Engine.Rendering.OpenGL
                 return;
             }
 
-            DisposeInternal();
+            SafeDispose();
 
             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, $"{nameof(OpenGLObject)} 0x{Handle:x})", "OpenGL object disposed."));
             GC.SuppressFinalize(this);
@@ -50,7 +50,7 @@ namespace Automata.Engine.Rendering.OpenGL
 #endif
         }
 
-        protected virtual void DisposeInternal() { }
+        protected virtual void SafeDispose() { }
 
         #endregion
     }

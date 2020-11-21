@@ -181,17 +181,6 @@ namespace Automata.Engine
 
         private bool _Disposed;
 
-        private void DisposeInternal()
-        {
-            foreach (ComponentSystem componentSystem in _ComponentSystems)
-            {
-                if (componentSystem is IDisposable disposable)
-                {
-                    disposable.Dispose();
-                }
-            }
-        }
-
         public void Dispose()
         {
             if (_Disposed)
@@ -199,9 +188,15 @@ namespace Automata.Engine
                 return;
             }
 
-            _Disposed = true;
+            foreach (ComponentSystem componentSystem in _ComponentSystems)
+            {
+                if (componentSystem is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+            }
 
-            DisposeInternal();
+            _Disposed = true;
         }
 
         #endregion

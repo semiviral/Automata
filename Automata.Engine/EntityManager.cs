@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Automata.Engine.Collections;
 using Automata.Engine.Components;
 
@@ -8,31 +9,29 @@ namespace Automata.Engine
 {
     public sealed class EntityManager : IDisposable
     {
-        private readonly Dictionary<Type, uint> _ComponentCounts;
+        private readonly Dictionary<Type, nint> _ComponentCounts;
         private readonly NonAllocatingList<IEntity> _Entities;
         private readonly Dictionary<Type, IEnumerable> _CachedEnumerators;
 
-        public int EntityCount => _Entities.Count;
+        public nint EntityCount => _Entities.Count;
 
         public EntityManager()
         {
             _Entities = new NonAllocatingList<IEntity>();
-            _ComponentCounts = new Dictionary<Type, uint>();
+            _ComponentCounts = new Dictionary<Type, nint>();
             _CachedEnumerators = new Dictionary<Type, IEnumerable>();
         }
 
         private IEnumerable<T> CacheAndGetEnumerable<T>(IEnumerable<T> setter)
         {
-            if (_CachedEnumerators.TryGetValue(typeof(T), out IEnumerable? enumerable))
-            {
-                return (enumerable as IEnumerable<T>)!;
-            }
-            else
+            if (!_CachedEnumerators.TryGetValue(typeof(T), out IEnumerable? enumerable))
             {
                 enumerable = setter;
                 _CachedEnumerators.Add(typeof(T), enumerable);
-                return (enumerable as IEnumerable<T>)!;
             }
+
+            Debug.Assert(enumerable is IEnumerable<T>);
+            return (enumerable as IEnumerable<T>)!;
         }
 
         public IEnumerable<TComponent> GetComponentsExplicit<TComponent>() where TComponent : Component
@@ -52,11 +51,6 @@ namespace Automata.Engine
             return CacheAndGetEnumerable(GetComponentsExplicitImpl());
         }
 
-        public uint GetComponentCount(Type type) => _ComponentCounts.TryGetValue(type, out uint count) ? count : 0u;
-
-        public uint GetComponentCount<TComponent>() where TComponent : Component =>
-            _ComponentCounts.TryGetValue(typeof(TComponent), out uint count) ? count : 0u;
-
 
         #region Entity Create / Remove
 
@@ -67,16 +61,7 @@ namespace Automata.Engine
             foreach (Component component in components)
             {
                 entity.Add(component);
-                Type type = component.GetType();
-
-                if (!_ComponentCounts.ContainsKey(type))
-                {
-                    _ComponentCounts.Add(type, 1u);
-                }
-                else
-                {
-                    _ComponentCounts[type] += 1u;
-                }
+                IncrementComponentCount(component.GetType());
             }
 
             _Entities.Add(entity);
@@ -87,10 +72,12 @@ namespace Automata.Engine
         {
             foreach (Component component in entity)
             {
-                _ComponentCounts[component.GetType()] -= 1u;
+                DecrementComponentCount(component.GetType());
             }
 
             _Entities.Remove(entity);
+
+            // entity will dispose its own components
             entity.Dispose();
         }
 
@@ -110,7 +97,7 @@ namespace Automata.Engine
         public void RemoveComponent<TComponent>(IEntity entity) where TComponent : Component
         {
             entity.Remove<TComponent>();
-            _ComponentCounts[typeof(TComponent)] -= 1u;
+            DecrementComponentCount<TComponent>();
         }
 
         /// <summary>
@@ -124,16 +111,7 @@ namespace Automata.Engine
         public void RegisterComponent(IEntity entity, Component component)
         {
             entity.Add(component);
-            Type type = component.GetType();
-
-            if (!_ComponentCounts.ContainsKey(type))
-            {
-                _ComponentCounts.Add(type, 1u);
-            }
-            else
-            {
-                _ComponentCounts[type] += 1u;
-            }
+            IncrementComponentCount(component.GetType());
         }
 
         /// <summary>
@@ -147,15 +125,7 @@ namespace Automata.Engine
         public TComponent RegisterComponent<TComponent>(IEntity entity) where TComponent : Component, new()
         {
             TComponent component = entity.Add<TComponent>();
-
-            if (!_ComponentCounts.ContainsKey(typeof(TComponent)))
-            {
-                _ComponentCounts.Add(typeof(TComponent), 1u);
-            }
-            else
-            {
-                _ComponentCounts[typeof(TComponent)] += 1u;
-            }
+            IncrementComponentCount<TComponent>();
 
             return component;
         }
@@ -432,17 +402,58 @@ namespace Automata.Engine
         #endregion
 
 
+        #region Component Count
+
+        private void IncrementComponentCount(Type type)
+        {
+            Debug.Assert(type.IsSubclassOf(typeof(Component)), type.FullName);
+
+            if (!_ComponentCounts.TryAdd(type, 1))
+            {
+                _ComponentCounts[type] += 1;
+            }
+        }
+
+        private void IncrementComponentCount<TComponent>() where TComponent : Component
+        {
+            if (!_ComponentCounts.TryAdd(typeof(TComponent), 1))
+            {
+                _ComponentCounts[typeof(TComponent)] += 1;
+            }
+        }
+
+        private void DecrementComponentCount<TComponent>() where TComponent : Component
+        {
+            _ComponentCounts[typeof(TComponent)] -= 1;
+
+            Debug.Assert(_ComponentCounts[typeof(TComponent)] >= 0,
+                $"{nameof(EntityManager)} component count for '{typeof(TComponent).FullName}' is in an invalid state.");
+        }
+
+        private void DecrementComponentCount(Type type)
+        {
+            Debug.Assert(type.IsSubclassOf(typeof(Component)), type.FullName);
+
+            _ComponentCounts[type] -= 1;
+
+            Debug.Assert(_ComponentCounts[type] >= 0, $"{nameof(EntityManager)} component count for '{type.FullName}' is in an invalid state.");
+        }
+
+        public nint GetComponentCount(Type type) => _ComponentCounts.TryGetValue(type, out nint count) ? count : 0;
+
+        public nint GetComponentCount<TComponent>() where TComponent : Component =>
+            _ComponentCounts.TryGetValue(typeof(TComponent), out nint count) ? count : 0;
+
+        #endregion
+
+
         #region IDisposable
 
         public void Dispose()
         {
             foreach (IEntity entity in _Entities)
-            foreach (Component component in entity)
             {
-                if (component is IDisposable disposable)
-                {
-                    disposable.Dispose();
-                }
+                entity.Dispose();
             }
 
             _Entities.Dispose();

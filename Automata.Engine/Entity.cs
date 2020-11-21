@@ -4,6 +4,9 @@ using System.Linq;
 using Automata.Engine.Collections;
 using Automata.Engine.Components;
 
+// ReSharper disable InvertIf
+// ReSharper disable ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
+
 namespace Automata.Engine
 {
     internal sealed class Entity : IEntity
@@ -52,12 +55,11 @@ namespace Automata.Engine
                 case null:
                     ThrowHelper.ThrowArgumentException(typeof(TComponent).Name, "Entity does not have component of type.");
                     return null!;
-                case IDisposable disposable:
-                    disposable.Dispose();
+                case { } when _Components.Remove(component):
+                    component.Dispose();
                     break;
             }
 
-            _Components.Remove(component);
             return component;
         }
 
@@ -123,9 +125,9 @@ namespace Automata.Engine
         {
             bool success = _Components.Remove(component);
 
-            if (success && component is IDisposable disposable)
+            if (success)
             {
-                disposable.Dispose();
+                component.Dispose();
             }
 
             return success;
@@ -179,10 +181,7 @@ namespace Automata.Engine
 
             foreach (Component component in _Components)
             {
-                if (component is IDisposable disposable)
-                {
-                    disposable.Dispose();
-                }
+                component.Dispose();
             }
 
             _Components.Dispose();
