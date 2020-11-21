@@ -49,6 +49,13 @@ namespace Automata.Engine.Memory
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public NativeSpan(Span<T> span)
+        {
+            _Pointer = (T*)Unsafe.AsPointer(ref MemoryMarshal.GetReference(span));
+            _Length = (nuint)span.Length;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public NativeSpan(T[] array)
         {
             _Pointer = (T*)Unsafe.AsPointer(ref MemoryMarshal.GetArrayDataReference(array));
@@ -178,15 +185,13 @@ namespace Automata.Engine.Memory
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
             {
-                nuint index = _Index + 1u;
-
-                if (index < _Span.Length)
+                if (_Index == (_Span.Length - 1))
                 {
-                    _Index = index;
-                    return true;
+                    return false;
                 }
 
-                return false;
+                _Index += 1u;
+                return true;
             }
 
             /// <summary>Gets the element at the current position of the enumerator.</summary>
