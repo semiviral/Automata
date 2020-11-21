@@ -32,22 +32,6 @@ namespace Automata.Engine
             RegisterLast<LastOrderSystem>();
         }
 
-        public async ValueTask UpdateAsync(EntityManager entityManager, TimeSpan deltaTime)
-        {
-            foreach (ComponentSystem componentSystem in _ComponentSystems)
-            {
-                if (componentSystem.Enabled && VerifyHandledComponentsExistForSystem(entityManager, componentSystem))
-                {
-                    await componentSystem.UpdateAsync(entityManager, deltaTime).ConfigureAwait(false);
-                }
-            }
-
-            foreach (ComponentChangeable changeable in entityManager.GetComponentsExplicit<ComponentChangeable>())
-            {
-                changeable.Changed = false;
-            }
-        }
-
         /// <summary>
         ///     Returns instantiated system of type <see cref="TSystem" />, if any.
         /// </summary>
@@ -59,34 +43,43 @@ namespace Automata.Engine
         public TSystem GetSystem<TSystem>() where TSystem : ComponentSystem => (_ComponentSystems[typeof(TSystem)] as TSystem)!;
 
 
-        #region Helper Methods
+        #region Update
 
-        private bool VerifyHandledComponentsExistForSystem(EntityManager entityManager, ComponentSystem componentSystem)
+        public async ValueTask UpdateAsync(EntityManager entityManager, TimeSpan deltaTime)
         {
+            foreach (ComponentSystem componentSystem in _ComponentSystems)
+            {
+                if (componentSystem.Enabled && CheckSystemHandledTypesExist(entityManager, componentSystem))
+                {
+                    await componentSystem.UpdateAsync(entityManager, deltaTime).ConfigureAwait(false);
+                }
+            }
+
+            foreach (ComponentChangeable changeable in entityManager.GetComponentsExplicit<ComponentChangeable>())
+            {
+                changeable.Changed = false;
+            }
+        }
+
+        private bool CheckSystemHandledTypesExist(EntityManager entityManager, ComponentSystem componentSystem)
+        {
+            static bool HandledComponentsExistImpl(EntityManager entityManager, HandledComponents handledComponents) => handledComponents.Strategy switch
+            {
+                EnumerationStrategy.Any when handledComponents.All(type => entityManager.GetComponentCount(type) == 0u) => true,
+                EnumerationStrategy.All when handledComponents.Any(type => entityManager.GetComponentCount(type) > 0u) => true,
+                EnumerationStrategy.None when handledComponents.All(type => entityManager.GetComponentCount(type) > 0u) => true,
+                _ => false
+            };
+
             if (_HandledComponentsArrays.TryGetValue(componentSystem.GetType(), out HandledComponents[]? handleComponentsArray))
             {
-                if (handleComponentsArray!.Length is 0)
-                {
-                    return true;
-                }
+                return handleComponentsArray!.Length is 0
+                       || handleComponentsArray.Any(handledComponents => HandledComponentsExistImpl(entityManager, handledComponents));
             }
             else
             {
-                return false;
+                return true;
             }
-
-            foreach (HandledComponents handledComponents in handleComponentsArray)
-            {
-                switch (handledComponents.Strategy)
-                {
-                    case EnumerationStrategy.None when handledComponents.All(type => entityManager.GetComponentCount(type) == 0u):
-                    case EnumerationStrategy.Any when handledComponents.Any(type => entityManager.GetComponentCount(type) > 0u):
-                    case EnumerationStrategy.All when handledComponents.All(type => entityManager.GetComponentCount(type) > 0u): return true;
-                    default: continue;
-                }
-            }
-
-            throw new InvalidOperationException($"{nameof(SystemManager)} has encountered an invalid state attempting to enumerate handled component types.");
         }
 
         #endregion
