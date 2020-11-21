@@ -10,6 +10,7 @@ namespace Automata.Engine
             throw new ArgumentOutOfRangeException(parameterName, message);
 
         public static void ThrowArgumentException(string? parameterName, string? message) => throw new ArgumentException(message, parameterName);
+        public static void ThrowDestinationTooShort() => throw new ArgumentException("Destination too short.");
 
         public static void ThrowNullReferenceException(string? message) => throw new NullReferenceException(message);
 
