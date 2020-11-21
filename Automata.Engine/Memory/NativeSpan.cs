@@ -55,6 +55,7 @@ namespace Automata.Engine.Memory
             _Length = (nuint)array.Length;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void CopyTo(NativeSpan<T> destination)
         {
             if (destination.Length > _Length)
@@ -94,6 +95,22 @@ namespace Automata.Engine.Memory
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Span<T> AsSpan()
+        {
+            if (_Length is 0u)
+            {
+                return Span<T>.Empty;
+            }
+            else if (_Length > int.MaxValue)
+            {
+                ThrowHelper.ThrowArgumentOutOfRangeException(nameof(Length),
+                    $"{nameof(NativeSpan<T>)} is too large to index as a span.");
+            }
+
+            return new Span<T>(_Pointer, (int)_Length);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T[] ToArray()
         {
             if (_Length is 0u)
@@ -109,22 +126,6 @@ namespace Automata.Engine.Memory
             T[] destination = new T[(int)_Length];
             CopyTo(new NativeSpan<T>(destination));
             return destination;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Span<T> ToSpan()
-        {
-            if (_Length is 0u)
-            {
-                return Span<T>.Empty;
-            }
-            else if (_Length > int.MaxValue)
-            {
-                ThrowHelper.ThrowArgumentOutOfRangeException(nameof(Length),
-                    $"{nameof(NativeSpan<T>)} is too large to index as a span.");
-            }
-
-            return new Span<T>(_Pointer, (int)_Length);
         }
 
 
@@ -156,6 +157,8 @@ namespace Automata.Engine.Memory
 
 
         #region IEnumerable
+
+        public Enumerator GetEnumerator() => new Enumerator(this);
 
         public ref struct Enumerator
         {
