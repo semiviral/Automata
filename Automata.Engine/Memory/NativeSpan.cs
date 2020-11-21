@@ -30,7 +30,7 @@ namespace Automata.Engine.Memory
                     ThrowHelper.ThrowIndexOutOfRangeException();
                 }
 
-                return ref Unsafe.AsRef<T>(NativeUnsafe.Add(_Pointer, index));
+                return ref *(_Pointer + index);
             }
         }
 
@@ -71,11 +71,10 @@ namespace Automata.Engine.Memory
             }
             else
             {
-                Buffer.MemoryCopy(_Pointer, destination._Pointer, destination.Length, destination.Length);
+                nuint length = destination.Length * (nuint)sizeof(T);
+                Buffer.MemoryCopy(_Pointer, destination._Pointer, length, length);
             }
         }
-
-        public void CopyTo(Span<T> destination) => CopyTo(destination.AsNative());
 
         public void Clear(T value = default)
         {
@@ -85,19 +84,24 @@ namespace Automata.Engine.Memory
             // this allows us to avoid underflow
             for (; index >= 7u; index -= 8u)
             {
-                Unsafe.Write(NativeUnsafe.Add(_Pointer, index + 0u), value);
-                Unsafe.Write(NativeUnsafe.Add(_Pointer, index + 1u), value);
-                Unsafe.Write(NativeUnsafe.Add(_Pointer, index + 2u), value);
-                Unsafe.Write(NativeUnsafe.Add(_Pointer, index + 3u), value);
-                Unsafe.Write(NativeUnsafe.Add(_Pointer, index + 4u), value);
-                Unsafe.Write(NativeUnsafe.Add(_Pointer, index + 5u), value);
-                Unsafe.Write(NativeUnsafe.Add(_Pointer, index + 6u), value);
-                Unsafe.Write(NativeUnsafe.Add(_Pointer, index + 7u), value);
+                *(_Pointer + (index - 0u)) = value;
+                *(_Pointer + (index - 1u)) = value;
+                *(_Pointer + (index - 2u)) = value;
+                *(_Pointer + (index - 3u)) = value;
+                *(_Pointer + (index - 4u)) = value;
+                *(_Pointer + (index - 5u)) = value;
+                *(_Pointer + (index - 6u)) = value;
+                *(_Pointer + (index - 7u)) = value;
             }
 
-            for (; index >= 0; index--)
+            for (; index is < 7u and >= 0u; index--)
             {
-                Unsafe.Write(NativeUnsafe.Add(_Pointer, index), value);
+                *(_Pointer + index) = value;
+            }
+
+            if (index + 1u is not 0u)
+            {
+                ThrowHelper.ThrowInvalidOperationException("Clear failed unexpectedly.");
             }
         }
 
@@ -135,6 +139,8 @@ namespace Automata.Engine.Memory
             return destination;
         }
 
+        public override string ToString() => $"{nameof(NativeSpan<T>)}({string.Join(", ", ToArray())})";
+
 
         #region Slice
 
@@ -146,7 +152,7 @@ namespace Automata.Engine.Memory
                 ThrowHelper.ThrowIndexOutOfRangeException();
             }
 
-            return new NativeSpan<T>(NativeUnsafe.Add(_Pointer, start), _Length - start);
+            return new NativeSpan<T>(_Pointer + start, _Length - start);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -157,7 +163,7 @@ namespace Automata.Engine.Memory
                 ThrowHelper.ThrowIndexOutOfRangeException();
             }
 
-            return new NativeSpan<T>(NativeUnsafe.Add(_Pointer, start), length);
+            return new NativeSpan<T>(_Pointer + start, length);
         }
 
         #endregion
@@ -208,6 +214,14 @@ namespace Automata.Engine.Memory
         #region NotSupported
 
         public override int GetHashCode() => throw new NotSupportedException();
+
+        #endregion
+
+
+        #region Conversions
+
+        public static implicit operator NativeSpan<T>(T[] array) => new NativeSpan<T>(array);
+        public static implicit operator NativeSpan<T>(Span<T> span) => new NativeSpan<T>(span);
 
         #endregion
     }
