@@ -47,10 +47,13 @@ namespace Automata.Engine.Collections
         {
             if (items is ICollection<T> collection)
             {
-                _InternalArray = ArrayPool<T>.Shared.Rent(collection.Count);
-
-                if (collection.Count > 0)
+                if (collection.Count is 0)
                 {
+                    _InternalArray = ArrayPool<T>.Shared.Rent(_DEFAULT_CAPACITY);
+                }
+                else
+                {
+                    _InternalArray = ArrayPool<T>.Shared.Rent(collection.Count);
                     collection.CopyTo(_InternalArray, 0);
                     Count = collection.Count;
                 }
