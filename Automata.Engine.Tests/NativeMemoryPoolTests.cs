@@ -102,14 +102,17 @@ namespace Automata.Engine.Tests
         public void TestMultiRentAndReturnWithValidation()
         {
             using IMemoryOwner<byte> memoryOwner1 = _NativeMemoryPool.Rent<byte>(1000, (nuint)sizeof(double), out _);
+            _NativeMemoryPool.Rent<short>(1000, (nuint)sizeof(uint), out _).Dispose();
             using IMemoryOwner<int> memoryOwner2 = _NativeMemoryPool.Rent<int>(1000, (nuint)sizeof(double), out _);
             using IMemoryOwner<ushort> memoryOwner3 = _NativeMemoryPool.Rent<ushort>(1000, (nuint)sizeof(double), out _);
+            _NativeMemoryPool.Rent<short>(100110, 11u, out _).Dispose();
             using IMemoryOwner<short> memoryOwner40 = _NativeMemoryPool.Rent<short>(1000, (nuint)sizeof(uint), out _);
-            _NativeMemoryPool.Rent<short>(1000, (nuint)sizeof(uint), out _).Dispose();
-            _NativeMemoryPool.Rent<short>(1000, (nuint)sizeof(uint), out _).Dispose();
+            _NativeMemoryPool.Rent<short>(1000, (nuint)sizeof(double), out _).Dispose();
             using IMemoryOwner<float> memoryOwner5 = _NativeMemoryPool.Rent<float>(1000, (nuint)sizeof(double), out _);
+            _NativeMemoryPool.Rent<short>(1000, (nuint)sizeof(uint), out _).Dispose();
             using IMemoryOwner<uint> memoryOwner6 = _NativeMemoryPool.Rent<uint>(1000, (nuint)sizeof(ushort), out _);
             using IMemoryOwner<ulong> memoryOwner7 = _NativeMemoryPool.Rent<ulong>(1000, (nuint)sizeof(double), out _);
+            _NativeMemoryPool.Rent<short>(100001, 0u, out _).Dispose();
 
             _NativeMemoryPool.ValidateBlocks();
         }

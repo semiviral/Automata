@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
+// ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable ConditionIsAlwaysTrueOrFalse
 
 namespace Automata.Engine.Memory
@@ -15,10 +16,9 @@ namespace Automata.Engine.Memory
         /// </summary>
         private sealed record MemoryBlock(nuint Index, nuint Size, bool Owned);
 
-        private readonly object _AccessLock;
-
-        private readonly LinkedList<MemoryBlock> _MemoryMap;
         private readonly byte* _Pointer;
+        private readonly object _AccessLock;
+        private readonly LinkedList<MemoryBlock> _MemoryMap;
 
         /// <summary>
         ///     Size (in bytes) of the memory pool.
@@ -28,6 +28,9 @@ namespace Automata.Engine.Memory
         /// </remarks>
         public nuint Size { get; }
 
+        /// <summary>
+        ///     Remaining size (in bytes) in the memory pool.
+        /// </summary>
         public nuint RemainingSize { get; private set; }
 
         /// <summary>
@@ -37,11 +40,12 @@ namespace Automata.Engine.Memory
 
         public NativeMemoryPool(byte* pointer, nuint size)
         {
-            RemainingSize = Size = size;
+            _Pointer = pointer;
+            _AccessLock = new object();
             _MemoryMap = new LinkedList<MemoryBlock>();
             _MemoryMap.AddFirst(new MemoryBlock(0u, size, false));
-            _AccessLock = new object();
-            _Pointer = pointer;
+
+            RemainingSize = Size = size;
         }
 
         private LinkedListNode<MemoryBlock> SafeGetFirstNode() => _MemoryMap.First ?? throw new InvalidOperationException("Memory pool is in invalid state.");
@@ -88,36 +92,40 @@ namespace Automata.Engine.Memory
 
             switch (size)
             {
-                case < 0: throw new ArgumentOutOfRangeException(nameof(size), "Size must be non-negative.");
+                case < 0: throw new ArgumentOutOfRangeException(nameof(size), "Size must be non-negative and less than the size of the pool.");
                 case 0: return new NativeMemoryOwner<T>(this, 0, Memory<T>.Empty);
             }
 
             lock (_AccessLock)
             {
-                for (LinkedListNode<MemoryBlock>? current = SafeGetFirstNode(); current is not null; current = current.Next)
+                nuint sizeInBytes = (nuint)size * (nuint)sizeof(T);
+
+                if (sizeInBytes <= RemainingSize)
                 {
-                    // The third argument will be used to define the MemoryBlock sizes. It's assumed that `size` will
-                    // be in units of `T`, so to properly align memory blocks, we need a byte-length representation of
-                    // the provided `size` parameter's value.
-                    nuint sizeInBytes = (nuint)size * (nuint)sizeof(T);
-
-                    if (!TryAllocateMemoryBlock(current, alignment, sizeInBytes))
+                    for (LinkedListNode<MemoryBlock>? current = SafeGetFirstNode(); current is not null; current = current.Next)
                     {
-                        continue;
+                        // The third argument will be used to define the MemoryBlock sizes. It's assumed that `size` will
+                        // be in units of `T`, so to properly align memory blocks, we need a byte-length representation of
+                        // the provided `size` parameter's value.
+
+                        if (!TryAllocateMemoryBlock(current, alignment, sizeInBytes))
+                        {
+                            continue;
+                        }
+
+                        index = current.Value.Index;
+                        IMemoryOwner<T> memoryOwner = CreateMemoryOwner<T>(index, size);
+                        RemainingSize -= sizeInBytes;
+                        RentedBlocks += 1;
+
+                        if (clear)
+                        {
+                            // this can be pretty expensive, so make sure we only clear when the user wants to
+                            memoryOwner.Memory.Span.Clear();
+                        }
+
+                        return memoryOwner;
                     }
-
-                    index = current.Value.Index;
-                    IMemoryOwner<T> memoryOwner = CreateMemoryOwner<T>(index, size);
-                    RemainingSize -= sizeInBytes;
-                    RentedBlocks += 1;
-
-                    if (clear)
-                    {
-                        // this can be pretty expensive, so make sure we only clear when the user wants to
-                        memoryOwner.Memory.Span.Clear();
-                    }
-
-                    return memoryOwner;
                 }
             }
 
@@ -129,8 +137,8 @@ namespace Automata.Engine.Memory
         {
             switch (alignment)
             {
-                case { } when current.Value.Owned: return false;
-                case 0u when !TryAllocateMemoryBlockWithoutAlignment(current, sizeInBytes): return false;
+                case { } when current.Value.Owned:
+                case 0u when !TryAllocateMemoryBlockWithoutAlignment(current, sizeInBytes):
                 case not 0u when !TryAllocateMemoryBlockWithAlignment(current, alignment, sizeInBytes): return false;
             }
 
@@ -178,7 +186,7 @@ namespace Automata.Engine.Memory
             {
                 return false;
             }
-            else if ((alignedIndex == current.Value.Index) && (alignedSize == sizeInBytes))
+            else if (alignmentPadding is 0u && (current.Value.Size == sizeInBytes))
             {
                 current.Value = current.Value with { Owned = true };
             }
@@ -191,7 +199,8 @@ namespace Automata.Engine.Memory
                 {
                     nuint beforeBlockIndex = current.Value.Index;
                     nuint beforeBlockSize = alignmentPadding;
-                    _MemoryMap.AddBefore(current, new MemoryBlock(beforeBlockIndex, beforeBlockSize, false));
+                    MemoryBlock beforeBlock = new MemoryBlock(beforeBlockIndex, beforeBlockSize, false);
+                    _MemoryMap.AddBefore(current, beforeBlock);
 
                     nuint newCurrentSize = current.Value.Size - alignmentPadding;
                     current.Value = current.Value with { Index = alignedIndex, Size = newCurrentSize, Owned = true };
@@ -200,7 +209,8 @@ namespace Automata.Engine.Memory
                 // allocate block after current to hold remaining length
                 nuint afterBlockIndex = current.Value.Index + sizeInBytes;
                 nuint afterBlockSize = current.Value.Size - sizeInBytes;
-                _MemoryMap.AddAfter(current, new MemoryBlock(afterBlockIndex, afterBlockSize, false));
+                MemoryBlock afterBlock = new MemoryBlock(afterBlockIndex, afterBlockSize, false);
+                _MemoryMap.AddAfter(current, afterBlock);
 
                 // modify current block to reflect proper size
                 current.Value = current.Value with { Size = sizeInBytes, Owned = true };
@@ -242,6 +252,9 @@ namespace Automata.Engine.Memory
 
         internal void Return<T>(NativeMemoryOwner<T> memoryOwner) where T : unmanaged
         {
+            Debug.Assert(!memoryOwner.Memory.IsEmpty,
+                $"{nameof(IMemoryOwner<T>)} has already been disposed, does not belong to this pool, or does not have a real block allocated.");
+
             lock (_AccessLock)
             {
                 LinkedListNode<MemoryBlock> current = GetMemoryBlockAtIndex(memoryOwner.Index);
@@ -255,8 +268,8 @@ namespace Automata.Engine.Memory
                 if (before?.Value.Owned is false)
                 {
                     nuint newIndex = before.Value.Index;
-                    nuint newLength = before.Value.Size + current.Value.Size;
-                    current.Value = current.Value with { Index = newIndex, Size = newLength };
+                    nuint newSize = before.Value.Size + current.Value.Size;
+                    current.Value = current.Value with { Index = newIndex, Size = newSize };
                     _MemoryMap.Remove(before);
                 }
 
@@ -268,23 +281,21 @@ namespace Automata.Engine.Memory
                     _MemoryMap.Remove(after);
                 }
 
-                Debug.Assert(RemainingSize <= Size);
+                Debug.Assert(RemainingSize <= Size, "Remaining size is should never be greater than the pool size.");
             }
         }
 
         private LinkedListNode<MemoryBlock> GetMemoryBlockAtIndex(nuint index)
         {
-            LinkedListNode<MemoryBlock>? current = SafeGetFirstNode();
-
-            do
+            for (LinkedListNode<MemoryBlock>? current = SafeGetFirstNode(); current is not null; current = current.Next)
             {
-                if (current!.Value.Index == index)
+                if (current.Value.Index == index)
                 {
                     return current;
                 }
-            } while ((current = current!.Next) is not null);
+            }
 
-            throw new ArgumentOutOfRangeException(nameof(index), "No memory block starts at index.");
+            throw new InvalidOperationException($"No block exists for memory owner: {index}.");
         }
 
         #endregion
