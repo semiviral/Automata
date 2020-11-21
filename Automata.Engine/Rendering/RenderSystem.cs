@@ -79,7 +79,7 @@ namespace Automata.Engine.Rendering
             }, Key.F4);
         }
 
-        [SkipLocalsInit, HandledComponents(DistinctionStrategy.All, typeof(Camera))]
+        [SkipLocalsInit, HandledComponents(EnumerationStrategy.All, typeof(Camera))]
         public override unsafe ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta)
         {
             _GL.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));

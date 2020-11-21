@@ -8,9 +8,9 @@ namespace Automata.Engine
 {
     public sealed class EntityManager : IDisposable
     {
+        private readonly Dictionary<Type, IEnumerable> _CachedEnumerators;
         private readonly Dictionary<Type, nint> _ComponentCounts;
         private readonly NonAllocatingList<IEntity> _Entities;
-        private readonly Dictionary<Type, IEnumerable> _CachedEnumerators;
 
         public nint EntityCount => _Entities.Count;
 
@@ -51,6 +51,21 @@ namespace Automata.Engine
         }
 
 
+        #region IDisposable
+
+        public void Dispose()
+        {
+            foreach (IEntity entity in _Entities)
+            {
+                entity.Dispose();
+            }
+
+            _Entities.Dispose();
+        }
+
+        #endregion
+
+
         #region Entity Create / Remove
 
         public IEntity CreateEntity(params Component[] components)
@@ -60,7 +75,7 @@ namespace Automata.Engine
             foreach (Component component in components)
             {
                 entity.Add(component);
-                IncrementComponentCount(component.GetType());
+                IncrementComponentCount(component);
             }
 
             _Entities.Add(entity);
@@ -71,7 +86,7 @@ namespace Automata.Engine
         {
             foreach (Component component in entity)
             {
-                DecrementComponentCount(component.GetType());
+                DecrementComponentCount(component);
             }
 
             _Entities.Remove(entity);
@@ -86,20 +101,6 @@ namespace Automata.Engine
         #region Component Register / Remove
 
         /// <summary>
-        ///     Removes the specified component instance from given <see cref="IEntity" />.
-        /// </summary>
-        /// <param name="entity"><see cref="IEntity" /> to remove component from.</param>
-        /// <typeparam name="TComponent">Type of component to remove.</typeparam>
-        /// <remarks>
-        ///     Use this method to ensure <see cref="EntityManager" /> caches remain accurate.
-        /// </remarks>
-        public void RemoveComponent<TComponent>(IEntity entity) where TComponent : Component
-        {
-            entity.Remove<TComponent>();
-            DecrementComponentCount<TComponent>();
-        }
-
-        /// <summary>
         ///     Registers the specified component instance to the given <see cref="IEntity" />.
         /// </summary>
         /// <param name="entity"><see cref="IEntity" /> to add component to.</param>
@@ -110,7 +111,7 @@ namespace Automata.Engine
         public void RegisterComponent(IEntity entity, Component component)
         {
             entity.Add(component);
-            IncrementComponentCount(component.GetType());
+            IncrementComponentCount(component);
         }
 
         /// <summary>
@@ -127,6 +128,20 @@ namespace Automata.Engine
             IncrementComponentCount<TComponent>();
 
             return component;
+        }
+
+        /// <summary>
+        ///     Removes the specified component instance from given <see cref="IEntity" />.
+        /// </summary>
+        /// <param name="entity"><see cref="IEntity" /> to remove component from.</param>
+        /// <typeparam name="TComponent">Type of component to remove.</typeparam>
+        /// <remarks>
+        ///     Use this method to ensure <see cref="EntityManager" /> caches remain accurate.
+        /// </remarks>
+        public void RemoveComponent<TComponent>(IEntity entity) where TComponent : Component
+        {
+            entity.Remove<TComponent>();
+            DecrementComponentCount<TComponent>();
         }
 
         #endregion
@@ -403,9 +418,9 @@ namespace Automata.Engine
 
         #region Component Count
 
-        private void IncrementComponentCount(Type type)
+        private void IncrementComponentCount(Component component)
         {
-            Debug.Assert(type.IsSubclassOf(typeof(Component)), type.FullName);
+            Type type = component.GetType();
 
             if (!_ComponentCounts.TryAdd(type, 1))
             {
@@ -421,6 +436,14 @@ namespace Automata.Engine
             }
         }
 
+        private void DecrementComponentCount(Component component)
+        {
+            Type type = component.GetType();
+            _ComponentCounts[type] -= 1;
+
+            Debug.Assert(_ComponentCounts[type] >= 0, $"{nameof(EntityManager)} component count for '{type.FullName}' is in an invalid state.");
+        }
+
         private void DecrementComponentCount<TComponent>() where TComponent : Component
         {
             _ComponentCounts[typeof(TComponent)] -= 1;
@@ -429,34 +452,10 @@ namespace Automata.Engine
                 $"{nameof(EntityManager)} component count for '{typeof(TComponent).FullName}' is in an invalid state.");
         }
 
-        private void DecrementComponentCount(Type type)
-        {
-            Debug.Assert(type.IsSubclassOf(typeof(Component)), type.FullName);
-
-            _ComponentCounts[type] -= 1;
-
-            Debug.Assert(_ComponentCounts[type] >= 0, $"{nameof(EntityManager)} component count for '{type.FullName}' is in an invalid state.");
-        }
-
         public nint GetComponentCount(Type type) => _ComponentCounts.TryGetValue(type, out nint count) ? count : 0;
 
         public nint GetComponentCount<TComponent>() where TComponent : Component =>
             _ComponentCounts.TryGetValue(typeof(TComponent), out nint count) ? count : 0;
-
-        #endregion
-
-
-        #region IDisposable
-
-        public void Dispose()
-        {
-            foreach (IEntity entity in _Entities)
-            {
-                entity.Dispose();
-            }
-
-            _Entities.Dispose();
-        }
 
         #endregion
     }

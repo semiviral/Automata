@@ -10,8 +10,8 @@ namespace Automata.Engine.Input
         public override void Registered(EntityManager entityManager) =>
             AutomataWindow.Instance.FocusChanged += (_, focused) => Enabled = focused;
 
-        [HandledComponents(DistinctionStrategy.All, typeof(Rotation), typeof(MouseListener)),
-         HandledComponents(DistinctionStrategy.All, typeof(Translation), typeof(KeyboardListener))]
+        [HandledComponents(EnumerationStrategy.All, typeof(Rotation), typeof(MouseListener)),
+         HandledComponents(EnumerationStrategy.All, typeof(Translation), typeof(KeyboardListener))]
         public override ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta)
         {
             HandleMouseListeners(entityManager, delta);

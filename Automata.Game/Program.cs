@@ -100,9 +100,9 @@ static void InitializeWindowImpl()
 static void InitializeWorldImpl(out World world)
 {
     world = new VoxelWorld(true);
-    world.SystemManager.RegisterSystem<InputSystem, FirstOrderSystem>(SystemRegistrationOrder.Before);
-    world.SystemManager.RegisterSystem<RenderSystem, LastOrderSystem>(SystemRegistrationOrder.Before);
-    world.SystemManager.RegisterSystem<AllocatedMeshingSystem<uint, PackedVertex>, RenderSystem>(SystemRegistrationOrder.Before);
+    world.SystemManager.RegisterBefore<InputSystem, FirstOrderSystem>();
+    world.SystemManager.RegisterBefore<RenderSystem, LastOrderSystem>();
+    world.SystemManager.RegisterBefore<AllocatedMeshingSystem<uint, PackedVertex>, RenderSystem>();
 
     AllocatedMeshingSystem<uint, PackedVertex> allocatedMeshingSystem = world.SystemManager.GetSystem<AllocatedMeshingSystem<uint, PackedVertex>>();
 
@@ -123,9 +123,9 @@ static void InitializeWorldImpl(out World world)
 
     allocatedMeshingSystem.SetTexture("Blocks", TextureAtlas.Instance.Blocks!);
 
-    world.SystemManager.RegisterSystem<ChunkRegionLoaderSystem, DefaultOrderSystem>(SystemRegistrationOrder.Before);
-    world.SystemManager.RegisterSystem<ChunkModificationsSystem, DefaultOrderSystem>(SystemRegistrationOrder.Before);
-    world.SystemManager.RegisterSystem<ChunkGenerationSystem, DefaultOrderSystem>(SystemRegistrationOrder.Before);
+    world.SystemManager.RegisterBefore<ChunkRegionLoaderSystem, DefaultOrderSystem>();
+    world.SystemManager.RegisterBefore<ChunkModificationsSystem, ChunkRegionLoaderSystem>();
+    world.SystemManager.RegisterBefore<ChunkGenerationSystem, ChunkModificationsSystem>();
     World.RegisterWorld("Overworld", world);
 }
 

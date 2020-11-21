@@ -22,7 +22,7 @@ namespace Automata.Game.Chunks
                 $"Average update time: {DiagnosticsProvider.GetGroup<ChunkModificationsDiagnosticGroup>().Average():0.00}ms")), Key.ShiftLeft, Key.C);
         }
 
-        [HandledComponents(DistinctionStrategy.All, typeof(Chunk))]
+        [HandledComponents(EnumerationStrategy.All, typeof(Chunk))]
         public override ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta)
         {
             Stopwatch stopwatch = DiagnosticsPool.Stopwatches.Rent();

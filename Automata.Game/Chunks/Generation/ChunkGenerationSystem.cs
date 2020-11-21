@@ -50,7 +50,7 @@ namespace Automata.Game.Chunks.Generation
             }, Key.ShiftLeft, Key.V);
         }
 
-        [HandledComponents(DistinctionStrategy.All, typeof(Translation), typeof(Chunk))]
+        [HandledComponents(EnumerationStrategy.All, typeof(Translation), typeof(Chunk))]
         public override ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta)
         {
             // empty channel of any pending meshes, apply the meshes, and update the material
