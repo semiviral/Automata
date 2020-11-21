@@ -80,11 +80,12 @@ namespace Automata.Engine.Collections
             int newCapacity = Math.Max(minimumCapacity, idealCapacity);
 
             T[] newArray = ArrayPool<T>.Shared.Rent(newCapacity);
-            Segment.CopyTo(newArray);
+            CopyTo(newArray);
             _InternalArray = newArray;
         }
 
         public void Fill(T item) => Segment.Fill(item);
+        public void CopyTo(Span<T> span) => Segment.CopyTo(span);
         public bool IsReadOnly => Disposed;
 
         public int Count { get; private set; }
