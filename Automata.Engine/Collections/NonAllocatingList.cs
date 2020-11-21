@@ -116,9 +116,9 @@ namespace Automata.Engine.Collections
         ///     Whether to compress the capacity of the <see cref="NonAllocatingList{T}" />.
         /// </param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Clear(bool compress)
+        public void Clear(bool compress = false)
         {
-            if (Count > 0)
+            if (Count is 0)
             {
                 return;
             }
