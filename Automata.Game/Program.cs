@@ -18,6 +18,7 @@ using Silk.NET.Windowing.Common;
 
 MainImpl();
 await AutomataWindow.Instance.RunAsync();
+AutomataWindow.Instance.Dispose();
 
 
 #region Main
