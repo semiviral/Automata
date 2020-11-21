@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Automata.Engine.Collections;
-using Automata.Engine.Components;
 
 namespace Automata.Engine
 {

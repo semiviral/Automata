@@ -2,7 +2,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Automata.Engine.Collections;
-using Automata.Engine.Components;
 
 // ReSharper disable InvertIf
 // ReSharper disable ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator

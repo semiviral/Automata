@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Automata.Engine;
-using Automata.Engine.Components;
 using Automata.Engine.Diagnostics;
 using Automata.Engine.Extensions;
 using Automata.Engine.Input;

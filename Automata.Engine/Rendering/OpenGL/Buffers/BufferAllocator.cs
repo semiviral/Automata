@@ -32,7 +32,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
         #region IDisposable
 
-        protected override void SafeDispose()
+        protected override void CleanupNativeResources()
         {
             GL.UnmapNamedBuffer(Handle);
             GL.DeleteBuffer(Handle);

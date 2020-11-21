@@ -1,9 +1,8 @@
 using System;
-using Automata.Engine.Components;
 
 namespace Automata.Engine.Rendering.Meshes
 {
-    public class RenderMesh : ComponentChangeable, IDisposable
+    public class RenderMesh : ComponentChangeable
     {
         private IMesh? _Mesh;
 
@@ -19,10 +18,11 @@ namespace Automata.Engine.Rendering.Meshes
 
         public bool ShouldRender => Mesh?.Visible is true;
 
-        public void Dispose()
-        {
-            _Mesh?.Dispose();
-            GC.SuppressFinalize(this);
-        }
+
+        #region IDisposable
+
+        protected override void CleanupManagedResources() => _Mesh?.Dispose();
+
+        #endregion
     }
 }

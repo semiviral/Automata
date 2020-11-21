@@ -1,9 +1,8 @@
 using System;
-using Automata.Engine.Components;
 
 namespace Automata.Engine.Rendering.Meshes
 {
-    public class AllocatedMeshData<TIndex, TVertex> : Component, IDisposable
+    public class AllocatedMeshData<TIndex, TVertex> : Component
         where TIndex : unmanaged, IEquatable<TIndex>
         where TVertex : unmanaged, IEquatable<TVertex>
     {
@@ -14,11 +13,7 @@ namespace Automata.Engine.Rendering.Meshes
 
         #region IDisposable
 
-        public void Dispose()
-        {
-            Data.Dispose();
-            GC.SuppressFinalize(this);
-        }
+        protected override void CleanupManagedResources() => Data.Dispose();
 
         #endregion
     }

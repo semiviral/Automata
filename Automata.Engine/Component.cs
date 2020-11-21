@@ -1,6 +1,6 @@
 using System;
 
-namespace Automata.Engine.Components
+namespace Automata.Engine
 {
     public abstract class Component : IEquatable<Component>, IDisposable
     {

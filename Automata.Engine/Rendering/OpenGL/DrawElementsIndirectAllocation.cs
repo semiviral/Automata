@@ -1,5 +1,4 @@
 using System;
-using Automata.Engine.Components;
 using Automata.Engine.Rendering.OpenGL.Buffers;
 
 namespace Automata.Engine.Rendering.OpenGL
@@ -39,11 +38,7 @@ namespace Automata.Engine.Rendering.OpenGL
 
         #region IDisposable
 
-        public void Dispose()
-        {
-            Allocation?.Dispose();
-            GC.SuppressFinalize(this);
-        }
+        protected override void CleanupManagedResources() => Allocation?.Dispose();
 
         #endregion
     }

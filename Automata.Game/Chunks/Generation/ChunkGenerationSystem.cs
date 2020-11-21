@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Automata.Engine;
 using Automata.Engine.Collections;
-using Automata.Engine.Components;
 using Automata.Engine.Concurrency;
 using Automata.Engine.Diagnostics;
 using Automata.Engine.Input;

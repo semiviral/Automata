@@ -94,7 +94,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
         #region IDisposable
 
-        protected override void SafeDispose() => GL.DeleteBuffer(Handle);
+        protected override void CleanupNativeResources() => GL.DeleteBuffer(Handle);
 
         #endregion
     }

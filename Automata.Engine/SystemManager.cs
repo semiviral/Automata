@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Automata.Engine.Collections;
-using Automata.Engine.Components;
 using Serilog;
 
 namespace Automata.Engine

@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Automata.Engine.Components;
 
 namespace Automata.Engine
 {

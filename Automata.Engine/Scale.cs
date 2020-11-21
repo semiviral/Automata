@@ -1,4 +1,4 @@
-namespace Automata.Engine.Components
+namespace Automata.Engine
 {
     public class Scale : ComponentChangeable
     {

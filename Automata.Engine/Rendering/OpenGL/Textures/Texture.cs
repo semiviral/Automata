@@ -79,13 +79,6 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
         }
 
 
-        #region IDisposable
-
-        protected override void SafeDispose() => GL.DeleteTexture(Handle);
-
-        #endregion
-
-
         #region Binding
 
         /// <summary>
@@ -148,6 +141,12 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
 
         public static bool operator ==(Texture? left, Texture? right) => Equals(left, right);
         public static bool operator !=(Texture? left, Texture? right) => !Equals(left, right);
+
+        #endregion
+
+        #region IDisposable
+
+        protected override void CleanupNativeResources() => GL.DeleteTexture(Handle);
 
         #endregion
     }

@@ -9,6 +9,12 @@ namespace Automata.Engine.Rendering.OpenGL
 {
     public abstract class OpenGLObject : IDisposable
     {
+#if DEBUG
+        private static readonly ConcurrentDictionary<uint, OpenGLObject> _ObjectsAlive = new ConcurrentDictionary<uint, OpenGLObject>();
+        public static IReadOnlyDictionary<uint, OpenGLObject> ObjectsAlive => _ObjectsAlive;
+        private readonly uint _RandomKey;
+#endif
+
         protected readonly GL GL;
 
         public uint Handle { get; protected init; }
@@ -23,26 +29,31 @@ namespace Automata.Engine.Rendering.OpenGL
 
             GL = gl;
         }
-#if DEBUG
-        private static readonly ConcurrentDictionary<uint, OpenGLObject> _ObjectsAlive = new ConcurrentDictionary<uint, OpenGLObject>();
-        public static IReadOnlyDictionary<uint, OpenGLObject> ObjectsAlive => _ObjectsAlive;
-        private readonly uint _RandomKey;
-#endif
 
 
         #region IDisposable
 
         public void Dispose()
         {
+            Dispose(false);
+
+            Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, $"{nameof(OpenGLObject)} 0x{Handle:x})", "OpenGL object disposed."));
+            GC.SuppressFinalize(this);
+        }
+
+        private void Dispose(bool finalizer)
+        {
             if (Disposed)
             {
                 return;
             }
 
-            SafeDispose();
+            if (!finalizer)
+            {
+                CleanupManagedResources();
+            }
 
-            Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, $"{nameof(OpenGLObject)} 0x{Handle:x})", "OpenGL object disposed."));
-            GC.SuppressFinalize(this);
+            CleanupNativeResources();
             Disposed = true;
 
 #if DEBUG
@@ -50,7 +61,10 @@ namespace Automata.Engine.Rendering.OpenGL
 #endif
         }
 
-        protected virtual void SafeDispose() { }
+        protected virtual void CleanupManagedResources() { }
+        protected virtual void CleanupNativeResources() { }
+
+        ~OpenGLObject() => Dispose(true);
 
         #endregion
     }

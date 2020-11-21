@@ -2,7 +2,6 @@
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Automata.Engine;
-using Automata.Engine.Components;
 using Automata.Engine.Concurrency;
 using Automata.Engine.Input;
 using Automata.Engine.Rendering;

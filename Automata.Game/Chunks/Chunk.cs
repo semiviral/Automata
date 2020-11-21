@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Automata.Engine;
 using Automata.Engine.Collections;
-using Automata.Engine.Components;
 using Automata.Game.Blocks;
 
 namespace Automata.Game.Chunks

@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace Automata.Engine.Components
+namespace Automata.Engine
 {
     public class Rotation : ComponentChangeable
     {

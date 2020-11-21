@@ -6,7 +6,6 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Automata.Engine.Components;
 using Automata.Engine.Input;
 using Automata.Engine.Numerics;
 using Automata.Engine.Numerics.Shapes;

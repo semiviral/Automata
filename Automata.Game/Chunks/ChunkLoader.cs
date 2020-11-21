@@ -1,4 +1,4 @@
-using Automata.Engine.Components;
+using Automata.Engine;
 using Automata.Engine.Numerics;
 
 namespace Automata.Game.Chunks

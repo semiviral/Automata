@@ -50,7 +50,7 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
 
         #region IDisposable
 
-        protected override void SafeDispose() => GL.DeleteProgramPipeline(Handle);
+        protected override void CleanupNativeResources() => GL.DeleteProgramPipeline(Handle);
 
         #endregion
 

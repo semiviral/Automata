@@ -1,4 +1,3 @@
-using Automata.Engine.Components;
 using Automata.Engine.Numerics.Shapes;
 
 namespace Automata.Engine.Rendering

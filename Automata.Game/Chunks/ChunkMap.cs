@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Automata.Engine;
 using Automata.Engine.Collections;
-using Automata.Engine.Components;
 using Automata.Engine.Numerics;
 using Automata.Engine.Numerics.Shapes;
 using Automata.Engine.Rendering;

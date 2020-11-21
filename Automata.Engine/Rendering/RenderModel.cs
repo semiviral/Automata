@@ -1,5 +1,4 @@
 using System.Numerics;
-using Automata.Engine.Components;
 
 namespace Automata.Engine.Rendering
 {
