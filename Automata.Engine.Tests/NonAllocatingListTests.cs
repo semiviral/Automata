@@ -37,7 +37,7 @@ namespace Automata.Engine.Tests
         [Fact]
         public void Remove()
         {
-            NonAllocatingList<uint> list = new NonAllocatingList<uint>
+            using  NonAllocatingList<uint> list = new NonAllocatingList<uint>
             {
                 0u,
                 1u,
@@ -74,7 +74,7 @@ namespace Automata.Engine.Tests
         [Fact]
         public void RemoveAt()
         {
-            NonAllocatingList<uint> list = new NonAllocatingList<uint>
+            using NonAllocatingList<uint> list = new NonAllocatingList<uint>
             {
                 0u,
                 1u,
@@ -106,6 +106,30 @@ namespace Automata.Engine.Tests
 
             Debug.Assert(list.Count is 8);
             Debug.Assert(list[7u] is 9u);
+        }
+
+        [Fact]
+        public void IndexOf()
+        {
+            using NonAllocatingList<uint> list = new NonAllocatingList<uint>
+            {
+                0u,
+                1u,
+                2u,
+                3u,
+                4u,
+                5u,
+                6u,
+                7u,
+                8u,
+                9u,
+                10u
+            };
+
+            Debug.Assert(list.IndexOf(0u) is 0);
+            Debug.Assert(list.IndexOf(4u) is 4);
+            Debug.Assert(list.IndexOf(7u) is 7);
+            Debug.Assert(list.IndexOf(10u) is 10);
         }
 
         [Fact]
