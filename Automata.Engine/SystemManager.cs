@@ -102,7 +102,7 @@ namespace Automata.Engine
             where TSystem : ComponentSystem, new()
             where TBeforeSystem : ComponentSystem
         {
-            TSystem componentSystem = new();
+            TSystem componentSystem = new TSystem();
             _ComponentSystems.AddBefore<TBeforeSystem>(componentSystem);
             RegisterSystemInternal(componentSystem);
 
@@ -113,7 +113,7 @@ namespace Automata.Engine
             where TSystem : ComponentSystem, new()
             where TAfterSystem : ComponentSystem
         {
-            TSystem componentSystem = new();
+            TSystem componentSystem = new TSystem();
             _ComponentSystems.AddBefore<TAfterSystem>(componentSystem);
             RegisterSystemInternal(componentSystem);
 
@@ -122,7 +122,7 @@ namespace Automata.Engine
 
         public void RegisterFirst<TSystem>() where TSystem : ComponentSystem, new()
         {
-            TSystem componentSystem = new();
+            TSystem componentSystem = new TSystem();
             _ComponentSystems.AddFirst(componentSystem);
             RegisterSystemInternal(componentSystem);
 
@@ -131,7 +131,7 @@ namespace Automata.Engine
 
         public void RegisterLast<TSystem>() where TSystem : ComponentSystem, new()
         {
-            TSystem componentSystem = new();
+            TSystem componentSystem = new TSystem();
             _ComponentSystems.AddLast(componentSystem);
             RegisterSystemInternal(componentSystem);
 

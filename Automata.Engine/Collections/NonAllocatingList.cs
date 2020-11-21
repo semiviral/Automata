@@ -10,7 +10,7 @@ namespace Automata.Engine.Collections
     {
         private const int _DEFAULT_CAPACITY = 1;
 
-        public static readonly NonAllocatingList<T> Empty = new(0);
+        public static readonly NonAllocatingList<T> Empty = new NonAllocatingList<T>(0);
 
         private T[] _InternalArray;
 
@@ -22,7 +22,7 @@ namespace Automata.Engine.Collections
         /// <summary>
         ///     Wraps the currently addressed section (determined by <see cref="Count" />) of the internal array.
         /// </summary>
-        public Span<T> Segment => new(_InternalArray, 0, Count);
+        public Span<T> Segment => new Span<T>(_InternalArray, 0, Count);
 
         /// <summary>
         ///     Whether the <see cref="NonAllocatingList{T}" /> is empty.
@@ -370,7 +370,7 @@ namespace Automata.Engine.Collections
 
         #region IEnumerable
 
-        public Enumerator GetEnumerator() => new(this);
+        public Enumerator GetEnumerator() => new Enumerator(this);
         IEnumerator<T> IEnumerable<T>.GetEnumerator() => new Enumerator(this);
         IEnumerator IEnumerable.GetEnumerator() => new Enumerator(this);
 

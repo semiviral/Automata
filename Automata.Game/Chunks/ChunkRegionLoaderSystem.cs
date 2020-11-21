@@ -98,7 +98,7 @@ namespace Automata.Game.Chunks
         private void RecalculateChunkRegions(EntityManager entityManager)
         {
             // this calculates new chunk allocations and current chunk deallocations
-            HashSet<Vector3i> withinLoaderRange = new(GetOriginsWithinLoaderRanges(entityManager.GetComponents<ChunkLoader>()));
+            HashSet<Vector3i> withinLoaderRange = new HashSet<Vector3i>(GetOriginsWithinLoaderRanges(entityManager.GetComponents<ChunkLoader>()));
 
             foreach (Vector3i origin in withinLoaderRange.Except(VoxelWorld.Chunks.Origins))
             {
@@ -151,7 +151,7 @@ namespace Automata.Game.Chunks
         {
             foreach (ChunkLoader chunkLoader in enumerable)
             {
-                Vector3i chunkLoaderOriginYAdjusted = new(chunkLoader.Origin.X, 0, chunkLoader.Origin.Z);
+                Vector3i chunkLoaderOriginYAdjusted = new Vector3i(chunkLoader.Origin.X, 0, chunkLoader.Origin.Z);
 
                 for (int y = 0; y < GenerationConstants.WORLD_HEIGHT_IN_CHUNKS; y++)
                 for (int z = -chunkLoader.Radius; z < (chunkLoader.Radius + 1); z++)

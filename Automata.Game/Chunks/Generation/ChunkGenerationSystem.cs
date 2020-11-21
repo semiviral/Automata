@@ -124,7 +124,7 @@ namespace Automata.Game.Chunks.Generation
                 DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new BuildingTime(stopwatch.Elapsed));
                 stopwatch.Restart();
 
-                Palette<Block> palette = new(GenerationConstants.CHUNK_SIZE_CUBED, new Block(BlockRegistry.AirID));
+                Palette<Block> palette = new Palette<Block>(GenerationConstants.CHUNK_SIZE_CUBED, new Block(BlockRegistry.AirID));
 
                 for (int index = 0; index < GenerationConstants.CHUNK_SIZE_CUBED; index++)
                 {
@@ -153,13 +153,13 @@ namespace Automata.Game.Chunks.Generation
             }
 
             IStructure testStructure = new TreeStructure();
-            Random random = new(origin.GetHashCode());
+            Random random = new Random(origin.GetHashCode());
 
             for (int y = 0, index = 0; y < GenerationConstants.CHUNK_SIZE; y++)
             for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
             for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++, index++)
             {
-                Vector3i offset = new(x, y, z);
+                Vector3i offset = new Vector3i(x, y, z);
 
                 if (_CurrentWorld is null || !testStructure.CheckPlaceStructureAt(_CurrentWorld, random, origin + offset))
                 {

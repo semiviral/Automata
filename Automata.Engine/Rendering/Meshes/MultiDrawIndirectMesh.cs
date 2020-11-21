@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Numerics;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
@@ -135,10 +134,10 @@ namespace Automata.Engine.Rendering.Meshes
         #region Renting
 
         public BufferArrayMemory<TIndex> RentIndexBufferArrayMemory(nuint alignment, ReadOnlySpan<TIndex> data) =>
-            new(_IndexAllocator, alignment, data);
+            new BufferArrayMemory<TIndex>(_IndexAllocator, alignment, data);
 
         public BufferArrayMemory<TVertex> RentVertexBufferArrayMemory(nuint alignment, ReadOnlySpan<TVertex> data) =>
-            new(_VertexAllocator, alignment, data);
+            new BufferArrayMemory<TVertex>(_VertexAllocator, alignment, data);
 
         #endregion
     }

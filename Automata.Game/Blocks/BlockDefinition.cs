@@ -26,11 +26,6 @@ namespace Automata.Game.Blocks
 
     public sealed class BlockDefinition : IBlockDefinition
     {
-        public ushort ID { get; }
-        public string BlockName { get; }
-        public int MeshingStrategyIndex { get; }
-        public IBlockDefinition.Attribute Attributes { get; }
-
         public BlockDefinition(ushort id, string blockName, int meshingStrategyIndex, params IBlockDefinition.Attribute[] properties)
         {
             ID = id;
@@ -42,6 +37,11 @@ namespace Automata.Game.Blocks
                 Attributes |= property;
             }
         }
+
+        public ushort ID { get; }
+        public string BlockName { get; }
+        public int MeshingStrategyIndex { get; }
+        public IBlockDefinition.Attribute Attributes { get; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool HasAttribute(IBlockDefinition.Attribute flag) => (Attributes & flag) == flag;

@@ -26,8 +26,8 @@ namespace Automata.Engine
 
     public class AutomataWindow : Singleton<AutomataWindow>, IDisposable
     {
-        private readonly APIVersion _PreferredOGLVersion = new(4, 6);
-        private readonly APIVersion _PreferredVulkanVersion = new(1, 2);
+        private readonly APIVersion _PreferredOGLVersion = new APIVersion(4, 6);
+        private readonly APIVersion _PreferredVulkanVersion = new APIVersion(1, 2);
 
         private TimeSpan _MinimumFrameTime;
 
@@ -127,8 +127,8 @@ namespace Automata.Engine
         {
             try
             {
-                Stopwatch deltaTimer = new();
-                BoundedConcurrentQueue<double> fps = new(60);
+                Stopwatch deltaTimer = new Stopwatch();
+                BoundedConcurrentQueue<double> fps = new BoundedConcurrentQueue<double>(60);
                 fps.Enqueue(0d); // so we don't get a 'Sequence contains no elements' exception.
 
                 while (!Window.IsClosing)

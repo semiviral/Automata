@@ -53,7 +53,7 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
         {
             using Image<TPixel> image = Image.Load<TPixel>(path);
             image.Mutate(img => img.Flip(FlipMode.Vertical));
-            Texture2D<TPixel> texture = new(new Vector2i(image.Width, image.Height), wrapMode, filterMode, mipmap);
+            Texture2D<TPixel> texture = new Texture2D<TPixel>(new Vector2i(image.Width, image.Height), wrapMode, filterMode, mipmap);
             texture.SetPixels(Vector3i.Zero, new Vector2i(image.Width, image.Height), image.GetPixelSpan());
 
             return texture;

@@ -177,7 +177,7 @@ namespace Automata.Engine.Rendering
                 return false;
             }
 
-            ClipFrustum frustum = new(planes, mvp);
+            ClipFrustum frustum = new ClipFrustum(planes, mvp);
             Frustum.Intersect intersection = Frustum.Intersect.Outside;
 
             return
@@ -276,7 +276,7 @@ namespace Automata.Engine.Rendering
 
         private void UpdateViewport()
         {
-            Vector4 viewport = new(0f, 0f, AutomataWindow.Instance.Size.X, AutomataWindow.Instance.Size.Y);
+            Vector4 viewport = new Vector4(0f, 0f, AutomataWindow.Instance.Size.X, AutomataWindow.Instance.Size.Y);
             _BuiltInUniforms.Write(_BUILT_IN_VIEWPORT_UNIFORMS_OFFSET, viewport);
         }
 

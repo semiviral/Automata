@@ -7,7 +7,7 @@ namespace Automata.Engine.Memory
     public static class SpanExtensions
     {
         public static NativeSpan<T> AsNative<T>(this Span<T> span) where T : unmanaged =>
-            new(ref span.GetPinnableReference(), (nuint)span.Length);
+            new NativeSpan<T>(ref span.GetPinnableReference(), (nuint)span.Length);
     }
 
     public readonly unsafe ref struct NativeSpan<T> where T : unmanaged
@@ -177,7 +177,7 @@ namespace Automata.Engine.Memory
 
         #region IEnumerable
 
-        public Enumerator GetEnumerator() => new(this);
+        public Enumerator GetEnumerator() => new Enumerator(this);
 
         public ref struct Enumerator
         {
@@ -226,8 +226,8 @@ namespace Automata.Engine.Memory
 
         #region Conversions
 
-        public static implicit operator NativeSpan<T>(T[] array) => new(array);
-        public static implicit operator NativeSpan<T>(Span<T> span) => new(span);
+        public static implicit operator NativeSpan<T>(T[] array) => new NativeSpan<T>(array);
+        public static implicit operator NativeSpan<T>(Span<T> span) => new NativeSpan<T>(span);
 
         #endregion
     }

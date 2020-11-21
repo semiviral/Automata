@@ -23,7 +23,7 @@ namespace Automata.Engine
         {
             Strategy = strategy;
 
-            HashSet<Type> processed = new();
+            HashSet<Type> processed = new HashSet<Type>();
 
             int hashCode = 17;
 

@@ -200,7 +200,7 @@ namespace Automata.Engine.Memory
                 {
                     nuint beforeBlockIndex = current.Value.Index;
                     nuint beforeBlockSize = alignmentPadding;
-                    MemoryBlock beforeBlock = new(beforeBlockIndex, beforeBlockSize, false);
+                    MemoryBlock beforeBlock = new MemoryBlock(beforeBlockIndex, beforeBlockSize, false);
                     _MemoryMap.AddBefore(current, beforeBlock);
 
                     nuint newCurrentSize = current.Value.Size - alignmentPadding;
@@ -210,7 +210,7 @@ namespace Automata.Engine.Memory
                 // allocate block after current to hold remaining length
                 nuint afterBlockIndex = current.Value.Index + sizeInBytes;
                 nuint afterBlockSize = current.Value.Size - sizeInBytes;
-                MemoryBlock afterBlock = new(afterBlockIndex, afterBlockSize, false);
+                MemoryBlock afterBlock = new MemoryBlock(afterBlockIndex, afterBlockSize, false);
                 _MemoryMap.AddAfter(current, afterBlock);
 
                 // modify current block to reflect proper size
@@ -240,7 +240,7 @@ namespace Automata.Engine.Memory
             // T will not often be the same size as _Pointer (i.e. a byte), so it's important to take care in calling this
             // method with a valid index and size that won't misalign. With this in mind, ensure that instantiating the
             // NativeMemoryManager ALWAYS uses the units-of-T size.
-            NativeMemoryManager<T> memoryManager = new((T*)(_Pointer + index), size);
+            NativeMemoryManager<T> memoryManager = new NativeMemoryManager<T>((T*)(_Pointer + index), size);
             IMemoryOwner<T> memoryOwner = new NativeMemoryOwner<T>(this, index, memoryManager.Memory);
 
             return memoryOwner;
