@@ -3,7 +3,7 @@ VSync=false
 
 [WorldGeneration]
 SingleThreadedGeneration=false
-GenerationRadius=12
+GenerationRadius=9
 
 [Diagnostic]
 DisableTemporalDiagnostics=false

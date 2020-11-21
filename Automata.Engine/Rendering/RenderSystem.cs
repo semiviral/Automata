@@ -93,12 +93,11 @@ namespace Automata.Engine.Rendering
                 UpdateViewport();
             }
 
-            // ensure we bind the builtins UBO every frame
+            // ensure we bind the builtins UBO
             _BuiltInUniforms.Bind();
 
             foreach ((IEntity cameraEntity, Camera camera) in entityManager.GetEntitiesWithComponents<Camera>())
             {
-                // check for changes and update current camera's view matrix & UBO data
                 CheckUpdateCameraView(cameraEntity, camera);
 
                 // if the aspect ratio has changed, update the current camera's projection matrix
