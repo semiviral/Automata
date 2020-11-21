@@ -179,6 +179,37 @@ namespace Automata.Engine.Tests
         }
 
         [Fact]
+        public void Contains()
+        {
+            using NonAllocatingList<uint> list = new()
+            {
+                0u,
+                1u,
+                2u,
+                3u,
+                4u,
+                5u,
+                6u,
+                7u,
+                8u,
+                9u,
+                10u
+            };
+
+            Debug.Assert(list.Contains(0u));
+            Debug.Assert(list.Contains(1u));
+            Debug.Assert(list.Contains(2u));
+            Debug.Assert(list.Contains(3u));
+            Debug.Assert(list.Contains(4u));
+            Debug.Assert(list.Contains(5u));
+            Debug.Assert(list.Contains(6u));
+            Debug.Assert(list.Contains(7u));
+            Debug.Assert(list.Contains(8u));
+            Debug.Assert(list.Contains(9u));
+            Debug.Assert(list.Contains(10u));
+        }
+
+        [Fact]
         public void AddRange()
         {
             using NonAllocatingList<uint> list = new();
