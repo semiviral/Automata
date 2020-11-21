@@ -24,7 +24,10 @@ namespace Automata.Engine.Memory
 
         public void Dispose()
         {
-            if (Memory.IsEmpty) return;
+            if (Memory.IsEmpty)
+            {
+                return;
+            }
 
             _NativeMemoryPool.Return(this);
             Memory = Memory<T>.Empty;

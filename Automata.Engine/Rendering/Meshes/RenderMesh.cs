@@ -1,5 +1,3 @@
-using System;
-
 namespace Automata.Engine.Rendering.Meshes
 {
     public class RenderMesh : ComponentChangeable

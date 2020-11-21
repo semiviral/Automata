@@ -1,5 +1,4 @@
-﻿using System;
-using BenchmarkDotNet.Reports;
+﻿using BenchmarkDotNet.Reports;
 using BenchmarkDotNet.Running;
 
 namespace Automata.Engine.Benchmarks
@@ -9,6 +8,7 @@ namespace Automata.Engine.Benchmarks
         private static void Main(string[] args)
         {
             Summary summary = BenchmarkRunner.Run<BenchmarkNativeSpan>();
+
             //Console.ReadKey();
         }
     }

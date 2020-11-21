@@ -8,14 +8,11 @@ using Automata.Engine.Collections;
 using Automata.Engine.Input;
 using Automata.Engine.Numerics;
 using Automata.Engine.Rendering.OpenGL;
-using Automata.Engine.Rendering.Vulkan;
 using Serilog;
 using Silk.NET.Core.Contexts;
 using Silk.NET.GLFW;
 using Silk.NET.Input.Common;
-using Silk.NET.OpenAL;
 using Silk.NET.OpenGL;
-using Silk.NET.Vulkan;
 using Silk.NET.Windowing.Common;
 using ErrorCode = Silk.NET.GLFW.ErrorCode;
 
@@ -66,13 +63,10 @@ namespace Automata.Engine
 
         #region Creation
 
-
-
         public void CreateWindow(WindowOptions windowOptions, ContextAPI contextAPI)
         {
             IWindow ConstructWindow(WindowOptions options)
             {
-
                 options.API = contextAPI switch
                 {
                     ContextAPI.OpenGL => new GraphicsAPI(contextAPI, ContextProfile.Core, ContextFlags.Debug, _PreferredOGLVersion),
@@ -224,7 +218,10 @@ namespace Automata.Engine
 
         public void Dispose()
         {
-            if (Disposed) return;
+            if (Disposed)
+            {
+                return;
+            }
 
             _Window?.Dispose();
 

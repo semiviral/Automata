@@ -4,9 +4,6 @@ namespace Automata.Engine.Rendering.Vulkan.KHR
 {
     public class Swapchain : VulkanObject
     {
-        public Swapchain(Vk vk) : base(vk)
-        {
-
-        }
+        public Swapchain(Vk vk) : base(vk) { }
     }
 }

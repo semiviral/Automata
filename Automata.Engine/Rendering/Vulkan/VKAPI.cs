@@ -22,8 +22,6 @@ namespace Automata.Engine.Rendering.Vulkan
 
         private const int _MAX_FRAMES_IN_FLIGHT = 2;
 
-
-
         private static readonly string _VulkanSurfaceCreationFormat = $"({nameof(VKAPI)}) Creating surface: {{0}}";
         private static readonly string _VulkanDebugMessengerCreationFormat = $"({nameof(VKAPI)}) Creating debug messenger: {{0}}";
         private static readonly string _VulkanPhysicalDeviceSelectionFormat = $"({nameof(VKAPI)}) Selecting physical device: {{0}}";
@@ -96,7 +94,8 @@ namespace Automata.Engine.Rendering.Vulkan
 
         public VKAPI() => VK = Vk.GetApi();
 
-        public VulkanInstance GenerateNewInstance(IVkSurface vkSurface) => new VulkanInstance(Instance.VK, vkSurface, "Automata.Game", new Version32(0u, 1u, 0u),
+        public VulkanInstance GenerateNewInstance(IVkSurface vkSurface) => new VulkanInstance(Instance.VK, vkSurface, "Automata.Game",
+            new Version32(0u, 1u, 0u),
             "Automata.Engine", new Version32(0u, 1u, 0u), Vk.Version12, _InstanceExtensions, true, _ValidationLayers);
 
         public VulkanInstance GenerateNewInstance(IVkSurface vkSurface, string applicationName, Version32 applicationVersion, string engineName,
@@ -142,7 +141,6 @@ namespace Automata.Engine.Rendering.Vulkan
         public void DefaultInitialize()
         {
             Log.Information($"({nameof(VKAPI)}) Initializing Vulkan: -begin-");
-
 
             SelectPhysicalDevice();
             CreateLogicalDevice();

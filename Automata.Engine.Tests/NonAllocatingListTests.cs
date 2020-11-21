@@ -11,18 +11,20 @@ namespace Automata.Engine.Tests
         {
             using NonAllocatingList<uint> list = new NonAllocatingList<uint>();
 
-            list.AddRange(stackalloc []
+            list.AddRange(stackalloc[]
             {
-                0u, 1u
+                0u,
+                1u
             });
 
             Debug.Assert(list.Count is 2);
             Debug.Assert(list[0] is 0u);
             Debug.Assert(list[1] is 1u);
 
-            list.AddRange(stackalloc []
+            list.AddRange(stackalloc[]
             {
-                2u, 3u
+                2u,
+                3u
             });
 
             Debug.Assert(list.Count is 4);
@@ -37,18 +39,20 @@ namespace Automata.Engine.Tests
         {
             using NonAllocatingList<uint> list = new NonAllocatingList<uint>();
 
-            list.InsertRange(0, stackalloc []
+            list.InsertRange(0, stackalloc[]
             {
-                0u, 3u
+                0u,
+                3u
             });
 
             Debug.Assert(list.Count is 2);
             Debug.Assert(list[0] is 0u);
             Debug.Assert(list[1] is 3u);
 
-            list.InsertRange(1, stackalloc []
+            list.InsertRange(1, stackalloc[]
             {
-                1u, 2u
+                1u,
+                2u
             });
 
             Debug.Assert(list.Count is 4);

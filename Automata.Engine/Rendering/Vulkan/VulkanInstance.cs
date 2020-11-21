@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Automata.Engine.Extensions;
 using Serilog;
@@ -7,7 +6,6 @@ using Silk.NET.Core.Contexts;
 using Silk.NET.Core.Native;
 using Silk.NET.GLFW;
 using Silk.NET.Vulkan;
-using Silk.NET.Vulkan.Extensions.KHR;
 
 namespace Automata.Engine.Rendering.Vulkan
 {
