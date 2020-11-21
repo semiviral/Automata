@@ -98,7 +98,7 @@ namespace Automata.Game.Chunks
         private void RecalculateChunkRegions(EntityManager entityManager)
         {
             // this calculates new chunk allocations and current chunk deallocations
-            HashSet<Vector3i> withinLoaderRange = new HashSet<Vector3i>(GetOriginsWithinLoaderRanges(entityManager.GetComponents<ChunkLoader>()));
+            HashSet<Vector3i> withinLoaderRange = GetOriginsWithinLoadersRanges(entityManager);
 
             foreach (Vector3i origin in withinLoaderRange.Except(VoxelWorld.Chunks.Origins))
             {
@@ -147,9 +147,11 @@ namespace Automata.Game.Chunks
             }
         }
 
-        private static IEnumerable<Vector3i> GetOriginsWithinLoaderRanges(IEnumerable<ChunkLoader> enumerable)
+        private static HashSet<Vector3i> GetOriginsWithinLoadersRanges(EntityManager entityManager)
         {
-            foreach (ChunkLoader chunkLoader in enumerable)
+            HashSet<Vector3i> withinLoaderRange = new HashSet<Vector3i>();
+
+            foreach (ChunkLoader chunkLoader in entityManager.GetComponents<ChunkLoader>())
             {
                 Vector3i chunkLoaderOriginYAdjusted = new Vector3i(chunkLoader.Origin.X, 0, chunkLoader.Origin.Z);
 
@@ -157,9 +159,11 @@ namespace Automata.Game.Chunks
                 for (int z = -chunkLoader.Radius; z < (chunkLoader.Radius + 1); z++)
                 for (int x = -chunkLoader.Radius; x < (chunkLoader.Radius + 1); x++)
                 {
-                    yield return chunkLoaderOriginYAdjusted + (new Vector3i(x, y, z) * GenerationConstants.CHUNK_SIZE);
+                    withinLoaderRange.Add(chunkLoaderOriginYAdjusted + (new Vector3i(x, y, z) * GenerationConstants.CHUNK_SIZE));
                 }
             }
+
+            return withinLoaderRange;
         }
 
         private IEnumerable<Chunk?> GetNeighborsOfOrigin(Vector3i origin)
