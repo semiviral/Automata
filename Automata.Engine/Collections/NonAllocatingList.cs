@@ -9,19 +9,14 @@ namespace Automata.Engine.Collections
     {
         private const int _DEFAULT_CAPACITY = 1;
 
-        public static readonly NonAllocatingList<T> Empty = new NonAllocatingList<T>(0);
+        public static readonly NonAllocatingList<T> Empty = new(0);
 
         private T[] _InternalArray;
 
         public bool Disposed { get; private set; }
 
-        public Span<T> Segment => new Span<T>(_InternalArray, 0, Count);
-        public bool IsReadOnly => Disposed;
+        public Span<T> Segment => new(_InternalArray, 0, Count);
         public bool IsEmpty => Count <= 0;
-
-        public int Count { get; private set; }
-
-        public T this[int index] { get => _InternalArray[(uint)index]; set => _InternalArray[(uint)index] = value; }
 
         public T this[uint index]
         {
@@ -48,39 +43,7 @@ namespace Automata.Engine.Collections
         public NonAllocatingList() : this(_DEFAULT_CAPACITY) { }
         public NonAllocatingList(int minimumCapacity) => _InternalArray = ArrayPool<T>.Shared.Rent(minimumCapacity);
 
-        public void Add(T item)
-        {
-            if (Count >= _InternalArray.Length)
-            {
-                EnsureCapacityOrResize(Count + 1);
-            }
-
-            _InternalArray[Count] = item;
-            Count += 1;
-        }
-
         public void AddRange(ReadOnlySpan<T> items) => InsertRange(Count, items);
-
-        public void Insert(int index, T item)
-        {
-            if (index > Count)
-            {
-                ThrowHelper.ThrowIndexOutOfRangeException();
-            }
-            else if (index == Count)
-            {
-                EnsureCapacityOrResize(Count + 1);
-            }
-
-            // this copies everything from index..Count to index + 1
-            else if (index < Count)
-            {
-                Segment.Slice(index).CopyTo(_InternalArray.AsSpan().Slice(index + 1));
-            }
-
-            _InternalArray[index] = item;
-            Count += 1;
-        }
 
         public void InsertRange(int index, ReadOnlySpan<T> items)
         {
@@ -119,6 +82,45 @@ namespace Automata.Engine.Collections
             T[] newArray = ArrayPool<T>.Shared.Rent(newCapacity);
             Segment.CopyTo(newArray);
             _InternalArray = newArray;
+        }
+
+        public void Fill(T item) => Segment.Fill(item);
+        public bool IsReadOnly => Disposed;
+
+        public int Count { get; private set; }
+
+        public T this[int index] { get => _InternalArray[(uint)index]; set => _InternalArray[(uint)index] = value; }
+
+        public void Add(T item)
+        {
+            if (Count >= _InternalArray.Length)
+            {
+                EnsureCapacityOrResize(Count + 1);
+            }
+
+            _InternalArray[Count] = item;
+            Count += 1;
+        }
+
+        public void Insert(int index, T item)
+        {
+            if (index > Count)
+            {
+                ThrowHelper.ThrowIndexOutOfRangeException();
+            }
+            else if (index == Count)
+            {
+                EnsureCapacityOrResize(Count + 1);
+            }
+
+            // this copies everything from index..Count to index + 1
+            else if (index < Count)
+            {
+                Segment.Slice(index).CopyTo(_InternalArray.AsSpan().Slice(index + 1));
+            }
+
+            _InternalArray[index] = item;
+            Count += 1;
         }
 
         public bool Remove(T item)
@@ -172,7 +174,7 @@ namespace Automata.Engine.Collections
 
         #region IEnumerable
 
-        public Enumerator GetEnumerator() => new Enumerator(this);
+        public Enumerator GetEnumerator() => new(this);
         IEnumerator<T> IEnumerable<T>.GetEnumerator() => new Enumerator(this);
         IEnumerator IEnumerable.GetEnumerator() => new Enumerator(this);
 
@@ -180,9 +182,8 @@ namespace Automata.Engine.Collections
         {
             private readonly NonAllocatingList<T> _List;
             private uint _Index;
-            private T? _Current;
 
-            public T Current => _Current!;
+            public T Current { get; private set; }
 
             object? IEnumerator.Current
             {
@@ -193,7 +194,7 @@ namespace Automata.Engine.Collections
                         ThrowHelper.ThrowInvalidOperationException("Enumerable has not been enumerated.");
                     }
 
-                    return _Current;
+                    return Current;
                 }
             }
 
@@ -201,7 +202,7 @@ namespace Automata.Engine.Collections
             {
                 _List = list;
                 _Index = 0u;
-                _Current = default;
+                Current = default;
             }
 
             public bool MoveNext()
@@ -211,7 +212,7 @@ namespace Automata.Engine.Collections
                     return false;
                 }
 
-                _Current = _List._InternalArray[_Index];
+                Current = _List._InternalArray[_Index];
                 _Index += 1u;
                 return true;
             }
@@ -219,7 +220,7 @@ namespace Automata.Engine.Collections
             void IEnumerator.Reset()
             {
                 _Index = 0u;
-                _Current = default;
+                Current = default;
             }
 
 
