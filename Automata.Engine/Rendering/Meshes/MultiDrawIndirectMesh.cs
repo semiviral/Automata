@@ -91,14 +91,14 @@ namespace Automata.Engine.Rendering.Meshes
             _CommandBuffer.Bind(BufferTargetARB.DrawIndirectBuffer);
 
 #if DEBUG
-            void VerifyVertexBufferBinding(uint index, BufferObject buffer)
+            void VerifyVertexBufferBindingImpl(uint index, BufferObject buffer)
             {
                 _GL.GetInteger(GLEnum.VertexBindingBuffer, index, out int actual);
                 Debug.Assert((uint)actual == buffer.Handle, $"VertexBindingBuffer index {index} is not set to the correct buffer.");
             }
 
-            VerifyVertexBufferBinding(0u, _VertexAllocator);
-            VerifyVertexBufferBinding(1u, _ModelBuffer);
+            VerifyVertexBufferBindingImpl(0u, _VertexAllocator);
+            VerifyVertexBufferBindingImpl(1u, _ModelBuffer);
 #endif
 
             _GL.MultiDrawElementsIndirect(PrimitiveType.Triangles, _DrawElementsType, (void*)null!, DrawCommandCount, 0u);
@@ -109,7 +109,15 @@ namespace Automata.Engine.Rendering.Meshes
         #endregion
 
 
+        #region IDisposable
+
         public void Dispose()
+        {
+            CleanupNativeResources();
+            GC.SuppressFinalize(this);
+        }
+
+        private void CleanupNativeResources()
         {
             _BufferSync.Dispose();
             _CommandBuffer.Dispose();
@@ -117,9 +125,11 @@ namespace Automata.Engine.Rendering.Meshes
             _VertexAllocator.Dispose();
             _VertexArrayObject.Dispose();
             _ModelBuffer.Dispose();
-
-            GC.SuppressFinalize(this);
         }
+
+        ~MultiDrawIndirectMesh() => CleanupNativeResources();
+
+        #endregion
 
 
         #region Renting

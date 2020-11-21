@@ -144,6 +144,7 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
 
         #endregion
 
+
         #region IDisposable
 
         protected override void CleanupNativeResources() => GL.DeleteTexture(Handle);
