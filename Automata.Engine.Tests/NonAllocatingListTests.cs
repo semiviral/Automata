@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Automata.Engine.Collections;
-using Silk.NET.Vulkan;
 using Xunit;
 
 namespace Automata.Engine.Tests
@@ -22,7 +21,7 @@ namespace Automata.Engine.Tests
                 Debug.Assert(list[length - 1].Equals(item));
             }
 
-            using NonAllocatingList<uint> list = new NonAllocatingList<uint>();
+            using NonAllocatingList<uint> list = new();
 
             AddAndVerifyImpl(list, 0u, 1);
             AddAndVerifyImpl(list, 1u, 2);
@@ -37,7 +36,7 @@ namespace Automata.Engine.Tests
         [Fact]
         public void Remove()
         {
-            using  NonAllocatingList<uint> list = new NonAllocatingList<uint>
+            using NonAllocatingList<uint> list = new()
             {
                 0u,
                 1u,
@@ -74,7 +73,7 @@ namespace Automata.Engine.Tests
         [Fact]
         public void RemoveAt()
         {
-            using NonAllocatingList<uint> list = new NonAllocatingList<uint>
+            using NonAllocatingList<uint> list = new()
             {
                 0u,
                 1u,
@@ -111,7 +110,7 @@ namespace Automata.Engine.Tests
         [Fact]
         public void IndexOf()
         {
-            using NonAllocatingList<uint> list = new NonAllocatingList<uint>
+            using NonAllocatingList<uint> list = new()
             {
                 0u,
                 1u,
@@ -133,9 +132,32 @@ namespace Automata.Engine.Tests
         }
 
         [Fact]
+        public void Clear()
+        {
+            using NonAllocatingList<uint> list = new()
+            {
+                0u,
+                1u,
+                2u,
+                3u,
+                4u,
+                5u,
+                6u,
+                7u,
+                8u,
+                9u,
+                10u
+            };
+
+            list.Clear();
+
+            Debug.Assert(list.Count is 0);
+        }
+
+        [Fact]
         public void AddRange()
         {
-            using NonAllocatingList<uint> list = new NonAllocatingList<uint>();
+            using NonAllocatingList<uint> list = new();
 
             list.AddRange(stackalloc[]
             {
@@ -163,7 +185,7 @@ namespace Automata.Engine.Tests
         [Fact]
         public void InsertRange()
         {
-            using NonAllocatingList<uint> list = new NonAllocatingList<uint>();
+            using NonAllocatingList<uint> list = new();
 
             list.InsertRange(0, stackalloc[]
             {
