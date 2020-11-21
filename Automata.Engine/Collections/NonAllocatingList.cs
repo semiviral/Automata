@@ -43,6 +43,29 @@ namespace Automata.Engine.Collections
         public NonAllocatingList() : this(_DEFAULT_CAPACITY) { }
         public NonAllocatingList(int minimumCapacity) => _InternalArray = ArrayPool<T>.Shared.Rent(minimumCapacity);
 
+        public NonAllocatingList(IEnumerable<T> items)
+        {
+            if (items is ICollection<T> collection)
+            {
+                _InternalArray = ArrayPool<T>.Shared.Rent(collection.Count);
+
+                if (collection.Count > 0)
+                {
+                    collection.CopyTo(_InternalArray, 0);
+                    Count = collection.Count;
+                }
+            }
+            else
+            {
+                _InternalArray = ArrayPool<T>.Shared.Rent(_DEFAULT_CAPACITY);
+
+                foreach (T item in items)
+                {
+                    Add(item);
+                }
+            }
+        }
+
         public void AddRange(ReadOnlySpan<T> items) => InsertRange(Count, items);
 
         public void InsertRange(int index, ReadOnlySpan<T> items)
@@ -84,8 +107,10 @@ namespace Automata.Engine.Collections
             _InternalArray = newArray;
         }
 
-        public void Fill(T item) => Segment.Fill(item);
         public void CopyTo(Span<T> span) => Segment.CopyTo(span);
+
+        public void Fill(T item) => Segment.Fill(item);
+
         public bool IsReadOnly => Disposed;
 
         public int Count { get; private set; }
@@ -158,7 +183,9 @@ namespace Automata.Engine.Collections
         }
 
         public bool Contains(T item) => (Count != 0) && (IndexOf(item) != -1);
+
         public int IndexOf(T item) => Segment.IndexOf(item);
+
         public void CopyTo(T[] array, int arrayIndex) => Segment.CopyTo(new Span<T>(array, arrayIndex, array.Length - arrayIndex));
 
         public void Clear()
@@ -182,6 +209,7 @@ namespace Automata.Engine.Collections
         public struct Enumerator : IEnumerator<T>
         {
             private readonly NonAllocatingList<T> _List;
+
             private uint _Index;
 
             public T Current { get; private set; }
@@ -203,7 +231,7 @@ namespace Automata.Engine.Collections
             {
                 _List = list;
                 _Index = 0u;
-                Current = default;
+                Current = default!;
             }
 
             public bool MoveNext()
@@ -221,7 +249,7 @@ namespace Automata.Engine.Collections
             void IEnumerator.Reset()
             {
                 _Index = 0u;
-                Current = default;
+                Current = default!;
             }
 
 
