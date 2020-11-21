@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Automata.Engine.Collections;
 
 // ReSharper disable InvertIf
@@ -62,6 +63,7 @@ namespace Automata.Engine
             return component;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public TComponent? Find<TComponent>() where TComponent : Component
         {
             foreach (Component component in _Components)
@@ -75,6 +77,7 @@ namespace Automata.Engine
             return null;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryFind<TComponent>([NotNullWhen(true)] out TComponent? result) where TComponent : Component
         {
             foreach (Component component in _Components)
@@ -90,6 +93,7 @@ namespace Automata.Engine
             return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains<TComponent>() where TComponent : Component
         {
             foreach (Component component in _Components)
@@ -132,6 +136,7 @@ namespace Automata.Engine
             return success;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Component? Find(Type type)
         {
             foreach (Component component in _Components)
@@ -145,6 +150,7 @@ namespace Automata.Engine
             return null;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(Type type) => Find(type) is not null;
 
         #endregion

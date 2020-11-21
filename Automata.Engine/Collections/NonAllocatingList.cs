@@ -379,8 +379,9 @@ namespace Automata.Engine.Collections
             private readonly NonAllocatingList<T> _List;
 
             private uint _Index;
+            private T? _Current;
 
-            public T Current { get; private set; }
+            public T Current => _Current!;
 
             object? IEnumerator.Current
             {
@@ -399,7 +400,7 @@ namespace Automata.Engine.Collections
             {
                 _List = list;
                 _Index = 0u;
-                Current = default!;
+                _Current = default!;
             }
 
             public bool MoveNext()
@@ -409,7 +410,7 @@ namespace Automata.Engine.Collections
                     return false;
                 }
 
-                Current = _List._InternalArray[_Index];
+                _Current = _List._InternalArray[_Index];
                 _Index += 1u;
                 return true;
             }
@@ -417,7 +418,7 @@ namespace Automata.Engine.Collections
             void IEnumerator.Reset()
             {
                 _Index = 0u;
-                Current = default!;
+                _Current = default!;
             }
 
 
