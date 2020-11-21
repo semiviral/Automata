@@ -1,5 +1,6 @@
 using System;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
@@ -11,12 +12,19 @@ namespace Automata.Engine.Numerics
 {
     public readonly partial struct Vector3i
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3i FromVector3(Vector3 a) => new Vector3i((int)a.X, (int)a.Y, (int)a.Z);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3i FromVector3d(Vector3d a) => new Vector3i((int)a.X, (int)a.Y, (int)a.Z);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3i RoundBy(Vector3i a, Vector3i by) => (a / by) * by;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3i RoundBy(Vector3i a, int by) => (a / by) * by;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3i Project3D(int index, int bounds)
         {
             int xQuotient = Math.DivRem(index, bounds, out int x);
@@ -25,16 +33,26 @@ namespace Automata.Engine.Numerics
             return new Vector3i(x, y, z);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Project1D(Vector3i a, int size) => a.X + (size * (a.Z + (size * a.Y)));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Project1D(int x, int y, int z, int size) => x + (size * (z + (size * y)));
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static long Sum(Vector3i a) => a.X + a.Y + a.Z;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3i Abs(Vector3i a) => AbsImpl(a);
 
-        public static Vector3i Mod(Vector3i a, Vector3i mod) => ModImpl(a, mod);
-        public static Vector3i Mod(Vector3i a, int mod) => ModImpl(a, mod);
-        public static Vector3i Mod(int a, Vector3i mod) => ModImpl(a, mod);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static Vector3i Mod(Vector3i a, Vector3i mod) => ModImpl(a, mod);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static Vector3i Mod(Vector3i a, int mod) => ModImpl(a, mod);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static Vector3i Mod(int a, Vector3i mod) => ModImpl(a, mod);
 
 
         #region Intrinsics

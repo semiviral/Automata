@@ -7,7 +7,7 @@ namespace Automata.Engine.Benchmarks
     {
         private static void Main(string[] args)
         {
-            Summary summary = BenchmarkRunner.Run<BenchmarkNativeSpan>();
+            Summary summary = BenchmarkRunner.Run<OpenSimplexSlimBenchmark>();
 
             //Console.ReadKey();
         }
