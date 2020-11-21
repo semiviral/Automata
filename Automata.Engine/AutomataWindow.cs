@@ -26,8 +26,8 @@ namespace Automata.Engine
 
     public class AutomataWindow : Singleton<AutomataWindow>, IDisposable
     {
-        private readonly APIVersion _PreferredOGLVersion = new APIVersion(4, 6);
-        private readonly APIVersion _PreferredVulkanVersion = new APIVersion(1, 2);
+        private readonly APIVersion _PreferredOGLVersion = new(4, 6);
+        private readonly APIVersion _PreferredVulkanVersion = new(1, 2);
 
         private TimeSpan _MinimumFrameTime;
 
@@ -58,6 +58,7 @@ namespace Automata.Engine
         public AutomataWindow() => Focused = true;
 
         public GL GetOpenGLContext() => GL.GetApi(Window.GLContext);
+
         public IVkSurface GetSurface() => Window.VkSurface ?? throw new NullReferenceException(nameof(Window.VkSurface));
 
 
@@ -65,7 +66,7 @@ namespace Automata.Engine
 
         public void CreateWindow(WindowOptions windowOptions, ContextAPI contextAPI)
         {
-            IWindow ConstructWindow(WindowOptions options)
+            IWindow ConstructWindowImpl(WindowOptions options)
             {
                 options.API = contextAPI switch
                 {
@@ -84,7 +85,7 @@ namespace Automata.Engine
 
             try
             {
-                _Window = ConstructWindow(windowOptions);
+                _Window = ConstructWindowImpl(windowOptions);
                 _Window.Initialize();
             }
             catch (GlfwException glfwException) when (glfwException.ErrorCode is ErrorCode.VersionUnavailable)
@@ -117,7 +118,7 @@ namespace Automata.Engine
             Log.Information(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(AutomataWindow), $"VSync framerate configured to {refreshRate} FPS."));
         }
 
-        #endregion
+        #endregion Creation
 
 
         #region Runtime
@@ -145,9 +146,9 @@ namespace Automata.Engine
                     if (!Window.IsClosing)
                     {
                         await World.GlobalUpdateAsync(deltaTime);
-                    }
 
-                    InputManager.Instance.CheckAndExecuteInputActions();
+                        InputManager.Instance.CheckAndExecuteInputActions();
+                    }
 
                     Window.DoEvents();
                     Window.SwapBuffers();
@@ -165,23 +166,25 @@ namespace Automata.Engine
             {
                 Log.Error(string.Format(_LogFormat, $"exception occured: {ex}\r\n{ex.StackTrace}"));
             }
+            finally
+            {
+                Dispose();
+            }
         }
 
         private bool CheckWaitForNextMonitorRefresh() => Window.VSync is VSyncMode.On;
 
-        private void WaitForNextMonitorRefresh(Stopwatch deltaTimer)
-        {
-            bool MinimumFrameTimeElapsed() => deltaTimer.Elapsed >= _MinimumFrameTime;
-            SpinWait.SpinUntil(MinimumFrameTimeElapsed);
-        }
+        private void WaitForNextMonitorRefresh(Stopwatch deltaTimer) { SpinWait.SpinUntil(() => deltaTimer.Elapsed >= _MinimumFrameTime); }
 
-        #endregion
+        #endregion Runtime
 
 
         #region Events
 
         public event WindowResizedEventHandler? Resized;
+
         public event WindowFocusChangedEventHandler? FocusChanged;
+
         public event WindowClosingEventHandler? Closing;
 
         private void OnWindowResized(Size size)
@@ -209,7 +212,7 @@ namespace Automata.Engine
 #endif
         }
 
-        #endregion
+        #endregion Events
 
 
         #region IDisposable
@@ -229,6 +232,16 @@ namespace Automata.Engine
             Disposed = true;
         }
 
-        #endregion
+        ~AutomataWindow()
+        {
+            if (Disposed)
+            {
+                return;
+            }
+
+            _Window?.Dispose();
+        }
+
+        #endregion IDisposable
     }
 }

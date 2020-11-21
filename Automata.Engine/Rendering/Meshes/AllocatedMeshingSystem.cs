@@ -52,7 +52,6 @@ namespace Automata.Engine.Rendering.Meshes
                 }
 
                 entityManager.RemoveComponent<AllocatedMeshData<TIndex, TVertex>>(entity);
-                Log.Information(entityManager.GetComponentCount<AllocatedMeshData<TIndex, TVertex>>().ToString());
             }
 
             if (recreateCommandBuffer)
@@ -100,7 +99,7 @@ namespace Automata.Engine.Rendering.Meshes
 
         public void FinalizeVertexArrayObject() => _MultiDrawIndirectMesh!.FinalizeVertexArrayObject();
 
-        #endregion
+        #endregion State
 
 
         #region Data Processing
@@ -109,8 +108,9 @@ namespace Automata.Engine.Rendering.Meshes
         private unsafe void ProcessDrawElementsIndirectAllocations(EntityManager entityManager)
         {
             // rent from array pools to avoid allocations where possible
-            // we could use stackalloc here, and work with spans directly, but that's liable to end up in a StackOverflowException
-            // for very large render distances.
+            //
+            // we could use stackalloc here and work with stack memory directly, but that's liable to end up in a StackOverflowException for
+            // very large render distances
             int drawIndirectAllocationsCount = (int)entityManager.GetComponentCount<DrawElementsIndirectAllocation<TIndex, TVertex>>();
             DrawElementsIndirectCommand[] commands = ArrayPool<DrawElementsIndirectCommand>.Shared.Rent(drawIndirectAllocationsCount);
             Matrix4x4[] models = ArrayPool<Matrix4x4>.Shared.Rent(drawIndirectAllocationsCount);
@@ -120,10 +120,9 @@ namespace Automata.Engine.Rendering.Meshes
             foreach ((IEntity entity, DrawElementsIndirectAllocation<TIndex, TVertex> allocation) in
                 entityManager.GetEntitiesWithComponents<DrawElementsIndirectAllocation<TIndex, TVertex>>())
             {
-                Debug.Assert(drawIndirectAllocationsCount == (int)entityManager.GetComponentCount<DrawElementsIndirectAllocation<TIndex, TVertex>>());
                 Debug.Assert(allocation.Allocation is not null);
 
-                commands[index] = new DrawElementsIndirectCommand(allocation.Allocation!.VertexArrayMemory.Count, 1u,
+                commands[index] = new DrawElementsIndirectCommand(allocation.Allocation!.IndexesArrayMemory.Count, 1u,
                     (uint)(allocation.Allocation!.IndexesArrayMemory.Index / (nuint)sizeof(TIndex)),
                     (uint)(allocation.Allocation!.VertexArrayMemory.Index / (nuint)sizeof(TVertex)), (uint)index);
 
@@ -196,6 +195,6 @@ namespace Automata.Engine.Rendering.Meshes
             }
         }
 
-        #endregion
+        #endregion Data Processing
     }
 }

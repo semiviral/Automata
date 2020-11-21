@@ -7,7 +7,7 @@ namespace Automata.Engine.Memory
     public static class SpanExtensions
     {
         public static NativeSpan<T> AsNative<T>(this Span<T> span) where T : unmanaged =>
-            new NativeSpan<T>(ref span.GetPinnableReference(), (nuint)span.Length);
+            new(ref span.GetPinnableReference(), (nuint)span.Length);
     }
 
     public readonly unsafe ref struct NativeSpan<T> where T : unmanaged
@@ -15,17 +15,17 @@ namespace Automata.Engine.Memory
         public static NativeSpan<T> Empty => default;
 
         private readonly T* _Pointer;
-        private readonly nuint _Length;
 
-        public nuint Length => _Length;
-        public bool IsEmpty => _Length is 0u;
+        public nuint Length { get; }
+
+        public bool IsEmpty => Length is 0u;
 
         public ref T this[nuint index]
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                if (index >= _Length)
+                if (index >= Length)
                 {
                     ThrowHelper.ThrowIndexOutOfRangeException();
                 }
@@ -38,34 +38,40 @@ namespace Automata.Engine.Memory
         public NativeSpan(T* pointer, nuint length)
         {
             _Pointer = pointer;
-            _Length = length;
+            Length = length;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public NativeSpan(ref T pointer, nuint length)
         {
             _Pointer = (T*)Unsafe.AsPointer(ref pointer);
-            _Length = length;
+            Length = length;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public NativeSpan(Span<T> span)
         {
             _Pointer = (T*)Unsafe.AsPointer(ref MemoryMarshal.GetReference(span));
-            _Length = (nuint)span.Length;
+            Length = (nuint)span.Length;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public NativeSpan(T[] array)
         {
             _Pointer = (T*)Unsafe.AsPointer(ref MemoryMarshal.GetArrayDataReference(array));
-            _Length = (nuint)array.Length;
+            Length = (nuint)array.Length;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void CopyTo(NativeSpan<T> destination)
         {
-            if (destination.Length > _Length)
+            if (destination._Pointer == _Pointer)
+            {
+                // there's no point copying inside itself
+                return;
+            }
+
+            if (destination.Length > Length)
             {
                 ThrowHelper.ThrowDestinationTooShort();
             }
@@ -78,7 +84,7 @@ namespace Automata.Engine.Memory
 
         public void Clear(T value = default)
         {
-            nuint index = _Length - 1u;
+            nuint index = Length - 1u;
 
             // decrement downwards, down to >= our decrement alignment
             // this allows us to avoid underflow
@@ -108,33 +114,33 @@ namespace Automata.Engine.Memory
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Span<T> AsSpan()
         {
-            if (_Length is 0u)
+            if (Length is 0u)
             {
                 return Span<T>.Empty;
             }
-            else if (_Length > int.MaxValue)
+            else if (Length > int.MaxValue)
             {
                 ThrowHelper.ThrowArgumentOutOfRangeException(nameof(Length),
                     $"{nameof(NativeSpan<T>)} is too large to index as a span.");
             }
 
-            return new Span<T>(_Pointer, (int)_Length);
+            return new Span<T>(_Pointer, (int)Length);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T[] ToArray()
         {
-            if (_Length is 0u)
+            if (Length is 0u)
             {
                 return Array.Empty<T>();
             }
-            else if (_Length > int.MaxValue)
+            else if (Length > int.MaxValue)
             {
                 ThrowHelper.ThrowArgumentOutOfRangeException(nameof(Length),
                     $"{nameof(NativeSpan<T>)} is too large to index as an array.");
             }
 
-            T[] destination = new T[(int)_Length];
+            T[] destination = new T[(int)Length];
             CopyTo(new NativeSpan<T>(destination));
             return destination;
         }
@@ -152,7 +158,7 @@ namespace Automata.Engine.Memory
                 ThrowHelper.ThrowIndexOutOfRangeException();
             }
 
-            return new NativeSpan<T>(_Pointer + start, _Length - start);
+            return new NativeSpan<T>(_Pointer + start, Length - start);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -171,7 +177,7 @@ namespace Automata.Engine.Memory
 
         #region IEnumerable
 
-        public Enumerator GetEnumerator() => new Enumerator(this);
+        public Enumerator GetEnumerator() => new(this);
 
         public ref struct Enumerator
         {
@@ -220,8 +226,8 @@ namespace Automata.Engine.Memory
 
         #region Conversions
 
-        public static implicit operator NativeSpan<T>(T[] array) => new NativeSpan<T>(array);
-        public static implicit operator NativeSpan<T>(Span<T> span) => new NativeSpan<T>(span);
+        public static implicit operator NativeSpan<T>(T[] array) => new(array);
+        public static implicit operator NativeSpan<T>(Span<T> span) => new(span);
 
         #endregion
     }

@@ -16,9 +16,10 @@ namespace Automata.Engine.Memory
         /// </summary>
         private sealed record MemoryBlock(nuint Index, nuint Size, bool Owned);
 
-        private readonly byte* _Pointer;
         private readonly object _AccessLock;
         private readonly LinkedList<MemoryBlock> _MemoryMap;
+
+        private readonly byte* _Pointer;
 
         /// <summary>
         ///     Size (in bytes) of the memory pool.
@@ -199,7 +200,7 @@ namespace Automata.Engine.Memory
                 {
                     nuint beforeBlockIndex = current.Value.Index;
                     nuint beforeBlockSize = alignmentPadding;
-                    MemoryBlock beforeBlock = new MemoryBlock(beforeBlockIndex, beforeBlockSize, false);
+                    MemoryBlock beforeBlock = new(beforeBlockIndex, beforeBlockSize, false);
                     _MemoryMap.AddBefore(current, beforeBlock);
 
                     nuint newCurrentSize = current.Value.Size - alignmentPadding;
@@ -209,7 +210,7 @@ namespace Automata.Engine.Memory
                 // allocate block after current to hold remaining length
                 nuint afterBlockIndex = current.Value.Index + sizeInBytes;
                 nuint afterBlockSize = current.Value.Size - sizeInBytes;
-                MemoryBlock afterBlock = new MemoryBlock(afterBlockIndex, afterBlockSize, false);
+                MemoryBlock afterBlock = new(afterBlockIndex, afterBlockSize, false);
                 _MemoryMap.AddAfter(current, afterBlock);
 
                 // modify current block to reflect proper size

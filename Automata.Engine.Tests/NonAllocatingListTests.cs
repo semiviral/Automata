@@ -37,7 +37,7 @@ namespace Automata.Engine.Tests
         [Fact]
         public void Remove()
         {
-            using NonAllocatingList<uint> list = new()
+            using NonAllocatingList<uint> list = new
             {
                 0u,
                 1u,
@@ -74,7 +74,7 @@ namespace Automata.Engine.Tests
         [Fact]
         public void RemoveAt()
         {
-            using NonAllocatingList<uint> list = new()
+            using NonAllocatingList<uint> list = new
             {
                 0u,
                 1u,
@@ -111,7 +111,7 @@ namespace Automata.Engine.Tests
         [Fact]
         public void IndexOf()
         {
-            using NonAllocatingList<uint> list = new()
+            using NonAllocatingList<uint> list = new
             {
                 0u,
                 1u,
@@ -135,7 +135,7 @@ namespace Automata.Engine.Tests
         [Fact]
         public void Clear()
         {
-            using NonAllocatingList<uint> list = new()
+            using NonAllocatingList<uint> list = new
             {
                 0u,
                 1u,
@@ -158,7 +158,7 @@ namespace Automata.Engine.Tests
         [Fact]
         public void Fill()
         {
-            using NonAllocatingList<uint> list = new()
+            using NonAllocatingList<uint> list = new
             {
                 0u,
                 1u,
@@ -181,7 +181,7 @@ namespace Automata.Engine.Tests
         [Fact]
         public void Contains()
         {
-            using NonAllocatingList<uint> list = new()
+            using NonAllocatingList<uint> list = new
             {
                 0u,
                 1u,
