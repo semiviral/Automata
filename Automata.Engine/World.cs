@@ -32,7 +32,7 @@ namespace Automata.Engine
 
         public static void RegisterWorld(string name, World world)
         {
-            if (Worlds.TryAdd(name, world))
+            if (!Worlds.TryAdd(name, world))
             {
                 throw new ArgumentException(name);
             }

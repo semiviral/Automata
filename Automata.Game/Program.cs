@@ -9,42 +9,39 @@ using Automata.Engine.Rendering;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Shaders;
-using Automata.Engine.Rendering.Vulkan;
 using Automata.Game;
 using Automata.Game.Blocks;
 using Automata.Game.Chunks;
 using Automata.Game.Chunks.Generation;
 using Automata.Game.Chunks.Generation.Meshing;
 using Serilog;
-using Silk.NET.Vulkan;
 using Silk.NET.Windowing.Common;
 
-Main();
+MainImpl();
 await AutomataWindow.Instance.RunAsync();
 
 
 #region Main
 
-void Main()
+void MainImpl()
 {
     Settings.Load();
-    InitializeLogger();
-    InitializeBoundedPool();
-    InitializeWindow();
+    InitializeLoggerImpl();
+    InitializeBoundedPoolImpl();
+    InitializeWindowImpl();
 
-
+#if VULKAN
     VulkanInstance instance = VKAPI.Instance.GenerateNewInstance(AutomataWindow.Instance.GetSurface());
     SurfaceExtension surfaceExtension = instance.GetInstanceExtension<SurfaceExtension>();
     VulkanDebugMessenger debugMessenger = new VulkanDebugMessenger(instance);
-
-
-
-    //BlockRegistry.Instance.LazyInitialize();
-    //InitializeWorld(out World world);
-    //InitializePlayer(world.EntityManager);
+#else
+    BlockRegistry.Instance.LazyInitialize();
+    InitializeWorldImpl(out World world);
+    InitializePlayerImpl(world.EntityManager);
+#endif
 }
 
-static void ApplicationCloseCallback(object sender)
+static void ApplicationCloseCallbackImpl(object sender)
 {
     World.DisposeWorlds();
     ProgramRegistry.Instance.Dispose();
@@ -58,7 +55,7 @@ static void ApplicationCloseCallback(object sender)
 
 #region Initialization
 
-static void InitializeLogger()
+static void InitializeLoggerImpl()
 {
     Log.Logger = new LoggerConfiguration()
         .MinimumLevel.Debug()
@@ -69,7 +66,7 @@ static void InitializeLogger()
     Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(Serilog), "Logger initialized."));
 }
 
-static void InitializeBoundedPool()
+static void InitializeBoundedPoolImpl()
 {
     if (Settings.Instance.SingleThreadedGeneration)
     {
@@ -83,7 +80,7 @@ static void InitializeBoundedPool()
     BoundedInvocationPool.Instance.ExceptionOccurred += (_, exception) => Log.Error($"{exception.Message}\r\n{exception.StackTrace}");
 }
 
-static void InitializeWindow()
+static void InitializeWindowImpl()
 {
     WindowOptions options = WindowOptions.Default;
     options.Title = "Automata";
@@ -92,11 +89,16 @@ static void InitializeWindow()
     options.VSync = Settings.Instance.VSync ? VSyncMode.On : VSyncMode.Off;
     options.PreferredDepthBufferBits = 24;
 
+#if VULKAN
     AutomataWindow.Instance.CreateWindow(options, ContextAPI.Vulkan);
-    AutomataWindow.Instance.Closing += ApplicationCloseCallback;
+#else
+    AutomataWindow.Instance.CreateWindow(options, ContextAPI.OpenGL);
+#endif
+
+    AutomataWindow.Instance.Closing += ApplicationCloseCallbackImpl;
 }
 
-static void InitializeWorld(out World world)
+static void InitializeWorldImpl(out World world)
 {
     world = new VoxelWorld(true);
     world.SystemManager.RegisterSystem<InputSystem, FirstOrderSystem>(SystemRegistrationOrder.Before);
@@ -128,7 +130,7 @@ static void InitializeWorld(out World world)
     World.RegisterWorld("Overworld", world);
 }
 
-static void InitializePlayer(EntityManager entityManager)
+static void InitializePlayerImpl(EntityManager entityManager)
 {
     entityManager.CreateEntity(
         new Translation(),

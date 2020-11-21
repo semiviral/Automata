@@ -1,5 +1,6 @@
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -55,7 +56,7 @@ namespace Automata.Engine.Rendering.Meshes
 
             if (recreateCommandBuffer)
             {
-                ProcessDrawElementsIndirectAllocationsImpl(entityManager);
+                ProcessDrawElementsIndirectAllocations(entityManager);
             }
 
             return ValueTask.CompletedTask;
@@ -104,7 +105,7 @@ namespace Automata.Engine.Rendering.Meshes
         #region Data Processing
 
         [SkipLocalsInit]
-        private unsafe void ProcessDrawElementsIndirectAllocationsImpl(EntityManager entityManager)
+        private unsafe void ProcessDrawElementsIndirectAllocations(EntityManager entityManager)
         {
             // rent from array pools to avoid allocations where possible
             // we could use stackalloc here, and work with spans directly, but that's liable to end up in a StackOverflowException
@@ -118,10 +119,8 @@ namespace Automata.Engine.Rendering.Meshes
             foreach ((IEntity entity, DrawElementsIndirectAllocation<TIndex, TVertex> allocation) in
                 entityManager.GetEntitiesWithComponents<DrawElementsIndirectAllocation<TIndex, TVertex>>())
             {
-                if (allocation.Allocation is null)
-                {
-                    ThrowHelper.ThrowNullReferenceException("Allocation should not be null at this point.");
-                }
+                Debug.Assert(drawIndirectAllocationsCount == (int)entityManager.GetComponentCount<DrawElementsIndirectAllocation<TIndex, TVertex>>());
+                Debug.Assert(allocation.Allocation is not null);
 
                 commands[index] = new DrawElementsIndirectCommand(allocation.Allocation!.VertexArrayMemory.Count, 1u,
                     (uint)(allocation.Allocation!.IndexesArrayMemory.Index / (nuint)sizeof(TIndex)),

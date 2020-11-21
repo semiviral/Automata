@@ -1,8 +1,8 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading;
 
 // ReSharper disable ConditionIsAlwaysTrueOrFalse
 
@@ -20,8 +20,6 @@ namespace Automata.Engine.Memory
         private readonly LinkedList<MemoryBlock> _MemoryMap;
         private readonly byte* _Pointer;
 
-        private int _RentedBlocks;
-
         /// <summary>
         ///     Size (in bytes) of the memory pool.
         /// </summary>
@@ -30,15 +28,16 @@ namespace Automata.Engine.Memory
         /// </remarks>
         public nuint Size { get; }
 
+        public nuint RemainingSize { get; private set; }
+
         /// <summary>
         ///     Count of the current owned blocks in the pool.
         /// </summary>
-        public int RentedBlocks => _RentedBlocks;
+        public int RentedBlocks { get; private set; }
 
         public NativeMemoryPool(byte* pointer, nuint size)
         {
-            Size = size;
-
+            RemainingSize = Size = size;
             _MemoryMap = new LinkedList<MemoryBlock>();
             _MemoryMap.AddFirst(new MemoryBlock(0u, size, false));
             _AccessLock = new object();
@@ -95,20 +94,22 @@ namespace Automata.Engine.Memory
 
             lock (_AccessLock)
             {
-                LinkedListNode<MemoryBlock>? current = SafeGetFirstNode();
-
-                do
+                for (LinkedListNode<MemoryBlock>? current = SafeGetFirstNode(); current is not null; current = current.Next)
                 {
                     // The third argument will be used to define the MemoryBlock sizes. It's assumed that `size` will
                     // be in units of `T`, so to properly align memory blocks, we need a byte-length representation of
                     // the provided `size` parameter's value.
-                    if (!TryAllocateMemoryBlock(current!, alignment, (nuint)size * (nuint)sizeof(T)))
+                    nuint sizeInBytes = (nuint)size * (nuint)sizeof(T);
+
+                    if (!TryAllocateMemoryBlock(current, alignment, sizeInBytes))
                     {
                         continue;
                     }
 
                     index = current.Value.Index;
                     IMemoryOwner<T> memoryOwner = CreateMemoryOwner<T>(index, size);
+                    RemainingSize -= sizeInBytes;
+                    RentedBlocks += 1;
 
                     if (clear)
                     {
@@ -116,10 +117,8 @@ namespace Automata.Engine.Memory
                         memoryOwner.Memory.Span.Clear();
                     }
 
-                    // make sure we decrement the rented blocks counter
-                    Interlocked.Increment(ref _RentedBlocks);
                     return memoryOwner;
-                } while ((current = current!.Next) is not null);
+                }
             }
 
             // at this point, we've rented zero blocks and iterated them all, so we know it's not possible to accomodate the allocation.
@@ -130,16 +129,19 @@ namespace Automata.Engine.Memory
         {
             switch (alignment)
             {
-                case { } when current!.Value.Owned:
-                case 0u when !TryAllocateMemoryBlockWithoutAlignment(current, sizeInBytes):
+                case { } when current.Value.Owned: return false;
+                case 0u when !TryAllocateMemoryBlockWithoutAlignment(current, sizeInBytes): return false;
                 case not 0u when !TryAllocateMemoryBlockWithAlignment(current, alignment, sizeInBytes): return false;
             }
 
+            Debug.Assert(current.Value.Owned);
             return true;
         }
 
         private bool TryAllocateMemoryBlockWithoutAlignment(LinkedListNode<MemoryBlock> current, nuint sizeInBytes)
         {
+            Debug.Assert(!current.Value.Owned);
+
             // just convert entire block to owned
             if (current.Value.Size == sizeInBytes)
             {
@@ -165,6 +167,8 @@ namespace Automata.Engine.Memory
 
         private bool TryAllocateMemoryBlockWithAlignment(LinkedListNode<MemoryBlock> current, nuint alignment, nuint sizeInBytes)
         {
+            Debug.Assert(!current.Value.Owned);
+
             nuint alignmentPadding = (alignment - (current.Value.Index % alignment)) % alignment;
             nuint alignedIndex = current.Value.Index + alignmentPadding;
             nuint alignedSize = current.Value.Size - alignmentPadding;
@@ -187,9 +191,9 @@ namespace Automata.Engine.Memory
                 {
                     nuint beforeBlockIndex = current.Value.Index;
                     nuint beforeBlockSize = alignmentPadding;
-                    nuint newCurrentSize = current.Value.Size - alignmentPadding;
-
                     _MemoryMap.AddBefore(current, new MemoryBlock(beforeBlockIndex, beforeBlockSize, false));
+
+                    nuint newCurrentSize = current.Value.Size - alignmentPadding;
                     current.Value = current.Value with { Index = alignedIndex, Size = newCurrentSize, Owned = true };
                 }
 
@@ -244,6 +248,8 @@ namespace Automata.Engine.Memory
                 LinkedListNode<MemoryBlock>? before = current.Previous;
                 LinkedListNode<MemoryBlock>? after = current.Next;
                 current.Value = current.Value with { Owned = false };
+                RemainingSize += current.Value.Size;
+                RentedBlocks -= 1;
 
                 // attempt to merge current block & its precedent node
                 if (before?.Value.Owned is false)
@@ -261,10 +267,9 @@ namespace Automata.Engine.Memory
                     current.Value = current.Value with { Size = newLength };
                     _MemoryMap.Remove(after);
                 }
-            }
 
-            // make sure we decrement the rented blocks counter
-            Interlocked.Decrement(ref _RentedBlocks);
+                Debug.Assert(RemainingSize <= Size);
+            }
         }
 
         private LinkedListNode<MemoryBlock> GetMemoryBlockAtIndex(nuint index)
