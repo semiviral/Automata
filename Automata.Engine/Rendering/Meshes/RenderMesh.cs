@@ -19,7 +19,8 @@ namespace Automata.Engine.Rendering.Meshes
 
         #region IDisposable
 
-        protected override void CleanupManagedResources() => _Mesh?.Dispose();
+        // IMesh'es probably contain native resources (GL objects), so dispose of it in the native cleanup
+        protected override void CleanupNativeResources() => _Mesh?.Dispose();
 
         #endregion
     }

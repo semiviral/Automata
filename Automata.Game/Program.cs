@@ -46,7 +46,6 @@ static void ApplicationCloseCallbackImpl(object sender)
     ProgramRegistry.Instance.Dispose();
     TextureAtlas.Instance.Blocks?.Dispose();
     BoundedInvocationPool.Instance.Cancel();
-    AutomataWindow.Instance.Dispose();
 }
 
 #endregion
