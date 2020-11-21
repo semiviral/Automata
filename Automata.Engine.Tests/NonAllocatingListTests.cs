@@ -72,6 +72,43 @@ namespace Automata.Engine.Tests
         }
 
         [Fact]
+        public void RemoveAt()
+        {
+            NonAllocatingList<uint> list = new NonAllocatingList<uint>
+            {
+                0u,
+                1u,
+                2u,
+                3u,
+                4u,
+                5u,
+                6u,
+                7u,
+                8u,
+                9u,
+                10u
+            };
+
+            Debug.Assert(list.Count is 11);
+            Debug.Assert(list[4u] is 4u);
+
+            list.RemoveAt(4);
+
+            Debug.Assert(list.Count is 10);
+            Debug.Assert(list[4u] is 5u);
+
+            list.RemoveAt(0);
+
+            Debug.Assert(list.Count is 9);
+            Debug.Assert(list[0u] is 1u);
+
+            list.RemoveAt(8);
+
+            Debug.Assert(list.Count is 8);
+            Debug.Assert(list[7u] is 9u);
+        }
+
+        [Fact]
         public void AddRange()
         {
             using NonAllocatingList<uint> list = new NonAllocatingList<uint>();
