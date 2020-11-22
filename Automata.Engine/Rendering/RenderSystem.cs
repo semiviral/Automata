@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Automata.Engine.Input;
 using Automata.Engine.Numerics;
@@ -21,6 +22,7 @@ namespace Automata.Engine.Rendering
 {
     public class RenderSystem : ComponentSystem, IDisposable
     {
+        [StructLayout(LayoutKind.Sequential)]
         private readonly ref struct ViewUniforms
         {
             public readonly Vector4 Viewport;
@@ -37,6 +39,7 @@ namespace Automata.Engine.Rendering
             }
         }
 
+        [StructLayout(LayoutKind.Sequential)]
         private readonly ref struct ModelUniforms
         {
             public readonly Matrix4x4 MVP;
@@ -57,10 +60,9 @@ namespace Automata.Engine.Rendering
         private const int _VIEW_UNIFORMS_SIZE = 160;
         private const int _MODEL_UNIFORMS_SIZE = 192;
 
+        private readonly GL _GL;
         private readonly RingBufferObject _ViewUniforms;
         private readonly RingBufferObject _ModelUniforms;
-
-        private readonly GL _GL;
 
         private float _NewAspectRatio;
         private Vector4 _Viewport;
@@ -275,7 +277,7 @@ namespace Automata.Engine.Rendering
                 view *= Matrix4x4.CreateTranslation(cameraTranslation.Value);
             }
 
-            // if we've calculated a new matrix, invert it and apply to camera
+            // if we've calculated a new view matrix, invert it and apply to camera
             if ((view != Matrix4x4.Identity) && Matrix4x4.Invert(view, out Matrix4x4 inverted))
             {
                 camera.View = inverted;

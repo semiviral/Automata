@@ -36,11 +36,6 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
         /// <summary>
         ///     Uniform index buffer is bound to.
         /// </summary>
-        /// <remarks>
-        ///     Reserved indexes:
-        ///     0 - Camera data,
-        ///     1 - Viewport data,
-        /// </remarks>
         public uint BindingIndex { get; }
 
         public uint Size { get; }

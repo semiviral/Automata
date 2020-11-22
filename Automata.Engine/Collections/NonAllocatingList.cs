@@ -370,9 +370,9 @@ namespace Automata.Engine.Collections
 
         #region IEnumerable
 
-        public Enumerator GetEnumerator() => new Enumerator(this);
         IEnumerator<T> IEnumerable<T>.GetEnumerator() => new Enumerator(this);
         IEnumerator IEnumerable.GetEnumerator() => new Enumerator(this);
+        public Enumerator GetEnumerator() => new Enumerator(this);
 
         public struct Enumerator : IEnumerator<T>
         {
@@ -392,7 +392,7 @@ namespace Automata.Engine.Collections
                         ThrowHelper.ThrowInvalidOperationException("Enumerable has not been enumerated.");
                     }
 
-                    return Current;
+                    return _Current;
                 }
             }
 

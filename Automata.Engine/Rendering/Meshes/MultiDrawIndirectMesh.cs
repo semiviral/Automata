@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Numerics;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
@@ -19,7 +18,11 @@ namespace Automata.Engine.Rendering.Meshes
         private readonly BufferObject<Matrix4x4> _ModelBuffer;
         private readonly DrawElementsType _DrawElementsType;
 
+        public Guid ID { get; }
+        public Layer Layer { get; }
         public uint DrawCommandCount { get; private set; }
+
+        public bool Visible => DrawCommandCount > 0u;
 
         public MultiDrawIndirectMesh(GL gl, uint indexAllocatorSize, uint vertexAllocatorSize, Layer layers = Layer.Layer0)
         {
@@ -72,10 +75,6 @@ namespace Automata.Engine.Rendering.Meshes
             _IndexAllocator.ValidateBlocks();
             _VertexAllocator.ValidateBlocks();
         }
-
-        public Guid ID { get; }
-        public Layer Layer { get; }
-        public bool Visible => DrawCommandCount > 0u;
 
 
         #region IMesh
