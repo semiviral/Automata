@@ -10,13 +10,13 @@ namespace Automata.Engine
     {
         private readonly Dictionary<Type, IEnumerable> _CachedEnumerators;
         private readonly Dictionary<Type, nint> _ComponentCounts;
-        private readonly NonAllocatingList<IEntity> _Entities;
+        private readonly NonAllocatingList<Entity> _Entities;
 
         public nint EntityCount => _Entities.Count;
 
         public EntityManager()
         {
-            _Entities = new NonAllocatingList<IEntity>();
+            _Entities = new NonAllocatingList<Entity>();
             _ComponentCounts = new Dictionary<Type, nint>();
             _CachedEnumerators = new Dictionary<Type, IEnumerable>();
         }
@@ -37,7 +37,7 @@ namespace Automata.Engine
         {
             IEnumerable<TComponent> GetComponentsExplicitImpl()
             {
-                foreach (IEntity entity in _Entities)
+                foreach (Entity entity in _Entities)
                 foreach (Component component in entity)
                 {
                     if (component is TComponent componentT)

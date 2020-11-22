@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -9,7 +11,7 @@ using Automata.Engine.Collections;
 
 namespace Automata.Engine
 {
-    internal sealed class Entity : IEntity
+    public sealed class Entity : IEquatable<Entity>, IDisposable
     {
         private readonly NonAllocatingList<Component> _Components;
 
@@ -31,7 +33,7 @@ namespace Automata.Engine
 
         #region Generic
 
-        TComponent IEntity.Add<TComponent>()
+        internal TComponent Add<TComponent>() where TComponent : Component, new()
         {
             if (Contains<TComponent>())
             {
@@ -46,7 +48,7 @@ namespace Automata.Engine
             }
         }
 
-        TComponent IEntity.Remove<TComponent>()
+        internal TComponent Remove<TComponent>() where TComponent : Component
         {
             TComponent? component = Find<TComponent>();
 
@@ -99,7 +101,7 @@ namespace Automata.Engine
 
         #region Non-generic
 
-        void IEntity.Add(Component component)
+        internal void Add(Component component)
         {
             if (Contains(component.GetType()))
             {
@@ -111,7 +113,7 @@ namespace Automata.Engine
             }
         }
 
-        bool IEntity.Remove(Component component)
+        internal bool Remove(Component component)
         {
             bool success = _Components.Remove(component);
 
@@ -145,15 +147,70 @@ namespace Automata.Engine
 
         #region IEnumerable
 
-        public IEntity.Enumerator GetEnumerator() => new IEntity.Enumerator(this);
+        public Enumerator GetEnumerator() => new Enumerator(this);
+
+        public struct Enumerator : IEnumerator<Component>
+        {
+            private readonly Entity _Entity;
+
+            private uint _Index;
+            private Component? _Current;
+
+            public Component Current => _Current!;
+
+            object? IEnumerator.Current
+            {
+                get
+                {
+                    if ((_Index == 0u) || (_Index >= (uint)_Entity.Count))
+                    {
+                        ThrowHelper.ThrowInvalidOperationException("Enumerable has not been enumerated.");
+                    }
+
+                    return _Current;
+                }
+            }
+
+            internal Enumerator(Entity entity)
+            {
+                _Entity = entity;
+                _Index = 0u;
+                _Current = default;
+            }
+
+            public bool MoveNext()
+            {
+                if (_Index >= (uint)_Entity.Count)
+                {
+                    return false;
+                }
+
+                _Current = _Entity[_Index];
+                _Index += 1u;
+                return true;
+            }
+
+            void IEnumerator.Reset()
+            {
+                _Index = 0u;
+                _Current = default;
+            }
+
+
+            #region IDisposable
+
+            public void Dispose() { }
+
+            #endregion
+        }
 
         #endregion
 
 
         #region IEquatable
 
-        public override bool Equals(object? obj) => obj is IEntity entity && Equals(entity);
-        public bool Equals(IEntity? other) => other is not null && ID.Equals(other.ID);
+        public override bool Equals(object? obj) => obj is Entity entity && Equals(entity);
+        public bool Equals(Entity? other) => other is not null && ID.Equals(other.ID);
 
         public override int GetHashCode() => ID.GetHashCode();
 
