@@ -3,6 +3,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable ConditionIsAlwaysTrueOrFalse
@@ -134,19 +135,13 @@ namespace Automata.Engine.Memory
             throw new InsufficientMemoryException("Not enough memory to accomodate allocation.");
         }
 
-        private bool TryAllocateMemoryBlock(LinkedListNode<MemoryBlock> current, nuint alignment, nuint sizeInBytes)
-        {
-            switch (alignment)
-            {
-                case { } when current.Value.Owned:
-                case 0u when !TryAllocateMemoryBlockWithoutAlignment(current, sizeInBytes):
-                case not 0u when !TryAllocateMemoryBlockWithAlignment(current, alignment, sizeInBytes): return false;
-            }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool TryAllocateMemoryBlock(LinkedListNode<MemoryBlock> current, nuint alignment, nuint sizeInBytes) =>
+            !current.Value.Owned
+            && (alignment is not 0u || TryAllocateMemoryBlockWithoutAlignment(current, sizeInBytes))
+            && (alignment is 0u || TryAllocateMemoryBlockWithAlignment(current, alignment, sizeInBytes));
 
-            Debug.Assert(current.Value.Owned);
-            return true;
-        }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool TryAllocateMemoryBlockWithoutAlignment(LinkedListNode<MemoryBlock> current, nuint sizeInBytes)
         {
             Debug.Assert(!current.Value.Owned);
@@ -174,6 +169,7 @@ namespace Automata.Engine.Memory
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool TryAllocateMemoryBlockWithAlignment(LinkedListNode<MemoryBlock> current, nuint alignment, nuint sizeInBytes)
         {
             Debug.Assert(!current.Value.Owned);
@@ -234,6 +230,7 @@ namespace Automata.Engine.Memory
         ///     <see cref="IMemoryOwner{T}" /> wrapping a specified region of memory, starting at <see cref="index" /> and ending
         ///     at <see cref="index" /> + <see cref="Size" />.
         /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private IMemoryOwner<T> CreateMemoryOwner<T>(nuint index, int size) where T : unmanaged
         {
             // remark: it's POSSIBLE for alignment to get screwed up in this operation.

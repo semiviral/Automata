@@ -78,20 +78,7 @@ namespace Automata.Engine
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryFind<TComponent>([NotNullWhen(true)] out TComponent? result) where TComponent : Component
-        {
-            foreach (Component component in _Components)
-            {
-                if (component is TComponent componentT)
-                {
-                    result = componentT;
-                    return true;
-                }
-            }
-
-            result = null;
-            return false;
-        }
+        public bool TryFind<TComponent>([NotNullWhen(true)] out TComponent? result) where TComponent : Component => (result = Find<TComponent>()) is not null;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains<TComponent>() where TComponent : Component

@@ -25,9 +25,6 @@ namespace Automata.Game.Chunks
         [HandledComponents(EnumerationStrategy.All, typeof(Chunk))]
         public override ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta)
         {
-            Stopwatch stopwatch = DiagnosticsPool.Stopwatches.Rent();
-            stopwatch.Restart();
-
             foreach (Chunk chunk in entityManager.GetComponents<Chunk>())
             {
                 if (chunk.State is GenerationState.AwaitingMesh or GenerationState.Finished
@@ -37,9 +34,6 @@ namespace Automata.Game.Chunks
                     chunk.RemeshNeighborhood(true);
                 }
             }
-
-            DiagnosticsProvider.CommitData<ChunkModificationsDiagnosticGroup, TimeSpan>(new ChunkModificationTime(stopwatch.Elapsed));
-            DiagnosticsPool.Stopwatches.Return(stopwatch);
 
             return ValueTask.CompletedTask;
         }

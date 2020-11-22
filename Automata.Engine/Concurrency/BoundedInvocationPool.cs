@@ -12,14 +12,6 @@ namespace Automata.Engine.Concurrency
     /// </param>
     public delegate Task AsyncReferenceInvocation(CancellationToken cancellationToken);
 
-    /// <summary>
-    ///     Used to safely wrap a Task-returning method onto the <see cref="BoundedInvocationPool" />.
-    /// </summary>
-    /// <param name="cancellationToken">
-    ///     <see cref="CancellationToken" /> that the <see cref="BoundedInvocationPool" /> uses.
-    /// </param>
-    public delegate ValueTask AsyncValueInvocation(CancellationToken cancellationToken);
-
     public class BoundedInvocationPool : Singleton<BoundedInvocationPool>
     {
         /// <summary>
@@ -74,7 +66,7 @@ namespace Automata.Engine.Concurrency
             // dispatch method used to wrap invocations
             // this allows us to observe cancellations, wait on the semaphore, and
             // generally control internal state before and after invocation execution.
-            async Task Dispatch()
+            async Task DispatchImpl()
             {
                 try
                 {
@@ -104,7 +96,7 @@ namespace Automata.Engine.Concurrency
             }
             else
             {
-                Task.Run(Dispatch, CancellationToken);
+                Task.Factory.StartNew(DispatchImpl, CancellationToken);
             }
         }
 

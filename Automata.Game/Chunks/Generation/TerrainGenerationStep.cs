@@ -10,6 +10,7 @@ namespace Automata.Game.Chunks.Generation
 {
     public class TerrainGenerationStep : IGenerationStep
     {
+        [SkipLocalsInit]
         public void Generate(Vector3i origin, IGenerationStep.Parameters parameters, Span<ushort> blocks)
         {
             Span<int> heightmap = stackalloc int[GenerationConstants.CHUNK_SIZE_SQUARED];
