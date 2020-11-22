@@ -161,8 +161,8 @@ namespace Automata.Engine.Rendering
 
         private static IEnumerable<(Entity, RenderMesh, Material)> GetRenderableEntities(EntityManager entityManager, Camera camera) =>
             entityManager.GetEntitiesWithComponents<RenderMesh, Material>()
-                .Where(result => result.Component1.ShouldRender && ((camera.RenderedLayers & result.Component1.Mesh!.Layer) > 0))
-                .OrderBy(result => result.Component2.Pipeline.Handle);
+                .Where(result => result.Component1.ShouldRender && ((camera.RenderedLayers & result.Component1.Mesh!.Layer) > 0));
+                //.OrderBy(result => result.Component2.Pipeline.Handle);
 
         private bool IsNewViewport() => _NewAspectRatio is not 0f;
 

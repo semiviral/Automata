@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Automata.Engine.Collections;
 
+// ReSharper disable ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
+
 namespace Automata.Engine
 {
     public sealed class EntityManager : IDisposable
@@ -12,7 +14,7 @@ namespace Automata.Engine
         private readonly Dictionary<Type, nint> _ComponentCounts;
         private readonly NonAllocatingList<Entity> _Entities;
 
-        public nint EntityCount => _Entities.Count;
+        public int EntityCount => _Entities.Count;
 
         public EntityManager()
         {
@@ -21,33 +23,16 @@ namespace Automata.Engine
             _CachedEnumerators = new Dictionary<Type, IEnumerable>();
         }
 
-        private IEnumerable<T> CacheAndGetEnumerable<T>(IEnumerable<T> setter)
-        {
-            if (!_CachedEnumerators.TryGetValue(typeof(T), out IEnumerable? enumerable))
-            {
-                enumerable = setter;
-                _CachedEnumerators.Add(typeof(T), enumerable);
-            }
-
-            Debug.Assert(enumerable is IEnumerable<T>);
-            return (enumerable as IEnumerable<T>)!;
-        }
-
         public IEnumerable<TComponent> GetComponentsExplicit<TComponent>() where TComponent : Component
         {
-            IEnumerable<TComponent> GetComponentsExplicitImpl()
+            foreach (Entity entity in _Entities)
+            foreach (Component component in entity)
             {
-                foreach (Entity entity in _Entities)
-                foreach (Component component in entity)
+                if (component is TComponent componentT)
                 {
-                    if (component is TComponent componentT)
-                    {
-                        yield return componentT;
-                    }
+                    yield return componentT;
                 }
             }
-
-            return CacheAndGetEnumerable(GetComponentsExplicitImpl());
         }
 
 
@@ -146,37 +131,27 @@ namespace Automata.Engine
         public IEnumerable<Entity> GetEntities<T1>()
             where T1 : Component
         {
-            IEnumerable<Entity> GetEntitiesImpl()
+            foreach (Entity entity in _Entities)
             {
-                foreach (Entity entity in _Entities)
+                if (entity.TryFind(out T1? _))
                 {
-                    if (entity.TryFind(out T1? _))
-                    {
-                        yield return entity;
-                    }
+                    yield return entity;
                 }
             }
-
-            return CacheAndGetEnumerable(GetEntitiesImpl());
         }
 
         public IEnumerable<Entity> GetEntities<T1, T2>()
             where T1 : Component
             where T2 : Component
         {
-            IEnumerable<Entity> GetEntitiesImpl()
+            foreach (Entity entity in _Entities)
             {
-                foreach (Entity entity in _Entities)
+                if (entity.TryFind(out T1? _)
+                    && entity.TryFind(out T2? _))
                 {
-                    if (entity.TryFind(out T1? _)
-                        && entity.TryFind(out T2? _))
-                    {
-                        yield return entity;
-                    }
+                    yield return entity;
                 }
             }
-
-            return CacheAndGetEnumerable(GetEntitiesImpl());
         }
 
         public IEnumerable<Entity> GetEntities<T1, T2, T3>()
@@ -184,20 +159,15 @@ namespace Automata.Engine
             where T2 : Component
             where T3 : Component
         {
-            IEnumerable<Entity> GetEntitiesImpl()
+            foreach (Entity entity in _Entities)
             {
-                foreach (Entity entity in _Entities)
+                if (entity.TryFind(out T1? _)
+                    && entity.TryFind(out T2? _)
+                    && entity.TryFind(out T3? _))
                 {
-                    if (entity.TryFind(out T1? _)
-                        && entity.TryFind(out T2? _)
-                        && entity.TryFind(out T3? _))
-                    {
-                        yield return entity;
-                    }
+                    yield return entity;
                 }
             }
-
-            return CacheAndGetEnumerable(GetEntitiesImpl());
         }
 
         public IEnumerable<Entity> GetEntities<T1, T2, T3, T4>()
@@ -206,21 +176,16 @@ namespace Automata.Engine
             where T3 : Component
             where T4 : Component
         {
-            IEnumerable<Entity> GetEntitiesImpl()
+            foreach (Entity entity in _Entities)
             {
-                foreach (Entity entity in _Entities)
+                if (entity.TryFind(out T1? _)
+                    && entity.TryFind(out T2? _)
+                    && entity.TryFind(out T3? _)
+                    && entity.TryFind(out T4? _))
                 {
-                    if (entity.TryFind(out T1? _)
-                        && entity.TryFind(out T2? _)
-                        && entity.TryFind(out T3? _)
-                        && entity.TryFind(out T4? _))
-                    {
-                        yield return entity;
-                    }
+                    yield return entity;
                 }
             }
-
-            return CacheAndGetEnumerable(GetEntitiesImpl());
         }
 
         #endregion
@@ -231,37 +196,27 @@ namespace Automata.Engine
         public IEnumerable<(Entity Entity, T1 Component1)> GetEntitiesWithComponents<T1>()
             where T1 : Component
         {
-            IEnumerable<(Entity, T1)> GetEntitiesWithComponentsImpl()
+            foreach (Entity entity in _Entities)
             {
-                foreach (Entity entity in _Entities)
+                if (entity.TryFind(out T1? component1))
                 {
-                    if (entity.TryFind(out T1? component1))
-                    {
-                        yield return (entity, component1);
-                    }
+                    yield return (entity, component1);
                 }
             }
-
-            return CacheAndGetEnumerable(GetEntitiesWithComponentsImpl());
         }
 
         public IEnumerable<(Entity Entity, T1 Component1, T2 Component2)> GetEntitiesWithComponents<T1, T2>()
             where T1 : Component
             where T2 : Component
         {
-            IEnumerable<(Entity, T1, T2)> GetEntitiesWithComponentsImpl()
+            foreach (Entity entity in _Entities)
             {
-                foreach (Entity entity in _Entities)
+                if (entity.TryFind(out T1? component1)
+                    && entity.TryFind(out T2? component2))
                 {
-                    if (entity.TryFind(out T1? component1)
-                        && entity.TryFind(out T2? component2))
-                    {
-                        yield return (entity, component1, component2);
-                    }
+                    yield return (entity, component1, component2);
                 }
             }
-
-            return CacheAndGetEnumerable(GetEntitiesWithComponentsImpl());
         }
 
         public IEnumerable<(Entity Entity, T1 Component1, T2 Component2, T3 Component3)> GetEntitiesWithComponents<T1, T2, T3>()
@@ -269,20 +224,15 @@ namespace Automata.Engine
             where T2 : Component
             where T3 : Component
         {
-            IEnumerable<(Entity, T1, T2, T3)> GetEntitiesWithComponentsImpl()
+            foreach (Entity entity in _Entities)
             {
-                foreach (Entity entity in _Entities)
+                if (entity.TryFind(out T1? component1)
+                    && entity.TryFind(out T2? component2)
+                    && entity.TryFind(out T3? component3))
                 {
-                    if (entity.TryFind(out T1? component1)
-                        && entity.TryFind(out T2? component2)
-                        && entity.TryFind(out T3? component3))
-                    {
-                        yield return (entity, component1, component2, component3);
-                    }
+                    yield return (entity, component1, component2, component3);
                 }
             }
-
-            return CacheAndGetEnumerable(GetEntitiesWithComponentsImpl());
         }
 
         public IEnumerable<(Entity Entity, T1 Component1, T2 Component2, T3 Component3, T4 Component4)> GetEntitiesWithComponents<T1, T2, T3, T4>()
@@ -291,21 +241,16 @@ namespace Automata.Engine
             where T3 : Component
             where T4 : Component
         {
-            IEnumerable<(Entity, T1, T2, T3, T4)> GetEntitiesWithComponentsImpl()
+            foreach (Entity entity in _Entities)
             {
-                foreach (Entity entity in _Entities)
+                if (entity.TryFind(out T1? component1)
+                    && entity.TryFind(out T2? component2)
+                    && entity.TryFind(out T3? component3)
+                    && entity.TryFind(out T4? component4))
                 {
-                    if (entity.TryFind(out T1? component1)
-                        && entity.TryFind(out T2? component2)
-                        && entity.TryFind(out T3? component3)
-                        && entity.TryFind(out T4? component4))
-                    {
-                        yield return (entity, component1, component2, component3, component4);
-                    }
+                    yield return (entity, component1, component2, component3, component4);
                 }
             }
-
-            return CacheAndGetEnumerable(GetEntitiesWithComponentsImpl());
         }
 
         #endregion
@@ -321,37 +266,27 @@ namespace Automata.Engine
         public IEnumerable<T1> GetComponents<T1>()
             where T1 : Component
         {
-            IEnumerable<T1> GetComponentsImpl()
+            foreach (Entity entity in _Entities)
             {
-                foreach (Entity entity in _Entities)
+                if (entity.TryFind(out T1? component))
                 {
-                    if (entity.TryFind(out T1? component))
-                    {
-                        yield return component;
-                    }
+                    yield return component;
                 }
             }
-
-            return CacheAndGetEnumerable(GetComponentsImpl());
         }
 
         public IEnumerable<(T1, T2)> GetComponents<T1, T2>()
             where T1 : Component
             where T2 : Component
         {
-            IEnumerable<(T1, T2)> GetComponentsImpl()
+            foreach (Entity entity in _Entities)
             {
-                foreach (Entity entity in _Entities)
+                if (entity.TryFind(out T1? component)
+                    && entity.TryFind(out T2? component2))
                 {
-                    if (entity.TryFind(out T1? component)
-                        && entity.TryFind(out T2? component2))
-                    {
-                        yield return (component, component2);
-                    }
+                    yield return (component, component2);
                 }
             }
-
-            return CacheAndGetEnumerable(GetComponentsImpl());
         }
 
         public IEnumerable<(T1, T2, T3)> GetComponents<T1, T2, T3>()
@@ -359,20 +294,15 @@ namespace Automata.Engine
             where T2 : Component
             where T3 : Component
         {
-            IEnumerable<(T1, T2, T3)> GetComponentsImpl()
+            foreach (Entity entity in _Entities)
             {
-                foreach (Entity entity in _Entities)
+                if (entity.TryFind(out T1? component)
+                    && entity.TryFind(out T2? component2)
+                    && entity.TryFind(out T3? component3))
                 {
-                    if (entity.TryFind(out T1? component)
-                        && entity.TryFind(out T2? component2)
-                        && entity.TryFind(out T3? component3))
-                    {
-                        yield return (component, component2, component3);
-                    }
+                    yield return (component, component2, component3);
                 }
             }
-
-            return CacheAndGetEnumerable(GetComponentsImpl());
         }
 
         public IEnumerable<(T1, T2, T3, T4)> GetComponents<T1, T2, T3, T4>()
@@ -381,21 +311,16 @@ namespace Automata.Engine
             where T3 : Component
             where T4 : Component
         {
-            IEnumerable<(T1, T2, T3, T4)> GetComponentsImpl()
+            foreach (Entity entity in _Entities)
             {
-                foreach (Entity entity in _Entities)
+                if (entity.TryFind(out T1? component)
+                    && entity.TryFind(out T2? component2)
+                    && entity.TryFind(out T3? component3)
+                    && entity.TryFind(out T4? component4))
                 {
-                    if (entity.TryFind(out T1? component)
-                        && entity.TryFind(out T2? component2)
-                        && entity.TryFind(out T3? component3)
-                        && entity.TryFind(out T4? component4))
-                    {
-                        yield return (component, component2, component3, component4);
-                    }
+                    yield return (component, component2, component3, component4);
                 }
             }
-
-            return CacheAndGetEnumerable(GetComponentsImpl());
         }
 
         #endregion
