@@ -27,7 +27,7 @@ namespace Automata.Engine.Rendering.Meshes
             _MultiDrawIndirectMeshMaterial =
                 new Material(ProgramRegistry.Instance.Load("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl"));
 
-            _MultiDrawIndirectMesh = new MultiDrawIndirectMesh<TIndex, TVertex>(GLAPI.Instance.GL, 750_000_000, 500_000_000);
+            _MultiDrawIndirectMesh = new MultiDrawIndirectMesh<TIndex, TVertex>(GLAPI.Instance.GL, 300_000_000, 200_000_000);
 
             entityManager.CreateEntity(
                 _MultiDrawIndirectMeshMaterial,
@@ -160,9 +160,6 @@ namespace Automata.Engine.Rendering.Meshes
 
             // we make sure to dispose the old allocation to free the memory in the pool
             drawIndirectAllocation.Allocation?.Dispose();
-            _MultiDrawIndirectMesh.WaitForBufferSync();
-
-            // todo copy all of this data on a separate thread, with sync obj maybe
 
             BufferArrayMemory<TIndex> indexArrayMemory = _MultiDrawIndirectMesh.RentIndexBufferArrayMemory((nuint)sizeof(TIndex),
                 MemoryMarshal.Cast<QuadIndexes<TIndex>, TIndex>(pendingData.Indexes.Segment));

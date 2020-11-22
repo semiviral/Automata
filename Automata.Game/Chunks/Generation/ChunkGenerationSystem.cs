@@ -68,7 +68,6 @@ namespace Automata.Game.Chunks.Generation
 
                 // we ALWAYS update chunk state, so we can properly dispose of it
                 // and be conscious of not doing so when its generating
-                pendingMesh.Chunk.TimesMeshed += 1;
                 pendingMesh.Chunk.State += 1;
             }
 

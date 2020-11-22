@@ -31,9 +31,14 @@ namespace Automata.Engine.Memory
         public nuint Size { get; }
 
         /// <summary>
+        ///     Rented size (in bytes) from the memory pool.
+        /// </summary>
+        public nuint RentedSize { get; private set; }
+
+        /// <summary>
         ///     Remaining size (in bytes) in the memory pool.
         /// </summary>
-        public nuint RemainingSize { get; private set; }
+        public nuint RemainingSize => Size - RentedSize;
 
         /// <summary>
         ///     Count of the current owned blocks in the pool.
@@ -47,7 +52,8 @@ namespace Automata.Engine.Memory
             _MemoryMap = new LinkedList<MemoryBlock>();
             _MemoryMap.AddFirst(new MemoryBlock(0u, size, false));
 
-            RemainingSize = Size = size;
+            Size = size;
+            RentedSize = (nuint)0u;
         }
 
         private LinkedListNode<MemoryBlock> SafeGetFirstNode() => _MemoryMap.First ?? throw new InvalidOperationException("Memory pool is in invalid state.");
@@ -75,6 +81,8 @@ namespace Automata.Engine.Memory
                 }
             }
         }
+
+        public override string ToString() => $"{nameof(NativeMemoryPool)}(MemoryBlocks {RentedBlocks}, {RentedSize}/{Size})";
 
 
         #region Rent
@@ -117,7 +125,7 @@ namespace Automata.Engine.Memory
 
                         index = current.Value.Index;
                         IMemoryOwner<T> memoryOwner = CreateMemoryOwner<T>(index, size);
-                        RemainingSize -= sizeInBytes;
+                        RentedSize += sizeInBytes;
                         RentedBlocks += 1;
 
                         if (clear)
@@ -259,7 +267,7 @@ namespace Automata.Engine.Memory
                 LinkedListNode<MemoryBlock>? before = current.Previous;
                 LinkedListNode<MemoryBlock>? after = current.Next;
                 current.Value = current.Value with { Owned = false };
-                RemainingSize += current.Value.Size;
+                RentedSize -= current.Value.Size;
                 RentedBlocks -= 1;
 
                 // attempt to merge current block & its precedent node

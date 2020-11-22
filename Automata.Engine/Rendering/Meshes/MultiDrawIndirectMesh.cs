@@ -11,7 +11,6 @@ namespace Automata.Engine.Rendering.Meshes
         where TIndex : unmanaged
         where TVertex : unmanaged
     {
-        private readonly FenceSync _BufferSync;
         private readonly BufferObject<DrawElementsIndirectCommand> _CommandBuffer;
         private readonly DrawElementsType _DrawElementsType;
         private readonly GL _GL;
@@ -19,6 +18,7 @@ namespace Automata.Engine.Rendering.Meshes
         private readonly BufferObject<Matrix4x4> _ModelBuffer;
         private readonly BufferAllocator _VertexAllocator;
         private readonly VertexArrayObject _VertexArrayObject;
+
         public uint DrawCommandCount { get; private set; }
 
         public MultiDrawIndirectMesh(GL gl, uint indexAllocatorSize, uint vertexAllocatorSize, Layer layers = Layer.Layer0)
@@ -32,7 +32,6 @@ namespace Automata.Engine.Rendering.Meshes
             _VertexAllocator = new BufferAllocator(gl, vertexAllocatorSize);
             _VertexArrayObject = new VertexArrayObject(gl);
             _ModelBuffer = new BufferObject<Matrix4x4>(gl);
-            _BufferSync = new FenceSync(gl);
 
             _VertexArrayObject.AllocateVertexBufferBinding(0u, _VertexAllocator);
             _VertexArrayObject.AllocateVertexBufferBinding(1u, _ModelBuffer, 0, 1u);
@@ -67,7 +66,6 @@ namespace Automata.Engine.Rendering.Meshes
         }
 
         public void AllocateModelsData(Span<Matrix4x4> models) => _ModelBuffer.SetData(models, BufferDraw.StaticDraw);
-        public void WaitForBufferSync() => _BufferSync.BusyWaitCPU();
 
         public void ValidateAllocatorBlocks()
         {
@@ -84,9 +82,6 @@ namespace Automata.Engine.Rendering.Meshes
 
         public unsafe void Draw()
         {
-            _BufferSync.BusyWaitCPU();
-
-            _GL.VertexArrayVertexBuffer(_VertexArrayObject.Handle, 1u, _ModelBuffer.Handle, 0, (uint)sizeof(Matrix4x4));
             _VertexArrayObject.Bind();
             _CommandBuffer.Bind(BufferTargetARB.DrawIndirectBuffer);
 
@@ -102,8 +97,6 @@ namespace Automata.Engine.Rendering.Meshes
 #endif
 
             _GL.MultiDrawElementsIndirect(PrimitiveType.Triangles, _DrawElementsType, (void*)null!, DrawCommandCount, 0u);
-
-            _BufferSync.Regenerate();
         }
 
         #endregion
@@ -119,7 +112,6 @@ namespace Automata.Engine.Rendering.Meshes
 
         private void CleanupNativeResources()
         {
-            _BufferSync.Dispose();
             _CommandBuffer.Dispose();
             _IndexAllocator.Dispose();
             _VertexAllocator.Dispose();

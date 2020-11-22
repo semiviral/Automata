@@ -13,7 +13,6 @@ namespace Automata.Game.Chunks
         public Palette<Block>? Blocks { get; set; }
         public Chunk?[] Neighbors { get; private set; } = new Chunk?[6];
         public ConcurrentChannel<ChunkModification> Modifications { get; private set; } = new ConcurrentChannel<ChunkModification>(true, true);
-
         public int TimesMeshed { get; set; }
 
         public IEnumerable<Palette<Block>?> NeighborBlocks() => Neighbors.Select(chunk => chunk?.Blocks);

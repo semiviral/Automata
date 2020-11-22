@@ -66,7 +66,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             Debug.Assert((offset % _ALIGNMENT) == 0, "Offset is not aligned to a multiple of 16. This may be an error.");
 
             uint length = Size - (uint)offset;
-            void* pointer = GL.MapNamedBufferRange(Handle, offset, length, (uint)MapBufferAccessMask.MapWriteBit);
+            void* pointer = GL.MapNamedBufferRange(Handle, offset, length, (uint)(MapBufferAccessMask.MapWriteBit | MapBufferAccessMask.MapInvalidateRangeBit));
             Unsafe.Write(pointer, data);
             GL.UnmapNamedBuffer(Handle);
         }
@@ -76,7 +76,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             Debug.Assert((offset % _ALIGNMENT) == 0, "Offset is not aligned to a multiple of 16. This may be an error.");
 
             uint length = Size - (uint)offset;
-            void* pointer = GL.MapNamedBufferRange(Handle, offset, length, (uint)MapBufferAccessMask.MapWriteBit);
+            void* pointer = GL.MapNamedBufferRange(Handle, offset, length, (uint)(MapBufferAccessMask.MapWriteBit | MapBufferAccessMask.MapInvalidateRangeBit));
             MemoryMarshal.AsBytes(data).CopyTo(new Span<byte>(pointer, (int)length));
             GL.UnmapNamedBuffer(Handle);
         }
