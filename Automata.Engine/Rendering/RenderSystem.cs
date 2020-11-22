@@ -4,7 +4,6 @@ using System.Drawing;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Automata.Engine.Input;
 using Automata.Engine.Numerics;
@@ -22,21 +21,49 @@ namespace Automata.Engine.Rendering
 {
     public class RenderSystem : ComponentSystem, IDisposable
     {
+        private readonly ref struct ViewUniforms
+        {
+            public readonly Vector4 Viewport;
+            public readonly Vector4 Parameters;
+            public readonly Matrix4x4 Projection;
+            public readonly Matrix4x4 View;
+
+            public ViewUniforms(Vector4 viewport, Vector4 parameters, Matrix4x4 projection, Matrix4x4 view)
+            {
+                Viewport = viewport;
+                Parameters = parameters;
+                Projection = projection;
+                View = view;
+            }
+        }
+
+        private readonly ref struct ModelUniforms
+        {
+            public readonly Matrix4x4 MVP;
+            public readonly Matrix4x4 Object;
+            public readonly Matrix4x4 World;
+
+            public ModelUniforms(Matrix4x4 mvp, Matrix4x4 o, Matrix4x4 world)
+            {
+                MVP = mvp;
+                Object = o;
+                World = world;
+            }
+        }
+
         private const bool _ENABLE_BACK_FACE_CULLING = false;
         private const bool _ENABLE_FRUSTUM_CULLING = true;
 
-        private const int _BUILT_IN_VIEWPORT_UNIFORMS_OFFSET = 0;
-        private const int _BUILT_IN_VIEWPORT_UNIFORMS_SIZE = 16;
-        private const int _BUILT_IN_CAMERA_UNIFORMS_OFFSET = 16;
-        private const int _BUILT_IN_CAMERA_UNIFORMS_SIZE = 144;
-        private const int _BUILT_IN_MODEL_UNIFORMS_OFFSET = 160;
-        private const int _BUILT_IN_MODEL_UNIFORMS_SIZE = 192;
-        private const int _BUILT_IN_UNIFORMS_SIZE = _BUILT_IN_VIEWPORT_UNIFORMS_SIZE + _BUILT_IN_CAMERA_UNIFORMS_SIZE + _BUILT_IN_MODEL_UNIFORMS_SIZE;
-        private readonly UniformBufferObject _BuiltInUniforms;
+        private const int _VIEW_UNIFORMS_SIZE = 160;
+        private const int _MODEL_UNIFORMS_SIZE = 192;
+
+        private readonly RingBufferObject _ViewUniforms;
+        private readonly RingBufferObject _ModelUniforms;
 
         private readonly GL _GL;
 
         private float _NewAspectRatio;
+        private Vector4 _Viewport;
 
         public ulong DrawCalls { get; private set; }
 
@@ -57,7 +84,8 @@ namespace Automata.Engine.Rendering
                 _GL.Enable(EnableCap.CullFace);
             }
 
-            _BuiltInUniforms = new UniformBufferObject(_GL, 0u, (uint)_BUILT_IN_UNIFORMS_SIZE);
+            _ViewUniforms = new RingBufferObject(_GL, (nuint)_VIEW_UNIFORMS_SIZE, 3u);
+            _ModelUniforms = new RingBufferObject(_GL, (nuint)_MODEL_UNIFORMS_SIZE, 6u);
         }
 
         public override void Registered(EntityManager entityManager)
@@ -84,17 +112,12 @@ namespace Automata.Engine.Rendering
         {
             _GL.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
             Span<Plane> planes = stackalloc Plane[Frustum.TOTAL_PLANES];
-            Span<byte> cameraUniforms = stackalloc byte[sizeof(Vector4) + (2 * sizeof(Matrix4x4))];
-            Span<byte> modelUniforms = stackalloc byte[3 * sizeof(Matrix4x4)];
             DrawCalls = 0;
 
             if (IsNewViewport())
             {
-                UpdateViewport();
+                _Viewport = new Vector4(0f, 0f, AutomataWindow.Instance.Size.X, AutomataWindow.Instance.Size.Y);
             }
-
-            // ensure we bind the builtins UBO
-            _BuiltInUniforms.Bind();
 
             foreach ((Entity cameraEntity, Camera camera) in entityManager.GetEntitiesWithComponents<Camera>())
             {
@@ -112,9 +135,10 @@ namespace Automata.Engine.Rendering
                     continue;
                 }
 
-                // write camera uniforms to built-in UBO
-                WriteCameraUniforms(cameraUniforms, camera.Projection.Parameters, camera.Projection.Matrix, camera.View);
-                _BuiltInUniforms.Write(_BUILT_IN_CAMERA_UNIFORMS_OFFSET, cameraUniforms);
+                ViewUniforms viewUniforms = new ViewUniforms(_Viewport, camera.Projection.Parameters, camera.Projection.Matrix, camera.View);
+                _ViewUniforms.Write(&viewUniforms);
+                _ViewUniforms.Bind(BufferTargetARB.UniformBuffer, 0u);
+                _ViewUniforms.CycleRing();
 
                 // iterate each RenderMesh and check if the model matrix needs to be recalculated
                 foreach ((Entity objectEntity, RenderModel renderModel) in entityManager.GetEntitiesWithComponents<RenderModel>())
@@ -145,10 +169,12 @@ namespace Automata.Engine.Rendering
                     }
 
                     Matrix4x4.Invert(model, out Matrix4x4 modelInverted);
-                    WriteModelUniforms(modelUniforms, modelViewProjection, modelInverted, model);
-                    _BuiltInUniforms.Write(_BUILT_IN_MODEL_UNIFORMS_OFFSET, modelUniforms);
+                    ModelUniforms modelUniforms = new ModelUniforms(modelViewProjection, modelInverted, model);
+                    _ModelUniforms.Write(&modelUniforms);
+                    _ModelUniforms.Bind(BufferTargetARB.UniformBuffer, 1u);
 
                     renderMesh.Mesh!.Draw();
+                    _ModelUniforms.CycleRing();
                     DrawCalls += 1;
                 }
             }
@@ -161,8 +187,8 @@ namespace Automata.Engine.Rendering
 
         private static IEnumerable<(Entity, RenderMesh, Material)> GetRenderableEntities(EntityManager entityManager, Camera camera) =>
             entityManager.GetEntitiesWithComponents<RenderMesh, Material>()
-                .Where(result => result.Component1.ShouldRender && ((camera.RenderedLayers & result.Component1.Mesh!.Layer) > 0));
-                //.OrderBy(result => result.Component2.Pipeline.Handle);
+                .Where(result => result.Component1.ShouldRender && ((camera.RenderedLayers & result.Component1.Mesh!.Layer) > 0))
+                .OrderBy(result => result.Component2.Pipeline.Handle);
 
         private bool IsNewViewport() => _NewAspectRatio is not 0f;
 
@@ -220,100 +246,6 @@ namespace Automata.Engine.Rendering
         #endregion
 
 
-        #region Update Model
-
-        private static void CheckUpdateModelTransforms(Entity objectEntity, RenderModel renderModel)
-        {
-            if ((!(objectEntity.TryFind(out Translation? modelTranslation) && modelTranslation.Changed)
-                 & !(objectEntity.TryFind(out Rotation? modelRotation) && modelRotation.Changed)
-                 & !(objectEntity.TryFind(out Scale? modelScale) && modelScale.Changed))
-                && !renderModel.Changed)
-            {
-                return;
-            }
-
-            renderModel.Model = Matrix4x4.Identity;
-
-            if (modelTranslation is not null)
-            {
-                renderModel.Model *= Matrix4x4.CreateTranslation(modelTranslation.Value);
-            }
-
-            if (modelRotation is not null)
-            {
-                renderModel.Model *= Matrix4x4.CreateFromQuaternion(modelRotation.Value);
-            }
-
-            if (modelScale is not null)
-            {
-                renderModel.Model *= Matrix4x4.CreateScale(modelScale.Value);
-            }
-        }
-
-        #endregion
-
-
-        #region Events
-
-        private void GameWindowResized(object sender, Vector2i newSize) => _NewAspectRatio = (float)newSize.X / (float)newSize.Y;
-
-        #endregion
-
-
-        #region IDisposable
-
-        public void Dispose()
-        {
-            _BuiltInUniforms.Dispose();
-            GC.SuppressFinalize(this);
-        }
-
-        #endregion IDisposable
-
-
-        #region Uniforms
-
-        private void UpdateViewport()
-        {
-            Vector4 viewport = new Vector4(0f, 0f, AutomataWindow.Instance.Size.X, AutomataWindow.Instance.Size.Y);
-            _BuiltInUniforms.Write(_BUILT_IN_VIEWPORT_UNIFORMS_OFFSET, viewport);
-        }
-
-        private static void WriteCameraUniforms(Span<byte> destination, Vector4 parameters, Matrix4x4 projection, Matrix4x4 view)
-        {
-            const int minimum_destination_size = 144;
-            const int projection_offset = 16;
-            const int view_offset = 80;
-
-            if (destination.Length < minimum_destination_size)
-            {
-                throw new ArgumentOutOfRangeException(nameof(destination), $"Destination span must be at least {minimum_destination_size} bytes.");
-            }
-
-            MemoryMarshal.Write(destination, ref parameters);
-            MemoryMarshal.Write(destination.Slice(projection_offset), ref projection);
-            MemoryMarshal.Write(destination.Slice(view_offset), ref view);
-        }
-
-        private static void WriteModelUniforms(Span<byte> destination, Matrix4x4 mvp, Matrix4x4 obj, Matrix4x4 world)
-        {
-            const int minimum_destination_size = 192;
-            const int object_offset = 64;
-            const int world_offset = 128;
-
-            if (destination.Length < minimum_destination_size)
-            {
-                throw new ArgumentOutOfRangeException(nameof(destination), $"Destination span must be at least {minimum_destination_size} bytes.");
-            }
-
-            MemoryMarshal.Write(destination, ref mvp);
-            MemoryMarshal.Write(destination.Slice(object_offset), ref obj);
-            MemoryMarshal.Write(destination.Slice(world_offset), ref world);
-        }
-
-        #endregion
-
-
         #region Update Camera
 
         private static void CheckUpdateCameraView(Entity cameraEntity, Camera camera)
@@ -358,6 +290,58 @@ namespace Automata.Engine.Rendering
                 Projector.Orthographic => new OrthographicProjection(AutomataWindow.Instance.Size, 0.1f, 1000f),
                 Projector.None or _ => camera.Projection
             };
+        }
+
+        #endregion
+
+
+        #region Update Model
+
+        private static void CheckUpdateModelTransforms(Entity objectEntity, RenderModel renderModel)
+        {
+            if ((!(objectEntity.TryFind(out Translation? modelTranslation) && modelTranslation.Changed)
+                 & !(objectEntity.TryFind(out Rotation? modelRotation) && modelRotation.Changed)
+                 & !(objectEntity.TryFind(out Scale? modelScale) && modelScale.Changed))
+                && !renderModel.Changed)
+            {
+                return;
+            }
+
+            renderModel.Model = Matrix4x4.Identity;
+
+            if (modelTranslation is not null)
+            {
+                renderModel.Model *= Matrix4x4.CreateTranslation(modelTranslation.Value);
+            }
+
+            if (modelRotation is not null)
+            {
+                renderModel.Model *= Matrix4x4.CreateFromQuaternion(modelRotation.Value);
+            }
+
+            if (modelScale is not null)
+            {
+                renderModel.Model *= Matrix4x4.CreateScale(modelScale.Value);
+            }
+        }
+
+        #endregion
+
+
+        #region Events
+
+        private void GameWindowResized(object sender, Vector2i newSize) => _NewAspectRatio = (float)newSize.X / (float)newSize.Y;
+
+        #endregion
+
+
+        #region IDisposable
+
+        public void Dispose()
+        {
+            _ViewUniforms.Dispose();
+            _ModelUniforms.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         #endregion

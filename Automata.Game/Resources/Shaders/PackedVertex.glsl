@@ -6,12 +6,16 @@ layout (location = 0) in int vert;
 layout (location = 1) in int uv;
 layout (location = 2) in mat4 model;
 
-layout (std140, binding = 0) uniform builtins
+layout (std140, binding = 0) uniform builtins_view
 {
     vec4 _viewport;
     vec4 _params;
     mat4 _proj;
     mat4 _view;
+};
+
+layout (std140, binding = 1) uniform builtins_model
+{
     mat4 _mvp;
     mat4 _obj;
     mat4 _world;

@@ -11,13 +11,13 @@ namespace Automata.Engine.Rendering.Meshes
         where TIndex : unmanaged
         where TVertex : unmanaged
     {
-        private readonly BufferObject<DrawElementsIndirectCommand> _CommandBuffer;
-        private readonly DrawElementsType _DrawElementsType;
         private readonly GL _GL;
+        private readonly BufferObject<DrawElementsIndirectCommand> _CommandBuffer;
         private readonly BufferAllocator _IndexAllocator;
-        private readonly BufferObject<Matrix4x4> _ModelBuffer;
         private readonly BufferAllocator _VertexAllocator;
         private readonly VertexArrayObject _VertexArrayObject;
+        private readonly BufferObject<Matrix4x4> _ModelBuffer;
+        private readonly DrawElementsType _DrawElementsType;
 
         public uint DrawCommandCount { get; private set; }
 
