@@ -43,7 +43,7 @@ namespace Automata.Engine.Rendering.Meshes
         {
             bool recreateCommandBuffer = false;
 
-            foreach ((IEntity entity, AllocatedMeshData<TIndex, TVertex> mesh) in entityManager.GetEntitiesWithComponents<AllocatedMeshData<TIndex, TVertex>>())
+            foreach ((Entity entity, AllocatedMeshData<TIndex, TVertex> mesh) in entityManager.GetEntitiesWithComponents<AllocatedMeshData<TIndex, TVertex>>())
             {
                 if (TryAllocateMesh(entityManager, entity, mesh.Data))
                 {
@@ -117,7 +117,7 @@ namespace Automata.Engine.Rendering.Meshes
 
             int index = 0;
 
-            foreach ((IEntity entity, DrawElementsIndirectAllocation<TIndex, TVertex> allocation) in
+            foreach ((Entity entity, DrawElementsIndirectAllocation<TIndex, TVertex> allocation) in
                 entityManager.GetEntitiesWithComponents<DrawElementsIndirectAllocation<TIndex, TVertex>>())
             {
                 Debug.Assert(allocation.Allocation is not null);
@@ -141,7 +141,7 @@ namespace Automata.Engine.Rendering.Meshes
                 $"Allocated {commands.Length} {nameof(DrawElementsIndirectCommand)}"));
         }
 
-        private unsafe bool TryAllocateMesh(EntityManager entityManager, IEntity entity, NonAllocatingQuadsMeshData<TIndex, TVertex> pendingData)
+        private unsafe bool TryAllocateMesh(EntityManager entityManager, Entity entity, NonAllocatingQuadsMeshData<TIndex, TVertex> pendingData)
         {
             if (_MultiDrawIndirectMesh is null)
             {
@@ -178,7 +178,7 @@ namespace Automata.Engine.Rendering.Meshes
             return true;
         }
 
-        private static void ConfigureMaterial(EntityManager entityManager, IEntity entity)
+        private static void ConfigureMaterial(EntityManager entityManager, Entity entity)
         {
             ProgramPipeline programPipeline = ProgramRegistry.Instance.Load("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl");
 

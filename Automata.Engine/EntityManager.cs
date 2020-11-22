@@ -53,9 +53,9 @@ namespace Automata.Engine
 
         #region Entity Create / Remove
 
-        public IEntity CreateEntity(params Component[] components)
+        public Entity CreateEntity(params Component[] components)
         {
-            IEntity entity = new Entity();
+            Entity entity = new Entity();
 
             foreach (Component component in components)
             {
@@ -67,7 +67,7 @@ namespace Automata.Engine
             return entity;
         }
 
-        public void RemoveEntity(IEntity entity)
+        public void RemoveEntity(Entity entity)
         {
             foreach (Component component in entity)
             {
@@ -86,28 +86,28 @@ namespace Automata.Engine
         #region Component Register / Remove
 
         /// <summary>
-        ///     Registers the specified component instance to the given <see cref="IEntity" />.
+        ///     Registers the specified component instance to the given <see cref="Entity" />.
         /// </summary>
-        /// <param name="entity"><see cref="IEntity" /> to add component to.</param>
+        /// <param name="entity"><see cref="Entity" /> to add component to.</param>
         /// <param name="component">Component to add.</param>
         /// <remarks>
         ///     Use this method to ensure <see cref="EntityManager" /> caches remain accurate.
         /// </remarks>
-        public void RegisterComponent(IEntity entity, Component component)
+        public void RegisterComponent(Entity entity, Component component)
         {
             entity.Add(component);
             IncrementComponentCount(component);
         }
 
         /// <summary>
-        ///     Adds the specified component to the given <see cref="IEntity" />.
+        ///     Adds the specified component to the given <see cref="Entity" />.
         /// </summary>
-        /// <param name="entity"><see cref="IEntity" /> to add component to.</param>
+        /// <param name="entity"><see cref="Entity" /> to add component to.</param>
         /// <typeparam name="TComponent">Type of component to add.</typeparam>
         /// <remarks>
         ///     Use this method to ensure <see cref="EntityManager" /> caches remain accurate.
         /// </remarks>
-        public TComponent RegisterComponent<TComponent>(IEntity entity) where TComponent : Component, new()
+        public TComponent RegisterComponent<TComponent>(Entity entity) where TComponent : Component, new()
         {
             TComponent component = entity.Add<TComponent>();
             IncrementComponentCount<TComponent>();
@@ -116,14 +116,14 @@ namespace Automata.Engine
         }
 
         /// <summary>
-        ///     Removes the specified component instance from given <see cref="IEntity" />.
+        ///     Removes the specified component instance from given <see cref="Entity" />.
         /// </summary>
-        /// <param name="entity"><see cref="IEntity" /> to remove component from.</param>
+        /// <param name="entity"><see cref="Entity" /> to remove component from.</param>
         /// <typeparam name="TComponent">Type of component to remove.</typeparam>
         /// <remarks>
         ///     Use this method to ensure <see cref="EntityManager" /> caches remain accurate.
         /// </remarks>
-        public void RemoveComponent<TComponent>(IEntity entity) where TComponent : Component
+        public void RemoveComponent<TComponent>(Entity entity) where TComponent : Component
         {
             entity.Remove<TComponent>();
             DecrementComponentCount<TComponent>();
@@ -143,12 +143,12 @@ namespace Automata.Engine
         ///     Be cautious of registering or removing <see cref="Component" />s when iterating entities from this function, as
         ///     any additions or subtractions from the collection will throw a collection modified exception.
         /// </remarks>
-        public IEnumerable<IEntity> GetEntities<T1>()
+        public IEnumerable<Entity> GetEntities<T1>()
             where T1 : Component
         {
-            IEnumerable<IEntity> GetEntitiesImpl()
+            IEnumerable<Entity> GetEntitiesImpl()
             {
-                foreach (IEntity entity in _Entities)
+                foreach (Entity entity in _Entities)
                 {
                     if (entity.TryFind(out T1? _))
                     {
@@ -160,13 +160,13 @@ namespace Automata.Engine
             return CacheAndGetEnumerable(GetEntitiesImpl());
         }
 
-        public IEnumerable<IEntity> GetEntities<T1, T2>()
+        public IEnumerable<Entity> GetEntities<T1, T2>()
             where T1 : Component
             where T2 : Component
         {
-            IEnumerable<IEntity> GetEntitiesImpl()
+            IEnumerable<Entity> GetEntitiesImpl()
             {
-                foreach (IEntity entity in _Entities)
+                foreach (Entity entity in _Entities)
                 {
                     if (entity.TryFind(out T1? _)
                         && entity.TryFind(out T2? _))
@@ -179,14 +179,14 @@ namespace Automata.Engine
             return CacheAndGetEnumerable(GetEntitiesImpl());
         }
 
-        public IEnumerable<IEntity> GetEntities<T1, T2, T3>()
+        public IEnumerable<Entity> GetEntities<T1, T2, T3>()
             where T1 : Component
             where T2 : Component
             where T3 : Component
         {
-            IEnumerable<IEntity> GetEntitiesImpl()
+            IEnumerable<Entity> GetEntitiesImpl()
             {
-                foreach (IEntity entity in _Entities)
+                foreach (Entity entity in _Entities)
                 {
                     if (entity.TryFind(out T1? _)
                         && entity.TryFind(out T2? _)
@@ -200,15 +200,15 @@ namespace Automata.Engine
             return CacheAndGetEnumerable(GetEntitiesImpl());
         }
 
-        public IEnumerable<IEntity> GetEntities<T1, T2, T3, T4>()
+        public IEnumerable<Entity> GetEntities<T1, T2, T3, T4>()
             where T1 : Component
             where T2 : Component
             where T3 : Component
             where T4 : Component
         {
-            IEnumerable<IEntity> GetEntitiesImpl()
+            IEnumerable<Entity> GetEntitiesImpl()
             {
-                foreach (IEntity entity in _Entities)
+                foreach (Entity entity in _Entities)
                 {
                     if (entity.TryFind(out T1? _)
                         && entity.TryFind(out T2? _)
@@ -228,12 +228,12 @@ namespace Automata.Engine
 
         #region GetEntitiesWithComponents
 
-        public IEnumerable<(IEntity Entity, T1 Component1)> GetEntitiesWithComponents<T1>()
+        public IEnumerable<(Entity Entity, T1 Component1)> GetEntitiesWithComponents<T1>()
             where T1 : Component
         {
-            IEnumerable<(IEntity, T1)> GetEntitiesWithComponentsImpl()
+            IEnumerable<(Entity, T1)> GetEntitiesWithComponentsImpl()
             {
-                foreach (IEntity entity in _Entities)
+                foreach (Entity entity in _Entities)
                 {
                     if (entity.TryFind(out T1? component1))
                     {
@@ -245,13 +245,13 @@ namespace Automata.Engine
             return CacheAndGetEnumerable(GetEntitiesWithComponentsImpl());
         }
 
-        public IEnumerable<(IEntity Entity, T1 Component1, T2 Component2)> GetEntitiesWithComponents<T1, T2>()
+        public IEnumerable<(Entity Entity, T1 Component1, T2 Component2)> GetEntitiesWithComponents<T1, T2>()
             where T1 : Component
             where T2 : Component
         {
-            IEnumerable<(IEntity, T1, T2)> GetEntitiesWithComponentsImpl()
+            IEnumerable<(Entity, T1, T2)> GetEntitiesWithComponentsImpl()
             {
-                foreach (IEntity entity in _Entities)
+                foreach (Entity entity in _Entities)
                 {
                     if (entity.TryFind(out T1? component1)
                         && entity.TryFind(out T2? component2))
@@ -264,14 +264,14 @@ namespace Automata.Engine
             return CacheAndGetEnumerable(GetEntitiesWithComponentsImpl());
         }
 
-        public IEnumerable<(IEntity Entity, T1 Component1, T2 Component2, T3 Component3)> GetEntitiesWithComponents<T1, T2, T3>()
+        public IEnumerable<(Entity Entity, T1 Component1, T2 Component2, T3 Component3)> GetEntitiesWithComponents<T1, T2, T3>()
             where T1 : Component
             where T2 : Component
             where T3 : Component
         {
-            IEnumerable<(IEntity, T1, T2, T3)> GetEntitiesWithComponentsImpl()
+            IEnumerable<(Entity, T1, T2, T3)> GetEntitiesWithComponentsImpl()
             {
-                foreach (IEntity entity in _Entities)
+                foreach (Entity entity in _Entities)
                 {
                     if (entity.TryFind(out T1? component1)
                         && entity.TryFind(out T2? component2)
@@ -285,15 +285,15 @@ namespace Automata.Engine
             return CacheAndGetEnumerable(GetEntitiesWithComponentsImpl());
         }
 
-        public IEnumerable<(IEntity Entity, T1 Component1, T2 Component2, T3 Component3, T4 Component4)> GetEntitiesWithComponents<T1, T2, T3, T4>()
+        public IEnumerable<(Entity Entity, T1 Component1, T2 Component2, T3 Component3, T4 Component4)> GetEntitiesWithComponents<T1, T2, T3, T4>()
             where T1 : Component
             where T2 : Component
             where T3 : Component
             where T4 : Component
         {
-            IEnumerable<(IEntity, T1, T2, T3, T4)> GetEntitiesWithComponentsImpl()
+            IEnumerable<(Entity, T1, T2, T3, T4)> GetEntitiesWithComponentsImpl()
             {
-                foreach (IEntity entity in _Entities)
+                foreach (Entity entity in _Entities)
                 {
                     if (entity.TryFind(out T1? component1)
                         && entity.TryFind(out T2? component2)
@@ -323,7 +323,7 @@ namespace Automata.Engine
         {
             IEnumerable<T1> GetComponentsImpl()
             {
-                foreach (IEntity entity in _Entities)
+                foreach (Entity entity in _Entities)
                 {
                     if (entity.TryFind(out T1? component))
                     {
@@ -341,7 +341,7 @@ namespace Automata.Engine
         {
             IEnumerable<(T1, T2)> GetComponentsImpl()
             {
-                foreach (IEntity entity in _Entities)
+                foreach (Entity entity in _Entities)
                 {
                     if (entity.TryFind(out T1? component)
                         && entity.TryFind(out T2? component2))
@@ -361,7 +361,7 @@ namespace Automata.Engine
         {
             IEnumerable<(T1, T2, T3)> GetComponentsImpl()
             {
-                foreach (IEntity entity in _Entities)
+                foreach (Entity entity in _Entities)
                 {
                     if (entity.TryFind(out T1? component)
                         && entity.TryFind(out T2? component2)
@@ -383,7 +383,7 @@ namespace Automata.Engine
         {
             IEnumerable<(T1, T2, T3, T4)> GetComponentsImpl()
             {
-                foreach (IEntity entity in _Entities)
+                foreach (Entity entity in _Entities)
                 {
                     if (entity.TryFind(out T1? component)
                         && entity.TryFind(out T2? component2)
@@ -449,7 +449,7 @@ namespace Automata.Engine
 
         public void Dispose()
         {
-            foreach (IEntity entity in _Entities)
+            foreach (Entity entity in _Entities)
             {
                 entity.Dispose();
             }

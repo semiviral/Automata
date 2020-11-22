@@ -51,7 +51,7 @@ namespace Automata.Engine.Input
                 return;
             }
 
-            foreach ((IEntity entity, Translation translation, KeyboardListener listener) in entityManager
+            foreach ((Entity entity, Translation translation, KeyboardListener listener) in entityManager
                 .GetEntitiesWithComponents<Translation, KeyboardListener>())
             {
                 translation.Value += listener.Sensitivity

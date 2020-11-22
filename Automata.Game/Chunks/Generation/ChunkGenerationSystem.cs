@@ -22,13 +22,13 @@ namespace Automata.Game.Chunks.Generation
     public class ChunkGenerationSystem : ComponentSystem
     {
         private readonly IOrderedCollection<IGenerationStep> _BuildSteps;
-        private readonly ConcurrentChannel<(IEntity, Chunk, NonAllocatingQuadsMeshData<uint, PackedVertex>)> _PendingMeshes;
+        private readonly ConcurrentChannel<(Entity, Chunk, NonAllocatingQuadsMeshData<uint, PackedVertex>)> _PendingMeshes;
 
         public ChunkGenerationSystem()
         {
             _BuildSteps = new OrderedLinkedList<IGenerationStep>();
             _BuildSteps.AddLast(new TerrainGenerationStep());
-            _PendingMeshes = new ConcurrentChannel<(IEntity, Chunk, NonAllocatingQuadsMeshData<uint, PackedVertex>)>(true, false);
+            _PendingMeshes = new ConcurrentChannel<(Entity, Chunk, NonAllocatingQuadsMeshData<uint, PackedVertex>)>(true, false);
 
             DiagnosticsProvider.EnableGroup<ChunkGenerationDiagnosticGroup>();
         }
@@ -54,7 +54,7 @@ namespace Automata.Game.Chunks.Generation
         public override ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta)
         {
             // empty channel of any pending meshes, apply the meshes, and update the material
-            while (_PendingMeshes.TryTake(out (IEntity Entity, Chunk Chunk, NonAllocatingQuadsMeshData<uint, PackedVertex> Data) pendingMesh))
+            while (_PendingMeshes.TryTake(out (Entity Entity, Chunk Chunk, NonAllocatingQuadsMeshData<uint, PackedVertex> Data) pendingMesh))
             {
                 if (!pendingMesh.Entity.Disposed)
                 {
@@ -73,7 +73,7 @@ namespace Automata.Game.Chunks.Generation
             }
 
             // iterate over each valid chunk and process the generateable states
-            foreach ((IEntity entity, Chunk chunk, Translation translation) in entityManager.GetEntitiesWithComponents<Chunk, Translation>())
+            foreach ((Entity entity, Chunk chunk, Translation translation) in entityManager.GetEntitiesWithComponents<Chunk, Translation>())
             {
                 switch (chunk.State)
                 {
@@ -193,7 +193,7 @@ namespace Automata.Game.Chunks.Generation
             chunk.State += 1;
         }
 
-        private async Task GenerateMesh(IEntity entity, Chunk chunk)
+        private async Task GenerateMesh(Entity entity, Chunk chunk)
         {
             if (chunk.Blocks is null)
             {

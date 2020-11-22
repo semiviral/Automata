@@ -14,7 +14,7 @@ using Automata.Game.Chunks.Generation;
 
 namespace Automata.Game.Chunks
 {
-    public class ChunkMap : IEnumerable<(Vector3i, IEntity)>
+    public class ChunkMap : IEnumerable<(Vector3i, Entity)>
     {
         private static readonly OcclusionBounds _ChunkOcclusionBounds = new OcclusionBounds
         {
@@ -22,17 +22,17 @@ namespace Automata.Game.Chunks
             Cubic = new Cube(Vector3.Zero, new Vector3(GenerationConstants.CHUNK_SIZE))
         };
 
-        private readonly Dictionary<Vector3i, IEntity> _Chunks;
+        private readonly Dictionary<Vector3i, Entity> _Chunks;
         private readonly ConcurrentChannel<(Vector3i, ChunkModification)>[] _PendingModifications;
 
         private int _PendingModificationIndex;
 
         public ICollection<Vector3i> Origins => _Chunks.Keys;
-        public ICollection<IEntity> Entities => _Chunks.Values;
+        public ICollection<Entity> Entities => _Chunks.Values;
 
         public ChunkMap()
         {
-            _Chunks = new Dictionary<Vector3i, IEntity>();
+            _Chunks = new Dictionary<Vector3i, Entity>();
 
             _PendingModifications = new[]
             {
@@ -43,7 +43,7 @@ namespace Automata.Game.Chunks
             _PendingModificationIndex = 0;
         }
 
-        public bool TryGetChunkEntity(Vector3i origin, [NotNullWhen(true)] out IEntity? entity) => _Chunks.TryGetValue(origin, out entity);
+        public bool TryGetChunkEntity(Vector3i origin, [NotNullWhen(true)] out Entity? entity) => _Chunks.TryGetValue(origin, out entity);
 
         public bool TryGetBlockAt(Vector3i global, [MaybeNullWhen(false)] out Block block)
         {
@@ -51,7 +51,7 @@ namespace Automata.Game.Chunks
             Vector3i local = Vector3i.Abs(global - origin);
             int index = Vector3i.Project1D(local, GenerationConstants.CHUNK_SIZE);
 
-            if (_Chunks.TryGetValue(origin, out IEntity? entity) && entity.TryFind(out Chunk? chunk) && chunk.Blocks is not null)
+            if (_Chunks.TryGetValue(origin, out Entity? entity) && entity.TryFind(out Chunk? chunk) && chunk.Blocks is not null)
             {
                 block = chunk.Blocks[index];
                 return true;
@@ -70,7 +70,7 @@ namespace Automata.Game.Chunks
 
             while (channel.TryTake(out (Vector3i Origin, ChunkModification modification) pending))
             {
-                if (_Chunks.TryGetValue(pending.Origin, out IEntity? entity) && entity!.TryFind(out Chunk? chunk))
+                if (_Chunks.TryGetValue(pending.Origin, out Entity? entity) && entity!.TryFind(out Chunk? chunk))
                 {
                     await chunk.Modifications.AddAsync(pending.modification);
                 }
@@ -103,7 +103,7 @@ namespace Automata.Game.Chunks
 
         public bool TryDeallocate(EntityManager entityManager, Vector3i origin, [NotNullWhen(true)] out Chunk? chunk)
         {
-            if (_Chunks.Remove(origin, out IEntity? entity) && entity is not null!)
+            if (_Chunks.Remove(origin, out Entity? entity) && entity is not null!)
             {
                 bool success = entity.TryFind(out chunk);
                 entityManager.RemoveEntity(entity);
@@ -131,7 +131,7 @@ namespace Automata.Game.Chunks
                 BlockID = blockID
             };
 
-            if (_Chunks.TryGetValue(origin, out IEntity? entity) && entity!.TryFind(out Chunk? chunk))
+            if (_Chunks.TryGetValue(origin, out Entity? entity) && entity!.TryFind(out Chunk? chunk))
             {
                 await chunk.Modifications.AddAsync(chunkModification);
             }
@@ -148,7 +148,7 @@ namespace Automata.Game.Chunks
                 Vector3i modificationGlobal = global + local;
                 Vector3i modificationOrigin = Vector3i.RoundBy(modificationGlobal, GenerationConstants.CHUNK_SIZE);
 
-                if (_Chunks.TryGetValue(modificationOrigin, out IEntity? entity) && entity!.TryFind(out Chunk? chunk))
+                if (_Chunks.TryGetValue(modificationOrigin, out Entity? entity) && entity!.TryFind(out Chunk? chunk))
                 {
                     await chunk.Modifications.AddAsync(new ChunkModification
                     {
@@ -164,7 +164,7 @@ namespace Automata.Game.Chunks
 
         #region IEnumerator
 
-        public IEnumerator<(Vector3i, IEntity)> GetEnumerator()
+        public IEnumerator<(Vector3i, Entity)> GetEnumerator()
         {
             foreach ((Vector3i origin, var entity) in _Chunks)
             {

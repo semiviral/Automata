@@ -96,7 +96,7 @@ namespace Automata.Engine.Rendering
             // ensure we bind the builtins UBO
             _BuiltInUniforms.Bind();
 
-            foreach ((IEntity cameraEntity, Camera camera) in entityManager.GetEntitiesWithComponents<Camera>())
+            foreach ((Entity cameraEntity, Camera camera) in entityManager.GetEntitiesWithComponents<Camera>())
             {
                 CheckUpdateCameraView(cameraEntity, camera);
 
@@ -117,7 +117,7 @@ namespace Automata.Engine.Rendering
                 _BuiltInUniforms.Write(_BUILT_IN_CAMERA_UNIFORMS_OFFSET, cameraUniforms);
 
                 // iterate each RenderMesh and check if the model matrix needs to be recalculated
-                foreach ((IEntity objectEntity, RenderModel renderModel) in entityManager.GetEntitiesWithComponents<RenderModel>())
+                foreach ((Entity objectEntity, RenderModel renderModel) in entityManager.GetEntitiesWithComponents<RenderModel>())
                 {
                     CheckUpdateModelTransforms(objectEntity, renderModel);
                 }
@@ -128,7 +128,7 @@ namespace Automata.Engine.Rendering
 
                 // iterate every valid entity and try to render it
                 // we also sort the entities by their render pipeline ID, so we can avoid doing a ton of rebinding
-                foreach ((IEntity objectEntity, RenderMesh renderMesh, Material material) in GetRenderableEntities(entityManager, camera))
+                foreach ((Entity objectEntity, RenderMesh renderMesh, Material material) in GetRenderableEntities(entityManager, camera))
                 {
                     Matrix4x4 model = objectEntity.Find<RenderModel>()?.Model ?? Matrix4x4.Identity;
                     Matrix4x4 modelViewProjection = model * viewProjection;
@@ -159,7 +159,7 @@ namespace Automata.Engine.Rendering
             return ValueTask.CompletedTask;
         }
 
-        private static IEnumerable<(IEntity, RenderMesh, Material)> GetRenderableEntities(EntityManager entityManager, Camera camera) =>
+        private static IEnumerable<(Entity, RenderMesh, Material)> GetRenderableEntities(EntityManager entityManager, Camera camera) =>
             entityManager.GetEntitiesWithComponents<RenderMesh, Material>()
                 .Where(result => result.Component1.ShouldRender && ((camera.RenderedLayers & result.Component1.Mesh!.Layer) > 0))
                 .OrderBy(result => result.Component2.Pipeline.Handle);
@@ -169,7 +169,7 @@ namespace Automata.Engine.Rendering
 
         #region Occlusion
 
-        private static bool CheckClipFrustumOccludeEntity(IEntity entity, Span<Plane> planes, Matrix4x4 mvp)
+        private static bool CheckClipFrustumOccludeEntity(Entity entity, Span<Plane> planes, Matrix4x4 mvp)
         {
             if (!entity.TryFind(out OcclusionBounds? bounds) || !_ENABLE_FRUSTUM_CULLING)
             {
@@ -222,7 +222,7 @@ namespace Automata.Engine.Rendering
 
         #region Update Model
 
-        private static void CheckUpdateModelTransforms(IEntity objectEntity, RenderModel renderModel)
+        private static void CheckUpdateModelTransforms(Entity objectEntity, RenderModel renderModel)
         {
             if ((!(objectEntity.TryFind(out Translation? modelTranslation) && modelTranslation.Changed)
                  & !(objectEntity.TryFind(out Rotation? modelRotation) && modelRotation.Changed)
@@ -316,7 +316,7 @@ namespace Automata.Engine.Rendering
 
         #region Update Camera
 
-        private static void CheckUpdateCameraView(IEntity cameraEntity, Camera camera)
+        private static void CheckUpdateCameraView(Entity cameraEntity, Camera camera)
         {
             // check for changes and update current camera's view matrix & UBO data
             if (!(cameraEntity.TryFind(out Scale? cameraScale) && cameraScale.Changed)
