@@ -5,7 +5,7 @@ namespace Automata.Engine.Rendering.OpenGL
     [StructLayout(LayoutKind.Sequential)]
     public readonly struct DrawElementsIndirectCommand
     {
-        public readonly uint VertexCount;
+        public readonly uint IndexCount;
         public readonly uint InstanceCount;
 
         /// <summary>
@@ -20,13 +20,20 @@ namespace Automata.Engine.Rendering.OpenGL
 
         public readonly uint BaseInstance;
 
-        public DrawElementsIndirectCommand(uint vertexCount, uint instanceCount, uint firstIndexOffset, uint firstVertexOffset, uint baseInstance)
+        public DrawElementsIndirectCommand(uint indexCount, uint instanceCount, uint firstIndexOffset, uint firstVertexOffset, uint baseInstance)
         {
-            VertexCount = vertexCount;
+            IndexCount = indexCount;
             InstanceCount = instanceCount;
             FirstIndexOffset = firstIndexOffset;
             FirstVertexOffset = firstVertexOffset;
             BaseInstance = baseInstance;
         }
+
+        public override string ToString() => $"{nameof(DrawElementsIndirectCommand)} "
+                                             + $"{{ {nameof(IndexCount)} = {IndexCount}, "
+                                             + $"{nameof(InstanceCount)} = {InstanceCount}, "
+                                             + $"{nameof(FirstIndexOffset)} = {FirstIndexOffset}, "
+                                             + $"{nameof(FirstVertexOffset)} = {FirstVertexOffset}, "
+                                             + $"{nameof(BaseInstance)} = {BaseInstance} }}";
     }
 }

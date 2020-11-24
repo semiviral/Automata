@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using Automata.Engine.Extensions;
 using Serilog;
@@ -11,29 +12,31 @@ namespace Automata.Engine.Rendering.Vulkan
     public sealed record VulkanInstanceInfo(string ApplicationName, Version32 ApplicationVersion, string EngineName, Version32 EngineVersion,
         Version32 APIVersion);
 
-    public record VulkanInstance : IDisposable
+    public sealed class VulkanInstance : IDisposable
     {
         private readonly Instance _VKInstance;
+        private SurfaceExtension _SurfaceExtension;
 
         internal Vk VK { get; }
-        private VulkanInstanceInfo Info { get; }
-        public SurfaceExtension SurfaceExtension { get; }
+
+        public VulkanInstanceInfo Info { get; }
+        public SurfaceKHR Surface { get; }
         public VkHandle Handle { get; }
 
-        public VulkanInstance(Vk vk, IVkSurface vkSurface, VulkanInstanceInfo info, string[] requestedExtensions, bool validation,
-            string[] validationLayers)
+        public unsafe VulkanInstance(Vk vk, IVkSurface vkSurface, VulkanInstanceInfo info, string[] requestedExtensions, string[]? validationLayers)
         {
             VK = vk;
             Info = info;
 
-            CreateInstance(vkSurface, requestedExtensions, validation, validationLayers, out _VKInstance);
-            SurfaceExtension = GetInstanceExtension<SurfaceExtension>();
+            CreateInstance(vkSurface, requestedExtensions, validationLayers, out _VKInstance);
+            _SurfaceExtension = GetInstanceExtension<SurfaceExtension>();
             Handle = _VKInstance.ToHandle();
+            Surface = vkSurface.Create(Handle, (AllocationCallbacks*)null!).ToSurface();
 
             Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(VulkanInstance), "Created."));
         }
 
-        private unsafe void CreateInstance(IVkSurface vkSurface, string[] requestedExtensions, bool validation, string[] validationLayers, out Instance instance)
+        private unsafe void CreateInstance(IVkSurface vkSurface, string[] requestedExtensions, string[]? validationLayers, out Instance instance)
         {
             nint applicationName = Info.ApplicationName.Marshal();
             nint engineName = Info.EngineName.Marshal();
@@ -64,7 +67,7 @@ namespace Automata.Engine.Rendering.Vulkan
                 PNext = (void*)null!
             };
 
-            if (validation)
+            if (validationLayers is not null)
             {
                 VKAPI.VerifyValidationLayerSupport(VK, validationLayers);
 
@@ -92,15 +95,40 @@ namespace Automata.Engine.Rendering.Vulkan
             }
         }
 
-        public unsafe Span<PhysicalDevice> GetPhysicalDevices()
+        public unsafe VulkanPhysicalDevice[] GetPhysicalDevices(Predicate<VulkanPhysicalDevice>? suitability)
         {
+            suitability ??= _ => true;
+
             uint deviceCount = 0u;
             VK.EnumeratePhysicalDevices(_VKInstance, &deviceCount, Span<PhysicalDevice>.Empty);
-            Span<PhysicalDevice> physicalDevices = new PhysicalDevice[deviceCount];
+            Span<PhysicalDevice> physicalDevices = stackalloc PhysicalDevice[(int)deviceCount];
             VK.EnumeratePhysicalDevices(_VKInstance, (uint*)null!, physicalDevices);
+            VulkanPhysicalDevice[] tempSuitable = ArrayPool<VulkanPhysicalDevice>.Shared.Rent((int)deviceCount);
+            int index = 0;
 
-            return physicalDevices;
+            foreach (PhysicalDevice physicalDevice in physicalDevices)
+            {
+                VulkanPhysicalDevice vulkanPhysicalDevice = new VulkanPhysicalDevice(VK, physicalDevice);
+
+                if (suitability(vulkanPhysicalDevice))
+                {
+                    tempSuitable[index] = vulkanPhysicalDevice;
+                    index += 1;
+                }
+            }
+
+            VulkanPhysicalDevice[] finalSuitable = tempSuitable[..index];
+            ArrayPool<VulkanPhysicalDevice>.Shared.Return(tempSuitable);
+            return finalSuitable;
         }
+
+
+        #region
+
+
+
+        #endregion
+
 
         #region Get Extension
 
@@ -127,7 +155,7 @@ namespace Automata.Engine.Rendering.Vulkan
 
         #region Conversions
 
-        public static explicit operator Instance(VulkanInstance vulkanInstance) => vulkanInstance._VKInstance;
+        public static implicit operator Instance(VulkanInstance vulkanInstance) => vulkanInstance._VKInstance;
 
         #endregion
 
@@ -137,7 +165,6 @@ namespace Automata.Engine.Rendering.Vulkan
         public unsafe void Dispose()
         {
             VK.DestroyInstance(_VKInstance, (AllocationCallbacks*)null!);
-            GC.SuppressFinalize(this);
         }
 
         #endregion

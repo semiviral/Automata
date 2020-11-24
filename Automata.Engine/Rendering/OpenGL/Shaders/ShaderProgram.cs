@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -45,28 +46,27 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
 
         private void CheckInfoLogAndThrow()
         {
-            GetInfoLog(out string infoLog);
-
-            if (!string.IsNullOrWhiteSpace(infoLog))
+            if (TryGetInfoLog(out string? infoLog))
             {
                 throw new ShaderLoadException(Type, infoLog);
             }
         }
 
         [SkipLocalsInit]
-        public unsafe void GetInfoLog(out string infoLog)
+        public unsafe bool TryGetInfoLog([NotNullWhen(true)] out string? infoLog)
         {
             GL.GetProgram(Handle, ProgramPropertyARB.InfoLogLength, out int infoLogLength);
 
             if (infoLogLength is 0)
             {
                 infoLog = string.Empty;
-                return;
+                return false;
             }
 
             Span<byte> infoLogSpan = stackalloc byte[infoLogLength];
             GL.GetProgramInfoLog(Handle, (uint)infoLogLength, (uint*)&infoLogLength, infoLogSpan);
             infoLog = Encoding.ASCII.GetString(infoLogSpan);
+            return true;
         }
 
 

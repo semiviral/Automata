@@ -1,4 +1,7 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Text;
 using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.OpenGL.Shaders
@@ -8,19 +11,16 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
         private readonly ShaderProgram _VertexShader;
         private readonly ShaderProgram _FragmentShader;
 
-        public unsafe ProgramPipeline(GL gl, ShaderProgram vertexShader, ShaderProgram fragmentShader) : base(gl)
+        public ProgramPipeline(GL gl, ShaderProgram vertexShader, ShaderProgram fragmentShader) : base(gl)
         {
             _VertexShader = vertexShader;
             _FragmentShader = fragmentShader;
 
-            uint handle = 0;
-            GL.CreateProgramPipelines(1, &handle);
-            Handle = handle;
-
+            Handle = GL.CreateProgramPipeline();
             GL.UseProgramStages(Handle, (uint)UseProgramStageMask.VertexShaderBit, _VertexShader.Handle);
             GL.UseProgramStages(Handle, (uint)UseProgramStageMask.FragmentShaderBit, _FragmentShader.Handle);
 
-            CheckShaderInfoLogAndThrow();
+            CheckInfoLogAndThrow();
         }
 
         public ShaderProgram Stage(ShaderType shaderType) => shaderType switch
@@ -30,11 +30,26 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
             _ => throw new ArgumentOutOfRangeException(nameof(shaderType))
         };
 
-        private void CheckShaderInfoLogAndThrow()
+        [SkipLocalsInit]
+        public unsafe bool TryGetInfoLog([NotNullWhen(true)] out string? infoLog)
         {
-            GL.GetProgramPipelineInfoLog(Handle, 2048u, out _, out string infoLog);
+            GL.GetProgramPipeline(Handle, PipelineParameterName.InfoLogLength, out int infoLogLength);
 
-            if (!string.IsNullOrWhiteSpace(infoLog))
+            if (infoLogLength is 0)
+            {
+                infoLog = string.Empty;
+                return false;
+            }
+
+            Span<byte> infoLogSpan = stackalloc byte[infoLogLength];
+            GL.GetProgramPipelineInfoLog(Handle, (uint)infoLogLength, (uint*)&infoLogLength, infoLogSpan);
+            infoLog = Encoding.ASCII.GetString(infoLogSpan);
+            return true;
+        }
+
+        private void CheckInfoLogAndThrow()
+        {
+            if (TryGetInfoLog(out string? infoLog))
             {
                 throw new ShaderLoadException((ShaderType)0, infoLog);
             }
@@ -48,13 +63,6 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
         #endregion
 
 
-        #region IDisposable
-
-        protected override void CleanupNativeResources() => GL.DeleteProgramPipeline(Handle);
-
-        #endregion
-
-
         #region IEquatable
 
         public bool Equals(ProgramPipeline? other) => other is not null && (other.Handle == Handle);
@@ -64,6 +72,13 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
 
         public static bool operator ==(ProgramPipeline? left, ProgramPipeline? right) => Equals(left, right);
         public static bool operator !=(ProgramPipeline? left, ProgramPipeline? right) => !Equals(left, right);
+
+        #endregion
+
+
+        #region IDisposable
+
+        protected override void CleanupNativeResources() => GL.DeleteProgramPipeline(Handle);
 
         #endregion
     }

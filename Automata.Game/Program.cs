@@ -1,6 +1,4 @@
-﻿#define VULKAN
-
-using System.Drawing;
+﻿using System.Drawing;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Automata.Engine;
@@ -35,10 +33,7 @@ void MainImpl()
     InitializeWindowImpl();
 
 #if VULKAN
-    VulkanInstance instance = new VulkanInstance(VKAPI.Instance.VK, AutomataWindow.Instance.GetSurface(),
-        new VulkanInstanceInfo("Automata.Game", new Version32(0u, 1u, 0u), "Automata.Engine", new Version32(0u, 1u, 0u), Vk.Version12),
-        VKAPI.DebugInstanceExtensions, true, VKAPI.ValidationLayers);
-    VulkanDebugMessenger debugMessenger = new VulkanDebugMessenger(instance);
+    InitializeVulkan();
 #else
     BlockRegistry.Instance.LazyInitialize();
     InitializeWorldImpl(out World world);
@@ -160,6 +155,36 @@ static void InitializePlayerImpl(EntityManager entityManager)
             Radius = Settings.Instance.GenerationRadius
 #endif
         });
+}
+
+#endregion
+
+
+#region Vulkan
+
+void InitializeVulkan()
+{
+    VulkanInstance instance = new VulkanInstance(VKAPI.Instance.VK, AutomataWindow.Instance.GetSurface(),
+        new VulkanInstanceInfo("Automata.Game", new Version32(0u, 1u, 0u), "Automata.Engine", new Version32(0u, 1u, 0u), Vk.Version12),
+        VKAPI.DebugInstanceExtensions, VKAPI.ValidationLayers);
+    VulkanDebugMessenger debugMessenger = new VulkanDebugMessenger(instance);
+}
+
+bool IsPhysicalDeviceSuitable(VulkanPhysicalDevice physicalDevice)
+{
+    if (physicalDevice.Type is not PhysicalDeviceType.DiscreteGpu) return false;
+
+    if (!physicalDevice.SupportsExtenstion(SwapchainExtension.ExtensionName)) return false;
+
+    // todo
+    return true;
+}
+
+SwapChainSupportDetails GetSwapChainSupportDetails(VulkanInstance instance, VulkanPhysicalDevice physicalDevice)
+{
+    SurfaceCapabilitiesKHR surfaceCapabilities;
+    //instance.SurfaceExtension.GetPhysicalDeviceSurfaceCapabilities(physicalDevice, )
+    return default;
 }
 
 #endregion

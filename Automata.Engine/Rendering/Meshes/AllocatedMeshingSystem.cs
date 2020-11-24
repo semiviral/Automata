@@ -119,11 +119,11 @@ namespace Automata.Engine.Rendering.Meshes
                     (uint)(allocation.Allocation.IndexesArrayMemory.Index / (nuint)sizeof(TIndex)),
                     (uint)(allocation.Allocation.VertexArrayMemory.Index / (nuint)sizeof(TVertex)), (uint)index);
 
-                Matrix4x4 model = entity.Find<RenderModel>()?.Model ?? Matrix4x4.Identity;
-
                 commands[index] = drawElementsIndirectCommand;
-                models[index] = model;
+                models[index] = entity.Find<RenderModel>()?.Model ?? Matrix4x4.Identity;
                 index += 1;
+
+                Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(AllocatedMeshingSystem<TIndex, TVertex>), drawElementsIndirectCommand));
             }
 
             // make sure we slice the rentals here, since they're subject to arbitrary sizing rules (and may not be the exact requested minimum size).
@@ -133,7 +133,7 @@ namespace Automata.Engine.Rendering.Meshes
             ArrayPool<Matrix4x4>.Shared.Return(models);
 
             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(AllocatedMeshingSystem<TIndex, TVertex>),
-                $"Allocated {commands.Length} {nameof(DrawElementsIndirectCommand)}"));
+                $"Allocated {drawIndirectAllocationsCount} {nameof(DrawElementsIndirectCommand)}"));
         }
 
         private unsafe bool TryAllocateMesh(EntityManager entityManager, Entity entity, NonAllocatingQuadsMeshData<TIndex, TVertex> pendingData)

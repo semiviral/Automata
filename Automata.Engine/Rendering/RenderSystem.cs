@@ -14,6 +14,7 @@ using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
 using Automata.Engine.Rendering.OpenGL.Shaders;
 using Automata.Engine.Rendering.OpenGL.Textures;
+using Serilog;
 using Silk.NET.Input;
 using Silk.NET.OpenGL;
 using Plane = Automata.Engine.Numerics.Shapes.Plane;
@@ -148,6 +149,16 @@ namespace Automata.Engine.Rendering
                     ModelUniforms modelUniforms = new ModelUniforms(modelViewProjection, modelInverted, model);
                     _ModelUniforms.Write(ref modelUniforms);
                     _ModelUniforms.Bind(BufferTargetARB.UniformBuffer, 1u);
+
+#if DEBUG
+                    _GL.ValidateProgramPipeline(material.Pipeline.Handle);
+                    material.Pipeline.TryGetInfoLog(out string infoLog);
+
+                    if (!string.IsNullOrWhiteSpace(infoLog))
+                    {
+                        Log.Error(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(RenderSystem), infoLog));
+                    }
+#endif
 
                     renderMesh.Mesh!.Draw();
                     _ModelUniforms.CycleRing();

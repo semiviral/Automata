@@ -38,7 +38,7 @@ namespace Automata.Engine.Rendering.Vulkan
                 &DebugCallback
             );
 
-            Result result = _DebugUtils.CreateDebugUtilsMessenger((Instance)instance, &createInfo, (AllocationCallbacks*)null!, out _Messenger);
+            Result result = _DebugUtils.CreateDebugUtilsMessenger(instance, &createInfo, (AllocationCallbacks*)null!, out _Messenger);
 
             if (result is not Result.Success)
             {

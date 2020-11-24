@@ -1,6 +1,6 @@
 using System;
+using System.Diagnostics;
 using System.Numerics;
-using System.Threading;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
 using Silk.NET.OpenGL;
@@ -21,11 +21,10 @@ namespace Automata.Engine.Rendering.Meshes
 
         public Guid ID { get; }
         public Layer Layer { get; }
-        public uint DrawCommandCount { get; private set; }
 
-        public bool Visible => DrawCommandCount > 0u;
+        public bool Visible => _CommandBuffer.DataLength > 0u;
 
-        public MultiDrawIndirectMesh(GL gl, uint indexAllocatorSize, uint vertexAllocatorSize, Layer layers = Layer.Layer0)
+        public MultiDrawIndirectMesh(GL gl, nuint indexAllocatorSize, nuint vertexAllocatorSize, Layer layers = Layer.Layer0)
         {
             ID = Guid.NewGuid();
             Layer = layers;
@@ -63,12 +62,7 @@ namespace Automata.Engine.Rendering.Meshes
 
         public void FinalizeVertexArrayObject() => _VertexArrayObject.Finalize(_IndexAllocator);
 
-        public void AllocateDrawCommands(Span<DrawElementsIndirectCommand> commands)
-        {
-            DrawCommandCount = (uint)commands.Length;
-            _CommandBuffer.SetData(commands, BufferDraw.StaticDraw);
-        }
-
+        public void AllocateDrawCommands(Span<DrawElementsIndirectCommand> commands) => _CommandBuffer.SetData(commands, BufferDraw.StaticDraw);
         public void AllocateModelsData(Span<Matrix4x4> models) => _ModelBuffer.SetData(models, BufferDraw.StaticDraw);
 
         public void ValidateAllocatorBlocks()
@@ -76,6 +70,17 @@ namespace Automata.Engine.Rendering.Meshes
             _IndexAllocator.ValidateBlocks();
             _VertexAllocator.ValidateBlocks();
         }
+
+
+        #region Renting
+
+        public BufferArrayMemory<TIndex> RentIndexBufferArrayMemory(nuint alignment, ReadOnlySpan<TIndex> data) =>
+            new BufferArrayMemory<TIndex>(_IndexAllocator, alignment, data);
+
+        public BufferArrayMemory<TVertex> RentVertexBufferArrayMemory(nuint alignment, ReadOnlySpan<TVertex> data) =>
+            new BufferArrayMemory<TVertex>(_VertexAllocator, alignment, data);
+
+        #endregion
 
 
         #region IMesh
@@ -89,14 +94,14 @@ namespace Automata.Engine.Rendering.Meshes
             void VerifyVertexBufferBindingImpl(uint index, BufferObject buffer)
             {
                 _GL.GetInteger(GLEnum.VertexBindingBuffer, index, out int actual);
-                System.Diagnostics.Debug.Assert((uint)actual == buffer.Handle, $"VertexBindingBuffer index {index} is not set to the correct buffer.");
+                Debug.Assert((uint)actual == buffer.Handle, $"VertexBindingBuffer index {index} is not set to the correct buffer.");
             }
 
             VerifyVertexBufferBindingImpl(0u, _VertexAllocator);
             VerifyVertexBufferBindingImpl(1u, _ModelBuffer);
 #endif
 
-            _GL.MultiDrawElementsIndirect(PrimitiveType.Triangles, _DrawElementsType, (void*)null!, DrawCommandCount, 0u);
+            _GL.MultiDrawElementsIndirect(PrimitiveType.Triangles, _DrawElementsType, (void*)null!, _CommandBuffer.DataLength, 0u);
         }
 
         #endregion
@@ -120,17 +125,6 @@ namespace Automata.Engine.Rendering.Meshes
         }
 
         ~MultiDrawIndirectMesh() => CleanupNativeResources();
-
-        #endregion
-
-
-        #region Renting
-
-        public BufferArrayMemory<TIndex> RentIndexBufferArrayMemory(nuint alignment, ReadOnlySpan<TIndex> data) =>
-            new BufferArrayMemory<TIndex>(_IndexAllocator, alignment, data);
-
-        public BufferArrayMemory<TVertex> RentVertexBufferArrayMemory(nuint alignment, ReadOnlySpan<TVertex> data) =>
-            new BufferArrayMemory<TVertex>(_VertexAllocator, alignment, data);
 
         #endregion
     }
