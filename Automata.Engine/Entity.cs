@@ -6,6 +6,8 @@ using Automata.Engine.Collections;
 
 // ReSharper disable InvertIf
 // ReSharper disable ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
+// ReSharper disable ForCanBeConvertedToForeach
+// ReSharper disable LoopCanBeConvertedToQuery
 
 namespace Automata.Engine
 {
@@ -16,14 +18,20 @@ namespace Automata.Engine
         public Guid ID { get; }
         public bool Disposed { get; private set; }
 
+        public int Count => _Components.Count;
+
+        public Component this[int index]
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _Components[index];
+        }
+
         public Entity()
         {
             ID = Guid.NewGuid();
             Disposed = false;
             _Components = new NonAllocatingList<Component>();
         }
-
-        public int Count => _Components.Count;
 
 
         #region Generic
@@ -80,9 +88,9 @@ namespace Automata.Engine
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains<TComponent>() where TComponent : Component
         {
-            foreach (Component component in _Components)
+            for (int index = 0; index < _Components.Count; index++)
             {
-                if (component is TComponent)
+                if (_Components[index] is TComponent)
                 {
                     return true;
                 }

@@ -101,8 +101,9 @@ static void InitializeWorldImpl(out World world)
 {
     world = new VoxelWorld(true);
     world.SystemManager.RegisterBefore<InputSystem, FirstOrderSystem>();
-    world.SystemManager.RegisterBefore<RenderSystem, LastOrderSystem>();
-    world.SystemManager.RegisterBefore<AllocatedMeshingSystem<uint, PackedVertex>, RenderSystem>();
+    world.SystemManager.RegisterAfter<RenderSystem, LastOrderSystem>();
+    world.SystemManager.RegisterBefore<TransformMatrixUpdateSystem, LastOrderSystem>();
+    world.SystemManager.RegisterBefore<AllocatedMeshingSystem<uint, PackedVertex>, LastOrderSystem>();
 
     AllocatedMeshingSystem<uint, PackedVertex> allocatedMeshingSystem = world.SystemManager.GetSystem<AllocatedMeshingSystem<uint, PackedVertex>>();
 

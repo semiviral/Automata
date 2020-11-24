@@ -1,19 +1,20 @@
 using System;
+using System.Buffers;
 using System.Runtime.InteropServices;
+using Automata.Engine.Memory;
 using Silk.NET.OpenGL;
-using Buffer = System.Buffer;
 
 namespace Automata.Engine.Rendering.OpenGL.Buffers
 {
     public unsafe class RingBufferObject : OpenGLObject
     {
-        private const MapBufferAccessMask _ACCESS_MASK = MapBufferAccessMask.MapWriteBit
-                                                         | MapBufferAccessMask.MapPersistentBit
-                                                         | MapBufferAccessMask.MapCoherentBit;
+        private const MapBufferAccessMask _ACCESS_MASK = MapBufferAccessMask.MapWriteBit | MapBufferAccessMask.MapPersistentBit;
 
         private readonly Ring _Ring;
         private readonly FenceSync?[] _RingSyncs;
-        private readonly byte* _Pointer;
+        private readonly IMemoryOwner<byte> _MemoryOwner;
+
+        private Span<byte> RingSegment => _MemoryOwner.Memory.Span.Slice((int)GetCurrentOffset());
 
         public nuint Size { get; }
         public uint Buffers { get; }
@@ -30,33 +31,22 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             GL.NamedBufferStorage(Handle, BufferedSize, Span<byte>.Empty, (uint)_ACCESS_MASK);
 
             _Ring = new Ring((nuint)buffers);
-            _Pointer = (byte*)GL.MapNamedBuffer(Handle, BufferAccessARB.WriteOnly);
             _RingSyncs = new FenceSync[(int)buffers];
+            _MemoryOwner = new NativeMemoryManager<byte>((byte*)GL.MapNamedBuffer(Handle, BufferAccessARB.WriteOnly), (int)BufferedSize);
         }
 
         public void Write(ReadOnlySpan<byte> data)
         {
             if ((nuint)data.Length != Size)
             {
-                ThrowHelper.ThrowArgumentOutOfRangeException(nameof(data), "Cannot write segments into ring buffer; your data may be too small or large.");
+                ThrowHelper.ThrowArgumentOutOfRangeException(nameof(data), "Cannot write segments into ring buffer; your data size is too small or large.");
             }
             else if (Written)
             {
                 ThrowHelper.ThrowInvalidOperationException("Can only write to ring buffer once per ring.");
             }
 
-            data.CopyTo(new Span<byte>(_Pointer + GetCurrentOffset(), (int)Size));
-            Written = true;
-        }
-
-        public void Write(void* pointer)
-        {
-            if (Written)
-            {
-                ThrowHelper.ThrowInvalidOperationException("Can only write to ring buffer once per ring.");
-            }
-
-            Buffer.MemoryCopy(pointer, _Pointer + GetCurrentOffset(), Size, Size);
+            data.CopyTo(RingSegment);
             Written = true;
         }
 
@@ -64,20 +54,21 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
         {
             if ((nuint)sizeof(T) != Size)
             {
-                ThrowHelper.ThrowArgumentOutOfRangeException(nameof(data), "Cannot write segments into ring buffer; your data may be too small or large.");
+                ThrowHelper.ThrowArgumentOutOfRangeException(nameof(data), "Cannot write segments into ring buffer; your data size is too small or large.");
             }
             else if (Written)
             {
                 ThrowHelper.ThrowInvalidOperationException("Can only write to ring buffer once per ring.");
             }
 
-            MemoryMarshal.Write(new Span<byte>(_Pointer + GetCurrentOffset(), (int)Size), ref data);
+            MemoryMarshal.Write(RingSegment, ref data);
             Written = true;
         }
 
         public void CycleRing()
         {
             // create fence for current ring
+            _RingSyncs[(int)_Ring.Current]?.Dispose();
             _RingSyncs[(int)_Ring.Current] = new FenceSync(GL);
 
             // wait to enter next ring, then increment to it
@@ -92,7 +83,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
         #region Binding
 
-        public void Bind(BufferTargetARB target, uint index) => GL.BindBufferRange(target, index, Handle, GetCurrentOffset(), Size);
+        public void Bind(BufferTargetARB target, uint bindingIndex) => GL.BindBufferRange(target, bindingIndex, Handle, GetCurrentOffset(), Size);
 
         #endregion
 

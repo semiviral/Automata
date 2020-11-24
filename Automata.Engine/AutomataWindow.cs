@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using Automata.Engine.Collections;
@@ -49,11 +50,24 @@ namespace Automata.Engine
         }
 
         public string Title { get => Window.Title; set => Window.Title = value; }
-        public Vector2i Size { get => (Vector2i)Window.Size; set => Window.Size = (Size)value; }
         public Vector2i Position { get => (Vector2i)Window.Position; set => Window.Position = (Point)value; }
-        public Vector2i Center => Size / 2;
+        public Vector4 Viewport { get; private set; }
+        public float AspectRatio { get; private set; }
+
+        public Vector2i Size
+        {
+            get => (Vector2i)Window.Size;
+            set
+            {
+                Window.Size = (Size)value;
+                Viewport = new Vector4(0f, 0f, value.X, value.Y);
+                AspectRatio = (float)value.X / (float)value.Y;
+            }
+        }
 
         public bool Focused { get; private set; }
+
+        public Vector2i Center => Size / 2;
 
         public AutomataWindow() => Focused = true;
 

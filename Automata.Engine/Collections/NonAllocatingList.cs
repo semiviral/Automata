@@ -42,6 +42,7 @@ namespace Automata.Engine.Collections
         /// </param>
         public T this[uint index]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 if (index >= Count)

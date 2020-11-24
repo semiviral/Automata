@@ -88,7 +88,7 @@ namespace Automata.Engine.Rendering.Meshes
             void VerifyVertexBufferBindingImpl(uint index, BufferObject buffer)
             {
                 _GL.GetInteger(GLEnum.VertexBindingBuffer, index, out int actual);
-                Debug.Assert((uint)actual == buffer.Handle, $"VertexBindingBuffer index {index} is not set to the correct buffer.");
+                System.Diagnostics.Debug.Assert((uint)actual == buffer.Handle, $"VertexBindingBuffer index {index} is not set to the correct buffer.");
             }
 
             VerifyVertexBufferBindingImpl(0u, _VertexAllocator);

@@ -7,7 +7,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Automata.Engine.Input;
-using Automata.Engine.Numerics;
 using Automata.Engine.Numerics.Shapes;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
@@ -23,7 +22,7 @@ namespace Automata.Engine.Rendering
     public class RenderSystem : ComponentSystem, IDisposable
     {
         [StructLayout(LayoutKind.Sequential)]
-        private readonly ref struct ViewUniforms
+        private readonly struct ViewUniforms
         {
             public readonly Vector4 Viewport;
             public readonly Vector4 Parameters;
@@ -40,7 +39,7 @@ namespace Automata.Engine.Rendering
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        private readonly ref struct ModelUniforms
+        private readonly struct ModelUniforms
         {
             public readonly Matrix4x4 MVP;
             public readonly Matrix4x4 Object;
@@ -64,16 +63,10 @@ namespace Automata.Engine.Rendering
         private readonly RingBufferObject _ViewUniforms;
         private readonly RingBufferObject _ModelUniforms;
 
-        private float _NewAspectRatio;
-        private Vector4 _Viewport;
-
         public ulong DrawCalls { get; private set; }
 
         public RenderSystem()
         {
-            GameWindowResized(null!, AutomataWindow.Instance.Size);
-            AutomataWindow.Instance.Resized += GameWindowResized;
-
             _GL = GLAPI.Instance.GL;
             _GL.ClearColor(Color.DimGray);
             _GL.Enable(EnableCap.DepthTest);
@@ -116,37 +109,20 @@ namespace Automata.Engine.Rendering
             Span<Plane> planes = stackalloc Plane[Frustum.TOTAL_PLANES];
             DrawCalls = 0;
 
-            if (IsNewViewport())
+            foreach (Camera camera in entityManager.GetComponents<Camera>())
             {
-                _Viewport = new Vector4(0f, 0f, AutomataWindow.Instance.Size.X, AutomataWindow.Instance.Size.Y);
-            }
-
-            foreach ((Entity cameraEntity, Camera camera) in entityManager.GetEntitiesWithComponents<Camera>())
-            {
-                CheckUpdateCameraView(cameraEntity, camera);
-
-                // if the aspect ratio has changed, update the current camera's projection matrix
-                if (IsNewViewport())
-                {
-                    UpdateCameraProjection(camera);
-                }
-
                 // if the camera doesn't have a projection, it doesn't make sense to try and render to it
                 if (camera.Projection is null)
                 {
                     continue;
                 }
 
-                ViewUniforms viewUniforms = new ViewUniforms(_Viewport, camera.Projection.Parameters, camera.Projection.Matrix, camera.View);
-                _ViewUniforms.Write(&viewUniforms);
+                ViewUniforms viewUniforms = new ViewUniforms(AutomataWindow.Instance.Viewport, camera.Projection.Parameters, camera.Projection.Matrix,
+                    camera.View);
+
+                _ViewUniforms.Write(ref viewUniforms);
                 _ViewUniforms.Bind(BufferTargetARB.UniformBuffer, 0u);
                 _ViewUniforms.CycleRing();
-
-                // iterate each RenderMesh and check if the model matrix needs to be recalculated
-                foreach ((Entity objectEntity, RenderModel renderModel) in entityManager.GetEntitiesWithComponents<RenderModel>())
-                {
-                    CheckUpdateModelTransforms(objectEntity, renderModel);
-                }
 
                 // bind camera's view data UBO and precalculate viewproj matrix
                 Matrix4x4 viewProjection = camera.View * camera.Projection.Matrix;
@@ -165,24 +141,22 @@ namespace Automata.Engine.Rendering
                     }
 
                     // conditionally update the currentMaterial if it doesn't match this entity's
-                    if (cachedMaterial is null || !material.Equals(cachedMaterial))
+                    if (!material.Equals(cachedMaterial))
                     {
-                        ApplyMaterial(material, ref cachedMaterial);
+                        cachedMaterial = material;
+                        ApplyMaterial(cachedMaterial);
                     }
 
                     Matrix4x4.Invert(model, out Matrix4x4 modelInverted);
                     ModelUniforms modelUniforms = new ModelUniforms(modelViewProjection, modelInverted, model);
-                    _ModelUniforms.Write(&modelUniforms);
+                    _ModelUniforms.Write(ref modelUniforms);
                     _ModelUniforms.Bind(BufferTargetARB.UniformBuffer, 1u);
+                    _ModelUniforms.CycleRing();
 
                     renderMesh.Mesh!.Draw();
-                    _ModelUniforms.CycleRing();
                     DrawCalls += 1;
                 }
             }
-
-            // by this point we should've updated all of the projection matrixes, so reset the value to 0.
-            _NewAspectRatio = 0f;
 
             return ValueTask.CompletedTask;
         }
@@ -191,8 +165,6 @@ namespace Automata.Engine.Rendering
             entityManager.GetEntitiesWithComponents<RenderMesh, Material>()
                 .Where(result => result.Component1.ShouldRender && ((camera.RenderedLayers & result.Component1.Mesh!.Layer) > 0))
                 .OrderBy(result => result.Component2.Pipeline.Handle);
-
-        private bool IsNewViewport() => _NewAspectRatio is not 0f;
 
 
         #region Occlusion
@@ -223,13 +195,8 @@ namespace Automata.Engine.Rendering
 
         #region State Change
 
-        private void ApplyMaterial(Material material, ref Material? old)
+        private void ApplyMaterial(Material material)
         {
-            if (material.Pipeline.Equals(old?.Pipeline))
-            {
-                return;
-            }
-
             material.Pipeline.Bind();
             Texture.BindMany(_GL, 0u, material.Textures.Values);
             ShaderProgram newFragmentShader = material.Pipeline.Stage(ShaderType.FragmentShader);
@@ -240,99 +207,7 @@ namespace Automata.Engine.Rendering
                 newFragmentShader!.TrySetUniform($"tex_{key}", index);
                 index += 1;
             }
-
-            // we've finished binding the new material, so replace the old's reference
-            old = material;
         }
-
-        #endregion
-
-
-        #region Update Camera
-
-        private static void CheckUpdateCameraView(Entity cameraEntity, Camera camera)
-        {
-            // check for changes and update current camera's view matrix & UBO data
-            if (!(cameraEntity.TryFind(out Scale? cameraScale) && cameraScale.Changed)
-                & !(cameraEntity.TryFind(out Rotation? cameraRotation) && cameraRotation.Changed)
-                & !(cameraEntity.TryFind(out Translation? cameraTranslation) && cameraTranslation.Changed))
-            {
-                return;
-            }
-
-            Matrix4x4 view = Matrix4x4.Identity;
-
-            if (cameraScale is not null)
-            {
-                view *= Matrix4x4.CreateScale(cameraScale.Value);
-            }
-
-            if (cameraRotation is not null)
-            {
-                view *= Matrix4x4.CreateFromQuaternion(cameraRotation.Value);
-            }
-
-            if (cameraTranslation is not null)
-            {
-                view *= Matrix4x4.CreateTranslation(cameraTranslation.Value);
-            }
-
-            // if we've calculated a new view matrix, invert it and apply to camera
-            if ((view != Matrix4x4.Identity) && Matrix4x4.Invert(view, out Matrix4x4 inverted))
-            {
-                camera.View = inverted;
-            }
-        }
-
-        private void UpdateCameraProjection(Camera camera)
-        {
-            camera.Projection = camera.Projector switch
-            {
-                Projector.Perspective => new PerspectiveProjection(90f, _NewAspectRatio, 0.1f, 1000f),
-                Projector.Orthographic => new OrthographicProjection(AutomataWindow.Instance.Size, 0.1f, 1000f),
-                Projector.None or _ => camera.Projection
-            };
-        }
-
-        #endregion
-
-
-        #region Update Model
-
-        private static void CheckUpdateModelTransforms(Entity objectEntity, RenderModel renderModel)
-        {
-            if ((!(objectEntity.TryFind(out Translation? modelTranslation) && modelTranslation.Changed)
-                 & !(objectEntity.TryFind(out Rotation? modelRotation) && modelRotation.Changed)
-                 & !(objectEntity.TryFind(out Scale? modelScale) && modelScale.Changed))
-                && !renderModel.Changed)
-            {
-                return;
-            }
-
-            renderModel.Model = Matrix4x4.Identity;
-
-            if (modelTranslation is not null)
-            {
-                renderModel.Model *= Matrix4x4.CreateTranslation(modelTranslation.Value);
-            }
-
-            if (modelRotation is not null)
-            {
-                renderModel.Model *= Matrix4x4.CreateFromQuaternion(modelRotation.Value);
-            }
-
-            if (modelScale is not null)
-            {
-                renderModel.Model *= Matrix4x4.CreateScale(modelScale.Value);
-            }
-        }
-
-        #endregion
-
-
-        #region Events
-
-        private void GameWindowResized(object sender, Vector2i newSize) => _NewAspectRatio = (float)newSize.X / (float)newSize.Y;
 
         #endregion
 
