@@ -2,8 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Text;
 using Automata.Engine.Extensions;
 using Serilog;
+using Silk.NET.Core.Native;
 using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.OpenGL.Shaders
@@ -14,45 +17,60 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
 
         public ShaderType Type { get; }
 
-        public ShaderProgram(GL gl, ShaderType shaderType, string path) : base(gl)
+        public unsafe ShaderProgram(GL gl, ShaderType shaderType, string path) : base(gl)
         {
+            void CacheUniformsImpl()
+            {
+                GL.GetProgram(Handle, ProgramPropertyARB.ActiveUniforms, out int uniformCount);
+
+                for (uint uniformIndex = 0; uniformIndex < uniformCount; uniformIndex++)
+                {
+                    string name = GL.GetActiveUniform(Handle, uniformIndex, out _, out _);
+                    int location = GL.GetUniformLocation(Handle, name);
+                    _CachedUniforms.Add(name, location);
+                }
+            }
+
             _CachedUniforms = new Dictionary<string, int>();
             Type = shaderType;
 
             // this is kinda dumb, right?
-            string[] shader =
-            {
-                File.ReadAllText(path)
-            };
-
+            byte* shader = (byte*)SilkMarshal.StringToPtr(File.ReadAllText(path));
             Handle = GL.CreateShaderProgram(Type, 1, shader);
-            CheckShaderInfoLogAndThrow();
-            CacheUniforms();
+            CheckInfoLogAndThrow();
+            CacheUniformsImpl();
 
             Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ShaderProgram), $"Loaded ({Type}): {path}"));
         }
 
-        private void CacheUniforms()
+        private void CheckInfoLogAndThrow()
         {
-            GL.GetProgram(Handle, ProgramPropertyARB.ActiveUniforms, out int uniformCount);
-
-            for (uint uniformIndex = 0; uniformIndex < uniformCount; uniformIndex++)
-            {
-                string name = GL.GetActiveUniform(Handle, uniformIndex, out _, out _);
-                int location = GL.GetUniformLocation(Handle, name);
-                _CachedUniforms.Add(name, location);
-            }
-        }
-
-        private void CheckShaderInfoLogAndThrow()
-        {
-            GL.GetProgramInfoLog(Handle, out string infoLog);
+            GetInfoLog(out string infoLog);
 
             if (!string.IsNullOrWhiteSpace(infoLog))
             {
                 throw new ShaderLoadException(Type, infoLog);
             }
         }
+
+        [SkipLocalsInit]
+        public unsafe void GetInfoLog(out string infoLog)
+        {
+            GL.GetProgram(Handle, ProgramPropertyARB.InfoLogLength, out int infoLogLength);
+
+            if (infoLogLength is 0)
+            {
+                infoLog = string.Empty;
+                return;
+            }
+
+            Span<byte> infoLogSpan = stackalloc byte[infoLogLength];
+            GL.GetProgramInfoLog(Handle, (uint)infoLogLength, (uint*)&infoLogLength, infoLogSpan);
+            infoLog = Encoding.ASCII.GetString(infoLogSpan);
+        }
+
+
+        #region Uniforms
 
         public bool TrySetUniform(string name, int value)
         {
@@ -124,6 +142,8 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
         }
 
         private bool TryGetUniformLocation(string name, out int location) => _CachedUniforms.TryGetValue(name, out location);
+
+        #endregion
 
 
         #region IDisposable
