@@ -19,16 +19,19 @@ namespace Automata.Engine.Rendering.Meshes
         where TIndex : unmanaged, IEquatable<TIndex>
         where TVertex : unmanaged, IEquatable<TVertex>
     {
-        private MultiDrawIndirectMesh<TIndex, TVertex>? _MultiDrawIndirectMesh;
-        private Material? _MultiDrawIndirectMeshMaterial;
+        private readonly MultiDrawIndirectMesh<TIndex, TVertex> _MultiDrawIndirectMesh;
+        private readonly Material _MultiDrawIndirectMeshMaterial;
+
+        public AllocatedMeshingSystem()
+        {
+            _MultiDrawIndirectMesh = new MultiDrawIndirectMesh<TIndex, TVertex>(GLAPI.Instance.GL, 300_000_000, 200_000_000);
+
+            _MultiDrawIndirectMeshMaterial =
+                new Material(ProgramRegistry.Instance.Load("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl"));
+        }
 
         public override void Registered(EntityManager entityManager)
         {
-            _MultiDrawIndirectMeshMaterial =
-                new Material(ProgramRegistry.Instance.Load("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl"));
-
-            _MultiDrawIndirectMesh = new MultiDrawIndirectMesh<TIndex, TVertex>(GLAPI.Instance.GL, 300_000_000, 200_000_000);
-
             entityManager.CreateEntity(
                 _MultiDrawIndirectMeshMaterial,
                 new RenderMesh
@@ -36,7 +39,7 @@ namespace Automata.Engine.Rendering.Meshes
                     Mesh = _MultiDrawIndirectMesh
                 });
 
-            InputManager.Instance.RegisterInputAction(() => _MultiDrawIndirectMesh?.ValidateAllocatorBlocks(), Key.F9);
+            InputManager.Instance.RegisterInputAction(() => _MultiDrawIndirectMesh.ValidateAllocatorBlocks(), Key.F9);
         }
 
         public override ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta)
@@ -67,12 +70,7 @@ namespace Automata.Engine.Rendering.Meshes
 
         public void SetTexture(string key, Texture texture)
         {
-            if (_MultiDrawIndirectMeshMaterial is null)
-            {
-                ThrowHelper.ThrowNullReferenceException(nameof(_MultiDrawIndirectMeshMaterial));
-            }
-
-            if (!_MultiDrawIndirectMeshMaterial!.Textures.ContainsKey(key))
+            if (!_MultiDrawIndirectMeshMaterial.Textures.ContainsKey(key))
             {
                 _MultiDrawIndirectMeshMaterial.Textures.Add(key, texture);
             }
@@ -84,20 +82,15 @@ namespace Automata.Engine.Rendering.Meshes
 
         public void AllocateVertexAttributes(bool replace, bool finalize, params IVertexAttribute[] attributes)
         {
-            if (_MultiDrawIndirectMesh is null)
-            {
-                ThrowHelper.ThrowNullReferenceException(nameof(_MultiDrawIndirectMesh));
-            }
-
-            _MultiDrawIndirectMesh!.AllocateVertexAttributes(replace, attributes);
+            _MultiDrawIndirectMesh.AllocateVertexAttributes(replace, attributes);
 
             if (finalize)
             {
-                _MultiDrawIndirectMesh!.FinalizeVertexArrayObject();
+                _MultiDrawIndirectMesh.FinalizeVertexArrayObject();
             }
         }
 
-        public void FinalizeVertexArrayObject() => _MultiDrawIndirectMesh!.FinalizeVertexArrayObject();
+        public void FinalizeVertexArrayObject() => _MultiDrawIndirectMesh.FinalizeVertexArrayObject();
 
         #endregion State
 
@@ -122,18 +115,20 @@ namespace Automata.Engine.Rendering.Meshes
             {
                 Debug.Assert(allocation.Allocation is not null);
 
-                commands[index] = new DrawElementsIndirectCommand(allocation.Allocation!.IndexesArrayMemory.Count, 1u,
-                    (uint)(allocation.Allocation!.IndexesArrayMemory.Index / (nuint)sizeof(TIndex)),
-                    (uint)(allocation.Allocation!.VertexArrayMemory.Index / (nuint)sizeof(TVertex)), (uint)index);
+                DrawElementsIndirectCommand drawElementsIndirectCommand = new DrawElementsIndirectCommand(allocation.Allocation.IndexesArrayMemory.Count, 1u,
+                    (uint)(allocation.Allocation.IndexesArrayMemory.Index / (nuint)sizeof(TIndex)),
+                    (uint)(allocation.Allocation.VertexArrayMemory.Index / (nuint)sizeof(TVertex)), (uint)index);
 
-                models[index] = entity.Find<RenderModel>()?.Model ?? Matrix4x4.Identity;
+                Matrix4x4 model = entity.Find<RenderModel>()?.Model ?? Matrix4x4.Identity;
 
+                commands[index] = drawElementsIndirectCommand;
+                models[index] = model;
                 index += 1;
             }
 
             // make sure we slice the rentals here, since they're subject to arbitrary sizing rules (and may not be the exact requested minimum size).
-            _MultiDrawIndirectMesh!.AllocateDrawCommands(new Span<DrawElementsIndirectCommand>(commands).Slice(0, drawIndirectAllocationsCount));
-            _MultiDrawIndirectMesh!.AllocateModelsData(new Span<Matrix4x4>(models).Slice(0, drawIndirectAllocationsCount));
+            _MultiDrawIndirectMesh.AllocateDrawCommands(new Span<DrawElementsIndirectCommand>(commands).Slice(0, drawIndirectAllocationsCount));
+            _MultiDrawIndirectMesh.AllocateModelsData(new Span<Matrix4x4>(models).Slice(0, drawIndirectAllocationsCount));
             ArrayPool<DrawElementsIndirectCommand>.Shared.Return(commands);
             ArrayPool<Matrix4x4>.Shared.Return(models);
 
@@ -143,11 +138,7 @@ namespace Automata.Engine.Rendering.Meshes
 
         private unsafe bool TryAllocateMesh(EntityManager entityManager, Entity entity, NonAllocatingQuadsMeshData<TIndex, TVertex> pendingData)
         {
-            if (_MultiDrawIndirectMesh is null)
-            {
-                throw new NullReferenceException("Mesh is null!");
-            }
-            else if (pendingData.IsEmpty)
+            if (pendingData.IsEmpty)
             {
                 return false;
             }

@@ -3,14 +3,19 @@ using System.Numerics;
 using System.Threading.Tasks;
 using Automata.Engine.Numerics;
 using Automata.Engine.Rendering;
+using Serilog;
 
 namespace Automata.Engine
 {
-    public class TransformMatrixUpdateSystem : ComponentSystem
+    public class TransformMatrixSystem : ComponentSystem
     {
         private bool _UpdateProjections;
 
-        public TransformMatrixUpdateSystem() => AutomataWindow.Instance.Resized += GameWindowResized;
+        public TransformMatrixSystem()
+        {
+            AutomataWindow.Instance.Resized += GameWindowResized;
+            GameWindowResized(null, AutomataWindow.Instance.Size);
+        }
 
         public override ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta)
         {
@@ -51,9 +56,10 @@ namespace Automata.Engine
                 {
                     camera.Projection = camera.Projector switch
                     {
+                        // todo handle near, far, clipping planes and FOV in the projection itself
                         Projector.Perspective => new PerspectiveProjection(90f, AutomataWindow.Instance.AspectRatio, 0.1f, 1000f),
                         Projector.Orthographic => new OrthographicProjection(AutomataWindow.Instance.Size, 0.1f, 1000f),
-                        Projector.None or _ => camera.Projection
+                        _ => camera.Projection
                     };
                 }
             }
@@ -101,7 +107,7 @@ namespace Automata.Engine
 
         #region Events
 
-        private void GameWindowResized(object sender, Vector2i newSize) => _UpdateProjections = true;
+        private void GameWindowResized(object? sender, Vector2i newSize) => _UpdateProjections = true;
 
         #endregion
     }

@@ -56,16 +56,13 @@ namespace Automata.Engine.Rendering
         private const bool _ENABLE_BACK_FACE_CULLING = false;
         private const bool _ENABLE_FRUSTUM_CULLING = true;
 
-        private const int _VIEW_UNIFORMS_SIZE = 160;
-        private const int _MODEL_UNIFORMS_SIZE = 192;
-
         private readonly GL _GL;
         private readonly RingBufferObject _ViewUniforms;
         private readonly RingBufferObject _ModelUniforms;
 
         public ulong DrawCalls { get; private set; }
 
-        public RenderSystem()
+        public unsafe RenderSystem()
         {
             _GL = GLAPI.Instance.GL;
             _GL.ClearColor(Color.DimGray);
@@ -73,14 +70,17 @@ namespace Automata.Engine.Rendering
 
             if (_ENABLE_BACK_FACE_CULLING)
             {
-                // enable and configure face culling
+                // configure and enable face culling
                 _GL.FrontFace(FrontFaceDirection.Ccw);
                 _GL.CullFace(CullFaceMode.Back);
                 _GL.Enable(EnableCap.CullFace);
             }
 
-            _ViewUniforms = new RingBufferObject(_GL, (nuint)_VIEW_UNIFORMS_SIZE, 3u);
-            _ModelUniforms = new RingBufferObject(_GL, (nuint)_MODEL_UNIFORMS_SIZE, 6u);
+            // triple buffer view uniforms
+            _ViewUniforms = new RingBufferObject(_GL, (nuint)sizeof(ViewUniforms), 3u);
+
+            // sextuple buffer model uniforms (they're updated/drawn FAR more often)
+            _ModelUniforms = new RingBufferObject(_GL, (nuint)sizeof(ModelUniforms), 6u);
         }
 
         public override void Registered(EntityManager entityManager)
@@ -122,9 +122,7 @@ namespace Automata.Engine.Rendering
 
                 _ViewUniforms.Write(ref viewUniforms);
                 _ViewUniforms.Bind(BufferTargetARB.UniformBuffer, 0u);
-                _ViewUniforms.CycleRing();
 
-                // bind camera's view data UBO and precalculate viewproj matrix
                 Matrix4x4 viewProjection = camera.View * camera.Projection.Matrix;
                 Material? cachedMaterial = null;
 
@@ -140,7 +138,6 @@ namespace Automata.Engine.Rendering
                         continue;
                     }
 
-                    // conditionally update the currentMaterial if it doesn't match this entity's
                     if (!material.Equals(cachedMaterial))
                     {
                         cachedMaterial = material;
@@ -151,11 +148,13 @@ namespace Automata.Engine.Rendering
                     ModelUniforms modelUniforms = new ModelUniforms(modelViewProjection, modelInverted, model);
                     _ModelUniforms.Write(ref modelUniforms);
                     _ModelUniforms.Bind(BufferTargetARB.UniformBuffer, 1u);
-                    _ModelUniforms.CycleRing();
 
                     renderMesh.Mesh!.Draw();
+                    _ModelUniforms.CycleRing();
                     DrawCalls += 1;
                 }
+
+                _ViewUniforms.CycleRing();
             }
 
             return ValueTask.CompletedTask;
@@ -199,12 +198,12 @@ namespace Automata.Engine.Rendering
         {
             material.Pipeline.Bind();
             Texture.BindMany(_GL, 0u, material.Textures.Values);
-            ShaderProgram newFragmentShader = material.Pipeline.Stage(ShaderType.FragmentShader);
+            ShaderProgram fragmentShader = material.Pipeline.Stage(ShaderType.FragmentShader);
             int index = 0;
 
             foreach (string key in material.Textures.Keys)
             {
-                newFragmentShader!.TrySetUniform($"tex_{key}", index);
+                fragmentShader.TrySetUniform($"tex_{key}", index);
                 index += 1;
             }
         }

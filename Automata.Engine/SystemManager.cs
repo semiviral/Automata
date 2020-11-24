@@ -91,33 +91,29 @@ namespace Automata.Engine
         ///     Registers a new system of type <see cref="TSystem" />.
         /// </summary>
         /// <typeparam name="TSystem"><see cref="ComponentSystem" /> type to instantiate.</typeparam>
-        /// <typeparam name="TBeforeSystem"><see cref="ComponentSystem" /> type to update system after.</typeparam>
+        /// <typeparam name="TBefore"><see cref="ComponentSystem" /> type to update system after.</typeparam>
         /// <exception cref="Exception">
         ///     Thrown when system type <see cref="TSystem" /> has already been instantiated.
         /// </exception>
         /// <exception cref="TypeLoadException">
-        ///     Thrown when system of type <see cref="TBeforeSystem" /> doesn't exist.
+        ///     Thrown when system of type <see cref="TBefore" /> doesn't exist.
         /// </exception>
-        public void RegisterBefore<TSystem, TBeforeSystem>()
+        public void RegisterBefore<TSystem, TBefore>()
             where TSystem : ComponentSystem, new()
-            where TBeforeSystem : ComponentSystem
+            where TBefore : ComponentSystem
         {
             TSystem componentSystem = new TSystem();
-            _ComponentSystems.AddBefore<TBeforeSystem>(componentSystem);
+            _ComponentSystems.AddBefore<TBefore>(componentSystem);
             RegisterSystemInternal(componentSystem);
-
-            Log.Information($"({nameof(SystemManager)}) Registered {nameof(ComponentSystem)}: {typeof(TSystem)}");
         }
 
-        public void RegisterAfter<TSystem, TAfterSystem>()
+        public void RegisterAfter<TSystem, TAfter>()
             where TSystem : ComponentSystem, new()
-            where TAfterSystem : ComponentSystem
+            where TAfter : ComponentSystem
         {
             TSystem componentSystem = new TSystem();
-            _ComponentSystems.AddBefore<TAfterSystem>(componentSystem);
+            _ComponentSystems.AddAfter<TAfter>(componentSystem);
             RegisterSystemInternal(componentSystem);
-
-            Log.Information($"({nameof(SystemManager)}) Registered {nameof(ComponentSystem)}: {typeof(TSystem)}");
         }
 
         public void RegisterFirst<TSystem>() where TSystem : ComponentSystem, new()
@@ -125,8 +121,6 @@ namespace Automata.Engine
             TSystem componentSystem = new TSystem();
             _ComponentSystems.AddFirst(componentSystem);
             RegisterSystemInternal(componentSystem);
-
-            Log.Information($"({nameof(SystemManager)}) Registered {nameof(ComponentSystem)}: {typeof(TSystem)}");
         }
 
         public void RegisterLast<TSystem>() where TSystem : ComponentSystem, new()
@@ -134,8 +128,6 @@ namespace Automata.Engine
             TSystem componentSystem = new TSystem();
             _ComponentSystems.AddLast(componentSystem);
             RegisterSystemInternal(componentSystem);
-
-            Log.Information($"({nameof(SystemManager)}) Registered {nameof(ComponentSystem)}: {typeof(TSystem)}");
         }
 
         private void RegisterSystemInternal<TSystem>(TSystem componentSystem) where TSystem : ComponentSystem, new()
@@ -147,6 +139,8 @@ namespace Automata.Engine
 
             componentSystem.SetCurrentWorld(_CurrentWorld);
             componentSystem.Registered(_CurrentWorld.EntityManager);
+
+            Log.Information($"({nameof(SystemManager)}) Registered {nameof(ComponentSystem)}: {typeof(TSystem)}");
         }
 
         private static bool TryGetHandledComponents<TSystem>([NotNullWhen(true)] out IEnumerable<HandledComponents>? handledComponentsEnumerable)

@@ -7,9 +7,9 @@ namespace Automata.Engine.Collections
     public struct PooledEnumerator<T> : IEnumerator<T>
     {
         private readonly T[] _PooledArray;
+        private readonly uint _Length;
 
         private uint _Index;
-        private uint _Length;
         private T? _Current;
 
         public T Current => _Current!;
@@ -27,7 +27,7 @@ namespace Automata.Engine.Collections
             }
         }
 
-        internal PooledEnumerator(T[] pooledArray, uint length)
+        public PooledEnumerator(T[] pooledArray, uint length)
         {
             _PooledArray = pooledArray;
             _Index = 0u;

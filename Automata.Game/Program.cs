@@ -57,7 +57,7 @@ static void ApplicationCloseCallbackImpl(object sender)
 static void InitializeLoggerImpl()
 {
     Log.Logger = new LoggerConfiguration()
-        .MinimumLevel.Debug()
+        .MinimumLevel.Verbose()
         .WriteTo.Console()
         .WriteTo.Async(config => config.File("log.txt"))
         .CreateLogger();
@@ -102,7 +102,7 @@ static void InitializeWorldImpl(out World world)
     world = new VoxelWorld(true);
     world.SystemManager.RegisterBefore<InputSystem, FirstOrderSystem>();
     world.SystemManager.RegisterAfter<RenderSystem, LastOrderSystem>();
-    world.SystemManager.RegisterBefore<TransformMatrixUpdateSystem, LastOrderSystem>();
+    world.SystemManager.RegisterBefore<TransformMatrixSystem, LastOrderSystem>();
     world.SystemManager.RegisterBefore<AllocatedMeshingSystem<uint, PackedVertex>, LastOrderSystem>();
 
     AllocatedMeshingSystem<uint, PackedVertex> allocatedMeshingSystem = world.SystemManager.GetSystem<AllocatedMeshingSystem<uint, PackedVertex>>();
@@ -125,8 +125,8 @@ static void InitializeWorldImpl(out World world)
     allocatedMeshingSystem.SetTexture("Blocks", TextureAtlas.Instance.Blocks!);
 
     world.SystemManager.RegisterBefore<ChunkRegionLoaderSystem, DefaultOrderSystem>();
-    world.SystemManager.RegisterBefore<ChunkModificationsSystem, ChunkRegionLoaderSystem>();
-    world.SystemManager.RegisterBefore<ChunkGenerationSystem, ChunkModificationsSystem>();
+    world.SystemManager.RegisterAfter<ChunkModificationsSystem, ChunkRegionLoaderSystem>();
+    world.SystemManager.RegisterAfter<ChunkGenerationSystem, ChunkModificationsSystem>();
     World.RegisterWorld("Overworld", world);
 }
 

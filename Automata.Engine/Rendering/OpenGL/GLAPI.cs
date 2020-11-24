@@ -81,7 +81,6 @@ namespace Automata.Engine.Rendering.OpenGL
                         break;
                     case DebugSeverity.DebugSeverityNotification:
                         Log.Information(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(GLAPI), logString));
-
                         break;
                     case DebugSeverity.DebugSeverityLow:
                         Log.Warning(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(GLAPI), logString));
