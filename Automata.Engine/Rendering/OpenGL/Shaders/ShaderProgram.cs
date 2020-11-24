@@ -27,7 +27,6 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
 
             Handle = GL.CreateShaderProgram(Type, 1, shader);
             CheckShaderInfoLogAndThrow();
-
             CacheUniforms();
 
             Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ShaderProgram), $"Loaded ({Type}): {path}"));

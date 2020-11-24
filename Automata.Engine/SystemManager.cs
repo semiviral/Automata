@@ -149,7 +149,7 @@ namespace Automata.Engine
             MethodBase? methodBase = typeof(TSystem).GetMethod(nameof(ComponentSystem.UpdateAsync));
             handledComponentsEnumerable = methodBase?.GetCustomAttributes<HandledComponents>();
 
-            return methodBase is not null;
+            return handledComponentsEnumerable is not null;
         }
 
         #endregion

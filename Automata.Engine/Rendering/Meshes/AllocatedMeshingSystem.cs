@@ -127,8 +127,8 @@ namespace Automata.Engine.Rendering.Meshes
             }
 
             // make sure we slice the rentals here, since they're subject to arbitrary sizing rules (and may not be the exact requested minimum size).
-            _MultiDrawIndirectMesh.AllocateDrawCommands(new Span<DrawElementsIndirectCommand>(commands).Slice(0, drawIndirectAllocationsCount));
-            _MultiDrawIndirectMesh.AllocateModelsData(new Span<Matrix4x4>(models).Slice(0, drawIndirectAllocationsCount));
+            _MultiDrawIndirectMesh.AllocateDrawCommands(new Span<DrawElementsIndirectCommand>(commands, 0, drawIndirectAllocationsCount));
+            _MultiDrawIndirectMesh.AllocateModelsData(new Span<Matrix4x4>(models, 0, drawIndirectAllocationsCount));
             ArrayPool<DrawElementsIndirectCommand>.Shared.Return(commands);
             ArrayPool<Matrix4x4>.Shared.Return(models);
 

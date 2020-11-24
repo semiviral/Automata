@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using Silk.NET.OpenGL;
+using Buffer = System.Buffer;
 
 namespace Automata.Engine.Rendering.OpenGL.Buffers
 {
@@ -65,6 +66,16 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             }
 
             Unsafe.Write(_Pointer + GetCurrentOffset(), data);
+        }
+
+        public void Write(void* data)
+        {
+            if (Written)
+            {
+                ThrowHelper.ThrowInvalidOperationException("Can only write to ring buffer once per ring.");
+            }
+
+            Buffer.MemoryCopy(data, _Pointer + GetCurrentOffset(), Size, Size);
         }
 
         public void CycleRing()

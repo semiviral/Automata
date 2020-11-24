@@ -105,7 +105,7 @@ namespace Automata.Engine.Rendering
         }
 
         [SkipLocalsInit, HandledComponents(EnumerationStrategy.All, typeof(Camera))]
-        public override unsafe ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta)
+        public override ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta)
         {
             _GL.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
             Span<Plane> planes = stackalloc Plane[Frustum.TOTAL_PLANES];
