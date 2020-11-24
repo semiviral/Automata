@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace Automata.Engine.Extensions
 {
-    public static class StructExtensions
+    public static class UnmanagedExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T SetComponent<T, TComponent>(this T a, int index, TComponent newValue)

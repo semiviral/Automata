@@ -1,4 +1,4 @@
-#version 450 core
+#version 460 core
 
 out gl_PerVertex { vec4 gl_Position; };
 
@@ -12,13 +12,6 @@ layout (std140, binding = 0) uniform builtins_view
     vec4 _params;
     mat4 _proj;
     mat4 _view;
-};
-
-layout (std140, binding = 1) uniform builtins_model
-{
-    mat4 _mvp;
-    mat4 _obj;
-    mat4 _world;
 };
 
 layout (location = 0) out fragment

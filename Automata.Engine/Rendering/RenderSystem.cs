@@ -152,9 +152,8 @@ namespace Automata.Engine.Rendering
 
 #if DEBUG
                     _GL.ValidateProgramPipeline(material.Pipeline.Handle);
-                    material.Pipeline.TryGetInfoLog(out string infoLog);
 
-                    if (!string.IsNullOrWhiteSpace(infoLog))
+                    if (material.Pipeline.TryGetInfoLog(out string? infoLog))
                     {
                         Log.Error(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(RenderSystem), infoLog));
                     }
