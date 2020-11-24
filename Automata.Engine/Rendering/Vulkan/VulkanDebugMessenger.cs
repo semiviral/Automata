@@ -30,9 +30,7 @@ namespace Automata.Engine.Rendering.Vulkan
         {
             _DebugUtils = instance.GetInstanceExtension<ExtDebugUtils>();
 
-            DebugUtilsMessengerCreateInfoEXT createInfo = new DebugUtilsMessengerCreateInfo(
-                StructureType.DebugUtilsMessengerCreateInfoExt,
-                null, 0u,
+            DebugUtilsMessengerCreateInfoEXT createInfo = new DebugUtilsMessengerCreateInfo(StructureType.DebugUtilsMessengerCreateInfoExt, null, 0u,
                 _MESSAGE_SEVERITY_IMPORTANT,
                 DebugUtilsMessageTypeFlagsEXT.DebugUtilsMessageTypeGeneralBitExt
                 | DebugUtilsMessageTypeFlagsEXT.DebugUtilsMessageTypeValidationBitExt

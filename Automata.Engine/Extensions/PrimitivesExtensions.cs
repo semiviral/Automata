@@ -1,6 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+using Silk.NET.Core.Native;
 
 namespace Automata.Engine.Extensions
 {
@@ -30,6 +30,7 @@ namespace Automata.Engine.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static nint MarshalANSI(this string str) => Marshal.StringToHGlobalAnsi(str);
+        public static nint Marshal(this string str, NativeStringEncoding nativeStringEncoding = NativeStringEncoding.LPStr) =>
+            SilkMarshal.StringToPtr(str, nativeStringEncoding);
     }
 }

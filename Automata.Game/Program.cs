@@ -1,4 +1,6 @@
-﻿using System.Drawing;
+﻿#define VULKAN
+
+using System.Drawing;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Automata.Engine;
@@ -15,6 +17,7 @@ using Automata.Game.Chunks;
 using Automata.Game.Chunks.Generation;
 using Automata.Game.Chunks.Generation.Meshing;
 using Serilog;
+using Silk.NET.Vulkan;
 using Silk.NET.Windowing;
 
 MainImpl();
@@ -32,8 +35,9 @@ void MainImpl()
     InitializeWindowImpl();
 
 #if VULKAN
-    VulkanInstance instance = VKAPI.Instance.GenerateNewInstance(AutomataWindow.Instance.GetSurface());
-    SurfaceExtension surfaceExtension = instance.GetInstanceExtension<SurfaceExtension>();
+    VulkanInstance instance = new VulkanInstance(VKAPI.Instance.VK, AutomataWindow.Instance.GetSurface(),
+        new VulkanInstanceInfo("Automata.Game", new Version32(0u, 1u, 0u), "Automata.Engine", new Version32(0u, 1u, 0u), Vk.Version12),
+        VKAPI.DebugInstanceExtensions, true, VKAPI.ValidationLayers);
     VulkanDebugMessenger debugMessenger = new VulkanDebugMessenger(instance);
 #else
     BlockRegistry.Instance.LazyInitialize();

@@ -37,13 +37,11 @@ namespace Automata.Engine.Rendering.Vulkan
 
         public static AllocationCallbacks AllocationCallback = new AllocationCallbacks();
 
-        private readonly string[] _ValidationLayers =
-        {
+        public static string[] ValidationLayers { get; } = {
             "VK_LAYER_KHRONOS_validation"
         };
 
-        private readonly string[] _InstanceExtensions =
-        {
+        public static string[] DebugInstanceExtensions { get; } = {
             ExtDebugUtils.ExtensionName
         };
 
@@ -93,15 +91,6 @@ namespace Automata.Engine.Rendering.Vulkan
         public Instance VKInstance => _VKInstance;
 
         public VKAPI() => VK = Vk.GetApi();
-
-        public VulkanInstance GenerateNewInstance(IVkSurface vkSurface) => new VulkanInstance(Instance.VK, vkSurface, "Automata.Game",
-            new Version32(0u, 1u, 0u),
-            "Automata.Engine", new Version32(0u, 1u, 0u), Vk.Version12, _InstanceExtensions, true, _ValidationLayers);
-
-        public VulkanInstance GenerateNewInstance(IVkSurface vkSurface, string applicationName, Version32 applicationVersion, string engineName,
-            Version32 engineVersion, Version32 apiVersion, string[] requestedExtensions, bool validation, string[] validationLayers) =>
-            new VulkanInstance(VK, vkSurface, applicationName, applicationVersion, engineName, engineVersion, apiVersion, requestedExtensions, validation,
-                validationLayers);
 
         public static unsafe string[] GetRequiredExtensions(IVkSurface vkSurface, string[] requestedExtensions)
         {
@@ -495,8 +484,8 @@ namespace Automata.Engine.Rendering.Vulkan
 
             if (_ENABLE_VULKAN_VALIDATION)
             {
-                deviceCreateInfo.EnabledLayerCount = (uint)_ValidationLayers.Length;
-                deviceCreateInfo.PpEnabledLayerNames = (byte**)SilkMarshal.MarshalStringArrayToPtr(_ValidationLayers);
+                deviceCreateInfo.EnabledLayerCount = (uint)ValidationLayers.Length;
+                deviceCreateInfo.PpEnabledLayerNames = (byte**)SilkMarshal.MarshalStringArrayToPtr(ValidationLayers);
             }
             else
             {
