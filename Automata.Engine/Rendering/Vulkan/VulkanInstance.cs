@@ -77,7 +77,7 @@ namespace Automata.Engine.Rendering.Vulkan
             };
 
             string[] requiredExtensions = VKAPI.GetRequiredExtensions(vkSurface, requestedExtensions);
-            nint requiredExtensionsPointer = SilkMarshal.MarshalStringArrayToPtr(requiredExtensions);
+            nint requiredExtensionsPointer = SilkMarshal.StringArrayToPtr(requiredExtensions);
             nint enabledLayerNames = 0x0;
             int enabledLayerCount = 0;
 
@@ -96,7 +96,7 @@ namespace Automata.Engine.Rendering.Vulkan
             {
                 VKAPI.VerifyValidationLayerSupport(VK, validationLayers);
 
-                enabledLayerNames = SilkMarshal.MarshalStringArrayToPtr(validationLayers);
+                enabledLayerNames = SilkMarshal.StringArrayToPtr(validationLayers);
                 enabledLayerCount = validationLayers.Length;
                 createInfo.PpEnabledLayerNames = (byte**)enabledLayerNames;
                 createInfo.EnabledLayerCount = (uint)enabledLayerCount;
@@ -115,11 +115,11 @@ namespace Automata.Engine.Rendering.Vulkan
 
             Marshal.FreeHGlobal(applicationName);
             Marshal.FreeHGlobal(engineName);
-            SilkMarshal.FreeStringArrayPtr(requiredExtensionsPointer, requestedExtensions.Length);
+            SilkMarshal.FreeString(requiredExtensionsPointer);
 
             if (enabledLayerNames is not 0x0 && enabledLayerCount is not 0)
             {
-                SilkMarshal.FreeStringArrayPtr(enabledLayerNames, enabledLayerCount);
+                SilkMarshal.FreeString(enabledLayerNames);
             }
 
             return instance;

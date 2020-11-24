@@ -12,9 +12,9 @@ using Automata.Engine.Rendering.OpenGL;
 using Serilog;
 using Silk.NET.Core.Contexts;
 using Silk.NET.GLFW;
-using Silk.NET.Input.Common;
+using Silk.NET.Input;
 using Silk.NET.OpenGL;
-using Silk.NET.Windowing.Common;
+using Silk.NET.Windowing;
 using ErrorCode = Silk.NET.GLFW.ErrorCode;
 
 namespace Automata.Engine
@@ -116,17 +116,7 @@ namespace Automata.Engine
         {
             const double default_refresh_rate = 60d;
 
-            double refreshRate;
-
-            if (Window.Monitor.VideoMode.RefreshRate.HasValue)
-            {
-                refreshRate = Window.Monitor.VideoMode.RefreshRate.Value;
-            }
-            else
-            {
-                refreshRate = default_refresh_rate;
-                Log.Error("No monitor detected VSync framerate will be set to default value.");
-            }
+            double refreshRate = Window.Monitor?.VideoMode.RefreshRate.GetValueOrDefault() ?? default_refresh_rate;
 
             _MinimumFrameTime = TimeSpan.FromSeconds(1d / refreshRate);
             Log.Information(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(AutomataWindow), $"VSync framerate configured to {refreshRate} FPS."));
@@ -166,7 +156,7 @@ namespace Automata.Engine
                         Window.SwapBuffers();
                     }
 
-                    if (CheckWaitForNextMonitorRefresh())
+                    if (Window.VSync)
                     {
                         WaitForNextMonitorRefresh(deltaTimer);
                     }
@@ -184,8 +174,6 @@ namespace Automata.Engine
                 Dispose();
             }
         }
-
-        private bool CheckWaitForNextMonitorRefresh() => Window.VSync is VSyncMode.On;
 
         private void WaitForNextMonitorRefresh(Stopwatch deltaTimer) { SpinWait.SpinUntil(() => deltaTimer.Elapsed >= _MinimumFrameTime); }
 

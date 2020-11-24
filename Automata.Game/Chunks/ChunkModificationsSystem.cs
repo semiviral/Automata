@@ -8,7 +8,7 @@ using Automata.Engine.Input;
 using Automata.Game.Blocks;
 using DiagnosticsProviderNS;
 using Serilog;
-using Silk.NET.Input.Common;
+using Silk.NET.Input;
 
 namespace Automata.Game.Chunks
 {

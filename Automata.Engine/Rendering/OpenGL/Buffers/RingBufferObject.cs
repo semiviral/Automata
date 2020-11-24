@@ -32,7 +32,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             BufferedSize = size * buffers;
 
             Handle = GL.CreateBuffer();
-            GL.NamedBufferStorage(Handle, BufferedSize, Span<byte>.Empty, (uint)_ACCESS_MASK);
+            GL.NamedBufferStorage(Handle, BufferedSize, ReadOnlySpan<byte>.Empty, (uint)_ACCESS_MASK);
 
             _Ring = new Ring((nuint)buffers);
             _RingSyncs = new FenceSync[(int)buffers];
@@ -68,14 +68,14 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             Unsafe.Write(_Pointer + GetCurrentOffset(), data);
         }
 
-        public void Write(void* data)
+        public void Write(void* data, nuint length)
         {
             if (Written)
             {
                 ThrowHelper.ThrowInvalidOperationException("Can only write to ring buffer once per ring.");
             }
 
-            Buffer.MemoryCopy(data, _Pointer + GetCurrentOffset(), Size, Size);
+            Buffer.MemoryCopy(data, _Pointer + GetCurrentOffset(), Size, length);
         }
 
         public void CycleRing()

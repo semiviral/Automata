@@ -1,7 +1,7 @@
 using System;
 using System.Numerics;
 using System.Threading.Tasks;
-using Silk.NET.Input.Common;
+using Silk.NET.Input;
 
 namespace Automata.Engine.Input
 {

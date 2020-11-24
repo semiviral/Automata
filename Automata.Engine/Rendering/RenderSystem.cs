@@ -5,6 +5,7 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Automata.Engine.Input;
 using Automata.Engine.Numerics.Shapes;
@@ -13,7 +14,7 @@ using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
 using Automata.Engine.Rendering.OpenGL.Shaders;
 using Automata.Engine.Rendering.OpenGL.Textures;
-using Silk.NET.Input.Common;
+using Silk.NET.Input;
 using Silk.NET.OpenGL;
 using Plane = Automata.Engine.Numerics.Shapes.Plane;
 
@@ -60,7 +61,8 @@ namespace Automata.Engine.Rendering
         private readonly RingBufferObject _ViewUniforms;
         private readonly RingBufferObject _ModelUniforms;
 
-        public ulong DrawCalls { get; private set; }
+        private ulong _DrawCalls;
+        public ulong DrawCalls => _DrawCalls;
 
         public unsafe RenderSystem()
         {
@@ -77,12 +79,8 @@ namespace Automata.Engine.Rendering
             }
 
             _GL.GetInteger(GetPName.UniformBufferOffsetAlignment, out int alignment);
-
-            // triple buffer view uniforms
             _ViewUniforms = new RingBufferObject(_GL, (nuint)sizeof(ViewUniforms), 3u, (nuint)alignment);
-
-            // sextuple buffer model uniforms (they're updated/drawn FAR more often)
-            _ModelUniforms = new RingBufferObject(_GL, (nuint)sizeof(ModelUniforms), 6u, (nuint)alignment);
+            _ModelUniforms = new RingBufferObject(_GL, (nuint)sizeof(ModelUniforms), 8u, (nuint)alignment);
         }
 
         public override void Registered(EntityManager entityManager)
@@ -109,7 +107,7 @@ namespace Automata.Engine.Rendering
         {
             _GL.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
             Span<Plane> planes = stackalloc Plane[Frustum.TOTAL_PLANES];
-            DrawCalls = 0;
+            Interlocked.Exchange(ref _DrawCalls, 0u);
 
             foreach (Camera camera in entityManager.GetComponents<Camera>())
             {
@@ -142,8 +140,8 @@ namespace Automata.Engine.Rendering
 
                     if (!material.Equals(cachedMaterial))
                     {
+                        ApplyMaterial(material);
                         cachedMaterial = material;
-                        ApplyMaterial(cachedMaterial);
                     }
 
                     Matrix4x4.Invert(model, out Matrix4x4 modelInverted);
@@ -153,7 +151,7 @@ namespace Automata.Engine.Rendering
 
                     renderMesh.Mesh!.Draw();
                     _ModelUniforms.CycleRing();
-                    DrawCalls += 1;
+                    Interlocked.Increment(ref _DrawCalls);
                 }
 
                 _ViewUniforms.CycleRing();
@@ -172,7 +170,7 @@ namespace Automata.Engine.Rendering
 
         private static bool CheckClipFrustumOccludeEntity(Entity entity, Span<Plane> planes, Matrix4x4 mvp)
         {
-            if (!entity.TryFind(out OcclusionBounds? bounds) || !_ENABLE_FRUSTUM_CULLING)
+            if (!_ENABLE_FRUSTUM_CULLING || !entity.TryFind(out OcclusionBounds? bounds))
             {
                 return false;
             }

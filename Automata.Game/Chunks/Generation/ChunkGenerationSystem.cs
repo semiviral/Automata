@@ -15,7 +15,7 @@ using Automata.Game.Chunks.Generation.Meshing;
 using Automata.Game.Chunks.Generation.Structures;
 using DiagnosticsProviderNS;
 using Serilog;
-using Silk.NET.Input.Common;
+using Silk.NET.Input;
 
 namespace Automata.Game.Chunks.Generation
 {

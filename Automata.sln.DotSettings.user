@@ -15,6 +15,7 @@
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=35055bda_002Dabf5_002D48e7_002Db0b6_002D3636df336c73/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from Solution" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;Solution /&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
+	<s:Boolean x:Key="/Default/UnloadedProject/UnloadedProjects/=bf9fa4a5_002Dd6cd_002D43f1_002Da772_002D5955ee925260_0023Automata_002EPlayground_002EOpenCL/@EntryIndexedValue">True</s:Boolean>
 	
 	
 	</wpf:ResourceDictionary>

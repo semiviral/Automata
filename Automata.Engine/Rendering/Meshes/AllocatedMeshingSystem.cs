@@ -11,7 +11,7 @@ using Automata.Engine.Rendering.OpenGL.Buffers;
 using Automata.Engine.Rendering.OpenGL.Shaders;
 using Automata.Engine.Rendering.OpenGL.Textures;
 using Serilog;
-using Silk.NET.Input.Common;
+using Silk.NET.Input;
 
 namespace Automata.Engine.Rendering.Meshes
 {

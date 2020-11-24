@@ -14,9 +14,9 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             BindingIndex = bindingIndex;
         }
 
-        public unsafe void SetData(Span<T> data)
+        public unsafe void SetData(ReadOnlySpan<T> data)
         {
-            GL.NamedBufferData(Handle, (uint)(data.Length * sizeof(T)), data, VertexBufferObjectUsage.StaticRead);
+            GL.NamedBufferData(Handle, (nuint)(data.Length * sizeof(T)), data, VertexBufferObjectUsage.StaticRead);
             Size = (uint)data.Length;
         }
 

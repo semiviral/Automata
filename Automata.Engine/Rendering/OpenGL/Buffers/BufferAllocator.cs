@@ -17,7 +17,8 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
         {
             Handle = GL.CreateBuffer();
             GL.NamedBufferStorage(Handle, size, (void*)null!, (uint)_STORAGE_MASK);
-            _NativeMemoryPool = new NativeMemoryPool((byte*)GL.MapNamedBufferRange(Handle, 0, (uint)size, (uint)_STORAGE_MASK), size);
+            void* pointer = GL.MapNamedBufferRange(Handle, (nint)0, size, (uint)_STORAGE_MASK);
+            _NativeMemoryPool = new NativeMemoryPool((byte*)pointer, size);
         }
 
         public IMemoryOwner<T> Rent<T>(int size, nuint alignment, out nuint index, bool clear = false) where T : unmanaged =>

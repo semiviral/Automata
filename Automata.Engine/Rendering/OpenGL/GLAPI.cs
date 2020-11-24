@@ -1,8 +1,9 @@
 using System;
+using System.Text;
 using Serilog;
 using Silk.NET.Core.Native;
 using Silk.NET.OpenGL;
-using Silk.NET.Windowing.Common;
+using Silk.NET.Windowing;
 
 namespace Automata.Engine.Rendering.OpenGL
 {
@@ -15,7 +16,7 @@ namespace Automata.Engine.Rendering.OpenGL
             // validate dependency or throw
             GL = AutomataWindow.Instance.GetOpenGLContext();
 
-            string version = GL.GetString(StringName.Version);
+            string version = SilkMarshal.PtrToString((nint)GL.GetString(StringName.Version));
             Log.Information(string.Format(_LogFormat, $"OpenGL version {version}"));
 
             // configure debug callback
@@ -66,9 +67,9 @@ namespace Automata.Engine.Rendering.OpenGL
         public static void UnbindVertexArray() => Instance.GL.BindVertexArray(0);
         public static void UnbindBuffer(BufferTargetARB target) => Instance.GL.BindBuffer(target, 0);
 
-        private static void DebugOutputCallback(GLEnum source, GLEnum type, int id, GLEnum severity, int length, IntPtr messagePtr, IntPtr userParamPtr)
+        private static void DebugOutputCallback(GLEnum source, GLEnum type, int id, GLEnum severity, int length, nint messagePtr, nint userParamPtr)
         {
-            static void LogOGLDebugMessage(DebugSource debugSource, DebugType debugType, DebugSeverity debugSeverity, string message)
+            static void LogOGLDebugMessageImpl(DebugSource debugSource, DebugType debugType, DebugSeverity debugSeverity, string message)
             {
                 const string ogl_log_format = "[DEBUG {0}] {1}: {2}";
 
@@ -95,7 +96,7 @@ namespace Automata.Engine.Rendering.OpenGL
                 }
             }
 
-            LogOGLDebugMessage((DebugSource)source, (DebugType)type, (DebugSeverity)severity, SilkMarshal.MarshalPtrToString(messagePtr));
+            LogOGLDebugMessageImpl((DebugSource)source, (DebugType)type, (DebugSeverity)severity, SilkMarshal.PtrToString(messagePtr));
         }
     }
 }

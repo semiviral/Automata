@@ -11,7 +11,7 @@ using Automata.Engine.Numerics;
 using Automata.Game.Chunks.Generation;
 using DiagnosticsProviderNS;
 using Serilog;
-using Silk.NET.Input.Common;
+using Silk.NET.Input;
 
 namespace Automata.Game.Chunks
 {

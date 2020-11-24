@@ -5,11 +5,11 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 {
     public unsafe class BufferObject : OpenGLObject
     {
-        public uint Length { get; protected set; }
+        public nuint Length { get; protected set; }
 
         public BufferObject(GL gl) : base(gl) => Handle = GL.CreateBuffer();
 
-        public BufferObject(GL gl, uint length, BufferStorageMask storageFlags = BufferStorageMask.DynamicStorageBit) : base(gl)
+        public BufferObject(GL gl, nuint length, BufferStorageMask storageFlags = BufferStorageMask.DynamicStorageBit) : base(gl)
         {
             Length = length;
 
@@ -17,7 +17,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             GL.NamedBufferStorage(Handle, Length, (void*)null!, (uint)storageFlags);
         }
 
-        public BufferObject(GL gl, void* data, uint length, BufferStorageMask storageFlags = BufferStorageMask.DynamicStorageBit) : base(gl)
+        public BufferObject(GL gl, void* data, nuint length, BufferStorageMask storageFlags = BufferStorageMask.DynamicStorageBit) : base(gl)
         {
             Length = length;
 
@@ -25,7 +25,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             GL.NamedBufferStorage(Handle, Length, data, (uint)storageFlags);
         }
 
-        public void Resize(uint length, BufferDraw bufferDraw)
+        public void Resize(nuint length, BufferDraw bufferDraw)
         {
             Length = length;
             GL.NamedBufferData(Handle, Length, (void*)null!, (VertexBufferObjectUsage)bufferDraw);
@@ -38,22 +38,22 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
         #region Data
 
-        public void SetData(void* data, uint length, BufferDraw bufferDraw)
+        public void SetData(void* data, nuint length, BufferDraw bufferDraw)
         {
             Length = length;
             GL.NamedBufferData(Handle, Length, data, (VertexBufferObjectUsage)bufferDraw);
         }
 
-        public void SubData(int offset, void* data, uint length) => GL.NamedBufferSubData(Handle, offset, length, data);
+        public void SubData(nint offset, void* data, nuint length) => GL.NamedBufferSubData(Handle, offset, length, data);
 
-        public void SetData<T>(Span<T> data, BufferDraw bufferDraw) where T : unmanaged
+        public void SetData<T>(ReadOnlySpan<T> data, BufferDraw bufferDraw) where T : unmanaged
         {
-            Length = (uint)(data.Length * sizeof(T));
+            Length = (nuint)(data.Length * sizeof(T));
             GL.NamedBufferData(Handle, Length, data, (VertexBufferObjectUsage)bufferDraw);
         }
 
-        public void SubData<T>(int offset, Span<T> data) where T : unmanaged =>
-            GL.NamedBufferSubData(Handle, offset, (uint)(data.Length * sizeof(T)), ref data.GetPinnableReference());
+        public void SubData<T>(nint offset, ReadOnlySpan<T> data) where T : unmanaged =>
+            GL.NamedBufferSubData(Handle, offset, (nuint)(data.Length * sizeof(T)), data );
 
         #endregion
 

@@ -12,11 +12,11 @@ namespace Automata.Engine.Rendering.OpenGL
         private sealed class VertexBufferObjectBinding
         {
             public uint Handle { get; }
-            public int VertexOffset { get; }
+            public nint VertexOffset { get; }
             public uint Divisor { get; }
             public uint Stride { get; set; }
 
-            public VertexBufferObjectBinding(uint handle, int vertexOffset = 0, uint divisor = 0u)
+            public VertexBufferObjectBinding(uint handle, nint vertexOffset = 0, uint divisor = 0u)
             {
                 Handle = handle;
                 VertexOffset = vertexOffset;

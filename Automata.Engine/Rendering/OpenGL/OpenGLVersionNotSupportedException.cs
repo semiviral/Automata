@@ -1,5 +1,5 @@
 using System;
-using Silk.NET.Windowing.Common;
+using Silk.NET.Windowing;
 
 namespace Automata.Engine.Rendering.OpenGL
 {

@@ -46,7 +46,7 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
 
         private void CheckShaderInfoLogAndThrow()
         {
-            string infoLog = GL.GetProgramInfoLog(Handle);
+            GL.GetProgramInfoLog(Handle, out string infoLog);
 
             if (!string.IsNullOrWhiteSpace(infoLog))
             {

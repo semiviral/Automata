@@ -33,7 +33,7 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             }
         }
 
-        public void SetPixels(Vector3i offset, Vector2i size, Span<TPixel> pixels)
+        public void SetPixels(Vector3i offset, Vector2i size, ReadOnlySpan<TPixel> pixels)
         {
             if (Vector3b.Any(offset < 0))
             {

@@ -18,13 +18,13 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
         #region Data
 
-        public void SetData(Span<TData> data, BufferDraw bufferDraw)
+        public void SetData(ReadOnlySpan<TData> data, BufferDraw bufferDraw)
         {
             DataLength = (uint)data.Length;
             base.SetData(data, bufferDraw);
         }
 
-        public void SubData(int offset, Span<TData> data) => base.SubData(offset * sizeof(TData), data);
+        public void SubData(int offset, ReadOnlySpan<TData> data) => base.SubData(offset * sizeof(TData), data);
 
         #endregion
     }

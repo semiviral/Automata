@@ -1,7 +1,7 @@
 using Silk.NET.Core.Attributes;
+using Silk.NET.Core.Contexts;
 using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
-using Ultz.SuperInvoke;
 
 namespace Automata.Engine.Rendering.Vulkan
 {
@@ -10,7 +10,7 @@ namespace Automata.Engine.Rendering.Vulkan
     {
         public const string EXTENSION_NAME = "VK_KHR_swapchain";
 
-        public SwapchainExtension(ref NativeApiContext ctx) : base(ref ctx) { }
+        public SwapchainExtension(INativeContext nativeContext) : base(nativeContext) { }
 
         /// <summary>To be added.</summary>
         [NativeApi(EntryPoint = "vkAcquireNextImageKHR")]

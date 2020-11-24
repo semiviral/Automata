@@ -13,11 +13,12 @@
       <PackageReference Include="Serilog.Sinks.Async" Version="1.4.0" />
       <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
       <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
-      <PackageReference Include="Silk.NET" Version="1.8.0" />
-      <PackageReference Include="Silk.NET.OpenCL" Version="1.8.0" />
-      <PackageReference Include="Silk.NET.Vulkan" Version="1.8.0" />
-      <PackageReference Include="Silk.NET.Vulkan.Extensions.EXT" Version="1.8.0" />
-      <PackageReference Include="Silk.NET.Vulkan.Extensions.KHR" Version="1.8.0" />
+      <PackageReference Include="Silk.NET" Version="2.0.0-preview3" />
+      <PackageReference Include="Silk.NET.Core" Version="2.0.0-preview3" />
+      <PackageReference Include="Silk.NET.OpenCL" Version="2.0.0-preview3" />
+      <PackageReference Include="Silk.NET.Vulkan" Version="2.0.0-preview3" />
+      <PackageReference Include="Silk.NET.Vulkan.Extensions.EXT" Version="2.0.0-preview3" />
+      <PackageReference Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.0.0-preview3" />
       <PackageReference Include="SixLabors.ImageSharp" Version="1.0.2" />
       <PackageReference Include="Tomlyn" Version="0.1.2" />
     </ItemGroup>
@@ -29,6 +30,18 @@
       <Reference Include="Microsoft.Toolkit.HighPerformance, Version=7.0.0.0, Culture=neutral, PublicKeyToken=4aff67a105548ee2">
         <HintPath>..\References\Microsoft.Toolkit.HighPerformance.dll</HintPath>
       </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="OpenCL\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Remove="OpenCL\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="OpenCL\**" />
     </ItemGroup>
 
 </Project>

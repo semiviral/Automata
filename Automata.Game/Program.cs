@@ -8,13 +8,14 @@ using Automata.Engine.Rendering;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Shaders;
+using Automata.Engine.Rendering.Vulkan;
 using Automata.Game;
 using Automata.Game.Blocks;
 using Automata.Game.Chunks;
 using Automata.Game.Chunks.Generation;
 using Automata.Game.Chunks.Generation.Meshing;
 using Serilog;
-using Silk.NET.Windowing.Common;
+using Silk.NET.Windowing;
 
 MainImpl();
 await AutomataWindow.Instance.RunAsync();
@@ -85,7 +86,7 @@ static void InitializeWindowImpl()
     options.Title = "Automata";
     options.Size = new Size(800, 600);
     options.Position = new Point(500, 100);
-    options.VSync = Settings.Instance.VSync ? VSyncMode.On : VSyncMode.Off;
+    options.VSync = Settings.Instance.VSync;
     options.PreferredDepthBufferBits = 24;
 
 #if VULKAN
