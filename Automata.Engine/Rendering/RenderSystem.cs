@@ -76,11 +76,13 @@ namespace Automata.Engine.Rendering
                 _GL.Enable(EnableCap.CullFace);
             }
 
+            _GL.GetInteger(GetPName.UniformBufferOffsetAlignment, out int alignment);
+
             // triple buffer view uniforms
-            _ViewUniforms = new RingBufferObject(_GL, (nuint)sizeof(ViewUniforms), 3u);
+            _ViewUniforms = new RingBufferObject(_GL, (nuint)sizeof(ViewUniforms), 3u, (nuint)alignment);
 
             // sextuple buffer model uniforms (they're updated/drawn FAR more often)
-            _ModelUniforms = new RingBufferObject(_GL, (nuint)sizeof(ModelUniforms), 6u);
+            _ModelUniforms = new RingBufferObject(_GL, (nuint)sizeof(ModelUniforms), 6u, (nuint)alignment);
         }
 
         public override void Registered(EntityManager entityManager)
