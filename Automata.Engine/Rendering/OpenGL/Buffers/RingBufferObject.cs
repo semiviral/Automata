@@ -11,8 +11,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
                                                          | MapBufferAccessMask.MapPersistentBit
                                                          | MapBufferAccessMask.MapCoherentBit;
 
-        private readonly Ring _Ring;
-        private readonly FenceSync?[] _RingSyncs;
+        private readonly RingFenceSync _RingSync;
         private readonly byte* _Pointer;
 
         public nuint Size { get; }
@@ -35,8 +34,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             Handle = GL.CreateBuffer();
             GL.NamedBufferStorage(Handle, BufferedSize, (void*)null!, (uint)_ACCESS_MASK);
 
-            _Ring = new Ring((nuint)buffers);
-            _RingSyncs = new FenceSync[(int)buffers];
+            _RingSync = new RingFenceSync(GL, buffers);
             _Pointer = (byte*)GL.MapNamedBuffer(Handle, BufferAccessARB.WriteOnly);
         }
 
@@ -47,7 +45,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
                 ThrowHelper.ThrowArgumentOutOfRangeException(nameof(data), "Cannot write segment larger than ring buffer segment size.");
             }
 
-            WaitRing();
+            _RingSync.WaitEnterNext();
             data.CopyTo(new Span<byte>(_Pointer + GetCurrentOffset(), (int)Size));
         }
 
@@ -58,7 +56,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
                 ThrowHelper.ThrowArgumentOutOfRangeException(nameof(data), "Cannot write segment larger than ring buffer segment size.");
             }
 
-            WaitRing();
+            _RingSync.WaitEnterNext();
             Unsafe.Write(_Pointer + GetCurrentOffset(), data);
         }
 
@@ -69,28 +67,15 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
                 ThrowHelper.ThrowArgumentOutOfRangeException(nameof(data), "Cannot write segment larger than ring buffer segment size.");
             }
 
-            WaitRing();
+            _RingSync.WaitEnterNext();
             Buffer.MemoryCopy(data, _Pointer + GetCurrentOffset(), Size, length);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void WaitRing()
-        {
-            // wait to enter next ring, then increment to it
-            _RingSyncs[(int)_Ring.NextRing()]?.BusyWaitCPU();
-            _Ring.Increment();
-        }
+        private nint GetCurrentOffset() => (nint)(Size * _RingSync.Current);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private nint GetCurrentOffset() => (nint)(Size * _Ring.Current);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void FenceRing()
-        {
-            // create fence for current ring
-            _RingSyncs[(int)_Ring.Current]?.Dispose();
-            _RingSyncs[(int)_Ring.Current] = new FenceSync(GL);
-        }
+        public void FenceRing() => _RingSync.FenceCurrent();
 
 
         #region Binding
@@ -104,11 +89,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
         protected override void CleanupNativeResources()
         {
-            foreach (FenceSync? fenceSync in _RingSyncs)
-            {
-                fenceSync?.Dispose();
-            }
-
+            _RingSync.Dispose();
             GL.UnmapNamedBuffer(Handle);
             GL.DeleteBuffer(Handle);
         }

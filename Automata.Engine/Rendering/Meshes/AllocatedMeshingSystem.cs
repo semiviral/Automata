@@ -59,6 +59,7 @@ namespace Automata.Engine.Rendering.Meshes
 
             if (recreateCommandBuffer)
             {
+                _MultiDrawIndirectMesh.DrawSync?.BusyWaitCPU();
                 ProcessDrawElementsIndirectAllocations(entityManager);
             }
 

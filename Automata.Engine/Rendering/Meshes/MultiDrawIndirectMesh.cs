@@ -21,6 +21,7 @@ namespace Automata.Engine.Rendering.Meshes
 
         public Guid ID { get; }
         public Layer Layer { get; }
+        public FenceSync? DrawSync { get; private set; }
 
         public bool Visible => _CommandBuffer.DataLength > 0u;
 
@@ -107,6 +108,9 @@ namespace Automata.Engine.Rendering.Meshes
 #endif
 
             _GL.MultiDrawElementsIndirect(PrimitiveType.Triangles, _DrawElementsType, (void*)null!, (uint)_CommandBuffer.DataLength, 0u);
+
+            DrawSync?.Dispose();
+            DrawSync = new FenceSync(_GL);
         }
 
         #endregion
@@ -127,6 +131,7 @@ namespace Automata.Engine.Rendering.Meshes
             _VertexAllocator.Dispose();
             _VertexArrayObject.Dispose();
             _ModelBuffer.Dispose();
+            DrawSync?.Dispose();
         }
 
         ~MultiDrawIndirectMesh() => CleanupNativeResources();
