@@ -126,7 +126,7 @@ namespace Automata.Engine.Rendering
                 _ViewUniforms.Write(ref cameraUniforms);
                 _ViewUniforms.Bind(BufferTargetARB.UniformBuffer, 0u);
                 DrawModels(entityManager, camera, planes);
-                _ViewUniforms.CycleRing();
+                _ViewUniforms.FenceRing();
             }
 
             return ValueTask.CompletedTask;
@@ -172,7 +172,7 @@ namespace Automata.Engine.Rendering
 #endif
 
                 renderMesh.Mesh!.Draw();
-                _ModelUniforms.CycleRing();
+                _ModelUniforms.FenceRing();
                 Interlocked.Increment(ref _DrawCalls);
             }
         }

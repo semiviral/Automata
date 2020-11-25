@@ -3,7 +3,6 @@ using System.Numerics;
 using System.Threading.Tasks;
 using Automata.Engine.Numerics;
 using Automata.Engine.Rendering;
-using Serilog;
 
 namespace Automata.Engine
 {
@@ -93,16 +92,6 @@ namespace Automata.Engine
             _UpdateProjections = false;
             return ValueTask.CompletedTask;
         }
-
-
-        #region Update Camera
-
-        #endregion
-
-
-        #region Update Model
-
-        #endregion
 
 
         #region Events

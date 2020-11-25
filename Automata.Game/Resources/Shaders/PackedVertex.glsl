@@ -18,6 +18,7 @@ layout (location = 0) out fragment
 {
     vec3 uv;
     vec3 color;
+    mat4 view;
 } fragment;
 
 void main()
@@ -52,5 +53,6 @@ void main()
 
     fragment.uv = uncompressedUV;
     fragment.color = vec3(lerpedNormal.x + lerpedNormal.y + lerpedNormal.z);
+    fragment.view = _view;
     gl_Position = (_proj * _view * model) * uncompressedPosition ;
 }

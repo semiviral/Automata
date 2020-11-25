@@ -7,7 +7,9 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 {
     public unsafe class RingBufferObject : OpenGLObject
     {
-        private const MapBufferAccessMask _ACCESS_MASK = MapBufferAccessMask.MapWriteBit | MapBufferAccessMask.MapPersistentBit;
+        private const MapBufferAccessMask _ACCESS_MASK = MapBufferAccessMask.MapWriteBit
+                                                         | MapBufferAccessMask.MapPersistentBit
+                                                         | MapBufferAccessMask.MapCoherentBit;
 
         private readonly Ring _Ring;
         private readonly FenceSync?[] _RingSyncs;
@@ -16,7 +18,6 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
         public nuint Size { get; }
         public nuint Buffers { get; }
         public nuint BufferedSize { get; }
-        public bool Written { get; private set; }
 
         public RingBufferObject(GL gl, nuint size, nuint buffers, nuint alignment = 0u) : base(gl)
         {
@@ -32,7 +33,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             BufferedSize = size * buffers;
 
             Handle = GL.CreateBuffer();
-            GL.NamedBufferStorage(Handle, BufferedSize, ReadOnlySpan<byte>.Empty, (uint)_ACCESS_MASK);
+            GL.NamedBufferStorage(Handle, BufferedSize, (void*)null!, (uint)_ACCESS_MASK);
 
             _Ring = new Ring((nuint)buffers);
             _RingSyncs = new FenceSync[(int)buffers];
@@ -45,13 +46,9 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             {
                 ThrowHelper.ThrowArgumentOutOfRangeException(nameof(data), "Cannot write segment larger than ring buffer segment size.");
             }
-            else if (Written)
-            {
-                ThrowHelper.ThrowInvalidOperationException("Can only write to ring buffer once per ring.");
-            }
 
+            WaitRing();
             data.CopyTo(new Span<byte>(_Pointer + GetCurrentOffset(), (int)Size));
-            Written = true;
         }
 
         public void Write<T>(ref T data) where T : unmanaged
@@ -60,11 +57,8 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             {
                 ThrowHelper.ThrowArgumentOutOfRangeException(nameof(data), "Cannot write segment larger than ring buffer segment size.");
             }
-            else if (Written)
-            {
-                ThrowHelper.ThrowInvalidOperationException("Can only write to ring buffer once per ring.");
-            }
 
+            WaitRing();
             Unsafe.Write(_Pointer + GetCurrentOffset(), data);
         }
 
@@ -74,28 +68,29 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             {
                 ThrowHelper.ThrowArgumentOutOfRangeException(nameof(data), "Cannot write segment larger than ring buffer segment size.");
             }
-            else if (Written)
-            {
-                ThrowHelper.ThrowInvalidOperationException("Can only write to ring buffer once per ring.");
-            }
 
+            WaitRing();
             Buffer.MemoryCopy(data, _Pointer + GetCurrentOffset(), Size, length);
         }
 
-        public void CycleRing()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void WaitRing()
+        {
+            // wait to enter next ring, then increment to it
+            _RingSyncs[(int)_Ring.NextRing()]?.BusyWaitCPU();
+            _Ring.Increment();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private nint GetCurrentOffset() => (nint)(Size * _Ring.Current);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void FenceRing()
         {
             // create fence for current ring
             _RingSyncs[(int)_Ring.Current]?.Dispose();
             _RingSyncs[(int)_Ring.Current] = new FenceSync(GL);
-
-            // wait to enter next ring, then increment to it
-            _RingSyncs[(int)_Ring.NextRing()]?.BusyWaitCPU();
-            _Ring.Increment();
-
-            Written = false;
         }
-
-        private nint GetCurrentOffset() => (nint)(Size * _Ring.Current);
 
 
         #region Binding

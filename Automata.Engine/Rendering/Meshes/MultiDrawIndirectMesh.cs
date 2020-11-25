@@ -34,7 +34,7 @@ namespace Automata.Engine.Rendering.Meshes
             _IndexAllocator = new BufferAllocator(gl, indexAllocatorSize);
             _VertexAllocator = new BufferAllocator(gl, vertexAllocatorSize);
             _VertexArrayObject = new VertexArrayObject(gl);
-            _ModelBuffer = new BufferObject<Matrix4x4>(gl);
+            _ModelBuffer = new BufferObject<Matrix4x4>(gl, 2_500_000, BufferStorageMask.MapWriteBit);
 
             _VertexArrayObject.AllocateVertexBufferBinding(0u, _VertexAllocator);
             _VertexArrayObject.AllocateVertexBufferBinding(1u, _ModelBuffer, 0, 1u);
@@ -72,7 +72,7 @@ namespace Automata.Engine.Rendering.Meshes
         public void FinalizeVertexArrayObject() => _VertexArrayObject.Finalize(_IndexAllocator);
 
         public void AllocateDrawCommands(ReadOnlySpan<DrawElementsIndirectCommand> commands) => _CommandBuffer.SetData(commands, BufferDraw.StaticDraw);
-        public void AllocateModelsData(ReadOnlySpan<Matrix4x4> models) => _ModelBuffer.SetData(models, BufferDraw.StaticDraw);
+        public void AllocateModelsData(ReadOnlySpan<Matrix4x4> models) => _ModelBuffer.SubData(0, models);
 
         #endregion
 
