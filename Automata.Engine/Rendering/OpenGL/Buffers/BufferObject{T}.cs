@@ -7,7 +7,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
     {
         public nuint DataLength { get; private set; }
 
-        public BufferObject(GL gl) : base(gl) => Handle = GL.CreateBuffer();
+        public BufferObject(GL gl) : base(gl) { }
 
         public BufferObject(GL gl, ReadOnlySpan<TData> data, BufferStorageMask flags) : base(gl)
         {
@@ -36,6 +36,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             Length = DataLength * (nuint)sizeof(TData);
             GL.NamedBufferData(Handle, Length, (void*)null!, (VertexBufferObjectUsage)usage);
         }
+
 
         #region Data
 

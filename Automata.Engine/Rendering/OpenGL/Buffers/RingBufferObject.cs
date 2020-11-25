@@ -70,7 +70,11 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
         public void Write(void* data, nuint length)
         {
-            if (Written)
+            if (length > Size)
+            {
+                ThrowHelper.ThrowArgumentOutOfRangeException(nameof(data), "Cannot write segment larger than ring buffer segment size.");
+            }
+            else if (Written)
             {
                 ThrowHelper.ThrowInvalidOperationException("Can only write to ring buffer once per ring.");
             }

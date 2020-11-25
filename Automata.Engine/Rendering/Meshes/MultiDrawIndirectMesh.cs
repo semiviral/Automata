@@ -71,8 +71,8 @@ namespace Automata.Engine.Rendering.Meshes
 
         public void FinalizeVertexArrayObject() => _VertexArrayObject.Finalize(_IndexAllocator);
 
-        public void AllocateDrawCommands(Span<DrawElementsIndirectCommand> commands) => _CommandBuffer.SetData(commands, BufferDraw.StaticDraw);
-        public void AllocateModelsData(Span<Matrix4x4> models) => _ModelBuffer.SetData(models, BufferDraw.StaticDraw);
+        public void AllocateDrawCommands(ReadOnlySpan<DrawElementsIndirectCommand> commands) => _CommandBuffer.SetData(commands, BufferDraw.StaticDraw);
+        public void AllocateModelsData(ReadOnlySpan<Matrix4x4> models) => _ModelBuffer.SetData(models, BufferDraw.StaticDraw);
 
         #endregion
 
@@ -106,7 +106,7 @@ namespace Automata.Engine.Rendering.Meshes
             VerifyVertexBufferBindingImpl(1u, _ModelBuffer);
 #endif
 
-            _GL.MultiDrawElementsIndirect(PrimitiveType.Triangles, _DrawElementsType, (void*)null!, _CommandBuffer.DataLength, 0u);
+            _GL.MultiDrawElementsIndirect(PrimitiveType.Triangles, _DrawElementsType, (void*)null!, (uint)_CommandBuffer.DataLength, 0u);
         }
 
         #endregion

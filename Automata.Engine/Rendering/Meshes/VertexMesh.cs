@@ -33,7 +33,7 @@ namespace Automata.Engine.Rendering.Meshes
         public void Draw()
         {
             VertexArrayObject.Bind();
-            _GL.DrawArrays(PrimitiveType.Triangles, 0, BufferObject.DataLength);
+            _GL.DrawArrays(PrimitiveType.Triangles, 0, (uint)BufferObject.DataLength);
         }
 
         public void Dispose()
