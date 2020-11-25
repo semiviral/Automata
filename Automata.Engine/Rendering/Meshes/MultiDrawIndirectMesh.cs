@@ -57,6 +57,15 @@ namespace Automata.Engine.Rendering.Meshes
             }
         }
 
+        public void ValidateAllocatorBlocks()
+        {
+            _IndexAllocator.ValidateBlocks();
+            _VertexAllocator.ValidateBlocks();
+        }
+
+
+        #region State
+
         public void AllocateVertexAttributes(bool replace, params IVertexAttribute[] attributes) =>
             _VertexArrayObject.AllocateVertexAttributes(replace, attributes);
 
@@ -65,11 +74,7 @@ namespace Automata.Engine.Rendering.Meshes
         public void AllocateDrawCommands(Span<DrawElementsIndirectCommand> commands) => _CommandBuffer.SetData(commands, BufferDraw.StaticDraw);
         public void AllocateModelsData(Span<Matrix4x4> models) => _ModelBuffer.SetData(models, BufferDraw.StaticDraw);
 
-        public void ValidateAllocatorBlocks()
-        {
-            _IndexAllocator.ValidateBlocks();
-            _VertexAllocator.ValidateBlocks();
-        }
+        #endregion
 
 
         #region Renting

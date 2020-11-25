@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
@@ -24,14 +25,14 @@ namespace Automata.Engine.Rendering
     public class RenderSystem : ComponentSystem, IDisposable
     {
         [StructLayout(LayoutKind.Sequential)]
-        private readonly struct ViewUniforms
+        private readonly struct CameraUniforms
         {
             public readonly Vector4 Viewport;
             public readonly Vector4 Parameters;
             public readonly Matrix4x4 Projection;
             public readonly Matrix4x4 View;
 
-            public ViewUniforms(Vector4 viewport, Vector4 parameters, Matrix4x4 projection, Matrix4x4 view)
+            public CameraUniforms(Vector4 viewport, Vector4 parameters, Matrix4x4 projection, Matrix4x4 view)
             {
                 Viewport = viewport;
                 Parameters = parameters;
@@ -80,7 +81,7 @@ namespace Automata.Engine.Rendering
             }
 
             _GL.GetInteger(GetPName.UniformBufferOffsetAlignment, out int alignment);
-            _ViewUniforms = new RingBufferObject(_GL, (nuint)sizeof(ViewUniforms), 3u, (nuint)alignment);
+            _ViewUniforms = new RingBufferObject(_GL, (nuint)sizeof(CameraUniforms), 3u, (nuint)alignment);
             _ModelUniforms = new RingBufferObject(_GL, (nuint)sizeof(ModelUniforms), 8u, (nuint)alignment);
         }
 
@@ -113,61 +114,67 @@ namespace Automata.Engine.Rendering
             foreach (Camera camera in entityManager.GetComponents<Camera>())
             {
                 // if the camera doesn't have a projection, it doesn't make sense to try and render to it
+                // remark: this may possible be an incorrect assumption, but for now it makes sense
                 if (camera.Projection is null)
                 {
                     continue;
                 }
 
-                ViewUniforms viewUniforms = new ViewUniforms(AutomataWindow.Instance.Viewport, camera.Projection.Parameters, camera.Projection.Matrix,
+                CameraUniforms cameraUniforms = new CameraUniforms(AutomataWindow.Instance.Viewport, camera.Projection.Parameters, camera.Projection.Matrix,
                     camera.View);
 
-                _ViewUniforms.Write(ref viewUniforms);
+                _ViewUniforms.Write(ref cameraUniforms);
                 _ViewUniforms.Bind(BufferTargetARB.UniformBuffer, 0u);
-
-                Matrix4x4 viewProjection = camera.View * camera.Projection.Matrix;
-                Material? cachedMaterial = null;
-
-                // iterate every valid entity and try to render it
-                // we also sort the entities by their render pipeline ID, so we can avoid doing a ton of rebinding
-                foreach ((Entity objectEntity, RenderMesh renderMesh, Material material) in GetRenderableEntities(entityManager, camera))
-                {
-                    Matrix4x4 model = objectEntity.Find<RenderModel>()?.Model ?? Matrix4x4.Identity;
-                    Matrix4x4 modelViewProjection = model * viewProjection;
-
-                    if (CheckClipFrustumOccludeEntity(objectEntity, planes, modelViewProjection))
-                    {
-                        continue;
-                    }
-
-                    if (!material.Equals(cachedMaterial))
-                    {
-                        ApplyMaterial(material);
-                        cachedMaterial = material;
-                    }
-
-                    Matrix4x4.Invert(model, out Matrix4x4 modelInverted);
-                    ModelUniforms modelUniforms = new ModelUniforms(modelViewProjection, modelInverted, model);
-                    _ModelUniforms.Write(ref modelUniforms);
-                    _ModelUniforms.Bind(BufferTargetARB.UniformBuffer, 1u);
-
-#if DEBUG
-                    _GL.ValidateProgramPipeline(material.Pipeline.Handle);
-
-                    if (material.Pipeline.TryGetInfoLog(out string? infoLog))
-                    {
-                        Log.Error(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(RenderSystem), infoLog));
-                    }
-#endif
-
-                    renderMesh.Mesh!.Draw();
-                    _ModelUniforms.CycleRing();
-                    Interlocked.Increment(ref _DrawCalls);
-                }
-
+                DrawModels(entityManager, camera, planes);
                 _ViewUniforms.CycleRing();
             }
 
             return ValueTask.CompletedTask;
+        }
+
+        private void DrawModels(EntityManager entityManager, Camera camera, Span<Plane> planes)
+        {
+            Debug.Assert(camera.Projection is not null, "This should be verified outside this method.");
+
+            Matrix4x4 viewProjection = camera.View * camera.Projection.Matrix;
+            Material? cachedMaterial = null;
+
+            // iterate every valid entity and try to render it
+            // we also sort the entities by their render pipeline ID, so we can avoid doing a ton of rebinding
+            foreach ((Entity objectEntity, RenderMesh renderMesh, Material material) in GetRenderableEntities(entityManager, camera))
+            {
+                Matrix4x4 model = objectEntity.Find<RenderModel>()?.Model ?? Matrix4x4.Identity;
+                Matrix4x4 modelViewProjection = model * viewProjection;
+
+                if (CheckClipFrustumOccludeEntity(objectEntity, planes, modelViewProjection))
+                {
+                    continue;
+                }
+
+                if (!material.Equals(cachedMaterial))
+                {
+                    ApplyMaterial(material);
+                    cachedMaterial = material;
+                }
+
+                Matrix4x4.Invert(model, out Matrix4x4 modelInverted);
+                ModelUniforms modelUniforms = new ModelUniforms(modelViewProjection, modelInverted, model);
+                _ModelUniforms.Write(ref modelUniforms);
+                _ModelUniforms.Bind(BufferTargetARB.UniformBuffer, 1u);
+
+#if DEBUG
+                _GL.ValidateProgramPipeline(material.Pipeline.Handle);
+
+                if (material.Pipeline.TryGetInfoLog(out string? infoLog))
+                {
+                    Log.Error(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(RenderSystem), infoLog));
+                }
+#endif
+
+                renderMesh.Mesh!.Draw();
+                _ModelUniforms.CycleRing();
+                Interlocked.Increment(ref _DrawCalls);
+            }
         }
 
         private static IEnumerable<(Entity, RenderMesh, Material)> GetRenderableEntities(EntityManager entityManager, Camera camera) =>

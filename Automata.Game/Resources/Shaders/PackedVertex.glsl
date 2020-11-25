@@ -6,7 +6,7 @@ layout (location = 0) in int vert;
 layout (location = 1) in int uv;
 layout (location = 2) in mat4 model;
 
-layout (std140, binding = 0) uniform builtins_view
+layout (std140, binding = 0) uniform camera_uniforms
 {
     vec4 _viewport;
     vec4 _params;
