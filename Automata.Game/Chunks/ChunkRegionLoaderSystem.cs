@@ -117,7 +117,7 @@ namespace Automata.Game.Chunks
             // here we update neighbors, and allocate (in a stack) all chunks that will require remeshing
             foreach ((Vector3i origin, Entity entity) in VoxelWorld.Chunks)
             {
-                if (!entity.TryFind(out Chunk? chunk))
+                if (!entity.TryComponent(out Chunk? chunk))
                 {
                     continue;
                 }
@@ -177,7 +177,7 @@ namespace Automata.Game.Chunks
                 Vector3i neighborOrigin = origin + (component * GenerationConstants.CHUNK_SIZE);
 
                 VoxelWorld.Chunks.TryGetChunkEntity(neighborOrigin, out Entity? neighbor);
-                yield return neighbor?.Find<Chunk>();
+                yield return neighbor?.Component<Chunk>();
             }
         }
     }

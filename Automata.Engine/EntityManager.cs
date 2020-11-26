@@ -199,7 +199,7 @@ namespace Automata.Engine
         {
             foreach (Entity entity in GetEntities<T1>())
             {
-                yield return (entity, entity.Find<T1>()!);
+                yield return (entity, entity.Component<T1>()!);
             }
         }
 
@@ -209,7 +209,7 @@ namespace Automata.Engine
         {
             foreach (Entity entity in GetEntities<T1, T2>())
             {
-                yield return (entity, entity.Find<T1>()!, entity.Find<T2>()!);
+                yield return (entity, entity.Component<T1>()!, entity.Component<T2>()!);
             }
         }
 
@@ -220,7 +220,7 @@ namespace Automata.Engine
         {
             foreach (Entity entity in GetEntities<T1, T2, T3>())
             {
-                yield return (entity, entity.Find<T1>()!, entity.Find<T2>()!, entity.Find<T3>()!);
+                yield return (entity, entity.Component<T1>()!, entity.Component<T2>()!, entity.Component<T3>()!);
             }
         }
 
@@ -232,7 +232,7 @@ namespace Automata.Engine
         {
             foreach (Entity entity in GetEntities<T1, T2, T3, T4>())
             {
-                yield return (entity, entity.Find<T1>()!, entity.Find<T2>()!, entity.Find<T3>()!, entity.Find<T4>()!);
+                yield return (entity, entity.Component<T1>()!, entity.Component<T2>()!, entity.Component<T3>()!, entity.Component<T4>()!);
             }
         }
 
@@ -251,7 +251,7 @@ namespace Automata.Engine
         {
             foreach (Entity entity in GetEntities<T1>())
             {
-                yield return entity.Find<T1>()!;
+                yield return entity.Component<T1>()!;
             }
         }
 
@@ -261,7 +261,7 @@ namespace Automata.Engine
         {
             foreach (Entity entity in GetEntities<T1, T2>())
             {
-                yield return (entity.Find<T1>()!, entity.Find<T2>()!);
+                yield return (entity.Component<T1>()!, entity.Component<T2>()!);
             }
         }
 
@@ -272,7 +272,7 @@ namespace Automata.Engine
         {
             foreach (Entity entity in GetEntities<T1, T2, T3>())
             {
-                yield return (entity.Find<T1>()!, entity.Find<T2>()!, entity.Find<T3>()!);
+                yield return (entity.Component<T1>()!, entity.Component<T2>()!, entity.Component<T3>()!);
             }
         }
 
@@ -284,7 +284,7 @@ namespace Automata.Engine
         {
             foreach (Entity entity in GetEntities<T1, T2, T3, T4>())
             {
-                yield return (entity.Find<T1>()!, entity.Find<T2>()!, entity.Find<T3>()!, entity.Find<T4>()!);
+                yield return (entity.Component<T1>()!, entity.Component<T2>()!, entity.Component<T3>()!, entity.Component<T4>()!);
             }
         }
 

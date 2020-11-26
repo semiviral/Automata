@@ -121,7 +121,7 @@ namespace Automata.Engine.Rendering.Meshes
                     (uint)(allocation.Allocation.VertexArrayMemory.Index / (nuint)sizeof(TVertex)), (uint)index);
 
                 commands[index] = drawElementsIndirectCommand;
-                models[index] = entity.Find<Transform>()?.Matrix ?? Matrix4x4.Identity;
+                models[index] = entity.Component<Transform>()?.Matrix ?? Matrix4x4.Identity;
                 index += 1;
 
                 Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(AllocatedMeshingSystem<TIndex, TVertex>), drawElementsIndirectCommand));
@@ -145,7 +145,7 @@ namespace Automata.Engine.Rendering.Meshes
             }
 
             // if the entity doesn't have the required component, make sure we add it
-            if (!entity.TryFind(out DrawElementsIndirectAllocation<TIndex, TVertex>? drawIndirectAllocation))
+            if (!entity.TryComponent(out DrawElementsIndirectAllocation<TIndex, TVertex>? drawIndirectAllocation))
             {
                 drawIndirectAllocation = entityManager.RegisterComponent<DrawElementsIndirectAllocation<TIndex, TVertex>>(entity);
             }
@@ -171,7 +171,7 @@ namespace Automata.Engine.Rendering.Meshes
         {
             ProgramPipeline programPipeline = ProgramRegistry.Instance.Load("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl");
 
-            if (entity.TryFind(out Material? material))
+            if (entity.TryComponent(out Material? material))
             {
                 if (material.Pipeline.Handle != programPipeline.Handle)
                 {

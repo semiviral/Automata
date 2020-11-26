@@ -53,7 +53,7 @@ namespace Automata.Engine
 
         internal TComponent Remove<TComponent>() where TComponent : Component
         {
-            if (TryFind(out TComponent? component) && _Components.Remove(component))
+            if (TryComponent(out TComponent? component) && _Components.Remove(component))
             {
                 component.Dispose();
                 return component;
@@ -66,7 +66,7 @@ namespace Automata.Engine
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public TComponent? Find<TComponent>() where TComponent : Component
+        public TComponent? Component<TComponent>() where TComponent : Component
         {
             for (int index = 0; index < _Components.Count; index++)
             {
@@ -80,7 +80,7 @@ namespace Automata.Engine
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryFind<TComponent>([NotNullWhen(true)] out TComponent? result) where TComponent : Component
+        public bool TryComponent<TComponent>([NotNullWhen(true)] out TComponent? result) where TComponent : Component
         {
             for (int index = 0; index < _Components.Count; index++)
             {
@@ -139,7 +139,7 @@ namespace Automata.Engine
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Component? Find(Type type)
+        public Component? Component(Type type)
         {
             foreach (Component component in _Components)
             {
@@ -153,7 +153,7 @@ namespace Automata.Engine
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Contains(Type type) => Find(type) is not null;
+        public bool Contains(Type type) => Component(type) is not null;
 
         #endregion
 
@@ -170,6 +170,7 @@ namespace Automata.Engine
         public override bool Equals(object? obj) => obj is Entity entity && Equals(entity);
         public bool Equals(Entity? other) => other is not null && _HashCode.Equals(other._HashCode);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int GetHashCode() => _HashCode;
 
         public override string ToString() =>

@@ -2,13 +2,11 @@ using System;
 using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 
 namespace Automata.Engine.Collections
 {
-    public class NonAllocatingList<T> : IList<T>, IEquatable<NonAllocatingList<T>>, IDisposable where T : IEquatable<T>
+    public class NonAllocatingList<T> : IList<T>, IDisposable where T : IEquatable<T>
     {
         private const int _DEFAULT_CAPACITY = 1;
 
@@ -434,36 +432,6 @@ namespace Automata.Engine.Collections
             public void Dispose() { }
 
             #endregion
-        }
-
-        #endregion
-
-
-        #region IEquatable
-
-        public override bool Equals(object? obj) => obj is NonAllocatingList<T> other && Equals(other);
-
-        public bool Equals(NonAllocatingList<T>? other)
-        {
-            if (other is null || (other.Count != Count))
-            {
-                return false;
-            }
-            else
-            {
-                ReadOnlySpan<T> thisSegment = Segment;
-                ReadOnlySpan<T> otherSegment = other.Segment;
-
-                for (int index = 0; index < Count; index++)
-                {
-                    if (!thisSegment[index].Equals(otherSegment[index]))
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
         }
 
         #endregion

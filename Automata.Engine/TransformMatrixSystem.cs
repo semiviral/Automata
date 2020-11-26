@@ -21,7 +21,7 @@ namespace Automata.Engine
         {
             foreach ((Entity entity, Transform transform) in entityManager.GetEntitiesWithComponents<Transform>().Where(tuple => tuple.Component1.Changed))
             {
-                if (entity.TryFind(out Camera? camera))
+                if (entity.TryComponent(out Camera? camera))
                 {
                     Matrix4x4 matrix = Matrix4x4.Identity;
                     matrix *= Matrix4x4.CreateScale(transform.Scale);

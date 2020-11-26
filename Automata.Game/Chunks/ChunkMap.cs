@@ -51,7 +51,7 @@ namespace Automata.Game.Chunks
             Vector3i local = Vector3i.Abs(global - origin);
             int index = Vector3i.Project1D(local, GenerationConstants.CHUNK_SIZE);
 
-            if (_Chunks.TryGetValue(origin, out Entity? entity) && entity.TryFind(out Chunk? chunk) && chunk.Blocks is not null)
+            if (_Chunks.TryGetValue(origin, out Entity? entity) && entity.TryComponent(out Chunk? chunk) && chunk.Blocks is not null)
             {
                 block = chunk.Blocks[index];
                 return true;
@@ -70,7 +70,7 @@ namespace Automata.Game.Chunks
 
             while (channel.TryTake(out (Vector3i Origin, ChunkModification modification) pending))
             {
-                if (_Chunks.TryGetValue(pending.Origin, out Entity? entity) && entity!.TryFind(out Chunk? chunk))
+                if (_Chunks.TryGetValue(pending.Origin, out Entity? entity) && entity!.TryComponent(out Chunk? chunk))
                 {
                     await chunk.Modifications.AddAsync(pending.modification);
                 }
@@ -105,7 +105,7 @@ namespace Automata.Game.Chunks
         {
             if (_Chunks.Remove(origin, out Entity? entity) && entity is not null!)
             {
-                bool success = entity.TryFind(out chunk);
+                bool success = entity.TryComponent(out chunk);
                 entityManager.RemoveEntity(entity);
                 return success;
             }
@@ -131,7 +131,7 @@ namespace Automata.Game.Chunks
                 BlockID = blockID
             };
 
-            if (_Chunks.TryGetValue(origin, out Entity? entity) && entity!.TryFind(out Chunk? chunk))
+            if (_Chunks.TryGetValue(origin, out Entity? entity) && entity!.TryComponent(out Chunk? chunk))
             {
                 await chunk.Modifications.AddAsync(chunkModification);
             }
@@ -148,7 +148,7 @@ namespace Automata.Game.Chunks
                 Vector3i modificationGlobal = global + local;
                 Vector3i modificationOrigin = Vector3i.RoundBy(modificationGlobal, GenerationConstants.CHUNK_SIZE);
 
-                if (_Chunks.TryGetValue(modificationOrigin, out Entity? entity) && entity!.TryFind(out Chunk? chunk))
+                if (_Chunks.TryGetValue(modificationOrigin, out Entity? entity) && entity!.TryComponent(out Chunk? chunk))
                 {
                     await chunk.Modifications.AddAsync(new ChunkModification
                     {

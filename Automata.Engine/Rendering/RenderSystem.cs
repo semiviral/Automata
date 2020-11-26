@@ -140,12 +140,12 @@ namespace Automata.Engine.Rendering
 
             // iterate every valid entity and try to render it
             // we also sort the entities by their render pipeline ID, so we can avoid doing a ton of rebinding
-            foreach ((Entity objectEntity, RenderMesh renderMesh, Material material) in GetRenderableEntities(entityManager, camera))
+            foreach ((Entity entity, RenderMesh renderMesh, Material material) in GetRenderableEntities(entityManager, camera))
             {
-                Matrix4x4 model = objectEntity.Find<Transform>()?.Matrix ?? Matrix4x4.Identity;
+                Matrix4x4 model = entity.Component<Transform>()?.Matrix ?? Matrix4x4.Identity;
                 Matrix4x4 modelViewProjection = model * viewProjection;
 
-                if (CheckClipFrustumOccludeEntity(objectEntity, planes, modelViewProjection))
+                if (CheckClipFrustumOccludeEntity(entity, planes, modelViewProjection))
                 {
                     continue;
                 }
@@ -186,7 +186,7 @@ namespace Automata.Engine.Rendering
 
         private static bool CheckClipFrustumOccludeEntity(Entity entity, Span<Plane> planes, Matrix4x4 mvp)
         {
-            if (!_ENABLE_FRUSTUM_CULLING || !entity.TryFind(out OcclusionBounds? bounds))
+            if (!_ENABLE_FRUSTUM_CULLING || !entity.TryComponent(out OcclusionBounds? bounds))
             {
                 return false;
             }

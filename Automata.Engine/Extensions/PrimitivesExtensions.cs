@@ -32,5 +32,21 @@ namespace Automata.Engine.Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static nint Marshal(this string str, NativeStringEncoding nativeStringEncoding = NativeStringEncoding.LPStr) =>
             SilkMarshal.StringToPtr(str, nativeStringEncoding);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static nint GreatestCommonMultipleWith(this nint a, nint b)
+        {
+            while (b != 0)
+            {
+                nint temp = b;
+                b = a % b;
+                a = temp;
+            }
+
+            return a;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static nint LeastCommonMultipleWith(this nint a, nint b) => (a / a.GreatestCommonMultipleWith(b)) * b;
     }
 }
