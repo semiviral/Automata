@@ -11,7 +11,7 @@ namespace Automata.Game.Chunks
         public GenerationState State { get; set; }
         public Palette<Block>? Blocks { get; set; }
         public Chunk?[] Neighbors { get; private set; } = new Chunk?[6];
-        public ConcurrentChannel<ChunkModification> Modifications { get; private set; } = new ConcurrentChannel<ChunkModification>(true, true);
+        public ConcurrentChannel<ChunkModification> Modifications { get; } = new ConcurrentChannel<ChunkModification>(true, false);
         public int TimesMeshed { get; set; }
 
         public IEnumerable<Palette<Block>?> NeighborBlocks() => Neighbors.Select(chunk => chunk?.Blocks);
@@ -37,14 +37,13 @@ namespace Automata.Game.Chunks
 
         #region IDisposable
 
-        protected override void CleanupManagedResources()
+        public void RegionDispose()
         {
             State = GenerationState.Inactive;
             Modifications.Dispose();
+            Blocks?.Dispose();
             Neighbors = null!;
         }
-
-        public void RegionDispose() => Blocks?.Dispose();
 
         #endregion
     }

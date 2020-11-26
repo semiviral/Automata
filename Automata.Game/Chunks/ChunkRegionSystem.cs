@@ -5,6 +5,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Automata.Engine;
+using Automata.Engine.Collections;
 using Automata.Engine.Extensions;
 using Automata.Engine.Input;
 using Automata.Engine.Numerics;
@@ -39,25 +40,31 @@ namespace Automata.Game.Chunks
         [HandledComponents(EnumerationStrategy.All, typeof(Transform), typeof(ChunkLoader))]
         public override async ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta)
         {
-            // process chunks requiring remesh
-            while (_ChunksRequiringRemesh.TryPeek(out Chunk? chunk)
-                   && chunk!.State is not GenerationState.GeneratingMesh
-                   && _ChunksRequiringRemesh.TryDequeue(out chunk))
+            using (SavableQueueEnumerator<Chunk> enumerator = new SavableQueueEnumerator<Chunk>(_ChunksRequiringRemesh))
             {
-                if (chunk!.State is GenerationState.Finished)
+                while (enumerator.MoveNext())
                 {
-                    chunk.State = GenerationState.AwaitingMesh;
+                    Chunk chunk = enumerator.Current;
+
+                    switch (chunk!.State)
+                    {
+                        case GenerationState.GeneratingMesh:
+                            enumerator.SaveCurrent();
+                            break;
+                        case GenerationState.Finished:
+                            chunk.State = GenerationState.AwaitingMesh;
+                            break;
+                    }
                 }
             }
 
             // process chunks requires disposal
             while (_ChunksPendingDisposal.TryPeek(out Chunk? chunk)
-                   && (chunk!.Disposed
-                       || Array.TrueForAll(chunk!.Neighbors, neighbor =>
-                           neighbor?.State is null
-                               or not GenerationState.GeneratingTerrain
-                               and not GenerationState.GeneratingStructures
-                               and not GenerationState.GeneratingMesh))
+                   && Array.TrueForAll(chunk!.Neighbors, neighbor =>
+                       neighbor?.State is null
+                           or not GenerationState.GeneratingTerrain
+                           and not GenerationState.GeneratingStructures
+                           and not GenerationState.GeneratingMesh)
                    && _ChunksPendingDisposal.TryPop(out chunk))
             {
                 chunk!.RegionDispose();
@@ -100,12 +107,12 @@ namespace Automata.Game.Chunks
 
             foreach (Vector3i origin in withinLoaderRange)
             {
-                await _VoxelWorld.Chunks.TryAllocate(entityManager, origin);
+                await _VoxelWorld.TryAllocate(entityManager, origin);
             }
 
-            foreach (Vector3i origin in _VoxelWorld.Chunks.Origins.Except(withinLoaderRange))
+            foreach (Vector3i origin in _VoxelWorld.Origins.Except(withinLoaderRange))
             {
-                if (!withinLoaderRange.Contains(origin) && _VoxelWorld.Chunks.TryDeallocate(entityManager, origin, out Chunk? chunk))
+                if (!withinLoaderRange.Contains(origin) && _VoxelWorld.TryDeallocate(entityManager, origin, out Chunk? chunk))
                 {
                     _ChunksPendingDisposal.Push(chunk);
                 }
@@ -142,7 +149,7 @@ namespace Automata.Game.Chunks
         {
             Chunk?[] neighbors = ArrayPool<Chunk?>.Shared.Rent(6);
 
-            foreach ((Vector3i origin, Entity entity) in _VoxelWorld.Chunks)
+            foreach ((Vector3i origin, Entity entity) in _VoxelWorld)
             {
                 if (entity.TryComponent(out Chunk? chunk))
                 {
@@ -185,7 +192,7 @@ namespace Automata.Game.Chunks
                 Vector3i component = Vector3i.One.WithComponent<Vector3i, int>(componentIndex) * sign;
                 Vector3i neighborOrigin = origin + (component * GenerationConstants.CHUNK_SIZE);
 
-                _VoxelWorld.Chunks.TryGetChunkEntity(neighborOrigin, out Entity? neighbor);
+                _VoxelWorld.TryGetChunkEntity(neighborOrigin, out Entity? neighbor);
                 origins[normalIndex] = neighbor?.Component<Chunk>();
             }
         }

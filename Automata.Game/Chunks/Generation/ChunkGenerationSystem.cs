@@ -91,8 +91,8 @@ namespace Automata.Game.Chunks.Generation
                         break;
 
                     case GenerationState.AwaitingStructures:
-                        BoundedInvocationPool.Instance.Enqueue(_ => GenerateStructures(chunk, Vector3i.FromVector3(transform.Translation)));
-                        chunk.State += 1;
+                        //BoundedInvocationPool.Instance.Enqueue(_ => GenerateStructures(chunk, Vector3i.FromVector3(transform.Translation)));
+                        chunk.State += 2;
                         break;
 
                     case GenerationState.AwaitingMesh when chunk.Neighbors.All(neighbor => neighbor?.State is null or >= GenerationState.AwaitingMesh):
@@ -182,7 +182,7 @@ namespace Automata.Game.Chunks.Generation
                     // if not, just go ahead and delegate the modification allocation to the world.
                     else
                     {
-                        await _VoxelWorld.Chunks.AllocateChunkModification(origin + modificationOffset, blockID).ConfigureAwait(false);
+                        await _VoxelWorld.AllocateChunkModification(origin + modificationOffset, blockID).ConfigureAwait(false);
                     }
                 }
             }
@@ -196,7 +196,6 @@ namespace Automata.Game.Chunks.Generation
         {
             if (chunk.Blocks is null)
             {
-                Log.Error(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkGenerationSystem), "Chunk has no blocks."));
                 return;
             }
 
