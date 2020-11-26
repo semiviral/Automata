@@ -40,16 +40,16 @@ namespace Automata.Game.Chunks
         [HandledComponents(EnumerationStrategy.All, typeof(Transform), typeof(ChunkLoader))]
         public override async ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta)
         {
-            using (SavableQueueEnumerator<Chunk> enumerator = new SavableQueueEnumerator<Chunk>(_ChunksRequiringRemesh))
+            using (SavableQueueEnumerator<Chunk> queueEnumerator = new SavableQueueEnumerator<Chunk>(_ChunksRequiringRemesh))
             {
-                while (enumerator.MoveNext())
+                while (queueEnumerator.MoveNext())
                 {
-                    Chunk chunk = enumerator.Current;
+                    Chunk chunk = queueEnumerator.Current;
 
                     switch (chunk!.State)
                     {
                         case GenerationState.GeneratingMesh:
-                            enumerator.SaveCurrent();
+                            queueEnumerator.SaveCurrent();
                             break;
                         case GenerationState.Finished:
                             chunk.State = GenerationState.AwaitingMesh;
@@ -58,16 +58,24 @@ namespace Automata.Game.Chunks
                 }
             }
 
-            // process chunks requires disposal
-            while (_ChunksPendingDisposal.TryPeek(out Chunk? chunk)
-                   && Array.TrueForAll(chunk!.Neighbors, neighbor =>
-                       neighbor?.State is null
-                           or not GenerationState.GeneratingTerrain
-                           and not GenerationState.GeneratingStructures
-                           and not GenerationState.GeneratingMesh)
-                   && _ChunksPendingDisposal.TryPop(out chunk))
+            using (SavableStackEnumerator<Chunk> stackEnumerator = new SavableStackEnumerator<Chunk>(_ChunksPendingDisposal))
             {
-                chunk!.RegionDispose();
+                while (stackEnumerator.MoveNext())
+                {
+                    Chunk chunk = stackEnumerator.Current;
+
+                    if (Array.TrueForAll(chunk!.Neighbors, neighbor => neighbor?.State is null
+                        or not GenerationState.GeneratingTerrain
+                        and not GenerationState.GeneratingStructures
+                        and not GenerationState.GeneratingMesh))
+                    {
+                        chunk.RegionDispose();
+                    }
+                    else
+                    {
+                        stackEnumerator.SaveCurrent();
+                    }
+                }
             }
 
             // determine whether any chunk loaders have moved out far enough to recalculate their loaded chunk region
