@@ -12,6 +12,7 @@ using Automata.Engine.Rendering.OpenGL.Shaders;
 using Automata.Engine.Rendering.OpenGL.Textures;
 using Serilog;
 using Silk.NET.Input;
+using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.Meshes
 {
@@ -19,12 +20,31 @@ namespace Automata.Engine.Rendering.Meshes
         where TIndex : unmanaged, IEquatable<TIndex>
         where TVertex : unmanaged, IEquatable<TVertex>
     {
-        private readonly MultiDrawIndirectMesh<TIndex, TVertex> _MultiDrawIndirectMesh;
+        private readonly MultiDrawIndirectMesh _MultiDrawIndirectMesh;
         private readonly Material _MultiDrawIndirectMeshMaterial;
 
         public AllocatedMeshingSystem()
         {
-            _MultiDrawIndirectMesh = new MultiDrawIndirectMesh<TIndex, TVertex>(GLAPI.Instance.GL, 300_000_000, 200_000_000);
+            DrawElementsType drawElementsType;
+
+            if (typeof(TIndex) == typeof(byte))
+            {
+                drawElementsType = DrawElementsType.UnsignedByte;
+            }
+            else if (typeof(TIndex) == typeof(ushort))
+            {
+                drawElementsType = DrawElementsType.UnsignedShort;
+            }
+            else if (typeof(TIndex) == typeof(uint))
+            {
+                drawElementsType = DrawElementsType.UnsignedInt;
+            }
+            else
+            {
+                throw new NotSupportedException("Does not support specified index type.");
+            }
+
+            _MultiDrawIndirectMesh = new MultiDrawIndirectMesh(GLAPI.Instance.GL, 500_000_000, drawElementsType);
 
             _MultiDrawIndirectMeshMaterial =
                 new Material(ProgramRegistry.Instance.Load("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl"));
@@ -153,10 +173,10 @@ namespace Automata.Engine.Rendering.Meshes
             // we make sure to dispose the old allocation to free the memory in the pool
             drawIndirectAllocation.Allocation?.Dispose();
 
-            BufferArrayMemory<TIndex> indexArrayMemory = _MultiDrawIndirectMesh.RentIndexBufferArrayMemory((nuint)sizeof(TIndex),
+            BufferArrayMemory<TIndex> indexArrayMemory = _MultiDrawIndirectMesh.RentBufferArrayMemory<TIndex>((nuint)sizeof(TIndex),
                 MemoryMarshal.Cast<QuadIndexes<TIndex>, TIndex>(pendingData.Indexes.Segment));
 
-            BufferArrayMemory<TVertex> vertexArrayMemory = _MultiDrawIndirectMesh.RentVertexBufferArrayMemory((nuint)sizeof(TVertex),
+            BufferArrayMemory<TVertex> vertexArrayMemory = _MultiDrawIndirectMesh.RentBufferArrayMemory<TVertex>((nuint)sizeof(TVertex),
                 MemoryMarshal.Cast<QuadVertexes<TVertex>, TVertex>(pendingData.Vertexes.Segment));
 
             drawIndirectAllocation.Allocation = new MeshArrayMemory<TIndex, TVertex>(indexArrayMemory, vertexArrayMemory);

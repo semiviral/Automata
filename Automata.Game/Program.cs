@@ -148,7 +148,7 @@ static void InitializePlayerImpl(EntityManager entityManager)
         },
         new ChunkLoader
         {
-#if DEBUG
+#if _DEBUG
             Radius = 4
 #else
             Radius = Settings.Instance.GenerationRadius
