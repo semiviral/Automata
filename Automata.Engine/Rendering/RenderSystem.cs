@@ -66,7 +66,7 @@ namespace Automata.Engine.Rendering
         private ulong _DrawCalls;
         public ulong DrawCalls => _DrawCalls;
 
-        public unsafe RenderSystem()
+        public unsafe RenderSystem(World world) : base(world)
         {
             _GL = GLAPI.Instance.GL;
             _GL.ClearColor(Color.DimGray);

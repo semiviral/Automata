@@ -23,7 +23,7 @@ namespace Automata.Engine.Rendering.Meshes
         private readonly MultiDrawIndirectMesh _MultiDrawIndirectMesh;
         private readonly Material _MultiDrawIndirectMeshMaterial;
 
-        public AllocatedMeshingSystem()
+        public AllocatedMeshingSystem(World world) : base(world)
         {
             DrawElementsType drawElementsType;
 

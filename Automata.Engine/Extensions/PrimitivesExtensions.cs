@@ -48,5 +48,8 @@ namespace Automata.Engine.Extensions
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static nint LeastCommonMultipleWith(this nint a, nint b) => (a / a.GreatestCommonMultipleWith(b)) * b;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int FastFloor(this float f) => f >= 0f ? (int)f : (int)(f - 1f);
     }
 }

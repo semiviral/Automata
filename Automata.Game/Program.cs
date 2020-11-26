@@ -132,8 +132,9 @@ static void InitializeWorldImpl(out World world)
 
     allocatedMeshingSystem.SetTexture("Blocks", TextureAtlas.Instance.Blocks!);
 
-    world.SystemManager.RegisterBefore<ChunkRegionLoaderSystem, DefaultOrderSystem>();
-    world.SystemManager.RegisterAfter<ChunkGenerationSystem, ChunkRegionLoaderSystem>();
+    world.SystemManager.RegisterBefore<ChunkRegionSystem, DefaultOrderSystem>();
+    world.SystemManager.RegisterAfter<ChunkModificationsSystem, ChunkRegionSystem>();
+    world.SystemManager.RegisterAfter<ChunkGenerationSystem, ChunkModificationsSystem>();
     World.RegisterWorld("Overworld", world);
 }
 

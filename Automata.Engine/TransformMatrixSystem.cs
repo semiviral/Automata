@@ -11,7 +11,7 @@ namespace Automata.Engine
     {
         private bool _UpdateProjections;
 
-        public TransformMatrixSystem()
+        public TransformMatrixSystem(World world) : base(world)
         {
             AutomataWindow.Instance.Resized += GameWindowResized;
             GameWindowResized(null, AutomataWindow.Instance.Size);

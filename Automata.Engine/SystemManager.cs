@@ -9,23 +9,32 @@ using Serilog;
 
 namespace Automata.Engine
 {
-    public class FirstOrderSystem : ComponentSystem { }
+    public class FirstOrderSystem : ComponentSystem
+    {
+        public FirstOrderSystem(World world) : base(world) { }
+    }
 
-    public class DefaultOrderSystem : ComponentSystem { }
+    public class DefaultOrderSystem : ComponentSystem
+    {
+        public DefaultOrderSystem(World world) : base(world) { }
+    }
 
-    public class LastOrderSystem : ComponentSystem { }
+    public class LastOrderSystem : ComponentSystem
+    {
+        public LastOrderSystem(World world) : base(world) { }
+    }
 
     public sealed class SystemManager : IDisposable
     {
+        private readonly World _World;
         private readonly IOrderedCollection<ComponentSystem> _ComponentSystems;
-        private readonly World _CurrentWorld;
         private readonly Dictionary<Type, HandledComponents[]> _HandledComponentsArrays;
 
-        public SystemManager(World currentWorld)
+        public SystemManager(World world)
         {
+            _World = world;
             _ComponentSystems = new OrderedList<ComponentSystem>();
             _HandledComponentsArrays = new Dictionary<Type, HandledComponents[]>();
-            _CurrentWorld = currentWorld;
 
             RegisterLast<FirstOrderSystem>();
             RegisterLast<DefaultOrderSystem>();
@@ -94,52 +103,53 @@ namespace Automata.Engine
         ///     Thrown when system of type <see cref="TBefore" /> doesn't exist.
         /// </exception>
         public void RegisterBefore<TSystem, TBefore>()
-            where TSystem : ComponentSystem, new()
+            where TSystem : ComponentSystem
             where TBefore : ComponentSystem
         {
-            TSystem componentSystem = new TSystem();
+            TSystem componentSystem = CreateSystem<TSystem>();
             _ComponentSystems.AddBefore<TBefore>(componentSystem);
             RegisterSystemInternal(componentSystem);
         }
 
         public void RegisterAfter<TSystem, TAfter>()
-            where TSystem : ComponentSystem, new()
+            where TSystem : ComponentSystem
             where TAfter : ComponentSystem
         {
-            TSystem componentSystem = new TSystem();
+            TSystem componentSystem = CreateSystem<TSystem>();
             _ComponentSystems.AddAfter<TAfter>(componentSystem);
             RegisterSystemInternal(componentSystem);
         }
 
-        public void RegisterFirst<TSystem>() where TSystem : ComponentSystem, new()
+        public void RegisterFirst<TSystem>() where TSystem : ComponentSystem
         {
-            TSystem componentSystem = new TSystem();
+            TSystem componentSystem = CreateSystem<TSystem>();
             _ComponentSystems.AddFirst(componentSystem);
             RegisterSystemInternal(componentSystem);
         }
 
-        public void RegisterLast<TSystem>() where TSystem : ComponentSystem, new()
+        public void RegisterLast<TSystem>() where TSystem : ComponentSystem
         {
-            TSystem componentSystem = new TSystem();
+            TSystem componentSystem = CreateSystem<TSystem>();
             _ComponentSystems.AddLast(componentSystem);
             RegisterSystemInternal(componentSystem);
         }
 
-        private void RegisterSystemInternal<TSystem>(TSystem componentSystem) where TSystem : ComponentSystem, new()
+        private TSystem CreateSystem<TSystem>() where TSystem : ComponentSystem => (Activator.CreateInstance(typeof(TSystem), _World) as TSystem)!;
+
+        private void RegisterSystemInternal<TSystem>(TSystem componentSystem) where TSystem : ComponentSystem
         {
             if (TryGetHandledComponents<TSystem>(out IEnumerable<HandledComponents>? handledComponentsEnumerable))
             {
                 _HandledComponentsArrays.Add(typeof(TSystem), handledComponentsEnumerable.ToArray());
             }
 
-            componentSystem.SetCurrentWorld(_CurrentWorld);
-            componentSystem.Registered(_CurrentWorld.EntityManager);
+            componentSystem.Registered(_World.EntityManager);
 
             Log.Information($"({nameof(SystemManager)}) Registered {nameof(ComponentSystem)}: {typeof(TSystem)}");
         }
 
         private static bool TryGetHandledComponents<TSystem>([NotNullWhen(true)] out IEnumerable<HandledComponents>? handledComponentsEnumerable)
-            where TSystem : ComponentSystem, new()
+            where TSystem : ComponentSystem
         {
             MethodBase? methodBase = typeof(TSystem).GetMethod(nameof(ComponentSystem.UpdateAsync));
             handledComponentsEnumerable = methodBase?.GetCustomAttributes<HandledComponents>();

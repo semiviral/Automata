@@ -21,11 +21,13 @@ namespace Automata.Game.Chunks.Generation
 {
     public class ChunkGenerationSystem : ComponentSystem
     {
+        private readonly VoxelWorld _VoxelWorld;
         private readonly IOrderedCollection<IGenerationStep> _BuildSteps;
         private readonly ConcurrentChannel<(Entity, Chunk, NonAllocatingQuadsMeshData<uint, PackedVertex>)> _PendingMeshes;
 
-        public ChunkGenerationSystem()
+        public ChunkGenerationSystem(VoxelWorld voxelWorld) : base(voxelWorld)
         {
+            _VoxelWorld = voxelWorld;
             _BuildSteps = new OrderedLinkedList<IGenerationStep>();
             _BuildSteps.AddLast(new TerrainGenerationStep());
             _PendingMeshes = new ConcurrentChannel<(Entity, Chunk, NonAllocatingQuadsMeshData<uint, PackedVertex>)>(true, false);
@@ -56,9 +58,8 @@ namespace Automata.Game.Chunks.Generation
             // empty channel of any pending meshes, apply the meshes, and update the material
             while (_PendingMeshes.TryTake(out (Entity Entity, Chunk Chunk, NonAllocatingQuadsMeshData<uint, PackedVertex> Data) pendingMesh))
             {
-                if (!pendingMesh.Entity.Disposed)
+                if (!pendingMesh.Entity.Disposed && pendingMesh.Chunk.State is GenerationState.GeneratingMesh)
                 {
-                    Debug.Assert(pendingMesh.Chunk.State is GenerationState.GeneratingMesh);
                     entityManager.RegisterComponent(pendingMesh.Entity, new AllocatedMeshData<uint, PackedVertex>(pendingMesh.Data));
                 }
                 else
@@ -68,16 +69,9 @@ namespace Automata.Game.Chunks.Generation
 
                 // we ALWAYS update chunk state, so we can properly dispose of it
                 // and be conscious of not doing so when its generating
-                pendingMesh.Chunk.State += 1;
-            }
-
-            foreach (Chunk chunk in entityManager.GetComponents<Chunk>())
-            {
-                if (chunk.State is GenerationState.AwaitingMesh or GenerationState.Finished
-                    && Array.TrueForAll(chunk.Neighbors, neighbor => neighbor?.State is <= GenerationState.AwaitingMesh or GenerationState.Finished)
-                    && TryProcessChunkModifications(chunk))
+                if (pendingMesh.Chunk.State is not GenerationState.GeneratingMesh and not GenerationState.GeneratingStructures)
                 {
-                    chunk.RemeshNeighborhood(true);
+                    pendingMesh.Chunk.State += 1;
                 }
             }
 
@@ -112,65 +106,38 @@ namespace Automata.Game.Chunks.Generation
         }
 
 
-        #region Modifications
-
-        private static bool TryProcessChunkModifications(Chunk chunk)
-        {
-            if (chunk.Blocks is null)
-            {
-                ThrowHelper.ThrowNullReferenceException("Chunk must have blocks.");
-            }
-
-            bool modified = false;
-
-            while (chunk.Modifications.TryTake(out ChunkModification? modification) && (chunk.Blocks![modification!.BlockIndex].ID != modification.BlockID))
-            {
-                chunk.Blocks[modification.BlockIndex] = new Block(modification.BlockID);
-                modified = true;
-            }
-
-            return modified;
-        }
-
-        #endregion
-
-
         #region Generation
 
         private Task GenerateBlocks(Chunk chunk, Vector3i origin, IGenerationStep.Parameters parameters)
         {
             Stopwatch stopwatch = DiagnosticsPool.Stopwatches.Rent();
 
-            Palette<Block> GenerateTerrainAndBuildPalette()
+            stopwatch.Restart();
+
+            // block ids for generating
+            Span<ushort> data = stackalloc ushort[GenerationConstants.CHUNK_SIZE_CUBED];
+
+            foreach (IGenerationStep generationStep in _BuildSteps)
             {
-                stopwatch.Restart();
-
-                // block ids for generating
-                Span<ushort> data = stackalloc ushort[GenerationConstants.CHUNK_SIZE_CUBED];
-
-                foreach (IGenerationStep generationStep in _BuildSteps)
-                {
-                    generationStep.Generate(origin, parameters, data);
-                }
-
-                DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new BuildingTime(stopwatch.Elapsed));
-                stopwatch.Restart();
-
-                Palette<Block> palette = new Palette<Block>(GenerationConstants.CHUNK_SIZE_CUBED, new Block(BlockRegistry.AirID));
-
-                for (int index = 0; index < GenerationConstants.CHUNK_SIZE_CUBED; index++)
-                {
-                    palette[index] = new Block(data[index]);
-                }
-
-                DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new InsertionTime(stopwatch.Elapsed));
-                return palette;
+                generationStep.Generate(origin, parameters, data);
             }
 
-            chunk.Blocks = GenerateTerrainAndBuildPalette();
+            DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new BuildingTime(stopwatch.Elapsed));
+            stopwatch.Restart();
+
+            Palette<Block> palette = new Palette<Block>(GenerationConstants.CHUNK_SIZE_CUBED, new Block(BlockRegistry.AirID));
+
+            for (int index = 0; index < GenerationConstants.CHUNK_SIZE_CUBED; index++)
+            {
+                palette[index] = new Block(data[index]);
+            }
+
+            DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new InsertionTime(stopwatch.Elapsed));
+            DiagnosticsPool.Stopwatches.Return(stopwatch);
+
+            chunk.Blocks = palette;
             chunk.State += 1;
 
-            DiagnosticsPool.Stopwatches.Return(stopwatch);
             return Task.CompletedTask;
         }
 
@@ -193,7 +160,7 @@ namespace Automata.Game.Chunks.Generation
             {
                 Vector3i offset = new Vector3i(x, y, z);
 
-                if (_CurrentWorld is null || !testStructure.CheckPlaceStructureAt(_CurrentWorld, random, origin + offset))
+                if (!testStructure.CheckPlaceStructureAt(World, random, origin + offset))
                 {
                     continue;
                 }
@@ -215,7 +182,7 @@ namespace Automata.Game.Chunks.Generation
                     // if not, just go ahead and delegate the modification allocation to the world.
                     else
                     {
-                        await (_CurrentWorld as VoxelWorld)!.Chunks.AllocateChunkModification(origin + modificationOffset, blockID).ConfigureAwait(false);
+                        await _VoxelWorld.Chunks.AllocateChunkModification(origin + modificationOffset, blockID).ConfigureAwait(false);
                     }
                 }
             }

@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
-using System.Threading;
 using System.Threading.Tasks;
 using Automata.Engine;
 using Automata.Engine.Collections;
@@ -23,9 +22,8 @@ namespace Automata.Game.Chunks
         };
 
         private readonly Dictionary<Vector3i, Entity> _Chunks;
-        private readonly ConcurrentChannel<(Vector3i, ChunkModification)>[] _PendingModifications;
-
-        private int _PendingModificationIndex;
+        private readonly Dictionary<Vector3i, NonAllocatingList<ChunkModification>> _Modifications;
+        private readonly ConcurrentChannel<(Vector3i, ChunkModification)> _ConcurrentModificationsQueue;
 
         public ICollection<Vector3i> Origins => _Chunks.Keys;
         public ICollection<Entity> Entities => _Chunks.Values;
@@ -33,14 +31,8 @@ namespace Automata.Game.Chunks
         public ChunkMap()
         {
             _Chunks = new Dictionary<Vector3i, Entity>();
-
-            _PendingModifications = new[]
-            {
-                new ConcurrentChannel<(Vector3i, ChunkModification)>(true, false),
-                new ConcurrentChannel<(Vector3i, ChunkModification)>(true, false)
-            };
-
-            _PendingModificationIndex = 0;
+            _Modifications = new Dictionary<Vector3i, NonAllocatingList<ChunkModification>>();
+            _ConcurrentModificationsQueue = new ConcurrentChannel<(Vector3i, ChunkModification)>(true, false);
         }
 
         public bool TryGetChunkEntity(Vector3i origin, [NotNullWhen(true)] out Entity? entity) => _Chunks.TryGetValue(origin, out entity);
@@ -51,7 +43,7 @@ namespace Automata.Game.Chunks
             Vector3i local = Vector3i.Abs(global - origin);
             int index = Vector3i.Project1D(local, GenerationConstants.CHUNK_SIZE);
 
-            if (_Chunks.TryGetValue(origin, out Entity? entity) && entity.TryComponent(out Chunk? chunk) && chunk.Blocks is not null)
+            if (_Chunks.TryGetValue(origin, out Entity? entity) && entity!.TryComponent(out Chunk? chunk) && chunk.Blocks is not null)
             {
                 block = chunk.Blocks[index];
                 return true;
@@ -63,41 +55,36 @@ namespace Automata.Game.Chunks
             }
         }
 
-        public async ValueTask ProcessPendingChunkAllocations()
-        {
-            int nextIndex = (_PendingModificationIndex + 1) % _PendingModifications.Length;
-            ConcurrentChannel<(Vector3i, ChunkModification)> channel = _PendingModifications[_PendingModificationIndex];
-
-            while (channel.TryTake(out (Vector3i Origin, ChunkModification modification) pending))
-            {
-                if (_Chunks.TryGetValue(pending.Origin, out Entity? entity) && entity!.TryComponent(out Chunk? chunk))
-                {
-                    await chunk.Modifications.AddAsync(pending.modification);
-                }
-                else
-                {
-                    await _PendingModifications[nextIndex].AddAsync(pending);
-                }
-            }
-
-            Interlocked.Exchange(ref _PendingModificationIndex, nextIndex);
-        }
-
 
         #region Chunk Addition / Removal
 
-        public void Allocate(EntityManager entityManager, Vector3i origin)
+        public async ValueTask TryAllocate(EntityManager entityManager, Vector3i origin)
         {
-            if (!_Chunks.ContainsKey(origin))
+            if (_Chunks.ContainsKey(origin))
             {
-                _Chunks.Add(origin, entityManager.CreateEntity(
-                    new Transform
-                    {
-                        Translation = origin
-                    },
-                    new Chunk(),
-                    _ChunkOcclusionBounds
-                ));
+                return;
+            }
+
+            Chunk chunk = new Chunk();
+
+            _Chunks.Add(origin, entityManager.CreateEntity(
+                new Transform
+                {
+                    Translation = origin
+                },
+                chunk,
+                _ChunkOcclusionBounds
+            ));
+
+            if (_Modifications.TryGetValue(origin, out NonAllocatingList<ChunkModification>? modifications))
+            {
+                foreach (ChunkModification modification in modifications!)
+                {
+                    await chunk.Modifications.AddAsync(modification);
+                }
+
+                modifications.Dispose();
+                _Modifications.Remove(origin);
             }
         }
 
@@ -125,36 +112,39 @@ namespace Automata.Game.Chunks
         {
             Vector3i origin = Vector3i.RoundBy(global, GenerationConstants.CHUNK_SIZE);
 
-            ChunkModification chunkModification = new ChunkModification
+            ChunkModification modification = new ChunkModification
             {
                 BlockIndex = Vector3i.Project1D(Vector3i.Abs(global - origin), GenerationConstants.CHUNK_SIZE),
                 BlockID = blockID
             };
 
-            if (_Chunks.TryGetValue(origin, out Entity? entity) && entity!.TryComponent(out Chunk? chunk))
+            await _ConcurrentModificationsQueue.AddAsync((origin, modification));
+        }
+
+        public async ValueTask AllocateChunkModifications(IEnumerable<(Vector3i, ushort)> modifications)
+        {
+            foreach ((Vector3i global, ushort blockID) in modifications)
             {
-                await chunk.Modifications.AddAsync(chunkModification);
-            }
-            else
-            {
-                await _PendingModifications[_PendingModificationIndex].AddAsync((origin, chunkModification));
+                await AllocateChunkModification(global, blockID);
             }
         }
 
-        public async ValueTask AllocateChunkModifications(Vector3i global, IEnumerable<(Vector3i, ushort)> modifications)
+        public async ValueTask ProcessConcurrentModifications()
         {
-            foreach ((Vector3i local, ushort blockID) in modifications)
+            while (_ConcurrentModificationsQueue.TryTake(out (Vector3i Origin, ChunkModification Modification) entry))
             {
-                Vector3i modificationGlobal = global + local;
-                Vector3i modificationOrigin = Vector3i.RoundBy(modificationGlobal, GenerationConstants.CHUNK_SIZE);
-
-                if (_Chunks.TryGetValue(modificationOrigin, out Entity? entity) && entity!.TryComponent(out Chunk? chunk))
+                if (_Chunks.TryGetValue(entry.Origin, out Entity? entity) && entity!.TryComponent(out Chunk? chunk))
                 {
-                    await chunk.Modifications.AddAsync(new ChunkModification
+                    await chunk.Modifications.AddAsync(entry.Modification);
+                }
+                else
+                {
+                    if (!_Modifications.ContainsKey(entry.Origin))
                     {
-                        BlockIndex = Vector3i.Project1D(Vector3i.Abs(modificationGlobal - modificationOrigin), GenerationConstants.CHUNK_SIZE),
-                        BlockID = blockID
-                    });
+                        _Modifications.TryAdd(entry.Origin, new NonAllocatingList<ChunkModification>());
+                    }
+
+                    _Modifications[entry.Origin].Add(entry.Modification);
                 }
             }
         }

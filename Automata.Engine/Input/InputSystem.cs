@@ -7,6 +7,8 @@ namespace Automata.Engine.Input
 {
     public class InputSystem : ComponentSystem
     {
+        public InputSystem(World world) : base(world) { }
+
         public override void Registered(EntityManager entityManager) =>
             AutomataWindow.Instance.FocusChanged += (_, focused) => Enabled = focused;
 

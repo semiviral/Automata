@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Automata.Engine;
@@ -35,15 +34,18 @@ namespace Automata.Game.Chunks
             }
         }
 
-        public void SafeDispose()
+
+        #region IDisposable
+
+        protected override void CleanupManagedResources()
         {
             State = GenerationState.Inactive;
-            Blocks?.Dispose();
+            Modifications.Dispose();
             Neighbors = null!;
-            Modifications = null!;
-            TimesMeshed = 0;
-
-            GC.SuppressFinalize(this);
         }
+
+        public void RegionDispose() => Blocks?.Dispose();
+
+        #endregion
     }
 }

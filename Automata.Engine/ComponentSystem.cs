@@ -5,10 +5,15 @@ namespace Automata.Engine
 {
     public abstract class ComponentSystem
     {
-        protected World _CurrentWorld { get; private set; } = null!;
+        protected World World { get; }
+
         public bool Enabled { get; protected set; }
 
-        public ComponentSystem() => Enabled = true;
+        public ComponentSystem(World world)
+        {
+            World = world;
+            Enabled = true;
+        }
 
         /// <summary>
         ///     Method called when the <see cref="SystemManager" /> registers the system.
@@ -20,9 +25,6 @@ namespace Automata.Engine
         /// </summary>
         public virtual ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta) => ValueTask.CompletedTask;
 
-        protected TComponentSystem? GetSystem<TComponentSystem>() where TComponentSystem : ComponentSystem =>
-            _CurrentWorld?.SystemManager.GetSystem<TComponentSystem>();
-
-        internal void SetCurrentWorld(World currentWorld) => _CurrentWorld = currentWorld;
+        protected TComponentSystem? GetSystem<TComponentSystem>() where TComponentSystem : ComponentSystem => World.SystemManager.GetSystem<TComponentSystem>();
     }
 }
