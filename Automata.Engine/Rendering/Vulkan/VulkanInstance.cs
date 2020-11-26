@@ -2,6 +2,7 @@ using System;
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using Automata.Engine.Extensions;
+using Automata.Engine.Rendering.Vulkan.NativeExtensions;
 using Serilog;
 using Silk.NET.Core.Contexts;
 using Silk.NET.Core.Native;
@@ -15,11 +16,11 @@ namespace Automata.Engine.Rendering.Vulkan
     public sealed class VulkanInstance : IDisposable
     {
         private readonly Instance _VKInstance;
-        private SurfaceExtension _SurfaceExtension;
 
         internal Vk VK { get; }
 
         public VulkanInstanceInfo Info { get; }
+        public SurfaceExtension SurfaceExtension { get; }
         public SurfaceKHR Surface { get; }
         public VkHandle Handle { get; }
 
@@ -29,7 +30,7 @@ namespace Automata.Engine.Rendering.Vulkan
             Info = info;
 
             CreateInstance(vkSurface, requestedExtensions, validationLayers, out _VKInstance);
-            _SurfaceExtension = GetInstanceExtension<SurfaceExtension>();
+            SurfaceExtension = GetInstanceExtension<SurfaceExtension>();
             Handle = _VKInstance.ToHandle();
             Surface = vkSurface.Create(Handle, (AllocationCallbacks*)null!).ToSurface();
 
@@ -102,13 +103,13 @@ namespace Automata.Engine.Rendering.Vulkan
             uint deviceCount = 0u;
             VK.EnumeratePhysicalDevices(_VKInstance, &deviceCount, Span<PhysicalDevice>.Empty);
             Span<PhysicalDevice> physicalDevices = stackalloc PhysicalDevice[(int)deviceCount];
-            VK.EnumeratePhysicalDevices(_VKInstance, (uint*)null!, physicalDevices);
+            VK.EnumeratePhysicalDevices(_VKInstance, &deviceCount, physicalDevices);
             VulkanPhysicalDevice[] tempSuitable = ArrayPool<VulkanPhysicalDevice>.Shared.Rent((int)deviceCount);
             int index = 0;
 
             foreach (PhysicalDevice physicalDevice in physicalDevices)
             {
-                VulkanPhysicalDevice vulkanPhysicalDevice = new VulkanPhysicalDevice(VK, physicalDevice);
+                VulkanPhysicalDevice vulkanPhysicalDevice = new VulkanPhysicalDevice(VK, this, physicalDevice);
 
                 if (suitability(vulkanPhysicalDevice))
                 {
@@ -121,13 +122,6 @@ namespace Automata.Engine.Rendering.Vulkan
             ArrayPool<VulkanPhysicalDevice>.Shared.Return(tempSuitable);
             return finalSuitable;
         }
-
-
-        #region
-
-
-
-        #endregion
 
 
         #region Get Extension
@@ -162,10 +156,7 @@ namespace Automata.Engine.Rendering.Vulkan
 
         #region IDisposable
 
-        public unsafe void Dispose()
-        {
-            VK.DestroyInstance(_VKInstance, (AllocationCallbacks*)null!);
-        }
+        public unsafe void Dispose() { VK.DestroyInstance(_VKInstance, (AllocationCallbacks*)null!); }
 
         #endregion
     }

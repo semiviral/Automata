@@ -1,4 +1,6 @@
-﻿using System.Drawing;
+﻿#define VULKAN
+
+using System.Drawing;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Automata.Engine;
@@ -9,6 +11,7 @@ using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Shaders;
 using Automata.Engine.Rendering.Vulkan;
+using Automata.Engine.Rendering.Vulkan.NativeExtensions;
 using Automata.Game;
 using Automata.Game.Blocks;
 using Automata.Game.Chunks;
@@ -148,7 +151,7 @@ static void InitializePlayerImpl(EntityManager entityManager)
         },
         new ChunkLoader
         {
-#if _DEBUG
+#if DEBUG
             Radius = 4
 #else
             Radius = Settings.Instance.GenerationRadius
@@ -167,15 +170,40 @@ void InitializeVulkan()
         new VulkanInstanceInfo("Automata.Game", new Version32(0u, 1u, 0u), "Automata.Engine", new Version32(0u, 1u, 0u), Vk.Version12),
         VKAPI.DebugInstanceExtensions, VKAPI.ValidationLayers);
     VulkanDebugMessenger debugMessenger = new VulkanDebugMessenger(instance);
+
+    VulkanPhysicalDevice[] physicalDevices = instance.GetPhysicalDevices(IsPhysicalDeviceSuitable);
+    VulkanPhysicalDevice physicalDevice = physicalDevices[0];
+
+    
+
 }
 
 bool IsPhysicalDeviceSuitable(VulkanPhysicalDevice physicalDevice)
 {
-    if (physicalDevice.Type is not PhysicalDeviceType.DiscreteGpu) return false;
+    if (physicalDevice.Type is not PhysicalDeviceType.DiscreteGpu ||
+        !physicalDevice.SupportsExtenstion(SwapchainExtension.ExtensionName)) return false;
 
-    if (!physicalDevice.SupportsExtenstion(SwapchainExtension.ExtensionName)) return false;
+    SwapChainSupportDetails supportDetails = physicalDevice.GetSwapChainSupport(physicalDevice);
 
-    // todo
+    if (supportDetails.Formats.Length is 0 || supportDetails.PresentModes.Length is 0)
+    {
+        return false;
+    }
+
+    QueueFamilyIndices queueFamilyIndices = physicalDevice.GetQueueFamilies(physicalDevice);
+
+    if (!queueFamilyIndices.IsCompleted())
+    {
+        return false;
+    }
+
+    PhysicalDeviceFeatures physicalDeviceFeatures = physicalDevice.GetFeatures();
+
+    if (!physicalDeviceFeatures.GeometryShader)
+    {
+        return false;
+    }
+
     return true;
 }
 

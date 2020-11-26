@@ -3,7 +3,7 @@ using Silk.NET.Vulkan;
 
 namespace Automata.Engine.Rendering.Vulkan
 {
-    public unsafe readonly struct DebugUtilsMessengerCreateInfo
+    public readonly unsafe struct DebugUtilsMessengerCreateInfo
     {
         /// <summary></summary>
         public readonly StructureType SType;
