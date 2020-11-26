@@ -54,11 +54,7 @@ namespace Automata.Engine
         public Vector4 Viewport => new Vector4(0f, 0f, Window.Size.Width, Window.Size.Height);
         public float AspectRatio => (float)Window.Size.Width / (float)Window.Size.Height;
 
-        public Vector2i Size
-        {
-            get => (Vector2i)Window.Size;
-            set => Window.Size = (Size)value;
-        }
+        public Vector2i Size { get => (Vector2i)Window.Size; set => Window.Size = (Size)value; }
 
         public bool Focused { get; private set; }
 

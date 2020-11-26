@@ -55,6 +55,7 @@ namespace Automata.Engine.Collections
 
         public PooledEnumerator<T> GetEnumerator() => this;
 
+
         #region IDisposable
 
         public void Dispose() => ArrayPool<T>.Shared.Return(_PooledArray);

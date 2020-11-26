@@ -1,5 +1,4 @@
 using System;
-using System.Text;
 using Serilog;
 using Silk.NET.Core.Native;
 using Silk.NET.OpenGL;

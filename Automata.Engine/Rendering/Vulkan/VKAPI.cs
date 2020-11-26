@@ -37,11 +37,13 @@ namespace Automata.Engine.Rendering.Vulkan
 
         public static AllocationCallbacks AllocationCallback = new AllocationCallbacks();
 
-        public static string[] ValidationLayers { get; } = {
+        public static string[] ValidationLayers { get; } =
+        {
             "VK_LAYER_KHRONOS_validation"
         };
 
-        public static string[] DebugInstanceExtensions { get; } = {
+        public static string[] DebugInstanceExtensions { get; } =
+        {
             ExtDebugUtils.ExtensionName
         };
 
@@ -57,13 +59,13 @@ namespace Automata.Engine.Rendering.Vulkan
         private ExtDebugUtils? _ExtDebugUtils;
 
         private PhysicalDevice _PhysicalDevice;
-        private QueueFamilyIndices _QueueFamilyIndices;
+        private readonly QueueFamilyIndices _QueueFamilyIndices;
         private Device _LogicalDevice;
 
         private Queue _GraphicsQueue;
         private Queue _PresentationQueue;
 
-        private SwapChainSupportDetails _SwapChainSupportDetails;
+        private readonly SwapChainSupportDetails _SwapChainSupportDetails;
         private KhrSwapchain? _KHRSwapChain;
         private SwapchainKHR _SwapChain;
         private Format _SwapChainImageFormat;

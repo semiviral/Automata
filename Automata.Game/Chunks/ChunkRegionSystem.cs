@@ -79,13 +79,13 @@ namespace Automata.Game.Chunks
             }
 
             // determine whether any chunk loaders have moved out far enough to recalculate their loaded chunk region
-            if (CheckAndUpdateChunkLoaders(entityManager))
+            if (UpdateChunkLoaders(entityManager))
             {
                 await RecalculateRegion(entityManager);
             }
         }
 
-        private static bool CheckAndUpdateChunkLoaders(EntityManager entityManager)
+        private static bool UpdateChunkLoaders(EntityManager entityManager)
         {
             bool updatedChunkPositions = false;
 

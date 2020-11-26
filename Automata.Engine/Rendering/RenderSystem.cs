@@ -15,7 +15,6 @@ using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
 using Automata.Engine.Rendering.OpenGL.Shaders;
 using Automata.Engine.Rendering.OpenGL.Textures;
-using Serilog;
 using Silk.NET.Input;
 using Silk.NET.OpenGL;
 using Plane = Automata.Engine.Numerics.Shapes.Plane;
@@ -122,6 +121,7 @@ namespace Automata.Engine.Rendering
 
                 CameraUniforms cameraUniforms = new CameraUniforms(AutomataWindow.Instance.Viewport, camera.Projection.Parameters, camera.Projection.Matrix,
                     camera.View);
+
                 _ViewUniforms.Write(ref cameraUniforms);
                 _ViewUniforms.Bind(BufferTargetARB.UniformBuffer, 0u);
                 DrawModels(entityManager, camera, planes);

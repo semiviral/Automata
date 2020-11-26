@@ -1,4 +1,3 @@
-using System.Numerics;
 using Automata.Engine;
 using Automata.Engine.Numerics;
 
