@@ -133,8 +133,7 @@ static void InitializeWorldImpl(out World world)
 static void InitializePlayerImpl(EntityManager entityManager)
 {
     entityManager.CreateEntity(
-        new Translation(),
-        new Rotation(),
+        new Transform(),
         new Camera
         {
             Projector = Projector.Perspective

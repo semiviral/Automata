@@ -10,8 +10,8 @@ namespace Automata.Engine.Input
         public override void Registered(EntityManager entityManager) =>
             AutomataWindow.Instance.FocusChanged += (_, focused) => Enabled = focused;
 
-        [HandledComponents(EnumerationStrategy.All, typeof(Rotation), typeof(MouseListener)),
-         HandledComponents(EnumerationStrategy.All, typeof(Translation), typeof(KeyboardListener))]
+        [HandledComponents(EnumerationStrategy.All, typeof(Transform), typeof(MouseListener)),
+         HandledComponents(EnumerationStrategy.All, typeof(Transform), typeof(KeyboardListener))]
         public override ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta)
         {
             HandleMouseListeners(entityManager, delta);
@@ -33,9 +33,12 @@ namespace Automata.Engine.Input
                 return;
             }
 
-            foreach ((Rotation rotation, MouseListener mouseListener) in entityManager.GetComponents<Rotation, MouseListener>())
+            foreach ((Transform transform, MouseListener mouseListener) in entityManager.GetComponents<Transform, MouseListener>())
             {
-                rotation.AccumulateAngles(relativeMousePosition * mouseListener.Sensitivity);
+                mouseListener.AccumulatedAngles += relativeMousePosition * mouseListener.Sensitivity;
+                Quaternion yaw = Quaternion.CreateFromAxisAngle(Vector3.UnitY, mouseListener.AccumulatedAngles.X);
+                Quaternion pitch = Quaternion.CreateFromAxisAngle(Vector3.UnitX, mouseListener.AccumulatedAngles.Y);
+                transform.Rotation = yaw * pitch;
             }
 
             // reset mouse position to center of screen
@@ -51,13 +54,9 @@ namespace Automata.Engine.Input
                 return;
             }
 
-            foreach ((Entity entity, Translation translation, KeyboardListener listener) in entityManager
-                .GetEntitiesWithComponents<Translation, KeyboardListener>())
+            foreach ((Transform transform, KeyboardListener listener) in entityManager.GetComponents<Transform, KeyboardListener>())
             {
-                translation.Value += listener.Sensitivity
-                                     * (entity.TryFind(out Rotation? rotation)
-                                         ? Vector3.Transform(movementVector, rotation.Value)
-                                         : movementVector);
+                transform.Translation += listener.Sensitivity * Vector3.Transform(movementVector, transform.Rotation);
             }
         }
 

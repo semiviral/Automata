@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Automata.Engine.Numerics;
@@ -18,40 +19,34 @@ namespace Automata.Engine
 
         public override ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta)
         {
-            foreach ((Entity entity, Camera camera) in entityManager.GetEntitiesWithComponents<Camera>())
+            foreach ((Entity entity, Transform transform) in entityManager.GetEntitiesWithComponents<Transform>().Where(tuple => tuple.Component1.Changed))
             {
-                // check for changes and update current camera's view matrix
-                if ((entity.TryFind(out Scale? cameraScale) && cameraScale.Changed)
-                    | (entity.TryFind(out Rotation? cameraRotation) && cameraRotation.Changed)
-                    | (entity.TryFind(out Translation? cameraTranslation) && cameraTranslation.Changed))
+                if (entity.TryFind(out Camera? camera))
                 {
-                    Matrix4x4 view = Matrix4x4.Identity;
+                    Matrix4x4 matrix = Matrix4x4.Identity;
+                    matrix *= Matrix4x4.CreateScale(transform.Scale);
+                    matrix *= Matrix4x4.CreateFromQuaternion(transform.Rotation);
+                    matrix *= Matrix4x4.CreateTranslation(transform.Translation);
+                    transform.Matrix = matrix;
 
-                    if (cameraScale is not null)
+                    if (Matrix4x4.Invert(matrix, out Matrix4x4 view))
                     {
-                        view *= Matrix4x4.CreateScale(cameraScale.Value);
+                        camera.View = view;
                     }
-
-                    if (cameraRotation is not null)
-                    {
-                        view *= Matrix4x4.CreateFromQuaternion(cameraRotation.Value);
-                    }
-
-                    if (cameraTranslation is not null)
-                    {
-                        view *= Matrix4x4.CreateTranslation(cameraTranslation.Value);
-                    }
-
-                    // if we've calculated a new view matrix, invert it and apply to camera
-                    if (Matrix4x4.Invert(view, out Matrix4x4 inverted))
-                    {
-                        view = inverted;
-                    }
-
-                    camera.View = view;
                 }
+                else
+                {
+                    Matrix4x4 matrix = Matrix4x4.Identity;
+                    matrix *= Matrix4x4.CreateTranslation(transform.Translation);
+                    matrix *= Matrix4x4.CreateFromQuaternion(transform.Rotation);
+                    matrix *= Matrix4x4.CreateScale(transform.Scale);
+                    transform.Matrix = matrix;
+                }
+            }
 
-                if (_UpdateProjections)
+            if (_UpdateProjections)
+            {
+                foreach (Camera camera in entityManager.GetComponents<Camera>())
                 {
                     camera.Projection = camera.Projector switch
                     {
@@ -60,32 +55,6 @@ namespace Automata.Engine
                         Projector.Orthographic => new OrthographicProjection(AutomataWindow.Instance.Size, 0.1f, 1000f),
                         _ => camera.Projection
                     };
-                }
-            }
-
-            foreach ((Entity objectEntity, RenderModel renderModel) in entityManager.GetEntitiesWithComponents<RenderModel>())
-            {
-                if (((objectEntity.TryFind(out Translation? modelTranslation) && modelTranslation.Changed)
-                     | (objectEntity.TryFind(out Rotation? modelRotation) && modelRotation.Changed)
-                     | (objectEntity.TryFind(out Scale? modelScale) && modelScale.Changed))
-                    || renderModel.Changed)
-                {
-                    renderModel.Model = Matrix4x4.Identity;
-
-                    if (modelTranslation is not null)
-                    {
-                        renderModel.Model *= Matrix4x4.CreateTranslation(modelTranslation.Value);
-                    }
-
-                    if (modelRotation is not null)
-                    {
-                        renderModel.Model *= Matrix4x4.CreateFromQuaternion(modelRotation.Value);
-                    }
-
-                    if (modelScale is not null)
-                    {
-                        renderModel.Model *= Matrix4x4.CreateScale(modelScale.Value);
-                    }
                 }
             }
 

@@ -53,29 +53,26 @@ namespace Automata.Engine
 
         internal TComponent Remove<TComponent>() where TComponent : Component
         {
-            TComponent? component = Find<TComponent>();
-
-            switch (component)
+            if (TryFind(out TComponent? component) && _Components.Remove(component))
             {
-                case null:
-                    ThrowHelper.ThrowArgumentException(typeof(TComponent).Name, "Entity does not have component of type.");
-                    return null!;
-                case { } when _Components.Remove(component):
-                    component.Dispose();
-                    break;
+                component.Dispose();
+                return component;
             }
-
-            return component;
+            else
+            {
+                ThrowHelper.ThrowArgumentException(typeof(TComponent).Name, "Entity does not have component of type.");
+                return null!;
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public TComponent? Find<TComponent>() where TComponent : Component
         {
-            foreach (Component component in _Components)
+            for (int index = 0; index < _Components.Count; index++)
             {
-                if (component is TComponent componentT)
+                if (_Components[index] is TComponent component)
                 {
-                    return componentT;
+                    return component;
                 }
             }
 
@@ -83,7 +80,20 @@ namespace Automata.Engine
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryFind<TComponent>([NotNullWhen(true)] out TComponent? result) where TComponent : Component => (result = Find<TComponent>()) is not null;
+        public bool TryFind<TComponent>([NotNullWhen(true)] out TComponent? result) where TComponent : Component
+        {
+            for (int index = 0; index < _Components.Count; index++)
+            {
+                if (_Components[index] is TComponent component)
+                {
+                    result = component;
+                    return true;
+                }
+            }
+
+            result = null;
+            return false;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains<TComponent>() where TComponent : Component

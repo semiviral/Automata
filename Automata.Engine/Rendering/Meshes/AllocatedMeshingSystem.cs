@@ -121,7 +121,7 @@ namespace Automata.Engine.Rendering.Meshes
                     (uint)(allocation.Allocation.VertexArrayMemory.Index / (nuint)sizeof(TVertex)), (uint)index);
 
                 commands[index] = drawElementsIndirectCommand;
-                models[index] = entity.Find<RenderModel>()?.Model ?? Matrix4x4.Identity;
+                models[index] = entity.Find<Transform>()?.Matrix ?? Matrix4x4.Identity;
                 index += 1;
 
                 Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(AllocatedMeshingSystem<TIndex, TVertex>), drawElementsIndirectCommand));

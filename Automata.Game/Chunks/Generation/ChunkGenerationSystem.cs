@@ -50,7 +50,7 @@ namespace Automata.Game.Chunks.Generation
             }, Key.ShiftLeft, Key.V);
         }
 
-        [HandledComponents(EnumerationStrategy.All, typeof(Translation), typeof(Chunk))]
+        [HandledComponents(EnumerationStrategy.All, typeof(Transform), typeof(Chunk))]
         public override ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta)
         {
             // empty channel of any pending meshes, apply the meshes, and update the material
@@ -72,13 +72,13 @@ namespace Automata.Game.Chunks.Generation
             }
 
             // iterate over each valid chunk and process the generateable states
-            foreach ((Entity entity, Chunk chunk, Translation translation) in entityManager.GetEntitiesWithComponents<Chunk, Translation>())
+            foreach ((Entity entity, Chunk chunk, Transform transform) in entityManager.GetEntitiesWithComponents<Chunk, Transform>())
             {
                 switch (chunk.State)
                 {
                     case GenerationState.AwaitingTerrain:
-                        BoundedInvocationPool.Instance.Enqueue(_ => GenerateBlocks(chunk, Vector3i.FromVector3(translation.Value),
-                            new IGenerationStep.Parameters(GenerationConstants.Seed, Vector3i.FromVector3(translation.Value).GetHashCode())
+                        BoundedInvocationPool.Instance.Enqueue(_ => GenerateBlocks(chunk, Vector3i.FromVector3(transform.Translation),
+                            new IGenerationStep.Parameters(GenerationConstants.Seed, Vector3i.FromVector3(transform.Translation).GetHashCode())
                             {
                                 Frequency = 0.008f
                             }));

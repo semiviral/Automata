@@ -36,7 +36,7 @@ namespace Automata.Game.Chunks
                 $"Average update time: {DiagnosticsProvider.GetGroup<ChunkRegionLoadingDiagnosticGroup>().Average():0.00}ms")), Key.ShiftLeft, Key.X);
         }
 
-        [HandledComponents(EnumerationStrategy.All, typeof(Translation), typeof(ChunkLoader))]
+        [HandledComponents(EnumerationStrategy.All, typeof(Transform), typeof(ChunkLoader))]
         public override async ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta)
         {
             Stopwatch stopwatch = DiagnosticsPool.Stopwatches.Rent();
@@ -77,10 +77,10 @@ namespace Automata.Game.Chunks
         {
             bool updatedChunkPositions = false;
 
-            foreach ((Translation translation, ChunkLoader chunkLoader) in entityManager.GetComponents<Translation, ChunkLoader>())
+            foreach ((Transform transform, ChunkLoader chunkLoader) in entityManager.GetComponents<Transform, ChunkLoader>())
             {
                 // remove y-component of translation
-                Vector3i translationInt32 = Vector3i.FromVector3(translation.Value).SetComponent(1, 0);
+                Vector3i translationInt32 = Vector3i.FromVector3(transform.Translation).SetComponent(1, 0);
                 Vector3i difference = Vector3i.Abs(translationInt32 - chunkLoader.Origin);
 
                 if (!chunkLoader.Changed && Vector3b.All(difference < GenerationConstants.CHUNK_SIZE))

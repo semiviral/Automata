@@ -2,7 +2,9 @@ using System;
 using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 
 namespace Automata.Engine.Collections
 {
@@ -42,15 +44,17 @@ namespace Automata.Engine.Collections
         /// </param>
         public T this[uint index]
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 if (index >= Count)
                 {
                     ThrowHelper.ThrowIndexOutOfRangeException();
+                    return default!;
                 }
-
-                return _InternalArray[index];
+                else
+                {
+                    return _InternalArray[index];
+                }
             }
             set
             {
@@ -58,8 +62,10 @@ namespace Automata.Engine.Collections
                 {
                     ThrowHelper.ThrowIndexOutOfRangeException();
                 }
-
-                _InternalArray[index] = value;
+                else
+                {
+                    _InternalArray[index] = value;
+                }
             }
         }
 

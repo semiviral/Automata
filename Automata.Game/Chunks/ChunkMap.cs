@@ -91,12 +91,12 @@ namespace Automata.Game.Chunks
             if (!_Chunks.ContainsKey(origin))
             {
                 _Chunks.Add(origin, entityManager.CreateEntity(
-                    new Translation
+                    new Transform
                     {
-                        Value = origin
-                    }, new Chunk(),
-                    _ChunkOcclusionBounds,
-                    new RenderModel()
+                        Translation = origin
+                    },
+                    new Chunk(),
+                    _ChunkOcclusionBounds
                 ));
             }
         }

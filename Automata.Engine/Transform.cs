@@ -39,5 +39,12 @@ namespace Automata.Engine
                 Changed = true;
             }
         }
+
+        public Transform()
+        {
+            Scale = 1f;
+            Rotation = Quaternion.Identity;
+            Translation = Vector3.Zero;
+        }
     }
 }
