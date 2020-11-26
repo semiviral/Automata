@@ -1,7 +1,5 @@
 #version 460 core
 
-out gl_PerVertex { vec4 gl_Position; };
-
 layout (location = 0) in int vert;
 layout (location = 1) in int uv;
 layout (location = 2) in mat4 model;
@@ -14,11 +12,14 @@ layout (std140, binding = 0) uniform camera_uniforms
     mat4 _view;
 };
 
+out gl_PerVertex { vec4 gl_Position; };
+
 layout (location = 0) out fragment
 {
     vec3 uv;
     vec3 color;
     mat4 view;
+    mat4 proj;
 } fragment;
 
 void main()
@@ -54,5 +55,6 @@ void main()
     fragment.uv = uncompressedUV;
     fragment.color = vec3(lerpedNormal.x + lerpedNormal.y + lerpedNormal.z);
     fragment.view = _view;
-    gl_Position = (_proj * _view * model) * uncompressedPosition ;
+    fragment.proj = _proj;
+    gl_Position = (_proj * _view * model) * uncompressedPosition;
 }

@@ -97,7 +97,7 @@ namespace Automata.Engine.Rendering.Meshes
             _CommandBuffer.Bind(BufferTargetARB.DrawIndirectBuffer);
 
 #if DEBUG
-            void VerifyVertexBufferBindingImpl(uint index, BufferObject buffer)
+            void VerifyVertexBufferBindingImpl(uint index, OpenGLObject buffer)
             {
                 _GL.GetInteger(GLEnum.VertexBindingBuffer, index, out int actual);
                 Debug.Assert((uint)actual == buffer.Handle, $"VertexBindingBuffer index {index} is not set to the correct buffer.");

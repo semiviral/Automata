@@ -20,6 +20,9 @@ namespace Automata.Engine.Rendering.OpenGL
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void WaitCurrent() => _RingSyncs[(int)_Ring.Current]?.BusyWaitCPU();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WaitEnterNext()
         {
             // wait to enter next ring, then increment to it

@@ -7,6 +7,7 @@ layout (location = 0) in fragment
     vec3 uv;
     vec3 color;
     mat4 view;
+    mat4 proj;
 } fragment;
 
 out vec4 color;

@@ -105,7 +105,7 @@ namespace Automata.Engine.Rendering
         }
 
         [SkipLocalsInit, HandledComponents(EnumerationStrategy.All, typeof(Camera))]
-        public override ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta)
+        public override unsafe ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta)
         {
             _GL.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
             Span<Plane> planes = stackalloc Plane[Frustum.TOTAL_PLANES];
@@ -122,7 +122,6 @@ namespace Automata.Engine.Rendering
 
                 CameraUniforms cameraUniforms = new CameraUniforms(AutomataWindow.Instance.Viewport, camera.Projection.Parameters, camera.Projection.Matrix,
                     camera.View);
-
                 _ViewUniforms.Write(ref cameraUniforms);
                 _ViewUniforms.Bind(BufferTargetARB.UniformBuffer, 0u);
                 DrawModels(entityManager, camera, planes);

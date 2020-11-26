@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Automata.Engine.Collections;
-using Automata.Engine.Rendering.OpenGL.Buffers;
 using Serilog;
 using Silk.NET.OpenGL;
 
@@ -50,7 +49,7 @@ namespace Automata.Engine.Rendering.OpenGL
             _VertexAttributes.AddRange(vertexAttributes);
         }
 
-        public void AllocateVertexBufferBinding(uint bindingIndex, BufferObject buffer, int vertexOffset = 0, uint divisor = 0u)
+        public void AllocateVertexBufferBinding(uint bindingIndex, OpenGLObject buffer, int vertexOffset = 0, uint divisor = 0u)
         {
             if (_VertexBufferObjectBindings.ContainsKey(bindingIndex))
             {
@@ -70,7 +69,7 @@ namespace Automata.Engine.Rendering.OpenGL
 
         #region Finalization
 
-        public void Finalize(BufferObject? ebo)
+        public void Finalize(OpenGLObject? ebo)
         {
             // calculate strides for new VBO bindings
             Dictionary<uint, uint> strides = new Dictionary<uint, uint>();

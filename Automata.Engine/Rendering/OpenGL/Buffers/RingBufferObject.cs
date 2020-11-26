@@ -7,10 +7,6 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 {
     public unsafe class RingBufferObject : OpenGLObject
     {
-        private const MapBufferAccessMask _ACCESS_MASK = MapBufferAccessMask.MapWriteBit
-                                                         | MapBufferAccessMask.MapPersistentBit
-                                                         | MapBufferAccessMask.MapCoherentBit;
-
         private readonly RingFenceSync _RingSync;
         private readonly byte* _Pointer;
 
@@ -32,9 +28,12 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
             BufferedSize = size * buffers;
 
             Handle = GL.CreateBuffer();
-            GL.NamedBufferStorage(Handle, BufferedSize, (void*)null!, (uint)_ACCESS_MASK);
-
             _RingSync = new RingFenceSync(GL, buffers);
+
+            GL.NamedBufferStorage(Handle, BufferedSize, (void*)null!, (uint)(BufferStorageMask.MapWriteBit
+                                                                             | BufferStorageMask.MapPersistentBit
+                                                                             | BufferStorageMask.MapCoherentBit));
+
             _Pointer = (byte*)GL.MapNamedBuffer(Handle, BufferAccessARB.WriteOnly);
         }
 

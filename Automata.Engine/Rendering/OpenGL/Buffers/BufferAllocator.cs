@@ -5,10 +5,8 @@ using Silk.NET.OpenGL;
 
 namespace Automata.Engine.Rendering.OpenGL.Buffers
 {
-    public class BufferAllocator : BufferObject
+    public class BufferAllocator : OpenGLObject
     {
-        private const BufferStorageMask _STORAGE_MASK = BufferStorageMask.MapWriteBit | BufferStorageMask.MapPersistentBit | BufferStorageMask.MapCoherentBit;
-
         private readonly NativeMemoryPool _NativeMemoryPool;
 
         public int RentedBufferCount => _NativeMemoryPool.RentedBlocks;
@@ -16,8 +14,12 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
         public unsafe BufferAllocator(GL gl, nuint size) : base(gl)
         {
             Handle = GL.CreateBuffer();
-            GL.NamedBufferStorage(Handle, size, (void*)null!, (uint)_STORAGE_MASK);
-            void* pointer = GL.MapNamedBufferRange(Handle, (nint)0, size, (uint)_STORAGE_MASK);
+
+            GL.NamedBufferStorage(Handle, size, (void*)null!, (uint)(BufferStorageMask.MapWriteBit
+                                                                     | BufferStorageMask.MapPersistentBit
+                                                                     | BufferStorageMask.MapCoherentBit));
+
+            void* pointer = GL.MapNamedBuffer(Handle, BufferAccessARB.WriteOnly);
             _NativeMemoryPool = new NativeMemoryPool((byte*)pointer, size);
         }
 

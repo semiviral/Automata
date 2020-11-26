@@ -51,18 +51,13 @@ namespace Automata.Engine
 
         public string Title { get => Window.Title; set => Window.Title = value; }
         public Vector2i Position { get => (Vector2i)Window.Position; set => Window.Position = (Point)value; }
-        public Vector4 Viewport { get; private set; }
-        public float AspectRatio { get; private set; }
+        public Vector4 Viewport => new Vector4(0f, 0f, Window.Size.Width, Window.Size.Height);
+        public float AspectRatio => (float)Window.Size.Width / (float)Window.Size.Height;
 
         public Vector2i Size
         {
             get => (Vector2i)Window.Size;
-            set
-            {
-                Window.Size = (Size)value;
-                Viewport = new Vector4(0f, 0f, value.X, value.Y);
-                AspectRatio = (float)value.X / (float)value.Y;
-            }
+            set => Window.Size = (Size)value;
         }
 
         public bool Focused { get; private set; }

@@ -6,8 +6,6 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 {
     public unsafe class BufferObject : OpenGLObject
     {
-        private const MapBufferAccessMask _WRITE_ALL_ACCESS_MASK = MapBufferAccessMask.MapWriteBit | MapBufferAccessMask.MapInvalidateRangeBit;
-
         public nuint Length { get; protected set; }
 
         public BufferObject(GL gl) : base(gl) => Handle = GL.CreateBuffer();
@@ -33,7 +31,10 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
         public void* Pin(MapBufferAccessMask flags) => GL.MapNamedBufferRange(Handle, (nint)0, Length, (uint)flags);
         public T* Pin<T>(MapBufferAccessMask flags) where T : unmanaged => (T*)Pin(flags);
         public void* PinRange(nint offset, nuint length, MapBufferAccessMask flags) => GL.MapNamedBufferRange(Handle, offset, length, (uint)flags);
-        public T* PinRange<T>(nint offset, nuint length, MapBufferAccessMask flags) where T : unmanaged => (T*)PinRange(offset, length * (nuint)sizeof(T), flags);
+
+        public T* PinRange<T>(nint offset, nuint length, MapBufferAccessMask flags) where T : unmanaged =>
+            (T*)PinRange(offset, length * (nuint)sizeof(T), flags);
+
         public void Unpin() => GL.UnmapNamedBuffer(Handle);
 
         #endregion
@@ -49,7 +50,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
         public void SubData(nint offset, nuint length, void* data)
         {
-            void* pointer = PinRange(offset, length, _WRITE_ALL_ACCESS_MASK);
+            void* pointer = PinRange(offset, length, MapBufferAccessMask.MapWriteBit | MapBufferAccessMask.MapInvalidateBufferBit);
             Buffer.MemoryCopy(data, pointer, length, length);
             Unpin();
         }
@@ -62,7 +63,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
         public void SubData<T>(nint offset, ReadOnlySpan<T> data) where T : unmanaged
         {
-            T* pointer = PinRange<T>(offset, (nuint)data.Length, _WRITE_ALL_ACCESS_MASK);
+            T* pointer = PinRange<T>(offset, (nuint)data.Length, MapBufferAccessMask.MapWriteBit | MapBufferAccessMask.MapInvalidateBufferBit);
             data.CopyTo(new Span<T>(pointer, data.Length));
             Unpin();
         }
