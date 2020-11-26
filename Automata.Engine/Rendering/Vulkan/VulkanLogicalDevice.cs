@@ -10,6 +10,8 @@ namespace Automata.Engine.Rendering.Vulkan
         private Queue _GraphicsQueue;
         private Queue _PresentationQueue;
 
+        public override nint Handle => _LogicalDevice.Handle;
+
         internal unsafe VulkanLogicalDevice(Vk vk, VulkanPhysicalDevice physicalDevice, string[] extensions, string[]? validationLayers) : base(vk)
         {
             float queuePriority = 1f;

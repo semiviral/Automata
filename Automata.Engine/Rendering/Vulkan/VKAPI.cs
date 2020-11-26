@@ -45,7 +45,7 @@ namespace Automata.Engine.Rendering.Vulkan
             ExtDebugUtils.ExtensionName
         };
 
-        private readonly string[] _DeviceExtensions =
+        public static readonly string[] LogicalDeviceExtensions =
         {
             KhrSwapchain.ExtensionName
         };
@@ -131,7 +131,6 @@ namespace Automata.Engine.Rendering.Vulkan
         {
             Log.Information($"({nameof(VKAPI)}) Initializing Vulkan: -begin-");
 
-            CreateLogicalDevice();
             CreateSwapChain();
             CreateImageViews();
             CreateRenderPass();
@@ -212,94 +211,6 @@ namespace Automata.Engine.Rendering.Vulkan
 
             _CurrentFrame = (_CurrentFrame + 1) % _MAX_FRAMES_IN_FLIGHT;
         }
-
-
-        #region Create Logical Device
-
-        private unsafe void CreateLogicalDevice()
-        {
-            float queuePriority = 1f;
-
-            Debug.Assert(_QueueFamilyIndices.GraphicsFamily != null);
-
-            Log.Information(string.Format(_VulkanLogicalDeviceCreationFormat, "-begin-"));
-
-            Log.Information(string.Format(_VulkanLogicalDeviceCreationFormat, "initializing device queue creation info."));
-
-            uint queueFamiliesCount = _QueueFamilyIndices.GetLength;
-            DeviceQueueCreateInfo* deviceQueueCreateInfos = stackalloc DeviceQueueCreateInfo[2];
-
-            for (int i = 0; i < queueFamiliesCount; i++)
-            {
-                Debug.Assert(_QueueFamilyIndices[i] != null);
-
-                deviceQueueCreateInfos[i] = new DeviceQueueCreateInfo
-                {
-                    SType = StructureType.DeviceQueueCreateInfo,
-                    QueueFamilyIndex = _QueueFamilyIndices[i].Value,
-                    QueueCount = 1,
-                    PQueuePriorities = &queuePriority
-                };
-            }
-
-            Log.Information(string.Format(_VulkanLogicalDeviceCreationFormat, "initializing device creation info."));
-
-            PhysicalDeviceFeatures physicalDeviceFeatures = new PhysicalDeviceFeatures();
-
-            DeviceCreateInfo deviceCreateInfo = new DeviceCreateInfo
-            {
-                SType = StructureType.DeviceCreateInfo,
-                EnabledExtensionCount = (uint)_DeviceExtensions.Length,
-                PpEnabledExtensionNames = (byte**)SilkMarshal.MarshalStringArrayToPtr(_DeviceExtensions),
-                QueueCreateInfoCount = queueFamiliesCount,
-                PQueueCreateInfos = deviceQueueCreateInfos,
-                PEnabledFeatures = &physicalDeviceFeatures
-            };
-
-            if (_ENABLE_VULKAN_VALIDATION)
-            {
-                deviceCreateInfo.EnabledLayerCount = (uint)ValidationLayers.Length;
-                deviceCreateInfo.PpEnabledLayerNames = (byte**)SilkMarshal.MarshalStringArrayToPtr(ValidationLayers);
-            }
-            else
-            {
-                deviceCreateInfo.EnabledLayerCount = 0;
-                deviceCreateInfo.PpEnabledLayerNames = null;
-            }
-
-            Log.Information(string.Format(_VulkanLogicalDeviceCreationFormat, "assigning logical device."));
-
-            fixed (Device* logicalDevice = &_LogicalDevice)
-            {
-                if (VK.CreateDevice(_PhysicalDevice, &deviceCreateInfo, (AllocationCallbacks*)null!, logicalDevice)
-                    != Result.Success)
-                {
-                    throw new Exception("Failed to create logical device.");
-                }
-            }
-
-            Log.Information(string.Format(_VulkanLogicalDeviceCreationFormat, "assigning graphics queue."));
-
-            Debug.Assert(_QueueFamilyIndices.GraphicsFamily != null);
-
-            fixed (Queue* graphicsQueueFixed = &_GraphicsQueue)
-            {
-                VK.GetDeviceQueue(_LogicalDevice, _QueueFamilyIndices.GraphicsFamily.Value, 0, graphicsQueueFixed);
-            }
-
-            Log.Information(string.Format(_VulkanLogicalDeviceCreationFormat, "assigning presentation queue."));
-
-            Debug.Assert(_QueueFamilyIndices.PresentationFamily != null);
-
-            fixed (Queue* presentationQueueFixed = &_PresentationQueue)
-            {
-                VK.GetDeviceQueue(_LogicalDevice, _QueueFamilyIndices.PresentationFamily.Value, 0, presentationQueueFixed);
-            }
-
-            Log.Information(string.Format(_VulkanLogicalDeviceCreationFormat, "-success-"));
-        }
-
-        #endregion
 
 
         #region Create Swapchain

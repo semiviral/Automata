@@ -173,8 +173,7 @@ void InitializeVulkan()
 
     VulkanPhysicalDevice[] physicalDevices = instance.GetPhysicalDevices(IsPhysicalDeviceSuitable);
     VulkanPhysicalDevice physicalDevice = physicalDevices[0];
-
-    
+    VulkanLogicalDevice logicalDevice = physicalDevice.CreateLogicalDevice(VKAPI.LogicalDeviceExtensions, VKAPI.ValidationLayers);
 
 }
 
@@ -183,14 +182,14 @@ bool IsPhysicalDeviceSuitable(VulkanPhysicalDevice physicalDevice)
     if (physicalDevice.Type is not PhysicalDeviceType.DiscreteGpu ||
         !physicalDevice.SupportsExtenstion(SwapchainExtension.ExtensionName)) return false;
 
-    SwapChainSupportDetails supportDetails = physicalDevice.GetSwapChainSupport(physicalDevice);
+    SwapChainSupportDetails supportDetails = physicalDevice.GetSwapChainSupport();
 
     if (supportDetails.Formats.Length is 0 || supportDetails.PresentModes.Length is 0)
     {
         return false;
     }
 
-    QueueFamilyIndices queueFamilyIndices = physicalDevice.GetQueueFamilies(physicalDevice);
+    QueueFamilyIndices queueFamilyIndices = physicalDevice.GetQueueFamilies();
 
     if (!queueFamilyIndices.IsCompleted())
     {
@@ -205,13 +204,6 @@ bool IsPhysicalDeviceSuitable(VulkanPhysicalDevice physicalDevice)
     }
 
     return true;
-}
-
-SwapChainSupportDetails GetSwapChainSupportDetails(VulkanInstance instance, VulkanPhysicalDevice physicalDevice)
-{
-    SurfaceCapabilitiesKHR surfaceCapabilities;
-    //instance.SurfaceExtension.GetPhysicalDeviceSurfaceCapabilities(physicalDevice, )
-    return default;
 }
 
 #endregion

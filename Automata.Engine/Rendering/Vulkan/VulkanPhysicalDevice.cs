@@ -19,13 +19,13 @@ namespace Automata.Engine.Rendering.Vulkan
         public PhysicalDeviceType Type { get; }
         public string Name { get; }
 
+        public override nint Handle => _PhysicalDevice.Handle;
         public ReadOnlyMemory<VulkanExtension> Extensions => _Extensions;
 
         internal unsafe VulkanPhysicalDevice(Vk vk, VulkanInstance instance, PhysicalDevice physicalDevice) : base(vk)
         {
             _Instance = instance;
             _PhysicalDevice = physicalDevice;
-            Handle = _PhysicalDevice.Handle;
             VK.GetPhysicalDeviceProperties(this, out PhysicalDeviceProperties properties);
 
             APIVersion = properties.ApiVersion;
@@ -117,6 +117,8 @@ namespace Automata.Engine.Rendering.Vulkan
             return queueFamilyIndices;
         }
 
+        public VulkanLogicalDevice CreateLogicalDevice(string[] extensions, string[]? validationLayers) =>
+            new VulkanLogicalDevice(VK, this, extensions, validationLayers);
 
         #region Conversions
 

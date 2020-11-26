@@ -9,7 +9,7 @@ namespace Automata.Engine.Rendering.Vulkan
     {
         protected readonly Vk VK;
 
-        public nint Handle { get; protected init; }
+        public virtual nint Handle { get; protected init; }
         public bool Disposed { get; private set; }
 
         protected VulkanObject(Vk vk) => VK = vk;
