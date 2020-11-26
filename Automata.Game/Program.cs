@@ -1,6 +1,6 @@
-﻿#define VULKAN
-
+﻿using System;
 using System.Drawing;
+using System.IO;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Automata.Engine;
@@ -21,17 +21,17 @@ using Serilog;
 using Silk.NET.Vulkan;
 using Silk.NET.Windowing;
 
-MainImpl();
+StartupImpl();
 await AutomataWindow.Instance.RunAsync();
 AutomataWindow.Instance.Dispose();
 
 
 #region Main
 
-void MainImpl()
+static void StartupImpl()
 {
     Settings.Load();
-    InitializeLoggerImpl();
+    InitializeLoggerAndValidateFilesImpl();
     InitializeBoundedPoolImpl();
     InitializeWindowImpl();
 
@@ -57,12 +57,17 @@ static void ApplicationCloseCallbackImpl(object sender)
 
 #region Initialization
 
-static void InitializeLoggerImpl()
+static void InitializeLoggerAndValidateFilesImpl()
 {
+    string specialPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData, Environment.SpecialFolderOption.Create);
+    string rootPath = Path.Combine(specialPath, "Automata/");
+    Directory.CreateDirectory(rootPath);
+    Directory.CreateDirectory(Path.Combine(rootPath, "Worlds"));
+
     Log.Logger = new LoggerConfiguration()
         .MinimumLevel.Debug()
         .WriteTo.Console()
-        .WriteTo.Async(config => config.File("log.txt"))
+        .WriteTo.Async(config => config.File(Path.Combine(rootPath, "Today.log")))
         .CreateLogger();
 
     Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(Serilog), "Logger initialized."));
@@ -128,8 +133,7 @@ static void InitializeWorldImpl(out World world)
     allocatedMeshingSystem.SetTexture("Blocks", TextureAtlas.Instance.Blocks!);
 
     world.SystemManager.RegisterBefore<ChunkRegionLoaderSystem, DefaultOrderSystem>();
-    world.SystemManager.RegisterAfter<ChunkModificationsSystem, ChunkRegionLoaderSystem>();
-    world.SystemManager.RegisterAfter<ChunkGenerationSystem, ChunkModificationsSystem>();
+    world.SystemManager.RegisterAfter<ChunkGenerationSystem, ChunkRegionLoaderSystem>();
     World.RegisterWorld("Overworld", world);
 }
 
@@ -182,7 +186,7 @@ bool IsPhysicalDeviceSuitable(VulkanPhysicalDevice physicalDevice)
     if (physicalDevice.Type is not PhysicalDeviceType.DiscreteGpu ||
         !physicalDevice.SupportsExtenstion(SwapchainExtension.ExtensionName)) return false;
 
-    SwapChainSupportDetails supportDetails = physicalDevice.GetSwapChainSupport();
+    SwapChainSupportDetails supportDetails = physicalDevice.SwapChainSupportDetails;
 
     if (supportDetails.Formats.Length is 0 || supportDetails.PresentModes.Length is 0)
     {

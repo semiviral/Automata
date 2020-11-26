@@ -18,6 +18,7 @@ namespace Automata.Engine.Rendering.Vulkan
         public uint DeviceID { get; }
         public PhysicalDeviceType Type { get; }
         public string Name { get; }
+        public SwapChainSupportDetails SwapChainSupportDetails { get; }
 
         public override nint Handle => _PhysicalDevice.Handle;
         public ReadOnlyMemory<VulkanExtension> Extensions => _Extensions;
@@ -35,20 +36,46 @@ namespace Automata.Engine.Rendering.Vulkan
             Type = properties.DeviceType;
             Name = SilkMarshal.PtrToString((nint)properties.DeviceName);
 
+            SwapChainSupportDetails = GetSwapChainSupport();
+            _Extensions = GetExtensions();
+        }
+
+
+        #region Creation
+
+        private SwapChainSupportDetails GetSwapChainSupport()
+        {
+            _Instance.SurfaceExtension.GetPhysicalDeviceSurfaceCapabilities(this, _Instance.Surface, out SurfaceCapabilitiesKHR surfaceCapabilities);
+
+            return new SwapChainSupportDetails
+            {
+                SurfaceCapabilities = surfaceCapabilities,
+                Formats = _Instance.SurfaceExtension.GetPhysicalDeviceSurfaceFormats(this, _Instance.Surface),
+                PresentModes = _Instance.SurfaceExtension.GetPhysicalDeviceSurfacePresentModes(this, _Instance.Surface)
+            };
+        }
+
+        private unsafe Memory<VulkanExtension> GetExtensions()
+        {
             uint extensionCount = 0u;
             VK.EnumerateDeviceExtensionProperties(this, (byte*)null!, &extensionCount, (ExtensionProperties*)null!);
             Span<ExtensionProperties> extensionPropertiesSpan = stackalloc ExtensionProperties[(int)extensionCount];
             VK.EnumerateDeviceExtensionProperties(this, string.Empty, &extensionCount, extensionPropertiesSpan);
-            _Extensions = new VulkanExtension[extensionCount];
-            Span<VulkanExtension> extensions = _Extensions.Span;
+            Memory<VulkanExtension> extensions = new VulkanExtension[extensionCount];
+            Span<VulkanExtension> extensionsSpan = _Extensions.Span;
 
             for (int index = 0; index < extensionCount; index++)
             {
                 ExtensionProperties extensionProperties = extensionPropertiesSpan[index];
                 string name = SilkMarshal.PtrToString((nint)extensionProperties.ExtensionName);
-                extensions[index] = new VulkanExtension(name, extensionProperties.SpecVersion);
+                extensionsSpan[index] = new VulkanExtension(name, extensionProperties.SpecVersion);
             }
+
+            return extensions;
         }
+
+        #endregion
+
 
         public bool SupportsExtenstion(string extensionName)
         {
@@ -67,18 +94,6 @@ namespace Automata.Engine.Rendering.Vulkan
         {
             VK.GetPhysicalDeviceFeatures(this, out PhysicalDeviceFeatures physicalDeviceFeatures);
             return physicalDeviceFeatures;
-        }
-
-        public SwapChainSupportDetails GetSwapChainSupport()
-        {
-            _Instance.SurfaceExtension.GetPhysicalDeviceSurfaceCapabilities(this, _Instance.Surface, out SurfaceCapabilitiesKHR surfaceCapabilities);
-
-            return new SwapChainSupportDetails
-            {
-                SurfaceCapabilities = surfaceCapabilities,
-                Formats = _Instance.SurfaceExtension.GetPhysicalDeviceSurfaceFormats(this, _Instance.Surface),
-                PresentModes = _Instance.SurfaceExtension.GetPhysicalDeviceSurfacePresentModes(this, _Instance.Surface)
-            };
         }
 
         public unsafe QueueFamilyIndices GetQueueFamilies()
@@ -119,6 +134,7 @@ namespace Automata.Engine.Rendering.Vulkan
 
         public VulkanLogicalDevice CreateLogicalDevice(string[] extensions, string[]? validationLayers) =>
             new VulkanLogicalDevice(VK, this, extensions, validationLayers);
+
 
         #region Conversions
 

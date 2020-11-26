@@ -71,6 +71,16 @@ namespace Automata.Game.Chunks.Generation
                 pendingMesh.Chunk.State += 1;
             }
 
+            foreach (Chunk chunk in entityManager.GetComponents<Chunk>())
+            {
+                if (chunk.State is GenerationState.AwaitingMesh or GenerationState.Finished
+                    && Array.TrueForAll(chunk.Neighbors, neighbor => neighbor?.State is <= GenerationState.AwaitingMesh or GenerationState.Finished)
+                    && TryProcessChunkModifications(chunk))
+                {
+                    chunk.RemeshNeighborhood(true);
+                }
+            }
+
             // iterate over each valid chunk and process the generateable states
             foreach ((Entity entity, Chunk chunk, Transform transform) in entityManager.GetEntitiesWithComponents<Chunk, Transform>())
             {
@@ -87,8 +97,8 @@ namespace Automata.Game.Chunks.Generation
                         break;
 
                     case GenerationState.AwaitingStructures:
-                        //BoundedInvocationPool.Instance.Enqueue(_ => GenerateStructures(chunk, Vector3i.FromVector3(translation.Value)));
-                        chunk.State += 2;
+                        BoundedInvocationPool.Instance.Enqueue(_ => GenerateStructures(chunk, Vector3i.FromVector3(transform.Translation)));
+                        chunk.State += 1;
                         break;
 
                     case GenerationState.AwaitingMesh when chunk.Neighbors.All(neighbor => neighbor?.State is null or >= GenerationState.AwaitingMesh):
@@ -100,6 +110,29 @@ namespace Automata.Game.Chunks.Generation
 
             return ValueTask.CompletedTask;
         }
+
+
+        #region Modifications
+
+        private static bool TryProcessChunkModifications(Chunk chunk)
+        {
+            if (chunk.Blocks is null)
+            {
+                ThrowHelper.ThrowNullReferenceException("Chunk must have blocks.");
+            }
+
+            bool modified = false;
+
+            while (chunk.Modifications.TryTake(out ChunkModification? modification) && (chunk.Blocks![modification!.BlockIndex].ID != modification.BlockID))
+            {
+                chunk.Blocks[modification.BlockIndex] = new Block(modification.BlockID);
+                modified = true;
+            }
+
+            return modified;
+        }
+
+        #endregion
 
 
         #region Generation
