@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+// ReSharper disable ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
+// ReSharper disable InvertIf
+
 namespace Automata.Engine
 {
     public sealed class EntityManager : IDisposable
@@ -136,10 +139,14 @@ namespace Automata.Engine
             if (_Components.TryGetValue(typeof(T1), out HashSet<Entity>? entities1)
                 && _Components.TryGetValue(typeof(T2), out HashSet<Entity>? entities2))
             {
-                return entities1!.Intersect(entities2!);
+                foreach (Entity entity in entities1!)
+                {
+                    if (entities2!.Contains(entity))
+                    {
+                        yield return entity;
+                    }
+                }
             }
-
-            return Enumerable.Empty<Entity>();
         }
 
         public IEnumerable<Entity> GetEntities<T1, T2, T3>()
@@ -151,10 +158,14 @@ namespace Automata.Engine
                 && _Components.TryGetValue(typeof(T2), out HashSet<Entity>? entities2)
                 && _Components.TryGetValue(typeof(T3), out HashSet<Entity>? entities3))
             {
-                return entities1!.Intersect(entities2!).Intersect(entities3!);
+                foreach (Entity entity in entities1!)
+                {
+                    if (entities2!.Contains(entity) && entities3!.Contains(entity))
+                    {
+                        yield return entity;
+                    }
+                }
             }
-
-            return Enumerable.Empty<Entity>();
         }
 
         public IEnumerable<Entity> GetEntities<T1, T2, T3, T4>()
@@ -168,10 +179,14 @@ namespace Automata.Engine
                 && _Components.TryGetValue(typeof(T3), out HashSet<Entity>? entities3)
                 && _Components.TryGetValue(typeof(T4), out HashSet<Entity>? entities4))
             {
-                return entities1!.Intersect(entities2!).Intersect(entities3!).Intersect(entities4!);
+                foreach (Entity entity in entities1!)
+                {
+                    if (entities2!.Contains(entity) && entities3!.Contains(entity) && entities4!.Contains(entity))
+                    {
+                        yield return entity;
+                    }
+                }
             }
-
-            return Enumerable.Empty<Entity>();
         }
 
         #endregion
