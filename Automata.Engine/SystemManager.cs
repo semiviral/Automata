@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
@@ -29,12 +30,14 @@ namespace Automata.Engine
         private readonly World _World;
         private readonly IOrderedCollection<ComponentSystem> _ComponentSystems;
         private readonly Dictionary<Type, HandledComponents[]> _HandledComponentsArrays;
+        private readonly Stopwatch _UpdateStopwatch;
 
         public SystemManager(World world)
         {
             _World = world;
             _ComponentSystems = new OrderedList<ComponentSystem>();
             _HandledComponentsArrays = new Dictionary<Type, HandledComponents[]>();
+            _UpdateStopwatch = new Stopwatch();
 
             RegisterLast<FirstOrderSystem>();
             RegisterLast<DefaultOrderSystem>();
@@ -60,7 +63,14 @@ namespace Automata.Engine
             {
                 if (componentSystem.Enabled && CheckSystemHandledTypesExist(entityManager, componentSystem))
                 {
+                    _UpdateStopwatch.Restart();
                     await componentSystem.UpdateAsync(entityManager, deltaTime).ConfigureAwait(false);
+                    _UpdateStopwatch.Stop();
+
+                    if (_UpdateStopwatch.Elapsed >= AutomataWindow.Instance.VSyncFrameTime)
+                    {
+                        Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(SystemManager), $"Excessive update time: {componentSystem.GetType()}"));
+                    }
                 }
             }
         }

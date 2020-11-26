@@ -57,8 +57,11 @@ namespace Automata.Engine.Rendering.Meshes
 
         #region Renting
 
-        public BufferArrayMemory<T> RentBufferArrayMemory<T>(nuint alignment, ReadOnlySpan<T> data) where T : unmanaged =>
-            new BufferArrayMemory<T>(_BufferAllocator, alignment, data);
+        public BufferMemory<T> RentBufferMemory<T>(nuint alignment, ReadOnlySpan<T> data) where T : unmanaged =>
+            new BufferMemory<T>(_BufferAllocator, alignment, data);
+
+        public BufferMemory<T> RentBufferMemory<T>(nuint alignment, nuint size) where T : unmanaged =>
+            new BufferMemory<T>(_BufferAllocator, alignment, size);
 
         #endregion
 

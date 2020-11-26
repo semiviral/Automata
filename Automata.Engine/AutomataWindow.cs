@@ -30,8 +30,6 @@ namespace Automata.Engine
         private readonly APIVersion _PreferredOGLVersion = new APIVersion(4, 6);
         private readonly APIVersion _PreferredVulkanVersion = new APIVersion(1, 2);
 
-        private TimeSpan _MinimumFrameTime;
-
         private IWindow? _Window;
 
         private IWindow Window
@@ -49,6 +47,7 @@ namespace Automata.Engine
             }
         }
 
+        public TimeSpan VSyncFrameTime { get; private set; }
         public string Title { get => Window.Title; set => Window.Title = value; }
         public Vector2i Position { get => (Vector2i)Window.Position; set => Window.Position = (Point)value; }
         public Vector4 Viewport => new Vector4(0f, 0f, Window.Size.Width, Window.Size.Height);
@@ -109,7 +108,7 @@ namespace Automata.Engine
 
             double refreshRate = Window.Monitor?.VideoMode.RefreshRate.GetValueOrDefault() ?? default_refresh_rate;
 
-            _MinimumFrameTime = TimeSpan.FromSeconds(1d / refreshRate);
+            VSyncFrameTime = TimeSpan.FromSeconds(1d / refreshRate);
             Log.Information(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(AutomataWindow), $"VSync framerate configured to {refreshRate} FPS."));
         }
 
@@ -166,7 +165,7 @@ namespace Automata.Engine
             }
         }
 
-        private void WaitForNextMonitorRefresh(Stopwatch deltaTimer) { SpinWait.SpinUntil(() => deltaTimer.Elapsed >= _MinimumFrameTime); }
+        private void WaitForNextMonitorRefresh(Stopwatch deltaTimer) { SpinWait.SpinUntil(() => deltaTimer.Elapsed >= VSyncFrameTime); }
 
         #endregion Runtime
 

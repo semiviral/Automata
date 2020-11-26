@@ -7,7 +7,7 @@ namespace Automata.Engine.Rendering.OpenGL
         where TIndex : unmanaged
         where TVertex : unmanaged
     {
-        public MeshArrayMemory<TIndex, TVertex>? Allocation { get; set; }
+        public MeshMemory<TIndex, TVertex>? Allocation { get; set; }
 
 
         #region IEquatable

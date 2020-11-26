@@ -136,15 +136,13 @@ namespace Automata.Engine.Rendering.Meshes
             {
                 Debug.Assert(allocation.Allocation is not null);
 
-                DrawElementsIndirectCommand drawElementsIndirectCommand = new DrawElementsIndirectCommand(allocation.Allocation.IndexesArrayMemory.Count, 1u,
-                    (uint)(allocation.Allocation.IndexesArrayMemory.Index / (nuint)sizeof(TIndex)),
-                    (uint)(allocation.Allocation.VertexArrayMemory.Index / (nuint)sizeof(TVertex)), (uint)index);
+                DrawElementsIndirectCommand drawElementsIndirectCommand = new DrawElementsIndirectCommand(allocation.Allocation.IndexesMemory.Count, 1u,
+                    (uint)(allocation.Allocation.IndexesMemory.Index / (nuint)sizeof(TIndex)),
+                    (uint)(allocation.Allocation.VertexMemory.Index / (nuint)sizeof(TVertex)), (uint)index);
 
                 commands[index] = drawElementsIndirectCommand;
                 models[index] = entity.Component<Transform>()?.Matrix ?? Matrix4x4.Identity;
                 index += 1;
-
-                Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(AllocatedMeshingSystem<TIndex, TVertex>), drawElementsIndirectCommand));
             }
 
             // make sure we slice the rentals here, since they're subject to arbitrary sizing rules (and may not be the exact requested minimum size).
@@ -170,16 +168,19 @@ namespace Automata.Engine.Rendering.Meshes
                 drawIndirectAllocation = entityManager.RegisterComponent<DrawElementsIndirectAllocation<TIndex, TVertex>>(entity);
             }
 
+            // todo this section of code is causing serious stuttering
+            // todo should consider breaking it up by timesteps to maintain vsync potential
+
             // we make sure to dispose the old allocation to free the memory in the pool
             drawIndirectAllocation.Allocation?.Dispose();
 
-            BufferArrayMemory<TIndex> indexArrayMemory = _MultiDrawIndirectMesh.RentBufferArrayMemory<TIndex>((nuint)sizeof(TIndex),
+            BufferMemory<TIndex> indexArrayMemory = _MultiDrawIndirectMesh.RentBufferMemory<TIndex>((nuint)sizeof(TIndex),
                 MemoryMarshal.Cast<QuadIndexes<TIndex>, TIndex>(pendingData.Indexes.Segment));
 
-            BufferArrayMemory<TVertex> vertexArrayMemory = _MultiDrawIndirectMesh.RentBufferArrayMemory<TVertex>((nuint)sizeof(TVertex),
+            BufferMemory<TVertex> vertexArrayMemory = _MultiDrawIndirectMesh.RentBufferMemory<TVertex>((nuint)sizeof(TVertex),
                 MemoryMarshal.Cast<QuadVertexes<TVertex>, TVertex>(pendingData.Vertexes.Segment));
 
-            drawIndirectAllocation.Allocation = new MeshArrayMemory<TIndex, TVertex>(indexArrayMemory, vertexArrayMemory);
+            drawIndirectAllocation.Allocation = new MeshMemory<TIndex,TVertex>(indexArrayMemory, vertexArrayMemory);
 
             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(AllocatedMeshingSystem<TIndex, TVertex>),
                 $"Allocated new {nameof(DrawElementsIndirectAllocation<TIndex, TVertex>)}: {indexArrayMemory.MemoryOwner.Memory.Length} indexes, {vertexArrayMemory.MemoryOwner.Memory.Length} vertexes"));
