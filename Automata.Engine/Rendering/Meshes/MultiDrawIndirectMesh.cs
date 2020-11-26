@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Numerics;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
@@ -24,6 +23,8 @@ namespace Automata.Engine.Rendering.Meshes
 
         public MultiDrawIndirectMesh(GL gl, nuint allocatorSize, DrawElementsType drawElementsType, Layer layers = Layer.Layer0)
         {
+            const nuint reasonable_max_object_count = 21_000u;
+
             ID = Guid.NewGuid();
             Layer = layers;
 
@@ -31,7 +32,7 @@ namespace Automata.Engine.Rendering.Meshes
             _CommandBuffer = new BufferObject<DrawElementsIndirectCommand>(gl);
             _BufferAllocator = new BufferAllocator(gl, allocatorSize);
             _VertexArrayObject = new VertexArrayObject(gl);
-            _ModelBuffer = new BufferObject<Matrix4x4>(gl, 2_500_000, BufferStorageMask.MapWriteBit);
+            _ModelBuffer = new BufferObject<Matrix4x4>(gl, reasonable_max_object_count, BufferStorageMask.MapWriteBit);
 
             _VertexArrayObject.AllocateVertexBufferBinding(0u, _BufferAllocator);
             _VertexArrayObject.AllocateVertexBufferBinding(1u, _ModelBuffer, 0, 1u);

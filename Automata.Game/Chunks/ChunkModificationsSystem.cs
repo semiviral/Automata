@@ -1,9 +1,7 @@
 using System;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Automata.Engine;
-using Automata.Engine.Diagnostics;
 using Automata.Engine.Input;
 using Automata.Game.Blocks;
 using DiagnosticsProviderNS;
