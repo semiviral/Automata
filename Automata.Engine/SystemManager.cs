@@ -54,11 +54,6 @@ namespace Automata.Engine
                     await componentSystem.UpdateAsync(entityManager, deltaTime).ConfigureAwait(false);
                 }
             }
-
-            foreach (ComponentChangeable changeable in entityManager.GetComponentsExplicit<ComponentChangeable>())
-            {
-                changeable.Changed = false;
-            }
         }
 
         private bool CheckSystemHandledTypesExist(EntityManager entityManager, ComponentSystem componentSystem)

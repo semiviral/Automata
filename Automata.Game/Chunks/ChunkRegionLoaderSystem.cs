@@ -89,6 +89,7 @@ namespace Automata.Game.Chunks
                 }
 
                 chunkLoader.Origin = Vector3i.RoundBy(translationInt32, GenerationConstants.CHUNK_SIZE);
+                chunkLoader.Changed = false;
                 updatedChunkPositions = true;
             }
 

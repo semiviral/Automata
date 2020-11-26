@@ -14,8 +14,8 @@ namespace Automata.Engine
     public sealed class Entity : IEquatable<Entity>, IDisposable
     {
         private readonly NonAllocatingList<Component> _Components;
+        private readonly int _HashCode;
 
-        public Guid ID { get; }
         public bool Disposed { get; private set; }
 
         public int Count => _Components.Count;
@@ -26,11 +26,11 @@ namespace Automata.Engine
             get => _Components[index];
         }
 
-        public Entity()
+        internal Entity()
         {
-            ID = Guid.NewGuid();
-            Disposed = false;
             _Components = new NonAllocatingList<Component>();
+            _HashCode = Guid.NewGuid().GetHashCode();
+            Disposed = false;
         }
 
 
@@ -168,11 +168,12 @@ namespace Automata.Engine
         #region IEquatable
 
         public override bool Equals(object? obj) => obj is Entity entity && Equals(entity);
-        public bool Equals(Entity? other) => other is not null && ID.Equals(other.ID);
+        public bool Equals(Entity? other) => other is not null && _HashCode.Equals(other._HashCode);
 
-        public override int GetHashCode() => ID.GetHashCode();
+        public override int GetHashCode() => _HashCode;
 
-        public override string ToString() => $"{nameof(Entity)}(ID {ID}: {string.Join(", ", _Components.Select(component => component.GetType().Name))})";
+        public override string ToString() =>
+            $"{nameof(Entity)}(ID {_HashCode}: {string.Join(", ", _Components.Select(component => component.GetType().Name))})";
 
         #endregion
 

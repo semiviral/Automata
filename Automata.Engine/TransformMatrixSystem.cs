@@ -42,6 +42,8 @@ namespace Automata.Engine
                     matrix *= Matrix4x4.CreateScale(transform.Scale);
                     transform.Matrix = matrix;
                 }
+
+                transform.Changed = false;
             }
 
             if (_UpdateProjections)

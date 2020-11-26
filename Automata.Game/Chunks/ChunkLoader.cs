@@ -3,9 +3,11 @@ using Automata.Engine.Numerics;
 
 namespace Automata.Game.Chunks
 {
-    public class ChunkLoader : ComponentChangeable
+    public class ChunkLoader : Component
     {
         private int _Radius;
+
+        public bool Changed { get; set; }
 
         public int Radius
         {

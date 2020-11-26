@@ -2,13 +2,14 @@ using System.Numerics;
 
 namespace Automata.Engine
 {
-    public class Transform : ComponentChangeable
+    public class Transform : Component
     {
         private float _Scale;
         private Quaternion _Rotation;
         private Vector3 _Translation;
 
         public Matrix4x4 Matrix { get; set; }
+        public bool Changed { get; set; }
 
         public float Scale
         {

@@ -46,9 +46,4 @@ namespace Automata.Engine
 
         #endregion
     }
-
-    public abstract class ComponentChangeable : Component
-    {
-        public bool Changed { get; set; }
-    }
 }
