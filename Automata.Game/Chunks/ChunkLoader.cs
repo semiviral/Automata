@@ -7,7 +7,7 @@ namespace Automata.Game.Chunks
     {
         private int _Radius;
 
-        public bool Changed { get; set; }
+        public bool RadiusChanged { get; set; }
 
         public int Radius
         {
@@ -15,7 +15,7 @@ namespace Automata.Game.Chunks
             set
             {
                 _Radius = value;
-                Changed = true;
+                RadiusChanged = true;
             }
         }
 

@@ -3,7 +3,6 @@ using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace Automata.Engine.Collections
 {
@@ -272,8 +271,9 @@ namespace Automata.Engine.Collections
             Span<T> internalSpan = _InternalArray.AsSpan();
 
             if (index != Count)
-            {
+
                 // make space for the insertion, copying the elements past it
+            {
                 internalSpan.Slice(index, Count).CopyTo(internalSpan.Slice(endIndex));
             }
 

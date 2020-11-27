@@ -27,6 +27,8 @@ namespace Automata.Engine.Collections
         public bool Contains<TType>() => _InternalDictionary.ContainsKey(typeof(TType));
         public bool Contains(Type type) => _InternalDictionary.ContainsKey(type);
 
+        public TType GetItem<TType>() where TType : class, T => (_InternalDictionary[typeof(TType)] as TType)!;
+
         public bool TryGetItem<TType>([NotNullWhen(true)] out TType? item) where TType : class, T
         {
             if (_InternalDictionary.TryGetValue(typeof(TType), out T? value))

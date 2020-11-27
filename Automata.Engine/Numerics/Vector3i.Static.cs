@@ -46,6 +46,9 @@ namespace Automata.Engine.Numerics
         public static Vector3i Abs(Vector3i a) => AbsImpl(a);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3i Sign(Vector3i a) => new Vector3i(Math.Sign(a.X), Math.Sign(a.Y), Math.Sign(a.Z));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Vector3i Mod(Vector3i a, Vector3i mod) => ModImpl(a, mod);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

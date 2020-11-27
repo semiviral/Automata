@@ -90,9 +90,9 @@ namespace Automata.Game
 
         public bool TryDeallocate(EntityManager entityManager, Vector3i origin, [NotNullWhen(true)] out Chunk? chunk)
         {
-            if (_Chunks.Remove(origin, out Entity? entity) && entity is not null!)
+            if (_Chunks.Remove(origin, out Entity? entity))
             {
-                bool success = entity.TryComponent(out chunk);
+                bool success = entity!.TryComponent(out chunk);
                 entityManager.RemoveEntity(entity);
                 return success;
             }

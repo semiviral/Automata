@@ -1,6 +1,6 @@
 using System;
 using System.Buffers;
-using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -65,11 +65,30 @@ namespace Automata.Engine.Rendering.Meshes
 
         public override async ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta)
         {
-            bool recreateCommandBuffer = false;
-            nint allocatedMeshDataCount = entityManager.GetComponentCount<AllocatedMeshData<TIndex, TVertex>>();
-            using NonAllocatingList<Task> tasks = new NonAllocatingList<Task>((int)allocatedMeshDataCount);
+            if (TryGetAggregateAllocationTasks(entityManager, out NonAllocatingList<Task>? tasks))
+            {
+                await Task.WhenAll(tasks);
+                ProcessDrawElementsIndirectAllocations(entityManager);
+            }
 
-            foreach ((Entity entity, AllocatedMeshData<TIndex, TVertex> mesh) in entityManager.GetEntitiesWithComponents<AllocatedMeshData<TIndex, TVertex>>())
+            tasks?.Dispose();
+        }
+
+        private bool TryGetAggregateAllocationTasks(EntityManager entityManager, [NotNullWhen(true)] out NonAllocatingList<Task>? tasks)
+        {
+            nint allocatedMeshDataCount = entityManager.GetComponentCount<AllocatedMeshData<TIndex, TVertex>>();
+
+            if (allocatedMeshDataCount is 0)
+            {
+                tasks = null;
+                return false;
+            }
+
+            tasks = new NonAllocatingList<Task>((int)allocatedMeshDataCount);
+            bool recreateCommandBuffer = false;
+
+            foreach ((Entity entity, AllocatedMeshData<TIndex, TVertex> mesh) in
+                entityManager.GetEntitiesWithComponents<AllocatedMeshData<TIndex, TVertex>>())
             {
                 unsafe Task CreateDrawIndirectAllocationAllocationImpl(DrawElementsIndirectAllocation<TIndex, TVertex> pendingAllocation)
                 {
@@ -102,13 +121,7 @@ namespace Automata.Engine.Rendering.Meshes
                 entityManager.RemoveComponent<AllocatedMeshData<TIndex, TVertex>>(entity);
             }
 
-            await Task.WhenAll(tasks);
-
-            if (recreateCommandBuffer)
-            {
-                _MultiDrawIndirectMesh.DrawSync?.BusyWaitCPU();
-                ProcessDrawElementsIndirectAllocations(entityManager);
-            }
+            return recreateCommandBuffer;
         }
 
 
@@ -159,11 +172,9 @@ namespace Automata.Engine.Rendering.Meshes
             foreach ((Entity entity, DrawElementsIndirectAllocation<TIndex, TVertex> allocation) in
                 entityManager.GetEntitiesWithComponents<DrawElementsIndirectAllocation<TIndex, TVertex>>())
             {
-                Debug.Assert(allocation.Allocation is not null);
-
-                DrawElementsIndirectCommand drawElementsIndirectCommand = new DrawElementsIndirectCommand(allocation.Allocation.IndexesMemory.Count, 1u,
-                    (uint)(allocation.Allocation.IndexesMemory.Index / (nuint)sizeof(TIndex)),
-                    (uint)(allocation.Allocation.VertexMemory.Index / (nuint)sizeof(TVertex)), (uint)index);
+                DrawElementsIndirectCommand drawElementsIndirectCommand = new DrawElementsIndirectCommand(allocation.Allocation!.IndexesMemory.Count, 1u,
+                    (uint)(allocation.Allocation!.IndexesMemory.Index / (nuint)sizeof(TIndex)),
+                    (uint)(allocation.Allocation!.VertexMemory.Index / (nuint)sizeof(TVertex)), (uint)index);
 
                 commands[index] = drawElementsIndirectCommand;
                 models[index] = entity.Component<Transform>()?.Matrix ?? Matrix4x4.Identity;

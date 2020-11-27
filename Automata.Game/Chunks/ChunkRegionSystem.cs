@@ -1,6 +1,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -91,15 +92,16 @@ namespace Automata.Game.Chunks
 
             foreach ((Transform transform, ChunkLoader chunkLoader) in entityManager.GetComponents<Transform, ChunkLoader>())
             {
-                Vector3 difference = Vector3.Abs(transform.Translation - chunkLoader.Origin);
+                Vector3i transformTranslation = Vector3i.FromVector3(transform.Translation);
+                Vector3i difference = (transformTranslation - chunkLoader.Origin).SetComponent(1, 0);
 
-                if (!chunkLoader.Changed && (difference.X < GenerationConstants.CHUNK_SIZE) && (difference.Z < GenerationConstants.CHUNK_SIZE))
+                if (!chunkLoader.RadiusChanged && Vector3b.All(Vector3i.Abs(difference) < GenerationConstants.CHUNK_SIZE))
                 {
                     continue;
                 }
 
-                chunkLoader.Origin = Vector3i.FromVector3(transform.Translation.RoundBy(GenerationConstants.CHUNK_SIZE));
-                chunkLoader.Changed = false;
+                chunkLoader.Origin = Vector3i.RoundBy(transformTranslation, GenerationConstants.CHUNK_SIZE);
+                chunkLoader.RadiusChanged = false;
                 updatedChunkPositions = true;
             }
 
@@ -118,10 +120,11 @@ namespace Automata.Game.Chunks
                 await _VoxelWorld.TryAllocate(entityManager, origin);
             }
 
-            foreach (Vector3i origin in _VoxelWorld.Origins.Except(withinLoaderRange))
+            foreach (Vector3i origin in _VoxelWorld.Origins)
             {
                 if (!withinLoaderRange.Contains(origin) && _VoxelWorld.TryDeallocate(entityManager, origin, out Chunk? chunk))
                 {
+                    // todo it would be nice to just dispose of chunks outright, instead of deferring it
                     _ChunksPendingDisposal.Push(chunk);
                 }
             }
@@ -137,11 +140,18 @@ namespace Automata.Game.Chunks
             {
                 Vector3i chunkLoaderOrigin = new Vector3i(chunkLoader.Origin.X, 0, chunkLoader.Origin.Z);
 
-                for (int y = 0; y < GenerationConstants.WORLD_HEIGHT_IN_CHUNKS; y++)
                 for (int z = -chunkLoader.Radius; z < (chunkLoader.Radius + 1); z++)
                 for (int x = -chunkLoader.Radius; x < (chunkLoader.Radius + 1); x++)
                 {
-                    withinLoaderRange.Add(chunkLoaderOrigin + (new Vector3i(x, y, z) * GenerationConstants.CHUNK_SIZE));
+                    // remark: this relies on GenerationConstants.WORLD_HEIGHT_IN_CHUNKS being 8
+                    withinLoaderRange.Add(chunkLoaderOrigin + (new Vector3i(x, 0, z) * GenerationConstants.CHUNK_SIZE));
+                    withinLoaderRange.Add(chunkLoaderOrigin + (new Vector3i(x, 1, z) * GenerationConstants.CHUNK_SIZE));
+                    withinLoaderRange.Add(chunkLoaderOrigin + (new Vector3i(x, 2, z) * GenerationConstants.CHUNK_SIZE));
+                    withinLoaderRange.Add(chunkLoaderOrigin + (new Vector3i(x, 3, z) * GenerationConstants.CHUNK_SIZE));
+                    withinLoaderRange.Add(chunkLoaderOrigin + (new Vector3i(x, 4, z) * GenerationConstants.CHUNK_SIZE));
+                    withinLoaderRange.Add(chunkLoaderOrigin + (new Vector3i(x, 5, z) * GenerationConstants.CHUNK_SIZE));
+                    withinLoaderRange.Add(chunkLoaderOrigin + (new Vector3i(x, 6, z) * GenerationConstants.CHUNK_SIZE));
+                    withinLoaderRange.Add(chunkLoaderOrigin + (new Vector3i(x, 7, z) * GenerationConstants.CHUNK_SIZE));
                 }
             }
 

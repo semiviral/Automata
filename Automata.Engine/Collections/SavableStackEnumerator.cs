@@ -52,7 +52,6 @@ namespace Automata.Engine.Collections
             }
 
             ArrayPool<T>.Shared.Return(_Saved);
-            _SavedIndex = 0u;
         }
     }
 }

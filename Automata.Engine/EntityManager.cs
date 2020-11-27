@@ -11,15 +11,10 @@ namespace Automata.Engine
     public sealed class EntityManager : IDisposable
     {
         private readonly DerivedSet<HashSet<Entity>> _ComponentCache;
-        private readonly Dictionary<Guid, DerivedSet<Component>> _Entities;
 
         public int EntityCount { get; set; }
 
-        public EntityManager()
-        {
-            _ComponentCache = new DerivedSet<HashSet<Entity>>();
-            _Entities = new Dictionary<Guid, DerivedSet<Component>>();
-        }
+        public EntityManager() => _ComponentCache = new DerivedSet<HashSet<Entity>>();
 
 
         #region Entity Create / Remove
