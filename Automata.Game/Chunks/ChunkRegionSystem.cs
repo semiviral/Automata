@@ -65,20 +65,20 @@ namespace Automata.Game.Chunks
                 {
                     Chunk chunk = stackEnumerator.Current;
 
-                    bool disposable = true;
-                    for (int index = 0; index < chunk!.Neighbors.Length; index++)
+                    int index = 0;
+
+                    for (; index < chunk!.Neighbors.Length; index++)
                     {
                         if (chunk!.Neighbors[index]?.State is not null and
                             (GenerationState.GeneratingTerrain
                             or GenerationState.GeneratingStructures
                             or GenerationState.GeneratingMesh))
                         {
-                            disposable = false;
                             break;
                         }
                     }
 
-                    if (disposable)
+                    if (index == chunk!.Neighbors.Length)
                     {
                         chunk.RegionDispose();
                     }
@@ -127,7 +127,7 @@ namespace Automata.Game.Chunks
             // calculate all loadable chunk origins
             foreach (ChunkLoader chunkLoader in entityManager.GetComponents<ChunkLoader>())
             {
-                Vector3i chunkLoaderOrigin = new Vector3i(chunkLoader.Origin.X, 0, chunkLoader.Origin.Z);
+                Vector3i yAdjustedOrigin = new Vector3i(chunkLoader.Origin.X, 0, chunkLoader.Origin.Z);
 
                 for (int z = -chunkLoader.Radius; z < (chunkLoader.Radius + 1); z++)
                 for (int x = -chunkLoader.Radius; x < (chunkLoader.Radius + 1); x++)
@@ -136,14 +136,14 @@ namespace Automata.Game.Chunks
                     int zPos = z * GenerationConstants.CHUNK_SIZE;
 
                     // remark: this relies on GenerationConstants.WORLD_HEIGHT_IN_CHUNKS being 8
-                    _LoadableChunks.Add(chunkLoaderOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 0, zPos));
-                    _LoadableChunks.Add(chunkLoaderOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 1, zPos));
-                    _LoadableChunks.Add(chunkLoaderOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 2, zPos));
-                    _LoadableChunks.Add(chunkLoaderOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 3, zPos));
-                    _LoadableChunks.Add(chunkLoaderOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 4, zPos));
-                    _LoadableChunks.Add(chunkLoaderOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 5, zPos));
-                    _LoadableChunks.Add(chunkLoaderOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 6, zPos));
-                    _LoadableChunks.Add(chunkLoaderOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 7, zPos));
+                    _LoadableChunks.Add(yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 0, zPos));
+                    _LoadableChunks.Add(yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 1, zPos));
+                    _LoadableChunks.Add(yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 2, zPos));
+                    _LoadableChunks.Add(yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 3, zPos));
+                    _LoadableChunks.Add(yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 4, zPos));
+                    _LoadableChunks.Add(yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 5, zPos));
+                    _LoadableChunks.Add(yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 6, zPos));
+                    _LoadableChunks.Add(yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 7, zPos));
                 }
             }
 
@@ -153,7 +153,7 @@ namespace Automata.Game.Chunks
                 await _VoxelWorld.TryAllocate(entityManager, origin);
             }
 
-            // deallocate chunks that aren't within loadable radii
+            // deallocate chunks that aren't within loader radii
             foreach (Vector3i origin in _VoxelWorld.Origins)
             {
                 if (!_LoadableChunks.Contains(origin) && _VoxelWorld.TryDeallocate(entityManager, origin, out Chunk? chunk))
