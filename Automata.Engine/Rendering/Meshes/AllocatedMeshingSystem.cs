@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Automata.Engine.Collections;
 using Automata.Engine.Input;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Engine.Rendering.OpenGL.Buffers;
@@ -62,14 +63,38 @@ namespace Automata.Engine.Rendering.Meshes
             InputManager.Instance.RegisterInputAction(() => _MultiDrawIndirectMesh.ValidateAllocatorBlocks(), Key.F9);
         }
 
-        public override ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta)
+        public override async ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta)
         {
             bool recreateCommandBuffer = false;
+            nint allocatedMeshDataCount = entityManager.GetComponentCount<AllocatedMeshData<TIndex, TVertex>>();
+            using NonAllocatingList<Task> tasks = new NonAllocatingList<Task>((int)allocatedMeshDataCount);
 
             foreach ((Entity entity, AllocatedMeshData<TIndex, TVertex> mesh) in entityManager.GetEntitiesWithComponents<AllocatedMeshData<TIndex, TVertex>>())
             {
-                if (TryAllocateMesh(entityManager, entity, mesh.Data))
+                unsafe Task CreateDrawIndirectAllocationAllocationImpl(DrawElementsIndirectAllocation<TIndex, TVertex> pendingAllocation)
                 {
+                    pendingAllocation.Allocation?.Dispose();
+
+                    BufferMemory<TIndex> indexArrayMemory = _MultiDrawIndirectMesh.RentBufferMemory<TIndex>((nuint)sizeof(TIndex),
+                        MemoryMarshal.Cast<QuadIndexes<TIndex>, TIndex>(mesh.Data.Indexes.Segment));
+
+                    BufferMemory<TVertex> vertexArrayMemory = _MultiDrawIndirectMesh.RentBufferMemory<TVertex>((nuint)sizeof(TVertex),
+                        MemoryMarshal.Cast<QuadVertexes<TVertex>, TVertex>(mesh.Data.Vertexes.Segment));
+
+                    pendingAllocation.Allocation = new MeshMemory<TIndex, TVertex>(indexArrayMemory, vertexArrayMemory);
+
+                    return Task.CompletedTask;
+                }
+
+                if (!mesh.Data.IsEmpty)
+                {
+                    // if the entity doesn't have the required component, make sure we add it
+                    if (!entity.TryComponent(out DrawElementsIndirectAllocation<TIndex, TVertex>? allocation))
+                    {
+                        allocation = entityManager.RegisterComponent<DrawElementsIndirectAllocation<TIndex, TVertex>>(entity);
+                    }
+
+                    tasks.Add(CreateDrawIndirectAllocationAllocationImpl(allocation));
                     ConfigureMaterial(entityManager, entity);
                     recreateCommandBuffer = true;
                 }
@@ -77,13 +102,13 @@ namespace Automata.Engine.Rendering.Meshes
                 entityManager.RemoveComponent<AllocatedMeshData<TIndex, TVertex>>(entity);
             }
 
+            await Task.WhenAll(tasks);
+
             if (recreateCommandBuffer)
             {
                 _MultiDrawIndirectMesh.DrawSync?.BusyWaitCPU();
                 ProcessDrawElementsIndirectAllocations(entityManager);
             }
-
-            return ValueTask.CompletedTask;
         }
 
 
@@ -153,39 +178,6 @@ namespace Automata.Engine.Rendering.Meshes
 
             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(AllocatedMeshingSystem<TIndex, TVertex>),
                 $"Allocated {drawIndirectAllocationsCount} {nameof(DrawElementsIndirectCommand)}"));
-        }
-
-        private unsafe bool TryAllocateMesh(EntityManager entityManager, Entity entity, NonAllocatingQuadsMeshData<TIndex, TVertex> pendingData)
-        {
-            if (pendingData.IsEmpty)
-            {
-                return false;
-            }
-
-            // if the entity doesn't have the required component, make sure we add it
-            if (!entity.TryComponent(out DrawElementsIndirectAllocation<TIndex, TVertex>? drawIndirectAllocation))
-            {
-                drawIndirectAllocation = entityManager.RegisterComponent<DrawElementsIndirectAllocation<TIndex, TVertex>>(entity);
-            }
-
-            // todo this section of code is causing serious stuttering
-            // todo should consider breaking it up by timesteps to maintain vsync potential
-
-            // we make sure to dispose the old allocation to free the memory in the pool
-            drawIndirectAllocation.Allocation?.Dispose();
-
-            BufferMemory<TIndex> indexArrayMemory = _MultiDrawIndirectMesh.RentBufferMemory<TIndex>((nuint)sizeof(TIndex),
-                MemoryMarshal.Cast<QuadIndexes<TIndex>, TIndex>(pendingData.Indexes.Segment));
-
-            BufferMemory<TVertex> vertexArrayMemory = _MultiDrawIndirectMesh.RentBufferMemory<TVertex>((nuint)sizeof(TVertex),
-                MemoryMarshal.Cast<QuadVertexes<TVertex>, TVertex>(pendingData.Vertexes.Segment));
-
-            drawIndirectAllocation.Allocation = new MeshMemory<TIndex,TVertex>(indexArrayMemory, vertexArrayMemory);
-
-            Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(AllocatedMeshingSystem<TIndex, TVertex>),
-                $"Allocated new {nameof(DrawElementsIndirectAllocation<TIndex, TVertex>)}: {indexArrayMemory.MemoryOwner.Memory.Length} indexes, {vertexArrayMemory.MemoryOwner.Memory.Length} vertexes"));
-
-            return true;
         }
 
         private static void ConfigureMaterial(EntityManager entityManager, Entity entity)

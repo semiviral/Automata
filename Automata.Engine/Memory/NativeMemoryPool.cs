@@ -17,9 +17,8 @@ namespace Automata.Engine.Memory
         /// </summary>
         private sealed record MemoryBlock(nuint Index, nuint Size, bool Owned);
 
-        private readonly object _AccessLock;
         private readonly LinkedList<MemoryBlock> _MemoryMap;
-
+        private readonly object _AccessLock;
         private readonly byte* _Pointer;
 
         /// <summary>
@@ -103,7 +102,7 @@ namespace Automata.Engine.Memory
             switch (size)
             {
                 case < 0: throw new ArgumentOutOfRangeException(nameof(size), "Size must be non-negative and less than the size of the pool.");
-                case 0: return new NativeMemoryOwner<T>(this, 0, Memory<T>.Empty);
+                case 0: return new NativeMemoryPoolOwner<T>(this, 0, Memory<T>.Empty);
             }
 
             lock (_AccessLock)
@@ -246,7 +245,7 @@ namespace Automata.Engine.Memory
             // method with a valid index and size that won't misalign. With this in mind, ensure that instantiating the
             // NativeMemoryManager ALWAYS uses the units-of-T size.
             NativeMemoryManager<T> memoryManager = new NativeMemoryManager<T>((T*)(_Pointer + index), size);
-            IMemoryOwner<T> memoryOwner = new NativeMemoryOwner<T>(this, index, memoryManager.Memory);
+            IMemoryOwner<T> memoryOwner = new NativeMemoryPoolOwner<T>(this, index, memoryManager.Memory);
 
             return memoryOwner;
         }
@@ -256,14 +255,14 @@ namespace Automata.Engine.Memory
 
         #region Return
 
-        internal void Return<T>(NativeMemoryOwner<T> memoryOwner) where T : unmanaged
+        internal void Return<T>(NativeMemoryPoolOwner<T> memoryPoolOwner) where T : unmanaged
         {
-            Debug.Assert(!memoryOwner.Memory.IsEmpty,
+            Debug.Assert(!memoryPoolOwner.Memory.IsEmpty,
                 $"{nameof(IMemoryOwner<T>)} has already been disposed, does not belong to this pool, or does not have a real block allocated.");
 
             lock (_AccessLock)
             {
-                LinkedListNode<MemoryBlock> current = GetMemoryBlockAtIndex(memoryOwner.Index);
+                LinkedListNode<MemoryBlock> current = GetMemoryBlockAtIndex(memoryPoolOwner.Index);
                 LinkedListNode<MemoryBlock>? before = current.Previous;
                 LinkedListNode<MemoryBlock>? after = current.Next;
                 current.Value = current.Value with { Owned = false };

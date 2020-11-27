@@ -1,4 +1,7 @@
-﻿using BenchmarkDotNet.Reports;
+﻿using System;
+using System.Linq;
+using Automata.Engine.Extensions;
+using BenchmarkDotNet.Reports;
 using BenchmarkDotNet.Running;
 
 namespace Automata.Engine.Benchmarks
@@ -7,7 +10,7 @@ namespace Automata.Engine.Benchmarks
     {
         private static void Main(string[] args)
         {
-            Summary summary = BenchmarkRunner.Run<OpenSimplexSlimBenchmark>();
+            //Summary summary = BenchmarkRunner.Run<BenchmarkVectorizedCopy>();
 
             //Console.ReadKey();
         }

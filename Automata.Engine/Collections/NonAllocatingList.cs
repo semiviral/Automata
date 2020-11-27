@@ -3,10 +3,11 @@ using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Automata.Engine.Collections
 {
-    public class NonAllocatingList<T> : IList<T>, IDisposable where T : IEquatable<T>
+    public class NonAllocatingList<T> : IList<T>, IDisposable
     {
         private const int _DEFAULT_CAPACITY = 1;
 
@@ -178,7 +179,7 @@ namespace Automata.Engine.Collections
         ///     Returns -1 if the item is not found, otherwise returns the index the item was found at.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int IndexOf(T item) => Segment.IndexOf(item);
+        public int IndexOf(T item) => Array.IndexOf(_InternalArray, item, 0, Count);
 
 
         #region Adding / Inserting

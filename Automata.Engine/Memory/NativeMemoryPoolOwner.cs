@@ -7,14 +7,14 @@ namespace Automata.Engine.Memory
     ///     Used internally to properly track and dispose of rented memory blocks.
     /// </summary>
     /// <typeparam name="T">Unmanaged type of the <see cref="IMemoryOwner{T}" />.</typeparam>
-    internal sealed class NativeMemoryOwner<T> : IMemoryOwner<T> where T : unmanaged
+    internal sealed class NativeMemoryPoolOwner<T> : IMemoryOwner<T> where T : unmanaged
     {
         private readonly NativeMemoryPool _NativeMemoryPool;
 
         internal nuint Index { get; }
         public Memory<T> Memory { get; private set; }
 
-        internal NativeMemoryOwner(NativeMemoryPool nativeMemoryPool, nuint index, Memory<T> memory)
+        internal NativeMemoryPoolOwner(NativeMemoryPool nativeMemoryPool, nuint index, Memory<T> memory)
         {
             _NativeMemoryPool = nativeMemoryPool;
 
