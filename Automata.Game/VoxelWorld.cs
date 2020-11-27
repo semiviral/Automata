@@ -28,6 +28,8 @@ namespace Automata.Game
         public ICollection<Vector3i> Origins => _Chunks.Keys;
         public ICollection<Entity> Entities => _Chunks.Values;
 
+        public Entity this[Vector3i origin] => _Chunks[origin];
+
         public VoxelWorld(bool active) : base(active)
         {
             _Chunks = new Dictionary<Vector3i, Entity>();

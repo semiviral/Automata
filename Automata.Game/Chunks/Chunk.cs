@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Automata.Engine;
@@ -10,7 +11,7 @@ namespace Automata.Game.Chunks
     {
         public GenerationState State { get; set; }
         public Palette<Block>? Blocks { get; set; }
-        public Chunk?[] Neighbors { get; private set; } = new Chunk?[6];
+        public Chunk?[] Neighbors { get; } = new Chunk?[6];
         public ConcurrentChannel<ChunkModification> Modifications { get; } = new ConcurrentChannel<ChunkModification>(true, false);
         public int TimesMeshed { get; set; }
 
@@ -42,7 +43,7 @@ namespace Automata.Game.Chunks
             State = GenerationState.Inactive;
             Modifications.Dispose();
             Blocks?.Dispose();
-            Neighbors = null!;
+            Array.Clear(Neighbors, 0, Neighbors.Length);
         }
 
         #endregion
