@@ -53,7 +53,12 @@ namespace Automata.Engine.Collections
         public bool Contains<TItem>() => _InternalList.Any(item => item.GetType().IsAssignableFrom(typeof(TItem)));
         public void Clear() => _InternalList.Clear();
 
+
+        #region IEnumerable
+
         public IEnumerator<T> GetEnumerator() => _InternalList.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        #endregion
     }
 }

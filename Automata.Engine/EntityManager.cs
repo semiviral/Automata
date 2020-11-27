@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Automata.Engine.Collections;
 
 // ReSharper disable ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
 // ReSharper disable InvertIf
@@ -9,11 +10,16 @@ namespace Automata.Engine
 {
     public sealed class EntityManager : IDisposable
     {
-        private readonly Dictionary<Type, HashSet<Entity>> _Components;
+        private readonly DerivedSet<HashSet<Entity>> _ComponentCache;
+        private readonly Dictionary<Guid, DerivedSet<Component>> _Entities;
 
         public int EntityCount { get; set; }
 
-        public EntityManager() => _Components = new Dictionary<Type, HashSet<Entity>>();
+        public EntityManager()
+        {
+            _ComponentCache = new DerivedSet<HashSet<Entity>>();
+            _Entities = new Dictionary<Guid, DerivedSet<Component>>();
+        }
 
 
         #region Entity Create / Remove
@@ -35,7 +41,7 @@ namespace Automata.Engine
         {
             foreach (Component component in entity)
             {
-                if (_Components.TryGetValue(component.GetType(), out HashSet<Entity>? entities))
+                if (_ComponentCache.TryGetItem(component.GetType(), out HashSet<Entity>? entities))
                 {
                     entities!.Remove(entity);
                 }
@@ -62,8 +68,8 @@ namespace Automata.Engine
         {
             entity.Add(component);
 
-            _Components.TryAdd(component.GetType(), new HashSet<Entity>());
-            _Components[component.GetType()].Add(entity);
+            _ComponentCache.TryAdd(component.GetType(), new HashSet<Entity>());
+            _ComponentCache[component.GetType()].Add(entity);
         }
 
         /// <summary>
@@ -78,8 +84,8 @@ namespace Automata.Engine
         {
             TComponent component = entity.Add<TComponent>();
 
-            _Components.TryAdd(typeof(TComponent), new HashSet<Entity>());
-            _Components[typeof(TComponent)].Add(entity);
+            _ComponentCache.TryAdd(typeof(TComponent), new HashSet<Entity>());
+            _ComponentCache[typeof(TComponent)].Add(entity);
 
             return component;
         }
@@ -96,13 +102,13 @@ namespace Automata.Engine
         {
             entity.Remove<TComponent>();
 
-            if (_Components.TryGetValue(typeof(TComponent), out HashSet<Entity>? entities))
+            if (_ComponentCache.TryGetItem(typeof(TComponent), out HashSet<Entity>? entities))
             {
                 entities!.Remove(entity);
 
                 if (entities.Count is 0)
                 {
-                    _Components.Remove(typeof(TComponent));
+                    _ComponentCache.Remove(typeof(TComponent));
                 }
             }
         }
@@ -124,7 +130,7 @@ namespace Automata.Engine
         public IEnumerable<Entity> GetEntities<T1>()
             where T1 : Component
         {
-            if (_Components.TryGetValue(typeof(T1), out HashSet<Entity>? entities1))
+            if (_ComponentCache.TryGetItem(typeof(T1), out HashSet<Entity>? entities1))
             {
                 return entities1!;
             }
@@ -136,8 +142,8 @@ namespace Automata.Engine
             where T1 : Component
             where T2 : Component
         {
-            if (_Components.TryGetValue(typeof(T1), out HashSet<Entity>? entities1)
-                && _Components.TryGetValue(typeof(T2), out HashSet<Entity>? entities2))
+            if (_ComponentCache.TryGetItem(typeof(T1), out HashSet<Entity>? entities1)
+                && _ComponentCache.TryGetItem(typeof(T2), out HashSet<Entity>? entities2))
             {
                 foreach (Entity entity in entities1!)
                 {
@@ -154,9 +160,9 @@ namespace Automata.Engine
             where T2 : Component
             where T3 : Component
         {
-            if (_Components.TryGetValue(typeof(T1), out HashSet<Entity>? entities1)
-                && _Components.TryGetValue(typeof(T2), out HashSet<Entity>? entities2)
-                && _Components.TryGetValue(typeof(T3), out HashSet<Entity>? entities3))
+            if (_ComponentCache.TryGetItem(typeof(T1), out HashSet<Entity>? entities1)
+                && _ComponentCache.TryGetItem(typeof(T2), out HashSet<Entity>? entities2)
+                && _ComponentCache.TryGetItem(typeof(T3), out HashSet<Entity>? entities3))
             {
                 foreach (Entity entity in entities1!)
                 {
@@ -174,10 +180,10 @@ namespace Automata.Engine
             where T3 : Component
             where T4 : Component
         {
-            if (_Components.TryGetValue(typeof(T1), out HashSet<Entity>? entities1)
-                && _Components.TryGetValue(typeof(T2), out HashSet<Entity>? entities2)
-                && _Components.TryGetValue(typeof(T3), out HashSet<Entity>? entities3)
-                && _Components.TryGetValue(typeof(T4), out HashSet<Entity>? entities4))
+            if (_ComponentCache.TryGetItem(typeof(T1), out HashSet<Entity>? entities1)
+                && _ComponentCache.TryGetItem(typeof(T2), out HashSet<Entity>? entities2)
+                && _ComponentCache.TryGetItem(typeof(T3), out HashSet<Entity>? entities3)
+                && _ComponentCache.TryGetItem(typeof(T4), out HashSet<Entity>? entities4))
             {
                 foreach (Entity entity in entities1!)
                 {
@@ -293,10 +299,10 @@ namespace Automata.Engine
 
         #region Component Count
 
-        public nint GetComponentCount(Type type) => _Components.TryGetValue(type, out HashSet<Entity>? entities) ? entities!.Count : 0;
+        public nint GetComponentCount(Type type) => _ComponentCache.TryGetItem(type, out HashSet<Entity>? entities) ? entities!.Count : 0;
 
         public nint GetComponentCount<TComponent>() where TComponent : Component =>
-            _Components.TryGetValue(typeof(TComponent), out HashSet<Entity>? entities) ? entities!.Count : 0;
+            _ComponentCache.TryGetItem(typeof(TComponent), out HashSet<Entity>? entities) ? entities!.Count : 0;
 
         #endregion
 
@@ -305,7 +311,7 @@ namespace Automata.Engine
 
         public void Dispose()
         {
-            foreach ((_, HashSet<Entity> entities) in _Components)
+            foreach ((_, HashSet<Entity> entities) in _ComponentCache)
             {
                 foreach (Entity entity in entities)
                 {
