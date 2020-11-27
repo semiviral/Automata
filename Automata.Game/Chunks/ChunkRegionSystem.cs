@@ -65,10 +65,20 @@ namespace Automata.Game.Chunks
                 {
                     Chunk chunk = stackEnumerator.Current;
 
-                    if (Array.TrueForAll(chunk!.Neighbors, neighbor => neighbor?.State is null
-                        or not GenerationState.GeneratingTerrain
-                        and not GenerationState.GeneratingStructures
-                        and not GenerationState.GeneratingMesh))
+                    bool disposable = true;
+                    for (int index = 0; index < chunk!.Neighbors.Length; index++)
+                    {
+                        if (chunk!.Neighbors[index]?.State is not null and
+                            (GenerationState.GeneratingTerrain
+                            or GenerationState.GeneratingStructures
+                            or GenerationState.GeneratingMesh))
+                        {
+                            disposable = false;
+                            break;
+                        }
+                    }
+
+                    if (disposable)
                     {
                         chunk.RegionDispose();
                     }
@@ -82,7 +92,7 @@ namespace Automata.Game.Chunks
             // determine whether any chunk loaders have moved out far enough to recalculate their loaded chunk region
             if (UpdateChunkLoaders(entityManager))
             {
-                await RecalculateRegion(entityManager);
+                await RecalculateLoadedRegions(entityManager);
             }
         }
 
@@ -99,7 +109,7 @@ namespace Automata.Game.Chunks
                     continue;
                 }
 
-                chunkLoader.Origin = Vector3i.FromVector3(difference.RoundBy(GenerationConstants.CHUNK_SIZE));
+                chunkLoader.Origin = Vector3i.FromVector3(transform.Translation.RoundBy(GenerationConstants.CHUNK_SIZE));
                 chunkLoader.RadiusChanged = false;
                 updatedChunkPositions = true;
             }
@@ -110,31 +120,11 @@ namespace Automata.Game.Chunks
 
         #region RecalculateRegion
 
-        private async ValueTask RecalculateRegion(EntityManager entityManager)
-        {
-            CalculateOriginsWithLoaderRanges(entityManager);
-
-            foreach (Vector3i origin in _LoadableChunks)
-            {
-                await _VoxelWorld.TryAllocate(entityManager, origin);
-            }
-
-            foreach (Vector3i origin in _VoxelWorld.Origins)
-            {
-                if (!_LoadableChunks.Contains(origin) && _VoxelWorld.TryDeallocate(entityManager, origin, out Chunk? chunk))
-                {
-                    // todo it would be nice to just dispose of chunks outright, instead of deferring it
-                    _ChunksPendingDisposal.Push(chunk);
-                }
-            }
-
-            UpdateRegionState();
-        }
-
-        private void CalculateOriginsWithLoaderRanges(EntityManager entityManager)
+        private async ValueTask RecalculateLoadedRegions(EntityManager entityManager)
         {
             _LoadableChunks.Clear();
 
+            // calculate all loadable chunk origins
             foreach (ChunkLoader chunkLoader in entityManager.GetComponents<ChunkLoader>())
             {
                 Vector3i chunkLoaderOrigin = new Vector3i(chunkLoader.Origin.X, 0, chunkLoader.Origin.Z);
@@ -156,6 +146,24 @@ namespace Automata.Game.Chunks
                     _LoadableChunks.Add(chunkLoaderOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 7, zPos));
                 }
             }
+
+            // allocate chunks
+            foreach (Vector3i origin in _LoadableChunks)
+            {
+                await _VoxelWorld.TryAllocate(entityManager, origin);
+            }
+
+            // deallocate chunks that aren't within loadable radii
+            foreach (Vector3i origin in _VoxelWorld.Origins)
+            {
+                if (!_LoadableChunks.Contains(origin) && _VoxelWorld.TryDeallocate(entityManager, origin, out Chunk? chunk))
+                {
+                    // todo it would be nice to just dispose of chunks outright, instead of deferring it
+                    _ChunksPendingDisposal.Push(chunk);
+                }
+            }
+
+            UpdateRegionState();
         }
 
         #endregion
@@ -176,7 +184,7 @@ namespace Automata.Game.Chunks
                 // in addition, if this chunk is inactive (i.e. a new allocation) then
                 // we also enqueue each neighbor the a queue, signifying that once the neighbor
                 // enter the 'GenerationState.Finished' state, it needs to be remeshed.
-                GetNeighborsOfOrigin(origin, chunk.Neighbors);
+                AssignNeighbors(origin, chunk.Neighbors);
 
                 if (chunk.State is GenerationState.Inactive)
                 {
@@ -194,7 +202,7 @@ namespace Automata.Game.Chunks
             }
         }
 
-        private void GetNeighborsOfOrigin(Vector3i origin, Chunk?[] origins)
+        private void AssignNeighbors(Vector3i origin, Chunk?[] origins)
         {
             if (_VoxelWorld.TryGetChunkEntity(origin + new Vector3i(GenerationConstants.CHUNK_SIZE, 0, 0), out Entity? neighbor))
             {

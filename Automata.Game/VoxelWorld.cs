@@ -62,31 +62,35 @@ namespace Automata.Game
 
         public async ValueTask TryAllocate(EntityManager entityManager, Vector3i origin)
         {
-            if (_Chunks.ContainsKey(origin))
+            // it's better to double-check the key here, as opposed to
+            // instantiating the entity data every call of this method
+            //
+            // it's pretty likely this first check returns true, so we manage to avoid
+            // a lot of unnecessary allocations.
+            if (!_Chunks.ContainsKey(origin))
             {
-                return;
-            }
+                Chunk chunk = new Chunk();
 
-            Chunk chunk = new Chunk();
+                _Chunks.Add(origin, entityManager.CreateEntity(
+                    new Transform
+                    {
+                        Translation = origin
+                    },
+                    chunk,
+                    _ChunkOcclusionBounds
+                ));
 
-            _Chunks.Add(origin, entityManager.CreateEntity(
-                new Transform
+                // here all of the relevant modifications are loaded into the chunk
+                if (_Modifications.TryGetValue(origin, out NonAllocatingList<ChunkModification>? modifications))
                 {
-                    Translation = origin
-                },
-                chunk,
-                _ChunkOcclusionBounds
-            ));
+                    foreach (ChunkModification modification in modifications!)
+                    {
+                        await chunk.Modifications.AddAsync(modification);
+                    }
 
-            if (_Modifications.TryGetValue(origin, out NonAllocatingList<ChunkModification>? modifications))
-            {
-                foreach (ChunkModification modification in modifications!)
-                {
-                    await chunk.Modifications.AddAsync(modification);
+                    modifications.Dispose();
+                    _Modifications.Remove(origin);
                 }
-
-                modifications.Dispose();
-                _Modifications.Remove(origin);
             }
         }
 

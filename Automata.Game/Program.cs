@@ -149,6 +149,13 @@ namespace Automata.Game
         {
             entityManager.CreateEntity(
                 new Transform(),
+                new ChunkLoader
+                {
+                    Radius = 5
+                });
+
+            entityManager.CreateEntity(
+                new Transform(),
                 new Camera
                 {
                     Projector = Projector.Perspective
@@ -164,7 +171,7 @@ namespace Automata.Game
                 new ChunkLoader
                 {
 #if DEBUG
-            Radius = 4
+                    Radius = 4
 #else
                     Radius = Settings.Instance.GenerationRadius
 #endif
