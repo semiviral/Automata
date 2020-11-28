@@ -8,8 +8,9 @@ namespace Automata.Engine.Collections
     public struct SavableQueueEnumerator<T> : IEnumerator<T>
     {
         private readonly T[] _Saved;
-        private uint _SavedIndex;
         private readonly Queue<T> _Queue;
+
+        private uint _SavedIndex;
         private T? _Current;
 
         public T Current => _Current!;

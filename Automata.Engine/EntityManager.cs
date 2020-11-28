@@ -77,7 +77,7 @@ namespace Automata.Engine
         /// </remarks>
         public TComponent RegisterComponent<TComponent>(Entity entity) where TComponent : Component, new()
         {
-            TComponent component = entity.Add<TComponent>();
+            TComponent component = entity.Add<TComponent>().Unwrap();
 
             _ComponentCache.TryAdd(typeof(TComponent), new HashSet<Entity>());
             _ComponentCache[typeof(TComponent)].Add(entity);

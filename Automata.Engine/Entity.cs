@@ -11,6 +11,12 @@ using Automata.Engine.Collections;
 
 namespace Automata.Engine
 {
+    public enum ComponentFailure
+    {
+        Exists,
+        NotExists
+    }
+
     public sealed class Entity : IEquatable<Entity>, IDisposable
     {
         private readonly NonAllocatingList<Component> _Components;
@@ -36,12 +42,11 @@ namespace Automata.Engine
 
         #region Generic
 
-        internal TComponent Add<TComponent>() where TComponent : Component, new()
+        internal Result<TComponent, ComponentFailure> Add<TComponent>() where TComponent : Component, new()
         {
             if (Contains<TComponent>())
             {
-                ThrowHelper.ThrowArgumentException(typeof(TComponent).Name, "Entity already has component of type.");
-                return null!;
+                return ComponentFailure.Exists;
             }
             else
             {
@@ -51,7 +56,7 @@ namespace Automata.Engine
             }
         }
 
-        internal TComponent Remove<TComponent>() where TComponent : Component
+        internal Result<TComponent, ComponentFailure> Remove<TComponent>() where TComponent : Component
         {
             if (TryComponent(out TComponent? component) && _Components.Remove(component))
             {
@@ -60,8 +65,7 @@ namespace Automata.Engine
             }
             else
             {
-                ThrowHelper.ThrowArgumentException(typeof(TComponent).Name, "Entity does not have component of type.");
-                return null!;
+                return ComponentFailure.NotExists;
             }
         }
 
@@ -77,6 +81,20 @@ namespace Automata.Engine
             }
 
             return null;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Result<TComponent, ComponentFailure> ComponentResult<TComponent>() where TComponent : Component
+        {
+            for (int index = 0; index < _Components.Count; index++)
+            {
+                if (_Components[index] is TComponent component)
+                {
+                    return component;
+                }
+            }
+
+            return ComponentFailure.NotExists;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

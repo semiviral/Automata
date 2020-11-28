@@ -8,8 +8,9 @@ namespace Automata.Engine.Collections
     public struct SavableStackEnumerator<T> : IEnumerator<T>
     {
         private readonly T[] _Saved;
-        private uint _SavedIndex;
         private readonly Stack<T> _Stack;
+
+        private uint _SavedIndex;
         private T? _Current;
 
         public T Current => _Current!;

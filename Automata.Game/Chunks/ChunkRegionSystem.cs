@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Automata.Engine;
@@ -36,6 +37,13 @@ namespace Automata.Game.Chunks
 
             InputManager.Instance.RegisterInputAction(() => Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkRegionSystem),
                 $"Average update time: {DiagnosticsProvider.GetGroup<ChunkRegionLoadingDiagnosticGroup>().Average():0.00}ms")), Key.ShiftLeft, Key.X);
+            InputManager.Instance.RegisterInputAction(() =>
+            {
+                foreach (Chunk? chunk in _VoxelWorld.Entities.Select(entity => entity.Component<Chunk>()))
+                {
+                    chunk!.State = GenerationState.AwaitingMesh;
+                }
+            }, Key.ShiftLeft, Key.R);
         }
 
         [HandledComponents(EnumerationStrategy.All, typeof(Transform), typeof(ChunkLoader))]

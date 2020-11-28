@@ -178,10 +178,9 @@ namespace Automata.Game.Chunks.Generation
                             BlockID = blockID
                         }).ConfigureAwait(false);
                     }
-
-                    // if not, just go ahead and delegate the modification allocation to the world.
                     else
                     {
+                        // if not, just go ahead and delegate the modification allocation to the world.
                         await _VoxelWorld.AllocateChunkModification(origin + modificationOffset, blockID).ConfigureAwait(false);
                     }
                 }

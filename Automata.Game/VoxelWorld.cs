@@ -139,17 +139,13 @@ namespace Automata.Game
         {
             while (_ConcurrentModificationsQueue.TryTake(out (Vector3i Origin, ChunkModification Modification) entry))
             {
-                if (_Chunks.TryGetValue(entry.Origin, out Entity? entity) && entity!.TryComponent(out Chunk? chunk))
+                if (_Chunks.TryGetValue(entry.Origin, out Entity? entity))
                 {
-                    await chunk.Modifications.AddAsync(entry.Modification);
+                    await entity!.Component<Chunk>()!.Modifications.AddAsync(entry.Modification);
                 }
                 else
                 {
-                    if (!_Modifications.ContainsKey(entry.Origin))
-                    {
-                        _Modifications.TryAdd(entry.Origin, new NonAllocatingList<ChunkModification>());
-                    }
-
+                    _Modifications.TryAdd(entry.Origin, new NonAllocatingList<ChunkModification>());
                     _Modifications[entry.Origin].Add(entry.Modification);
                 }
             }

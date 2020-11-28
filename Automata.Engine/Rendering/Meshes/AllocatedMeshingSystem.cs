@@ -107,11 +107,10 @@ namespace Automata.Engine.Rendering.Meshes
 
                 if (!mesh.Data.IsEmpty)
                 {
-                    // if the entity doesn't have the required component, make sure we add it
-                    if (!entity.TryComponent(out DrawElementsIndirectAllocation<TIndex, TVertex>? allocation))
-                    {
-                        allocation = entityManager.RegisterComponent<DrawElementsIndirectAllocation<TIndex, TVertex>>(entity);
-                    }
+                    DrawElementsIndirectAllocation<TIndex, TVertex>? allocation =
+                        entity.ComponentResult<DrawElementsIndirectAllocation<TIndex, TVertex>>().Match(
+                            result => result,
+                            _ => entityManager.RegisterComponent<DrawElementsIndirectAllocation<TIndex, TVertex>>(entity));
 
                     tasks.Add(CreateDrawIndirectAllocationAllocationImpl(allocation));
                     ConfigureMaterial(entityManager, entity);
