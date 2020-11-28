@@ -11,7 +11,7 @@ using Automata.Engine.Collections;
 
 namespace Automata.Engine
 {
-    public enum ComponentFailure
+    public enum ComponentError
     {
         Exists,
         NotExists
@@ -42,11 +42,11 @@ namespace Automata.Engine
 
         #region Generic
 
-        internal Result<TComponent, ComponentFailure> Add<TComponent>() where TComponent : Component, new()
+        internal Result<TComponent, ComponentError> Add<TComponent>() where TComponent : Component, new()
         {
             if (Contains<TComponent>())
             {
-                return ComponentFailure.Exists;
+                return ComponentError.Exists;
             }
             else
             {
@@ -56,21 +56,16 @@ namespace Automata.Engine
             }
         }
 
-        internal Result<TComponent, ComponentFailure> Remove<TComponent>() where TComponent : Component
-        {
-            if (TryComponent(out TComponent? component) && _Components.Remove(component))
-            {
-                component.Dispose();
-                return component;
-            }
-            else
-            {
-                return ComponentFailure.NotExists;
-            }
-        }
+        internal Result<TComponent, ComponentError> Remove<TComponent>() where TComponent : Component =>
+            Component<TComponent>().Match(result =>
+                {
+                    _Components.Remove(result);
+                    return result;
+                },
+                _ => { });
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public TComponent? Component<TComponent>() where TComponent : Component
+        public Result<TComponent, ComponentError> Component<TComponent>() where TComponent : Component
         {
             for (int index = 0; index < _Components.Count; index++)
             {
@@ -80,21 +75,7 @@ namespace Automata.Engine
                 }
             }
 
-            return null;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<TComponent, ComponentFailure> ComponentResult<TComponent>() where TComponent : Component
-        {
-            for (int index = 0; index < _Components.Count; index++)
-            {
-                if (_Components[index] is TComponent component)
-                {
-                    return component;
-                }
-            }
-
-            return ComponentFailure.NotExists;
+            return ComponentError.NotExists;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -132,28 +113,30 @@ namespace Automata.Engine
 
         #region Non-generic
 
-        internal void Add(Component component)
+        internal Result<Component, ComponentError> Add(Component component)
         {
             if (Contains(component.GetType()))
             {
-                ThrowHelper.ThrowArgumentException(component.GetType().Name, "Entity already contains component of type.");
+                return ComponentError.Exists;
             }
             else
             {
                 _Components.Add(component);
+                return component;
             }
         }
 
-        internal bool Remove(Component component)
+        internal Result<Component, ComponentError> Remove(Component component)
         {
-            bool success = _Components.Remove(component);
-
-            if (success)
+            if (_Components.Remove(component))
             {
                 component.Dispose();
+                return component;
             }
-
-            return success;
+            else
+            {
+                return ComponentError.NotExists;
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

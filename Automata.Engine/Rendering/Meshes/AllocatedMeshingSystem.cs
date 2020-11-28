@@ -107,8 +107,8 @@ namespace Automata.Engine.Rendering.Meshes
 
                 if (!mesh.Data.IsEmpty)
                 {
-                    DrawElementsIndirectAllocation<TIndex, TVertex>? allocation =
-                        entity.ComponentResult<DrawElementsIndirectAllocation<TIndex, TVertex>>().Match(
+                    DrawElementsIndirectAllocation<TIndex, TVertex> allocation =
+                        entity.Component<DrawElementsIndirectAllocation<TIndex, TVertex>>().Match(
                             result => result,
                             _ => entityManager.RegisterComponent<DrawElementsIndirectAllocation<TIndex, TVertex>>(entity));
 
@@ -176,7 +176,7 @@ namespace Automata.Engine.Rendering.Meshes
                     (uint)(allocation.Allocation!.VertexMemory.Index / (nuint)sizeof(TVertex)), (uint)index);
 
                 commands[index] = drawElementsIndirectCommand;
-                models[index] = entity.Component<Transform>()?.Matrix ?? Matrix4x4.Identity;
+                models[index] = entity.Component<Transform>().Match(transform => transform.Matrix, _ => Matrix4x4.Identity);
                 index += 1;
             }
 
@@ -194,17 +194,15 @@ namespace Automata.Engine.Rendering.Meshes
         {
             ProgramPipeline programPipeline = ProgramRegistry.Instance.Load("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl");
 
-            if (entity.TryComponent(out Material? material))
+            entity.Component<Material>().Match(material =>
             {
                 if (material.Pipeline.Handle != programPipeline.Handle)
                 {
                     material.Pipeline = programPipeline;
                 }
-            }
-            else
-            {
-                entityManager.RegisterComponent(entity, new Material(programPipeline));
-            }
+
+                return material;
+            }, _ => { entityManager.RegisterComponent(entity, new Material(programPipeline)); });
         }
 
         #endregion Data Processing

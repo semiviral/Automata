@@ -200,7 +200,8 @@ namespace Automata.Engine
         {
             foreach (Entity entity in GetEntities<T1>())
             {
-                yield return (entity, entity.Component<T1>()!);
+                yield return (entity,
+                    entity.Component<T1>().Unwrap());
             }
         }
 
@@ -210,7 +211,9 @@ namespace Automata.Engine
         {
             foreach (Entity entity in GetEntities<T1, T2>())
             {
-                yield return (entity, entity.Component<T1>()!, entity.Component<T2>()!);
+                yield return (entity,
+                    entity.Component<T1>().Unwrap(),
+                    entity.Component<T2>().Unwrap());
             }
         }
 
@@ -221,7 +224,10 @@ namespace Automata.Engine
         {
             foreach (Entity entity in GetEntities<T1, T2, T3>())
             {
-                yield return (entity, entity.Component<T1>()!, entity.Component<T2>()!, entity.Component<T3>()!);
+                yield return (entity,
+                    entity.Component<T1>().Unwrap(),
+                    entity.Component<T2>().Unwrap(),
+                    entity.Component<T3>().Unwrap());
             }
         }
 
@@ -233,7 +239,11 @@ namespace Automata.Engine
         {
             foreach (Entity entity in GetEntities<T1, T2, T3, T4>())
             {
-                yield return (entity, entity.Component<T1>()!, entity.Component<T2>()!, entity.Component<T3>()!, entity.Component<T4>()!);
+                yield return (entity,
+                    entity.Component<T1>().Unwrap(),
+                    entity.Component<T2>().Unwrap(),
+                    entity.Component<T3>().Unwrap(),
+                    entity.Component<T4>().Unwrap());
             }
         }
 
@@ -252,7 +262,8 @@ namespace Automata.Engine
         {
             foreach (Entity entity in GetEntities<T1>())
             {
-                yield return entity.Component<T1>()!;
+                yield return
+                    entity.Component<T1>().Unwrap();
             }
         }
 
@@ -262,7 +273,9 @@ namespace Automata.Engine
         {
             foreach (Entity entity in GetEntities<T1, T2>())
             {
-                yield return (entity.Component<T1>()!, entity.Component<T2>()!);
+                yield return
+                    (entity.Component<T1>().Unwrap(),
+                        entity.Component<T2>().Unwrap());
             }
         }
 
@@ -273,7 +286,10 @@ namespace Automata.Engine
         {
             foreach (Entity entity in GetEntities<T1, T2, T3>())
             {
-                yield return (entity.Component<T1>()!, entity.Component<T2>()!, entity.Component<T3>()!);
+                yield return
+                    (entity.Component<T1>().Unwrap(),
+                        entity.Component<T2>().Unwrap(),
+                        entity.Component<T3>().Unwrap());
             }
         }
 
@@ -285,7 +301,11 @@ namespace Automata.Engine
         {
             foreach (Entity entity in GetEntities<T1, T2, T3, T4>())
             {
-                yield return (entity.Component<T1>()!, entity.Component<T2>()!, entity.Component<T3>()!, entity.Component<T4>()!);
+                yield return
+                    (entity.Component<T1>().Unwrap(),
+                    entity.Component<T2>().Unwrap(),
+                    entity.Component<T3>().Unwrap(),
+                    entity.Component<T4>().Unwrap());
             }
         }
 

@@ -92,7 +92,7 @@ namespace Automata.Engine.Concurrency
             // ensure the pool is actually accepting invocations and dispatch
             if (Size == 0)
             {
-                throw new InvalidOperationException($"Pool is empty. Call {nameof(DefaultPoolSize)}() or {nameof(ModifyPoolSize)}().");
+                ThrowHelper.ThrowInvalidOperationException($"Pool is empty. Call {nameof(DefaultPoolSize)}() or {nameof(ModifyPoolSize)}().");
             }
             else
             {

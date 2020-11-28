@@ -141,7 +141,7 @@ namespace Automata.Game
             {
                 if (_Chunks.TryGetValue(entry.Origin, out Entity? entity))
                 {
-                    await entity!.Component<Chunk>()!.Modifications.AddAsync(entry.Modification);
+                    await entity!.Component<Chunk>()!.Unwrap().Modifications.AddAsync(entry.Modification);
                 }
                 else
                 {

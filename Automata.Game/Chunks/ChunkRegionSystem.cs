@@ -39,7 +39,7 @@ namespace Automata.Game.Chunks
                 $"Average update time: {DiagnosticsProvider.GetGroup<ChunkRegionLoadingDiagnosticGroup>().Average():0.00}ms")), Key.ShiftLeft, Key.X);
             InputManager.Instance.RegisterInputAction(() =>
             {
-                foreach (Chunk? chunk in _VoxelWorld.Entities.Select(entity => entity.Component<Chunk>()))
+                foreach (Chunk chunk in _VoxelWorld.Entities.Select(entity => entity.Component<Chunk>().Unwrap()))
                 {
                     chunk!.State = GenerationState.AwaitingMesh;
                 }
@@ -183,9 +183,7 @@ namespace Automata.Game.Chunks
         {
             foreach ((Vector3i origin, Entity entity) in _VoxelWorld)
             {
-                Chunk chunk = entity.Component<Chunk>();
-
-                Debug.Assert(chunk is not null);
+                Chunk chunk = entity.Component<Chunk>().Unwrap();
 
                 // here we assign this chunk's neighbors
                 //
@@ -214,32 +212,32 @@ namespace Automata.Game.Chunks
         {
             if (_VoxelWorld.TryGetChunkEntity(origin + new Vector3i(GenerationConstants.CHUNK_SIZE, 0, 0), out Entity? neighbor))
             {
-                origins[0] = neighbor.Component<Chunk>();
+                origins[0] = neighbor.Component<Chunk>().Unwrap();
             }
 
             if (_VoxelWorld.TryGetChunkEntity(origin + new Vector3i(0, GenerationConstants.CHUNK_SIZE, 0), out neighbor))
             {
-                origins[1] = neighbor.Component<Chunk>();
+                origins[1] = neighbor.Component<Chunk>().Unwrap();
             }
 
             if (_VoxelWorld.TryGetChunkEntity(origin + new Vector3i(0, 0, GenerationConstants.CHUNK_SIZE), out neighbor))
             {
-                origins[2] = neighbor.Component<Chunk>();
+                origins[2] = neighbor.Component<Chunk>().Unwrap();
             }
 
             if (_VoxelWorld.TryGetChunkEntity(origin + new Vector3i(-GenerationConstants.CHUNK_SIZE, 0, 0), out neighbor))
             {
-                origins[3] = neighbor.Component<Chunk>();
+                origins[3] = neighbor.Component<Chunk>().Unwrap();
             }
 
             if (_VoxelWorld.TryGetChunkEntity(origin + new Vector3i(0, -GenerationConstants.CHUNK_SIZE, 0), out neighbor))
             {
-                origins[4] = neighbor.Component<Chunk>();
+                origins[4] = neighbor.Component<Chunk>().Unwrap();
             }
 
             if (_VoxelWorld.TryGetChunkEntity(origin + new Vector3i(0, 0, -GenerationConstants.CHUNK_SIZE), out neighbor))
             {
-                origins[5] = neighbor.Component<Chunk>();
+                origins[5] = neighbor.Component<Chunk>().Unwrap();
             }
         }
 
