@@ -63,8 +63,9 @@ namespace Automata.Engine
         {
             entity.Add(component);
 
-            _ComponentCache.TryAdd(component.GetType(), new HashSet<Entity>());
-            _ComponentCache[component.GetType()].Add(entity);
+            Type type = component.GetType();
+            _ComponentCache.TryAdd(type, new HashSet<Entity>());
+            _ComponentCache[type].Add(entity);
         }
 
         /// <summary>
@@ -77,7 +78,7 @@ namespace Automata.Engine
         /// </remarks>
         public TComponent RegisterComponent<TComponent>(Entity entity) where TComponent : Component, new()
         {
-            TComponent component = entity.Add<TComponent>().Unwrap();
+            TComponent component = entity.Add<TComponent>();
 
             _ComponentCache.TryAdd(typeof(TComponent), new HashSet<Entity>());
             _ComponentCache[typeof(TComponent)].Add(entity);
@@ -303,9 +304,9 @@ namespace Automata.Engine
             {
                 yield return
                     (entity.Component<T1>()!,
-                    entity.Component<T2>()!,
-                    entity.Component<T3>()!,
-                    entity.Component<T4>()!);
+                        entity.Component<T2>()!,
+                        entity.Component<T3>()!,
+                        entity.Component<T4>()!);
             }
         }
 

@@ -14,6 +14,8 @@ namespace Automata.Engine
         public static bool operator ==(Component? left, Component? right) => Equals(left, right);
         public static bool operator !=(Component? left, Component? right) => !Equals(left, right);
 
+        public override string ToString() => GetType().Name;
+
 
         #region IDisposable
 

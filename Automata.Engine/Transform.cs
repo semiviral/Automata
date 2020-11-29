@@ -47,5 +47,8 @@ namespace Automata.Engine
             Rotation = Quaternion.Identity;
             Translation = Vector3.Zero;
         }
+
+        public override string ToString() =>
+            $"{nameof(Transform)} {{ {nameof(Translation)} = {Translation}, {nameof(Rotation)} = {Rotation}, {nameof(Scale)} = {Scale} }}";
     }
 }

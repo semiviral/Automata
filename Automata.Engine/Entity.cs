@@ -39,14 +39,17 @@ namespace Automata.Engine
             Disposed = false;
         }
 
+        public override string ToString() =>
+            $"{nameof(Entity)}(ID {_HashCode}: {string.Join(", ", _Components)})";
+
 
         #region Generic
 
-        internal Result<TComponent, ComponentError> Add<TComponent>() where TComponent : Component, new()
+        internal TComponent Add<TComponent>() where TComponent : Component, new()
         {
             if (Contains<TComponent>())
             {
-                return ComponentError.Exists;
+                throw new InvalidOperationException("Component already exists.");
             }
             else
             {
@@ -177,9 +180,6 @@ namespace Automata.Engine
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int GetHashCode() => _HashCode;
-
-        public override string ToString() =>
-            $"{nameof(Entity)}(ID {_HashCode}: {string.Join(", ", _Components.Select(component => component.GetType().Name))})";
 
         #endregion
 

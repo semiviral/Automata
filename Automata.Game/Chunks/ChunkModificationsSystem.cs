@@ -18,11 +18,23 @@ namespace Automata.Game.Chunks
 
             foreach (Chunk chunk in entityManager.GetComponents<Chunk>())
             {
-                if (chunk.State is GenerationState.AwaitingMesh or GenerationState.Finished
-                    && Array.TrueForAll(chunk.Neighbors, neighbor => neighbor?.State is not GenerationState.GeneratingMesh)
-                    && TryProcessChunkModifications(chunk))
+                if (chunk.State is GenerationState.AwaitingMesh or GenerationState.Finished)
                 {
-                    chunk.RemeshNeighborhood(true);
+                    bool remeshable = true;
+
+                    foreach (Chunk? neighbor in chunk.Neighbors)
+                    {
+                        if (neighbor?.State is GenerationState.GeneratingMesh)
+                        {
+                            remeshable = false;
+                            break;
+                        }
+                    }
+
+                    if (remeshable && TryProcessChunkModifications(chunk))
+                    {
+                        chunk.DangerousRemeshNeighborhood();
+                    }
                 }
             }
         }

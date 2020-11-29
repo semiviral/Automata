@@ -1,8 +1,4 @@
-﻿using System;
-using System.Linq;
-using Automata.Engine.Extensions;
-using Automata.Engine.Numerics;
-using BenchmarkDotNet.Reports;
+﻿using BenchmarkDotNet.Reports;
 using BenchmarkDotNet.Running;
 
 namespace Automata.Engine.Benchmarks
@@ -11,7 +7,7 @@ namespace Automata.Engine.Benchmarks
     {
         private static void Main(string[] args)
         {
-            Summary summary = BenchmarkRunner.Run<BenchmarkVectorNumerics>();
+            Summary summary = BenchmarkRunner.Run<OpenSimplexSlimBenchmark>();
 
             //Console.ReadKey();
         }

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -37,6 +36,7 @@ namespace Automata.Game.Chunks
 
             InputManager.Instance.RegisterInputAction(() => Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkRegionSystem),
                 $"Average update time: {DiagnosticsProvider.GetGroup<ChunkRegionLoadingDiagnosticGroup>().Average():0.00}ms")), Key.ShiftLeft, Key.X);
+
             InputManager.Instance.RegisterInputAction(() =>
             {
                 foreach (Chunk chunk in _VoxelWorld.Entities.Select(entity => entity.Component<Chunk>()!))
@@ -75,25 +75,24 @@ namespace Automata.Game.Chunks
 
                     int index = 0;
 
-                    for (; index < chunk!.Neighbors.Length; index++)
+                    if (!chunk.IsGenerating)
                     {
-                        if (chunk!.Neighbors[index]?.State is not null and
-                            (GenerationState.GeneratingTerrain
-                            or GenerationState.GeneratingStructures
-                            or GenerationState.GeneratingMesh))
+                        for (; index < chunk!.Neighbors.Length; index++)
                         {
-                            break;
+                            if (chunk!.Neighbors[index]?.IsGenerating is true)
+                            {
+                                break;
+                            }
+                        }
+
+                        if (index == chunk!.Neighbors.Length)
+                        {
+                            chunk.RegionDispose();
+                            continue;
                         }
                     }
 
-                    if (index == chunk!.Neighbors.Length)
-                    {
-                        chunk.RegionDispose();
-                    }
-                    else
-                    {
-                        stackEnumerator.SaveCurrent();
-                    }
+                    stackEnumerator.SaveCurrent();
                 }
             }
 
@@ -162,12 +161,13 @@ namespace Automata.Game.Chunks
             }
 
             // deallocate chunks that aren't within loader radii
-            foreach (Vector3i origin in _VoxelWorld.Origins)
+            foreach ((Vector3i origin, Entity entity) in _VoxelWorld)
             {
-                if (!_LoadableChunks.Contains(origin) && _VoxelWorld.TryDeallocate(entityManager, origin, out Chunk? chunk))
+                if (!_LoadableChunks.Contains(origin) && _VoxelWorld.TryDeallocate(origin))
                 {
                     // todo it would be nice to just dispose of chunks outright, instead of deferring it
-                    _ChunksPendingDisposal.Push(chunk);
+                    _ChunksPendingDisposal.Push(entity.Component<Chunk>()!);
+                    entityManager.RemoveEntity(entity);
                 }
             }
 
@@ -210,35 +210,25 @@ namespace Automata.Game.Chunks
 
         private void AssignNeighbors(Vector3i origin, Chunk?[] origins)
         {
-            if (_VoxelWorld.TryGetChunkEntity(origin + new Vector3i(GenerationConstants.CHUNK_SIZE, 0, 0), out Entity? neighbor))
-            {
-                origins[0] = neighbor.Component<Chunk>()!;
-            }
+            Entity? neighbor;
 
-            if (_VoxelWorld.TryGetChunkEntity(origin + new Vector3i(0, GenerationConstants.CHUNK_SIZE, 0), out neighbor))
-            {
-                origins[1] = neighbor.Component<Chunk>()!;
-            }
+            _VoxelWorld.TryGetChunkEntity(origin + new Vector3i(GenerationConstants.CHUNK_SIZE, 0, 0), out neighbor);
+            origins[0] = neighbor!.Component<Chunk>();
 
-            if (_VoxelWorld.TryGetChunkEntity(origin + new Vector3i(0, 0, GenerationConstants.CHUNK_SIZE), out neighbor))
-            {
-                origins[2] = neighbor.Component<Chunk>()!;
-            }
+            _VoxelWorld.TryGetChunkEntity(origin + new Vector3i(0, GenerationConstants.CHUNK_SIZE, 0), out neighbor);
+            origins[1] = neighbor!.Component<Chunk>();
 
-            if (_VoxelWorld.TryGetChunkEntity(origin + new Vector3i(-GenerationConstants.CHUNK_SIZE, 0, 0), out neighbor))
-            {
-                origins[3] = neighbor.Component<Chunk>()!;
-            }
+            _VoxelWorld.TryGetChunkEntity(origin + new Vector3i(0, 0, GenerationConstants.CHUNK_SIZE), out neighbor);
+            origins[2] = neighbor!.Component<Chunk>();
 
-            if (_VoxelWorld.TryGetChunkEntity(origin + new Vector3i(0, -GenerationConstants.CHUNK_SIZE, 0), out neighbor))
-            {
-                origins[4] = neighbor.Component<Chunk>()!;
-            }
+            _VoxelWorld.TryGetChunkEntity(origin + new Vector3i(-GenerationConstants.CHUNK_SIZE, 0, 0), out neighbor);
+            origins[3] = neighbor!.Component<Chunk>();
 
-            if (_VoxelWorld.TryGetChunkEntity(origin + new Vector3i(0, 0, -GenerationConstants.CHUNK_SIZE), out neighbor))
-            {
-                origins[5] = neighbor.Component<Chunk>()!;
-            }
+            _VoxelWorld.TryGetChunkEntity(origin + new Vector3i(0, -GenerationConstants.CHUNK_SIZE, 0), out neighbor);
+            origins[4] = neighbor!.Component<Chunk>();
+
+            _VoxelWorld.TryGetChunkEntity(origin + new Vector3i(0, 0, -GenerationConstants.CHUNK_SIZE), out neighbor);
+            origins[5] = neighbor!.Component<Chunk>();
         }
 
         #endregion

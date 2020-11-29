@@ -33,12 +33,12 @@ namespace Automata.Game.Extensions
 
                 if (attribute.Header is null)
                 {
-                    if (attribute.Required && !model.ContainsKey(property.Name))
+                    if (!model.TryGetValue(property.Name, out object? value) && attribute.Required)
                     {
                         throw new Exception($"Toml file does not have required property '{property.Name}'.");
                     }
 
-                    property.SetValue(instance, Convert.ChangeType(model[property.Name], property.PropertyType));
+                    property.SetValue(instance, Convert.ChangeType(value, property.PropertyType));
                 }
                 else
                 {

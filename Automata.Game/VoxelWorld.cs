@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
@@ -27,6 +28,7 @@ namespace Automata.Game
 
         public ICollection<Vector3i> Origins => _Chunks.Keys;
         public ICollection<Entity> Entities => _Chunks.Values;
+        public int ChunkCount => _Chunks.Count;
 
         public Entity this[Vector3i origin] => _Chunks[origin];
 
@@ -94,20 +96,7 @@ namespace Automata.Game
             }
         }
 
-        public bool TryDeallocate(EntityManager entityManager, Vector3i origin, [NotNullWhen(true)] out Chunk? chunk)
-        {
-            if (_Chunks.Remove(origin, out Entity? entity))
-            {
-                bool success = entity!.TryComponent(out chunk);
-                entityManager.RemoveEntity(entity);
-                return success;
-            }
-            else
-            {
-                chunk = null;
-                return false;
-            }
-        }
+        public bool TryDeallocate(Vector3i origin) => _Chunks.Remove(origin);
 
         #endregion
 

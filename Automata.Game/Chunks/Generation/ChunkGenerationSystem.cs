@@ -61,17 +61,11 @@ namespace Automata.Game.Chunks.Generation
                 if (!pendingMesh.Entity.Disposed && pendingMesh.Chunk.State is GenerationState.GeneratingMesh)
                 {
                     entityManager.RegisterComponent(pendingMesh.Entity, new AllocatedMeshData<uint, PackedVertex>(pendingMesh.Data));
+                    pendingMesh.Chunk.State += 1;
                 }
                 else
                 {
                     pendingMesh.Data.Dispose();
-                }
-
-                // we ALWAYS update chunk state, so we can properly dispose of it
-                // and be conscious of not doing so when its generating
-                if (pendingMesh.Chunk.State is not GenerationState.GeneratingMesh and not GenerationState.GeneratingStructures)
-                {
-                    pendingMesh.Chunk.State += 1;
                 }
             }
 
@@ -92,7 +86,8 @@ namespace Automata.Game.Chunks.Generation
 
                     case GenerationState.AwaitingStructures:
                         //BoundedInvocationPool.Instance.Enqueue(_ => GenerateStructures(chunk, Vector3i.FromVector3(transform.Translation)));
-                        chunk.State += 2;
+                        chunk.State += 1;
+                        chunk.State += 1;
                         break;
 
                     case GenerationState.AwaitingMesh when chunk.Neighbors.All(neighbor => neighbor?.State is null or >= GenerationState.AwaitingMesh):
