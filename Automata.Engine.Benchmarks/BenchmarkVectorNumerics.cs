@@ -14,10 +14,10 @@ namespace Automata.Engine.Benchmarks
         //[Benchmark]
         public Vector3<int> Generic3() => new Vector3<int>(9) + new Vector3<int>(9);
 
-        [Benchmark]
-        public Vector4<short> Generic4() => new Vector4<short>(9) + new Vector4<short>(9);
-
         //[Benchmark]
-        public Vector4<double> GenericFloating2() => new Vector4<double>(7f) + new Vector4<double>(7f);
+        public Vector4<uint> Generic4() => new Vector4<uint>(9) - new Vector4<uint>(9);
+
+        [Benchmark]
+        public Vector4<float> GenericFloating4() => new Vector4<float>(7f) * new Vector4<float>(7f);
     }
 }

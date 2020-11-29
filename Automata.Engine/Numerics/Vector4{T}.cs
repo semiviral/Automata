@@ -43,16 +43,29 @@ namespace Automata.Engine.Numerics
         #region Add Operator
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector4<T> operator +(Vector4<T> a, T b) => a * new Vector4<T>(b);
+        public static Vector4<T> operator +(Vector4<T> a, T b) => a + new Vector4<T>(b);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector4<T> operator +(T a, Vector4<T> b) => new Vector4<T>(a) * b;
+        public static Vector4<T> operator +(T a, Vector4<T> b) => new Vector4<T>(a) + b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector4<T> operator +(Vector4<T> a, Vector4<T> b) => Vector.AddInternal(a, b);
 
         #endregion
 
+
+        #region Subtract Operator
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector4<T> operator -(Vector4<T> a, T b) => a - new Vector4<T>(b);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector4<T> operator -(T a, Vector4<T> b) => new Vector4<T>(a) - b;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector4<T> operator -(Vector4<T> a, Vector4<T> b) => Vector.SubtractInternal(a, b);
+
+        #endregion
 
         #region Multiply Operator
 
@@ -64,6 +77,20 @@ namespace Automata.Engine.Numerics
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector4<T> operator *(Vector4<T> a, Vector4<T> b) => Vector.MultiplyInternal(a, b);
+
+        #endregion
+
+
+        #region Divide Operator
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector4<T> operator /(Vector4<T> a, T b) => a / new Vector4<T>(b);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector4<T> operator /(T a, Vector4<T> b) => new Vector4<T>(a) / b;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector4<T> operator /(Vector4<T> a, Vector4<T> b) => Vector.DivideInternal(a, b);
 
         #endregion
 

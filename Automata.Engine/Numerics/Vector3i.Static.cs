@@ -16,9 +16,6 @@ namespace Automata.Engine.Numerics
         public static Vector3i FromVector3(Vector3 a) => new Vector3i((int)a.X, (int)a.Y, (int)a.Z);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3i FromVector3d(Vector3d a) => new Vector3i((int)a.X, (int)a.Y, (int)a.Z);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3i RoundBy(Vector3i a, Vector3i by) => (a / by) * by;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

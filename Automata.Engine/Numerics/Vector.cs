@@ -196,30 +196,21 @@ namespace Automata.Engine.Numerics
         public static Vector3<T> AddInternal<T>(Vector3<T> a, Vector3<T> b) where T : unmanaged => (a.AsVector() + b.AsVector()).AsVector3();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector4<T> AddInternal<T>(Vector4<T> a, Vector4<T> b) where T : unmanaged
-        {
-            // these cases exist because they're more performant than Vector<T>
-            if ((typeof(T) == typeof(int)) && Sse2.IsSupported)
-            {
-                return Sse2.Add(a.AsVector128<T, int>(), b.AsVector128<T, int>()).AsVector4<int, T>();
-            }
-            else if ((typeof(T) == typeof(uint)) && Sse2.IsSupported)
-            {
-                return Sse2.Add(a.AsVector128<T, uint>(), b.AsVector128<T, uint>()).AsVector4<uint, T>();
-            }
-            else if ((typeof(T) == typeof(short)) && Sse2.IsSupported)
-            {
-                return Sse2.Add(a.AsVector128<T, short>(), b.AsVector128<T, short>()).AsVector4<short, T>();
-            }
-            else if ((typeof(T) == typeof(ushort)) && Sse2.IsSupported)
-            {
-                return Sse2.Add(a.AsVector128<T, ushort>(), b.AsVector128<T, ushort>()).AsVector4<ushort, T>();
-            }
-            else
-            {
-                return (a.AsVector() * b.AsVector()).AsVector4();
-            }
-        }
+        public static Vector4<T> AddInternal<T>(Vector4<T> a, Vector4<T> b) where T : unmanaged => (a.AsVector() + b.AsVector()).AsVector4();
+
+        #endregion
+
+
+        #region Subtract
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Vector2<T> SubtractInternal<T>(Vector2<T> a, Vector2<T> b) where T : unmanaged => (a.AsVector() - b.AsVector()).AsVector2();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3<T> SubtractInternal<T>(Vector3<T> a, Vector3<T> b) where T : unmanaged => (a.AsVector() - b.AsVector()).AsVector3();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector4<T> SubtractInternal<T>(Vector4<T> a, Vector4<T> b) where T : unmanaged => (a.AsVector() - b.AsVector()).AsVector4();
 
         #endregion
 
@@ -260,13 +251,36 @@ namespace Automata.Engine.Numerics
             }
             else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
             {
-                return Sse.Multiply(a.AsVector128<T, float>(), b.AsVector128<T, float>()).AsVector4<float, T>();
+                return (a.AsIntrinsic() * b.AsIntrinsic()).AsGeneric<T>();
             }
             else
             {
                 return (a.AsVector() * b.AsVector()).AsVector4();
             }
         }
+
+        #endregion
+
+
+        #region Divide
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Vector2<T> DivideInternal<T>(Vector2<T> a, Vector2<T> b) where T : unmanaged =>
+            typeof(T) == typeof(float)
+                ? (a.AsIntrinsic() / b.AsIntrinsic()).AsGeneric<T>()
+                : (a.AsVector() / b.AsVector()).AsVector2();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3<T> DivideInternal<T>(Vector3<T> a, Vector3<T> b) where T : unmanaged =>
+            typeof(T) == typeof(float)
+                ? (a.AsIntrinsic() / b.AsIntrinsic()).AsGeneric<T>()
+                : (a.AsVector() / b.AsVector()).AsVector3();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector4<T> DivideInternal<T>(Vector4<T> a, Vector4<T> b) where T : unmanaged =>
+            (typeof(T) == typeof(float)) && Sse.IsSupported
+                ? (a.AsIntrinsic() / b.AsIntrinsic()).AsGeneric<T>()
+                : (a.AsVector() / b.AsVector()).AsVector4();
 
         #endregion
     }
