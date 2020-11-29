@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Automata.Engine.Extensions;
+using Automata.Engine.Numerics;
 using BenchmarkDotNet.Reports;
 using BenchmarkDotNet.Running;
 
@@ -10,7 +11,7 @@ namespace Automata.Engine.Benchmarks
     {
         private static void Main(string[] args)
         {
-            //Summary summary = BenchmarkRunner.Run<BenchmarkVectorizedCopy>();
+            Summary summary = BenchmarkRunner.Run<BenchmarkVectorNumerics>();
 
             //Console.ReadKey();
         }
