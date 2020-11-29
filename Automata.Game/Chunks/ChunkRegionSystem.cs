@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Automata.Engine;
@@ -18,14 +17,14 @@ namespace Automata.Game.Chunks
     public class ChunkRegionSystem : ComponentSystem
     {
         private readonly VoxelWorld _VoxelWorld;
-        private readonly Stack<Chunk> _ChunksPendingDisposal;
-        private readonly Queue<Chunk> _ChunksRequiringRemesh;
+        private readonly Ring<Queue<Chunk>> _ChunksRequiringRemesh;
+        private readonly Ring<Stack<Chunk>> _ChunksPendingDisposal;
 
         public ChunkRegionSystem(VoxelWorld voxelWorld) : base(voxelWorld)
         {
             _VoxelWorld = voxelWorld;
-            _ChunksRequiringRemesh = new Queue<Chunk>();
-            _ChunksPendingDisposal = new Stack<Chunk>();
+            _ChunksRequiringRemesh = new Ring<Queue<Chunk>>(2, () => new Queue<Chunk>());
+            _ChunksPendingDisposal = new Ring<Stack<Chunk>>(2, () => new Stack<Chunk>());
         }
 
         public override void Registered(EntityManager entityManager)
@@ -52,12 +51,8 @@ namespace Automata.Game.Chunks
 
         private void RemeshChunksWithValidRemeshingState()
         {
-            using SavableQueueEnumerator<Chunk> queueEnumerator = new SavableQueueEnumerator<Chunk>(_ChunksRequiringRemesh);
-
-            while (queueEnumerator.MoveNext())
+            while (_ChunksRequiringRemesh.Current.TryDequeue(out Chunk? chunk))
             {
-                Chunk chunk = queueEnumerator.Current;
-
                 switch (chunk!.State)
                 {
                     case GenerationState.AwaitingMesh:
@@ -65,20 +60,18 @@ namespace Automata.Game.Chunks
                         chunk.State = GenerationState.AwaitingMesh;
                         break;
                     default:
-                        queueEnumerator.SaveCurrent();
+                        _ChunksRequiringRemesh.Next.Enqueue(chunk);
                         break;
                 }
             }
+
+            _ChunksRequiringRemesh.Increment();
         }
 
         private void DisposeChunksWithValidDisposalState()
         {
-            using SavableStackEnumerator<Chunk> stackEnumerator = new SavableStackEnumerator<Chunk>(_ChunksPendingDisposal);
-
-            while (stackEnumerator.MoveNext())
+            while (_ChunksPendingDisposal.Current.TryPop(out Chunk? chunk))
             {
-                Chunk chunk = stackEnumerator.Current;
-
                 if (!chunk!.IsGenerating)
                 {
                     int index = 0;
@@ -91,6 +84,7 @@ namespace Automata.Game.Chunks
                         }
                     }
 
+                    // this means we've successfully iterated every neighbor without a break
                     if (index == chunk!.Neighbors.Length)
                     {
                         chunk.RegionDispose();
@@ -98,8 +92,10 @@ namespace Automata.Game.Chunks
                     }
                 }
 
-                stackEnumerator.SaveCurrent();
+                _ChunksPendingDisposal.Next.Push(chunk);
             }
+
+            _ChunksPendingDisposal.Increment();
         }
 
         private static bool UpdateChunkLoaders(EntityManager entityManager)
@@ -161,8 +157,8 @@ namespace Automata.Game.Chunks
                 if (disposable)
                 {
                     // todo it would be nice to just dispose of chunks outright, instead of deferring it
+                    _ChunksPendingDisposal.Current.Push(entity.Component<Chunk>()!);
                     _VoxelWorld.TryDeallocate(origin);
-                    _ChunksPendingDisposal.Push(entity.Component<Chunk>()!);
                     entityManager.RemoveEntity(entity);
                 }
             }
@@ -204,7 +200,7 @@ namespace Automata.Game.Chunks
                 // in addition, if this chunk is inactive (i.e. a new allocation) then
                 // we also enqueue each neighbor the a queue, signifying that once the neighbor
                 // enter the 'GenerationState.Finished' state, it needs to be remeshed.
-                AssignNeighbors(origin, chunk.Neighbors);
+                AssignNeighbors(origin, chunk!.Neighbors);
 
                 if (chunk.State is GenerationState.Inactive)
                 {
@@ -212,7 +208,7 @@ namespace Automata.Game.Chunks
                     {
                         if (neighbor?.State is > GenerationState.AwaitingMesh)
                         {
-                            _ChunksRequiringRemesh.Enqueue(neighbor);
+                            _ChunksRequiringRemesh.Current.Enqueue(neighbor);
                         }
                     }
 
