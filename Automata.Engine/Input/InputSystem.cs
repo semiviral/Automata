@@ -1,6 +1,7 @@
 using System;
 using System.Numerics;
 using System.Threading.Tasks;
+using Automata.Engine.Numerics;
 using Silk.NET.Input;
 
 namespace Automata.Engine.Input
@@ -24,13 +25,13 @@ namespace Automata.Engine.Input
 
         private static void HandleMouseListeners(EntityManager entityManager, TimeSpan delta)
         {
-            Vector2 relativeMousePosition = InputManager.Instance.GetMousePositionCenterRelative(0) * (float)delta.TotalSeconds;
+            Vector2<float> relativeMousePosition = InputManager.Instance.GetMousePositionCenterRelative(0) * (float)delta.TotalSeconds;
 
             // invert axis for proper rotation
             // without this line, the x-axis rotation will be backwards
-            relativeMousePosition.X = -relativeMousePosition.X;
+            relativeMousePosition = relativeMousePosition.WithX(-relativeMousePosition.X);
 
-            if (relativeMousePosition == Vector2.Zero)
+            if (relativeMousePosition == Vector2<float>.Zero)
             {
                 return;
             }
@@ -44,7 +45,7 @@ namespace Automata.Engine.Input
             }
 
             // reset mouse position to center of screen
-            InputManager.Instance.SetMousePositionCenterRelative(0, Vector2.Zero);
+            InputManager.Instance.SetMousePositionCenterRelative(0, Vector2<float>.Zero);
         }
 
         private static void HandleKeyboardListeners(EntityManager entityManager, TimeSpan delta)

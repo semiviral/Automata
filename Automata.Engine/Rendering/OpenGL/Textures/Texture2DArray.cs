@@ -25,16 +25,16 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             GL.TextureStorage3D(Handle, 1, _InternalFormat, (uint)size.X, (uint)size.Y, (uint)size.Z);
         }
 
-        public void SetPixels(Vector3i offset, Vector2i size, ReadOnlySpan<TPixel> pixels)
+        public void SetPixels(Vector3i offset, Vector2<int> size, ReadOnlySpan<TPixel> pixels)
         {
             if (Vector3b.Any(offset < 0))
             {
                 throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
             }
-            else if (Vector2b.Any(size < 0))
-            {
-                throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0 and <TexSize");
-            }
+            // else if (Vector2b.Any(size < 0))
+            // {
+            //     throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0 and <TexSize");
+            // }
 
             GL.TextureSubImage3D(Handle, 0, offset.X, offset.Y, offset.Z, (uint)size.X, (uint)size.Y, 1u, _PixelFormat, _PixelType, pixels);
         }

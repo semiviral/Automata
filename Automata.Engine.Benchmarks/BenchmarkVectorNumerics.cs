@@ -18,6 +18,6 @@ namespace Automata.Engine.Benchmarks
         public Vector4<uint> Generic4() => new Vector4<uint>(9) - new Vector4<uint>(9);
 
         [Benchmark]
-        public Vector4<float> GenericFloating4() => new Vector4<float>(7f) * new Vector4<float>(7f);
+        public Vector4<float> GenericFloating4() => new Vector4<float>(7f) / new Vector4<float>(7f);
     }
 }

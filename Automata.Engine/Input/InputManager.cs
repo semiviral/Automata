@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
-using System.Runtime.CompilerServices;
+using Automata.Engine.Numerics;
 using Silk.NET.Input;
 using Silk.NET.Windowing;
 
@@ -75,7 +75,7 @@ namespace Automata.Engine.Input
         public bool IsKeyPressed(Key key) => _Keyboards.Any(keyboard => keyboard.IsKeyPressed(key));
         public bool IsButtonPressed(MouseButton mouseButton) => _Mice.Any(mouse => mouse.IsButtonPressed(mouseButton));
 
-        public Vector2 GetMousePosition(int mouseIndex)
+        public Vector2<float> GetMousePosition(int mouseIndex)
         {
             if ((mouseIndex < 0) || (mouseIndex >= _Mice.Count))
             {
@@ -85,7 +85,7 @@ namespace Automata.Engine.Input
             PointF position = _Mice[mouseIndex].Position;
             position.Y = -position.Y + AutomataWindow.Instance.Size.Y;
 
-            return Unsafe.As<PointF, Vector2>(ref position);
+            return position.AsVector();
         }
 
         /// <summary>
@@ -94,17 +94,18 @@ namespace Automata.Engine.Input
         /// <param name="mouseIndex"></param>
         /// <returns></returns>
         /// <exception cref="IndexOutOfRangeException"></exception>
-        public Vector2 GetMousePositionCenterRelative(int mouseIndex) => GetMousePosition(mouseIndex) - (Vector2)AutomataWindow.Instance.Center;
+        public Vector2<float> GetMousePositionCenterRelative(int mouseIndex) =>
+            GetMousePosition(mouseIndex) - AutomataWindow.Instance.Center.Coerce<int, float>();
 
-        public void SetMousePositionCenterRelative(int mouseIndex, Vector2 position)
+        public void SetMousePositionCenterRelative(int mouseIndex, Vector2<float> position)
         {
             if ((mouseIndex < 0) || (mouseIndex >= _Mice.Count))
             {
                 throw new IndexOutOfRangeException(nameof(mouseIndex));
             }
 
-            position += (Vector2)AutomataWindow.Instance.Center;
-            _Mice[mouseIndex].Position = Unsafe.As<Vector2, PointF>(ref position);
+            position += AutomataWindow.Instance.Center.Coerce<int, float>();
+            _Mice[mouseIndex].Position = position.AsPointF();
         }
 
         public void CheckAndExecuteInputActions()

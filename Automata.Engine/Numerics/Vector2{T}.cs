@@ -31,10 +31,41 @@ namespace Automata.Engine.Numerics
             _Y = y;
         }
 
+        public Vector2<T> WithX(T x) => new Vector2<T>(x, _Y);
+        public Vector2<T> WithY(T y) => new Vector2<T>(_X, y);
+
 
         #region Operators
 
-        #region Add Operator
+        #region Equals
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator ==(Vector2<T> a, T b) => a == new Vector2<T>(b);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator ==(T a, Vector2<T> b) => new Vector2<T>(a) == b;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator ==(Vector2<T> a, Vector2<T> b) => Vector.EqualsInternal(a, b);
+
+        #endregion
+
+
+        #region Not Equals
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator !=(Vector2<T> a, T b) => a != new Vector2<T>(b);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator !=(T a, Vector2<T> b) => new Vector2<T>(a) != b;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator !=(Vector2<T> a, Vector2<T> b) => Vector.NotEqualsInternal(a, b);
+
+        #endregion
+
+
+        #region Add
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2<T> operator +(Vector2<T> a, T b) => a + new Vector2<T>(b);
@@ -48,7 +79,7 @@ namespace Automata.Engine.Numerics
         #endregion
 
 
-        #region Subtract Operator
+        #region Subtract
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2<T> operator -(Vector2<T> a, T b) => a - new Vector2<T>(b);
@@ -62,7 +93,7 @@ namespace Automata.Engine.Numerics
         #endregion
 
 
-        #region Multiply Operator
+        #region Multiply
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2<T> operator *(Vector2<T> a, T b) => a * new Vector2<T>(b);
@@ -76,7 +107,7 @@ namespace Automata.Engine.Numerics
         #endregion
 
 
-        #region Divide Operator
+        #region Divide
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2<T> operator /(Vector2<T> a, T b) => a / new Vector2<T>(b);

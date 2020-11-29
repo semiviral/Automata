@@ -19,7 +19,7 @@ using ErrorCode = Silk.NET.GLFW.ErrorCode;
 
 namespace Automata.Engine
 {
-    public delegate void WindowResizedEventHandler(object sender, Vector2i newSize);
+    public delegate void WindowResizedEventHandler(object sender, Vector2<int> newSize);
 
     public delegate void WindowFocusChangedEventHandler(object sender, bool isFocused);
 
@@ -49,15 +49,15 @@ namespace Automata.Engine
 
         public TimeSpan VSyncFrameTime { get; private set; }
         public string Title { get => Window.Title; set => Window.Title = value; }
-        public Vector2i Position { get => (Vector2i)Window.Position; set => Window.Position = (Point)value; }
+        public Vector2<int> Position { get => Window.Position.AsVector(); set => Window.Position = value.AsPoint(); }
         public Vector4 Viewport => new Vector4(0f, 0f, Window.Size.Width, Window.Size.Height);
         public float AspectRatio => (float)Window.Size.Width / (float)Window.Size.Height;
 
-        public Vector2i Size { get => (Vector2i)Window.Size; set => Window.Size = (Size)value; }
+        public Vector2<int> Size { get => Window.Size.AsVector(); set => Window.Size = value.AsSize(); }
 
         public bool Focused { get; private set; }
 
-        public Vector2i Center => Size / 2;
+        public Vector2<int> Center => Size / 2;
 
         public AutomataWindow() => Focused = true;
 
@@ -181,7 +181,7 @@ namespace Automata.Engine
         private void OnWindowResized(Size size)
         {
             GLAPI.Instance.GL.Viewport(Window.Size);
-            Resized?.Invoke(this, (Vector2i)Size);
+            Resized?.Invoke(this, Size);
         }
 
         private void OnWindowFocusedChanged(bool focused)

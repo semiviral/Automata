@@ -63,7 +63,7 @@ namespace Automata.Engine
 
         #region Events
 
-        private void GameWindowResized(object? sender, Vector2i newSize) => _UpdateProjections = true;
+        private void GameWindowResized(object? sender, Vector2<int> size) => _UpdateProjections = true;
 
         #endregion
     }

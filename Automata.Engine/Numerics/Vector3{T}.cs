@@ -35,7 +35,35 @@ namespace Automata.Engine.Numerics
 
         #region Operators
 
-        #region Add Operator
+        #region Equals
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator ==(Vector3<T> a, T b) => a == new Vector3<T>(b);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator ==(T a, Vector3<T> b) => new Vector3<T>(a) == b;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator ==(Vector3<T> a, Vector3<T> b) => Vector.EqualsInternal(a, b);
+
+        #endregion
+
+
+        #region Not Equals
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator !=(Vector3<T> a, T b) => a != new Vector3<T>(b);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator !=(T a, Vector3<T> b) => new Vector3<T>(a) != b;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator !=(Vector3<T> a, Vector3<T> b) => Vector.NotEqualsInternal(a, b);
+
+        #endregion
+
+
+        #region Add
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3<T> operator +(Vector3<T> a, T b) => a + new Vector3<T>(b);
@@ -49,7 +77,7 @@ namespace Automata.Engine.Numerics
         #endregion
 
 
-        #region Subtract Operator
+        #region Subtract
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3<T> operator -(Vector3<T> a, T b) => a - new Vector3<T>(b);
@@ -63,7 +91,7 @@ namespace Automata.Engine.Numerics
         #endregion
 
 
-        #region Multiply Operator
+        #region Multiply
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3<T> operator *(Vector3<T> a, T b) => a * new Vector3<T>(b);
@@ -77,7 +105,7 @@ namespace Automata.Engine.Numerics
         #endregion
 
 
-        #region Divide Operator
+        #region Divide
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3<T> operator /(Vector3<T> a, T b) => a / new Vector3<T>(b);

@@ -29,7 +29,7 @@ namespace Automata.Game
 
             foreach ((string group, string path) in texturePaths)
             {
-                Blocks.SetPixels(new Vector3i(0, 0, depth), new Vector2i(8, 8), Image.Load<Rgba32>(path).GetPixelSpan());
+                Blocks.SetPixels(new Vector3i(0, 0, depth), new Vector2<int>(8, 8), Image.Load<Rgba32>(path).GetPixelSpan());
 
                 string formattedName = string.Format(group_with_sprite_name_format, group, Path.GetFileNameWithoutExtension(path));
 

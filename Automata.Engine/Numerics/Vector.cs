@@ -1,4 +1,5 @@
 using System;
+using System.Drawing;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics;
@@ -14,7 +15,23 @@ namespace Automata.Engine.Numerics
         public static Vector2<TTo> Coerce<TFrom, TTo>(this Vector2<TFrom> vector)
             where TFrom : unmanaged
             where TTo : unmanaged =>
-            (Vector2<TTo>)(object)vector;
+            typeof(TFrom) == typeof(TTo)
+                ? (Vector2<TTo>)(object)vector
+                : new Vector2<TTo>((TTo)(object)vector.X, (TTo)(object)vector.Y);
+
+
+        #region Conversions
+
+        public static Point AsPoint(this Vector2<int> vector) => Unsafe.As<Vector2<int>, Point>(ref vector);
+        public static Vector2<int> AsVector(this Point point) => Unsafe.As<Point, Vector2<int>>(ref point);
+
+        public static PointF AsPointF(this Vector2<float> vector) => Unsafe.As<Vector2<float>, PointF>(ref vector);
+        public static Vector2<float> AsVector(this PointF pointF) => Unsafe.As<PointF, Vector2<float>>(ref pointF);
+
+        public static Size AsSize(this Vector2<int> vector) => Unsafe.As<Vector2<int>, Size>(ref vector);
+        public static Vector2<int> AsVector(this Size size) => Unsafe.As<Size, Vector2<int>>(ref size);
+
+        #endregion
 
 
         #region AsVector
@@ -186,6 +203,32 @@ namespace Automata.Engine.Numerics
 
         #endregion
 
+
+        #region Equals
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static bool EqualsInternal<T>(Vector2<T> a, Vector2<T> b) where T : unmanaged => a.AsVector() == b.AsVector();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool EqualsInternal<T>(Vector3<T> a, Vector3<T> b) where T : unmanaged => a.AsVector() == b.AsVector();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool EqualsInternal<T>(Vector4<T> a, Vector4<T> b) where T : unmanaged => a.AsVector() == b.AsVector();
+
+        #endregion
+
+        #region Not Equals
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static bool NotEqualsInternal<T>(Vector2<T> a, Vector2<T> b) where T : unmanaged => a.AsVector() != b.AsVector();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool NotEqualsInternal<T>(Vector3<T> a, Vector3<T> b) where T : unmanaged => a.AsVector() != b.AsVector();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool NotEqualsInternal<T>(Vector4<T> a, Vector4<T> b) where T : unmanaged => a.AsVector() != b.AsVector();
+
+        #endregion
 
         #region Add
 

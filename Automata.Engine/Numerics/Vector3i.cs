@@ -32,7 +32,6 @@ namespace Automata.Engine.Numerics
         };
 
         public Vector3i(int xyz) => (X, Y, Z) = (xyz, xyz, xyz);
-        public Vector3i(Vector2i xy, int z) => (X, Y, Z) = (xy.X, xy.Y, z);
         public Vector3i(int x, int y, int z) => (X, Y, Z) = (x, y, z);
 
         public override bool Equals(object? obj) => obj is Vector3i other && Equals(other);
