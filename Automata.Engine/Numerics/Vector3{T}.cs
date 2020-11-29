@@ -2,6 +2,7 @@ using System.Runtime.Intrinsics.X86;
 
 namespace Automata.Engine.Numerics
 {
+    // todo fill out this type with all of the relevant functions for <int> and <float> to trial run it in the engine
     public readonly struct Vector3<T> where T : unmanaged
     {
         public static Vector3<T> One => new Vector3<T>(Primitive<T>.One);

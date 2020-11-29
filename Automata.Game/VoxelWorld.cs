@@ -24,6 +24,7 @@ namespace Automata.Game
 
         private readonly Dictionary<Vector3i, Entity> _Chunks;
         private readonly Dictionary<Vector3i, NonAllocatingList<ChunkModification>> _Modifications;
+        // todo rename this to ConcurrentModifications
         private readonly ConcurrentChannel<(Vector3i, ChunkModification)> _ConcurrentModificationsQueue;
 
         public int ChunkCount => _Chunks.Count;
@@ -37,8 +38,10 @@ namespace Automata.Game
             _ConcurrentModificationsQueue = new ConcurrentChannel<(Vector3i, ChunkModification)>(true, false);
         }
 
+        // todo rename to `TryGetChunk`
         public bool TryGetChunkEntity(Vector3i origin, [NotNullWhen(true)] out Entity? entity) => _Chunks.TryGetValue(origin, out entity);
 
+        // todo rename to `TryGetBlock`
         public bool TryGetBlockAt(Vector3i global, [MaybeNullWhen(false)] out Block block)
         {
             Vector3i origin = Vector3i.RoundBy(global, GenerationConstants.CHUNK_SIZE);
@@ -57,10 +60,14 @@ namespace Automata.Game
             }
         }
 
+        // todo rename to `TrimMemory`
         public void TrimExcessCapacity() => _Chunks.TrimExcess();
 
         #region Chunk Addition / Removal
 
+        public bool ChunkExists(Vector3i origin) => _Chunks.ContainsKey(origin);
+
+        // rename to `AllocateChunk`
         public async ValueTask TryAllocate(EntityManager entityManager, Vector3i origin)
         {
             // it's better to double-check the key here, as opposed to
@@ -72,7 +79,8 @@ namespace Automata.Game
             {
                 Chunk chunk = new Chunk();
 
-                // todo try to handle adding entities outside this class
+                // todo try to handle adding entities outside this class, this method should only
+                //  accept chunk objects, or perhaps add and return new chunk objects for creating entities.
                 _Chunks.Add(origin, entityManager.CreateEntity(
                     new Transform
                     {
@@ -96,6 +104,7 @@ namespace Automata.Game
             }
         }
 
+        // todo rename to `DeallocateChunk`
         public bool TryDeallocate(Vector3i origin) => _Chunks.Remove(origin);
 
         #endregion
@@ -124,6 +133,7 @@ namespace Automata.Game
             }
         }
 
+        // todo rename to `SynchronizeConcurrentModifications`
         public async ValueTask ProcessConcurrentModifications()
         {
             while (_ConcurrentModificationsQueue.TryTake(out (Vector3i Origin, ChunkModification Modification) entry))

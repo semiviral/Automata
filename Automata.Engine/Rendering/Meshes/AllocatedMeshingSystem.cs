@@ -45,6 +45,12 @@ namespace Automata.Engine.Rendering.Meshes
                 throw new NotSupportedException("Does not support specified index type.");
             }
 
+            // todo this system shouldn't contain its own mesh.
+            //  remark: break this out into its own component, possibly with an ID that DrawElementsIndirectAllocation
+            //  can use to refer to which mesh it belongs to.
+            //
+            //  the expectaion being that you compose the mesh component, and keep the ID around to use with your own
+            //  systems and such.
             _MultiDrawIndirectMesh = new MultiDrawIndirectMesh(GLAPI.Instance.GL, 500_000_000, drawElementsType);
 
             _MultiDrawIndirectMeshMaterial =

@@ -15,6 +15,8 @@ namespace Automata.Engine.Numerics
             where TTo : unmanaged =>
             (Vector2<TTo>)(object)vector;
 
+#region AsVector128
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<T> AsVector128<T>(this Vector2<T> vector)
             where T : unmanaged =>
@@ -31,6 +33,10 @@ namespace Automata.Engine.Numerics
             where TFrom : unmanaged
             where TTo : unmanaged =>
             Unsafe.As<Vector3<TFrom>, Vector128<TTo>>(ref vector);
+
+#endregion
+
+#region AsVector2/3/4
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2<T> AsVector2<T>(this Vector128<T> vector)
@@ -49,4 +55,6 @@ namespace Automata.Engine.Numerics
             where TTo : unmanaged =>
             Unsafe.As<Vector128<TFrom>, Vector3<TTo>>(ref vector);
     }
+
+    #endregion
 }
