@@ -14,7 +14,7 @@ namespace Automata.Game.Chunks
         [HandledComponents(EnumerationStrategy.All, typeof(Chunk))]
         public override async ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta)
         {
-            await _VoxelWorld.ProcessConcurrentModifications();
+            await _VoxelWorld.SynchronizeConcurrentModifications();
 
             foreach (Chunk chunk in entityManager.GetComponents<Chunk>())
             {

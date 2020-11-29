@@ -45,7 +45,7 @@ namespace Automata.Game.Chunks
             if (UpdateChunkLoaders(entityManager))
             {
                 await RecalculateLoadedRegions(entityManager);
-                _VoxelWorld.TrimExcessCapacity();
+                _VoxelWorld.TrimMemory();
             }
         }
 
@@ -158,7 +158,7 @@ namespace Automata.Game.Chunks
                 {
                     // todo it would be nice to just dispose of chunks outright, instead of deferring it
                     _ChunksPendingDisposal.Current.Push(entity.Component<Chunk>()!);
-                    _VoxelWorld.TryDeallocate(origin);
+                    _VoxelWorld.DeallocateChunk(origin);
                     entityManager.RemoveEntity(entity);
                 }
             }
@@ -177,14 +177,14 @@ namespace Automata.Game.Chunks
                     int zPos = z * GenerationConstants.CHUNK_SIZE;
 
                     // remark: this relies on GenerationConstants.WORLD_HEIGHT_IN_CHUNKS being 8
-                    await _VoxelWorld.TryAllocate(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 0, zPos));
-                    await _VoxelWorld.TryAllocate(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 1, zPos));
-                    await _VoxelWorld.TryAllocate(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 2, zPos));
-                    await _VoxelWorld.TryAllocate(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 3, zPos));
-                    await _VoxelWorld.TryAllocate(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 4, zPos));
-                    await _VoxelWorld.TryAllocate(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 5, zPos));
-                    await _VoxelWorld.TryAllocate(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 6, zPos));
-                    await _VoxelWorld.TryAllocate(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 7, zPos));
+                    await _VoxelWorld.AllocateChunk(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 0, zPos));
+                    await _VoxelWorld.AllocateChunk(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 1, zPos));
+                    await _VoxelWorld.AllocateChunk(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 2, zPos));
+                    await _VoxelWorld.AllocateChunk(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 3, zPos));
+                    await _VoxelWorld.AllocateChunk(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 4, zPos));
+                    await _VoxelWorld.AllocateChunk(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 5, zPos));
+                    await _VoxelWorld.AllocateChunk(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 6, zPos));
+                    await _VoxelWorld.AllocateChunk(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 7, zPos));
                 }
             }
         }
@@ -222,22 +222,22 @@ namespace Automata.Game.Chunks
         {
             Entity? neighbor;
 
-            _VoxelWorld.TryGetChunkEntity(origin + new Vector3i(GenerationConstants.CHUNK_SIZE, 0, 0), out neighbor);
+            _VoxelWorld.TryGetChunk(origin + new Vector3i(GenerationConstants.CHUNK_SIZE, 0, 0), out neighbor);
             origins[0] = neighbor?.Component<Chunk>();
 
-            _VoxelWorld.TryGetChunkEntity(origin + new Vector3i(0, GenerationConstants.CHUNK_SIZE, 0), out neighbor);
+            _VoxelWorld.TryGetChunk(origin + new Vector3i(0, GenerationConstants.CHUNK_SIZE, 0), out neighbor);
             origins[1] = neighbor?.Component<Chunk>();
 
-            _VoxelWorld.TryGetChunkEntity(origin + new Vector3i(0, 0, GenerationConstants.CHUNK_SIZE), out neighbor);
+            _VoxelWorld.TryGetChunk(origin + new Vector3i(0, 0, GenerationConstants.CHUNK_SIZE), out neighbor);
             origins[2] = neighbor?.Component<Chunk>();
 
-            _VoxelWorld.TryGetChunkEntity(origin + new Vector3i(-GenerationConstants.CHUNK_SIZE, 0, 0), out neighbor);
+            _VoxelWorld.TryGetChunk(origin + new Vector3i(-GenerationConstants.CHUNK_SIZE, 0, 0), out neighbor);
             origins[3] = neighbor?.Component<Chunk>();
 
-            _VoxelWorld.TryGetChunkEntity(origin + new Vector3i(0, -GenerationConstants.CHUNK_SIZE, 0), out neighbor);
+            _VoxelWorld.TryGetChunk(origin + new Vector3i(0, -GenerationConstants.CHUNK_SIZE, 0), out neighbor);
             origins[4] = neighbor?.Component<Chunk>();
 
-            _VoxelWorld.TryGetChunkEntity(origin + new Vector3i(0, 0, -GenerationConstants.CHUNK_SIZE), out neighbor);
+            _VoxelWorld.TryGetChunk(origin + new Vector3i(0, 0, -GenerationConstants.CHUNK_SIZE), out neighbor);
             origins[5] = neighbor?.Component<Chunk>();
         }
     }

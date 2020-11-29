@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
@@ -24,8 +23,7 @@ namespace Automata.Game
 
         private readonly Dictionary<Vector3i, Entity> _Chunks;
         private readonly Dictionary<Vector3i, NonAllocatingList<ChunkModification>> _Modifications;
-        // todo rename this to ConcurrentModifications
-        private readonly ConcurrentChannel<(Vector3i, ChunkModification)> _ConcurrentModificationsQueue;
+        private readonly ConcurrentChannel<(Vector3i, ChunkModification)> _ConcurrentModifications;
 
         public int ChunkCount => _Chunks.Count;
 
@@ -35,14 +33,12 @@ namespace Automata.Game
         {
             _Chunks = new Dictionary<Vector3i, Entity>();
             _Modifications = new Dictionary<Vector3i, NonAllocatingList<ChunkModification>>();
-            _ConcurrentModificationsQueue = new ConcurrentChannel<(Vector3i, ChunkModification)>(true, false);
+            _ConcurrentModifications = new ConcurrentChannel<(Vector3i, ChunkModification)>(true, false);
         }
 
-        // todo rename to `TryGetChunk`
-        public bool TryGetChunkEntity(Vector3i origin, [NotNullWhen(true)] out Entity? entity) => _Chunks.TryGetValue(origin, out entity);
+        public bool TryGetChunk(Vector3i origin, [NotNullWhen(true)] out Entity? entity) => _Chunks.TryGetValue(origin, out entity);
 
-        // todo rename to `TryGetBlock`
-        public bool TryGetBlockAt(Vector3i global, [MaybeNullWhen(false)] out Block block)
+        public bool TryGetBlock(Vector3i global, [MaybeNullWhen(false)] out Block block)
         {
             Vector3i origin = Vector3i.RoundBy(global, GenerationConstants.CHUNK_SIZE);
             Vector3i local = Vector3i.Abs(global - origin);
@@ -60,15 +56,14 @@ namespace Automata.Game
             }
         }
 
-        // todo rename to `TrimMemory`
-        public void TrimExcessCapacity() => _Chunks.TrimExcess();
+        public void TrimMemory() => _Chunks.TrimExcess();
+
 
         #region Chunk Addition / Removal
 
         public bool ChunkExists(Vector3i origin) => _Chunks.ContainsKey(origin);
 
-        // rename to `AllocateChunk`
-        public async ValueTask TryAllocate(EntityManager entityManager, Vector3i origin)
+        public async ValueTask AllocateChunk(EntityManager entityManager, Vector3i origin)
         {
             // it's better to double-check the key here, as opposed to
             // instantiating the entity data every call of this method
@@ -104,8 +99,7 @@ namespace Automata.Game
             }
         }
 
-        // todo rename to `DeallocateChunk`
-        public bool TryDeallocate(Vector3i origin) => _Chunks.Remove(origin);
+        public bool DeallocateChunk(Vector3i origin) => _Chunks.Remove(origin);
 
         #endregion
 
@@ -122,7 +116,7 @@ namespace Automata.Game
                 BlockID = blockID
             };
 
-            await _ConcurrentModificationsQueue.AddAsync((origin, modification));
+            await _ConcurrentModifications.AddAsync((origin, modification));
         }
 
         public async ValueTask AllocateChunkModifications(IEnumerable<(Vector3i, ushort)> modifications)
@@ -133,10 +127,9 @@ namespace Automata.Game
             }
         }
 
-        // todo rename to `SynchronizeConcurrentModifications`
-        public async ValueTask ProcessConcurrentModifications()
+        public async ValueTask SynchronizeConcurrentModifications()
         {
-            while (_ConcurrentModificationsQueue.TryTake(out (Vector3i Origin, ChunkModification Modification) entry))
+            while (_ConcurrentModifications.TryTake(out (Vector3i Origin, ChunkModification Modification) entry))
             {
                 if (_Chunks.TryGetValue(entry.Origin, out Entity? entity))
                 {

@@ -15,7 +15,7 @@ namespace Automata.Game.Chunks.Generation.Structures
 
         public bool CheckPlaceStructureAt(World world, Random seeded, Vector3i global) =>
             world is VoxelWorld voxelWorld
-            && voxelWorld.TryGetBlockAt(global, out Block block)
+            && voxelWorld.TryGetBlock(global, out Block block)
             && (block.ID == _GrassID)
             && (seeded.Next(0, 8000) == 0);
 
