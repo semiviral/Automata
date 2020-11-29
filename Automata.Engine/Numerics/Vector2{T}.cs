@@ -1,5 +1,4 @@
 using System.Runtime.InteropServices;
-using System.Runtime.Intrinsics.X86;
 
 // ReSharper disable ConvertToAutoProperty
 
@@ -8,6 +7,7 @@ namespace Automata.Engine.Numerics
     [StructLayout(LayoutKind.Sequential)]
     public readonly struct Vector2<T> where T : unmanaged
     {
+        public static Vector2<T> Zero => new Vector2<T>(default);
         public static Vector2<T> One => new Vector2<T>(Primitive<T>.One);
         public static Vector2<T> UnitX => new Vector2<T>(Primitive<T>.One, default);
         public static Vector2<T> UnitY => new Vector2<T>(default, Primitive<T>.One);
@@ -33,22 +33,9 @@ namespace Automata.Engine.Numerics
 
         #region Operators
 
-        public static Vector2<T> operator *(Vector2<T> a, Vector2<T> b)
-        {
-            if ((typeof(T) == typeof(int)) && Sse41.IsSupported)
-            {
-                return Sse41.MultiplyLow(a.AsVector128<T, int>(), b.AsVector128<T, int>()).AsVector2<int, T>();
-            }
-            else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
-            {
-                return (a.AsIntrinsic() * b.AsIntrinsic()).AsGeneric<T>();
-            }
-            else
-            {
-                // todo throw
-                return default;
-            }
-        }
+        public static Vector2<T> operator *(Vector2<T> a, T b) => a * new Vector2<T>(b);
+        public static Vector2<T> operator *(T a, Vector2<T> b) => new Vector2<T>(a) * b;
+        public static Vector2<T> operator *(Vector2<T> a, Vector2<T> b) => Vector.MultiplyInternal(a, b);
 
         #endregion
     }

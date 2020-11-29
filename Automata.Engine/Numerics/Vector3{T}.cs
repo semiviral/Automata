@@ -4,6 +4,7 @@ namespace Automata.Engine.Numerics
 {
     public readonly struct Vector3<T> where T : unmanaged
     {
+        public static Vector3<T> Zero=> new Vector3<T>(default);
         public static Vector3<T> One => new Vector3<T>(Primitive<T>.One);
         public static Vector3<T> UnitX => new Vector3<T>(Primitive<T>.One, default, default);
         public static Vector3<T> UnitY => new Vector3<T>(default, Primitive<T>.One, default);
@@ -34,22 +35,9 @@ namespace Automata.Engine.Numerics
 
         #region Operators
 
-        public static Vector3<T> operator *(Vector3<T> a, Vector3<T> b)
-        {
-            if ((typeof(T) == typeof(int)) && Sse41.IsSupported)
-            {
-                return Sse41.MultiplyLow(a.AsVector128<T, int>(), b.AsVector128<T, int>()).AsVector3<int, T>();
-            }
-            else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
-            {
-                return Sse.Multiply(a.AsVector128<T, float>(), b.AsVector128<T, float>()).AsVector3<float, T>();
-            }
-            else
-            {
-                Vector.ThrowNotSupportedGenericType();
-                return default;
-            }
-        }
+        public static Vector3<T> operator *(Vector3<T> a, T b) => a * new Vector3<T>(b);
+        public static Vector3<T> operator *(T a, Vector3<T> b) => new Vector3<T>(a) * b;
+        public static Vector3<T> operator *(Vector3<T> a, Vector3<T> b) => Vector.MultiplyInternal(a, b);
 
         #endregion
     }
