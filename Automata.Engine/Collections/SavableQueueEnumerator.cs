@@ -43,7 +43,7 @@ namespace Automata.Engine.Collections
             _SavedIndex += 1u;
         }
 
-        public void Reset() => throw new NotImplementedException();
+        public void Reset() => throw new NotSupportedException();
 
         public void Dispose()
         {

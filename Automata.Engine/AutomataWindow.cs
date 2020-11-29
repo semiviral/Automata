@@ -76,7 +76,7 @@ namespace Automata.Engine
                 {
                     ContextAPI.OpenGL => new GraphicsAPI(contextAPI, ContextProfile.Core, ContextFlags.Debug, _PreferredOGLVersion),
                     ContextAPI.Vulkan => new GraphicsAPI(contextAPI, ContextProfile.Core, ContextFlags.Debug, _PreferredVulkanVersion),
-                    _ => throw new NotImplementedException()
+                    _ => throw new NotSupportedException("Only OpenGL and Vulkan contexts are supported by Automata.")
                 };
 
                 IWindow window = Silk.NET.Windowing.Window.Create(options);

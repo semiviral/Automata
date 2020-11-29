@@ -41,7 +41,7 @@ namespace Automata.Engine.Numerics
             }
             else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
             {
-                return Sse.Multiply(a.AsVector128<T, float>(), b.AsVector128<T, float>()).AsVector2<float, T>();
+                return (a.AsIntrinsic() * b.AsIntrinsic()).AsGeneric<T>();
             }
             else
             {

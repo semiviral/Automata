@@ -46,17 +46,13 @@ namespace Automata.Engine
                 transform.Changed = false;
             }
 
+            // for now I'm entertaining that its POSSIBLE a Camera might not have a transform
+            // so we process the projections separately
             if (_UpdateProjections)
             {
                 foreach (Camera camera in entityManager.GetComponents<Camera>())
                 {
-                    camera.Projection = camera.Projector switch
-                    {
-                        // todo handle near, far, clipping planes and FOV in the projection itself
-                        Projector.Perspective => new PerspectiveProjection(90f, AutomataWindow.Instance.AspectRatio, 0.1f, 1000f),
-                        Projector.Orthographic => new OrthographicProjection(AutomataWindow.Instance.Size, 0.1f, 1000f),
-                        _ => camera.Projection
-                    };
+                    camera.Projection = IProjection.CreateFromProjector(camera.Projector);
                 }
             }
 

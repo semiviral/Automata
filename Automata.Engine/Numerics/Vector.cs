@@ -1,7 +1,7 @@
 using System;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics;
-using Automata.Engine.Numerics.Shapes;
 
 namespace Automata.Engine.Numerics
 {
@@ -14,6 +14,9 @@ namespace Automata.Engine.Numerics
             where TFrom : unmanaged
             where TTo : unmanaged =>
             (Vector2<TTo>)(object)vector;
+
+
+        #region AsVector128
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<T> AsVector128<T>(this Vector2<T> vector)
@@ -32,6 +35,11 @@ namespace Automata.Engine.Numerics
             where TTo : unmanaged =>
             Unsafe.As<Vector3<TFrom>, Vector128<TTo>>(ref vector);
 
+        #endregion
+
+
+        #region AsVector2/3/4
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2<T> AsVector2<T>(this Vector128<T> vector)
             where T : unmanaged =>
@@ -48,5 +56,36 @@ namespace Automata.Engine.Numerics
             where TFrom : unmanaged
             where TTo : unmanaged =>
             Unsafe.As<Vector128<TFrom>, Vector3<TTo>>(ref vector);
+
+        #endregion
+
+
+        #region AsVector2/3/4 Intrinsic
+
+        /// <summary>
+        ///     Converts a given generic vector to its intrinsic variant.
+        /// </summary>
+        /// <remarks>
+        ///     It's assumed that T is a valid type. No type checking is done by this method for performance.
+        /// </remarks>
+        /// <param name="vector"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2 AsIntrinsic<T>(this Vector2<T> vector) where T : unmanaged => Unsafe.As<Vector2<T>, Vector2>(ref vector);
+
+        /// <summary>
+        ///     Converts a given intrinsic vector to its generic variant.
+        /// </summary>
+        /// <remarks>
+        ///     It's assumed that T is a valid type. No type checking is done by this method for performance.
+        /// </remarks>
+        /// <param name="vector"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2<T> AsGeneric<T>(this Vector2 vector) where T : unmanaged => Unsafe.As<Vector2, Vector2<T>>(ref vector);
+
+        #endregion
     }
 }
