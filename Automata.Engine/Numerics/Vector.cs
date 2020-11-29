@@ -73,7 +73,7 @@ namespace Automata.Engine.Numerics
         #endregion
 
 
-        #region AsVector2/3/4 Intrinsic
+        #region AsIntrinsic
 
         /// <summary>
         ///     Converts a given generic vector to its intrinsic variant.
@@ -81,11 +81,24 @@ namespace Automata.Engine.Numerics
         /// <remarks>
         ///     It's assumed that T is a valid type. No type checking is done by this method for performance.
         /// </remarks>
-        /// <param name="vector"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
+        /// <param name="vector">Vector to convert.</param>
+        /// <typeparam name="T">Unmanaged type to convert generic to.</typeparam>
+        /// <returns>Intrinsic variant of the given vector.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2 AsIntrinsic<T>(this Vector2<T> vector) where T : unmanaged => Unsafe.As<Vector2<T>, Vector2>(ref vector);
+
+        /// <inheritdoc cref="AsIntrinsic{T}(Automata.Engine.Numerics.Vector2{T})" />
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3 AsIntrinsic<T>(this Vector3<T> vector) where T : unmanaged => Unsafe.As<Vector3<T>, Vector3>(ref vector);
+
+        /// <inheritdoc cref="AsIntrinsic{T}(Automata.Engine.Numerics.Vector2{T})" />
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector4 AsIntrinsic<T>(this Vector4<T> vector) where T : unmanaged => Unsafe.As<Vector4<T>, Vector4>(ref vector);
+
+        #endregion
+
+
+        #region AsGeneric
 
         /// <summary>
         ///     Converts a given intrinsic vector to its generic variant.
@@ -93,11 +106,19 @@ namespace Automata.Engine.Numerics
         /// <remarks>
         ///     It's assumed that T is a valid type. No type checking is done by this method for performance.
         /// </remarks>
-        /// <param name="vector"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
+        /// <param name="vector">Vector to convert.</param>
+        /// <typeparam name="T">Unmanaged type to convert generic to.</typeparam>
+        /// <returns>Generic variant of the given vector and type <typeparamref name="T" />.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2<T> AsGeneric<T>(this Vector2 vector) where T : unmanaged => Unsafe.As<Vector2, Vector2<T>>(ref vector);
+
+        /// <inheritdoc cref="AsGeneric{T}(System.Numerics.Vector2)" />
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3<T> AsGeneric<T>(this Vector3 vector) where T : unmanaged => Unsafe.As<Vector3, Vector3<T>>(ref vector);
+
+        /// <inheritdoc cref="AsGeneric{T}(System.Numerics.Vector2)" />
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector4<T> AsGeneric<T>(this Vector4 vector) where T : unmanaged => Unsafe.As<Vector4, Vector4<T>>(ref vector);
 
         #endregion
 
