@@ -34,70 +34,71 @@ namespace Automata.Game.Chunks
 
             InputManager.Instance.RegisterInputAction(() => Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ChunkRegionSystem),
                 $"Average update time: {DiagnosticsProvider.GetGroup<ChunkRegionLoadingDiagnosticGroup>().Average():0.00}ms")), Key.ShiftLeft, Key.X);
-
-            InputManager.Instance.RegisterInputAction(() =>
-            {
-                foreach (Chunk chunk in _VoxelWorld.Entities.Select(entity => entity.Component<Chunk>()!))
-                {
-                    chunk!.State = GenerationState.AwaitingMesh;
-                }
-            }, Key.ShiftLeft, Key.R);
         }
 
         [HandledComponents(EnumerationStrategy.All, typeof(Transform), typeof(ChunkLoader))]
         public override async ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta)
         {
-            using (SavableQueueEnumerator<Chunk> queueEnumerator = new SavableQueueEnumerator<Chunk>(_ChunksRequiringRemesh))
-            {
-                while (queueEnumerator.MoveNext())
-                {
-                    Chunk chunk = queueEnumerator.Current;
-
-                    switch (chunk!.State)
-                    {
-                        case GenerationState.GeneratingMesh:
-                            queueEnumerator.SaveCurrent();
-                            break;
-                        case GenerationState.Finished:
-                            chunk.State = GenerationState.AwaitingMesh;
-                            break;
-                    }
-                }
-            }
-
-            using (SavableStackEnumerator<Chunk> stackEnumerator = new SavableStackEnumerator<Chunk>(_ChunksPendingDisposal))
-            {
-                while (stackEnumerator.MoveNext())
-                {
-                    Chunk chunk = stackEnumerator.Current;
-
-                    int index = 0;
-
-                    if (!chunk.IsGenerating)
-                    {
-                        for (; index < chunk!.Neighbors.Length; index++)
-                        {
-                            if (chunk!.Neighbors[index]?.IsGenerating is true)
-                            {
-                                break;
-                            }
-                        }
-
-                        if (index == chunk!.Neighbors.Length)
-                        {
-                            chunk.RegionDispose();
-                            continue;
-                        }
-                    }
-
-                    stackEnumerator.SaveCurrent();
-                }
-            }
+            RemeshChunksWithValidRemeshingState();
+            DisposeChunksWithValidDisposalState();
 
             // determine whether any chunk loaders have moved out far enough to recalculate their loaded chunk region
             if (UpdateChunkLoaders(entityManager))
             {
                 await RecalculateLoadedRegions(entityManager);
+                _VoxelWorld.TrimExcessCapacity();
+            }
+        }
+
+        private void RemeshChunksWithValidRemeshingState()
+        {
+            using SavableQueueEnumerator<Chunk> queueEnumerator = new SavableQueueEnumerator<Chunk>(_ChunksRequiringRemesh);
+
+            while (queueEnumerator.MoveNext())
+            {
+                Chunk chunk = queueEnumerator.Current;
+
+                switch (chunk!.State)
+                {
+                    case GenerationState.AwaitingMesh:
+                    case GenerationState.Finished:
+                        chunk.State = GenerationState.AwaitingMesh;
+                        break;
+                    default:
+                        queueEnumerator.SaveCurrent();
+                        break;
+                }
+            }
+        }
+
+        private void DisposeChunksWithValidDisposalState()
+        {
+            using SavableStackEnumerator<Chunk> stackEnumerator = new SavableStackEnumerator<Chunk>(_ChunksPendingDisposal);
+
+            while (stackEnumerator.MoveNext())
+            {
+                Chunk chunk = stackEnumerator.Current;
+
+                if (!chunk!.IsGenerating)
+                {
+                    int index = 0;
+
+                    for (; index < chunk!.Neighbors.Length; index++)
+                    {
+                        if (chunk!.Neighbors[index]?.IsGenerating is true)
+                        {
+                            break;
+                        }
+                    }
+
+                    if (index == chunk!.Neighbors.Length)
+                    {
+                        chunk.RegionDispose();
+                        continue;
+                    }
+                }
+
+                stackEnumerator.SaveCurrent();
             }
         }
 
@@ -122,13 +123,54 @@ namespace Automata.Game.Chunks
             return updatedChunkPositions;
         }
 
-
-        #region RecalculateRegion
-
         private async ValueTask RecalculateLoadedRegions(EntityManager entityManager)
         {
-            // calculate all loadable chunk origins
-            foreach (ChunkLoader chunkLoader in entityManager.GetComponents<ChunkLoader>())
+            using NonAllocatingList<ChunkLoader> loaders = GetChunkLoaders(entityManager);
+            DeallocateChunksOutsideLoaderRadii(loaders, entityManager);
+            await AllocateChunksWithinLoaderRadii(loaders, entityManager);
+            UpdateRegionState();
+        }
+
+        private static NonAllocatingList<ChunkLoader> GetChunkLoaders(EntityManager entityManager)
+        {
+            int chunkLoaderCount = (int)entityManager.GetComponentCount<ChunkLoader>();
+            NonAllocatingList<ChunkLoader> loaders = new NonAllocatingList<ChunkLoader>(chunkLoaderCount);
+
+            foreach (ChunkLoader loader in entityManager.GetComponents<ChunkLoader>())
+            {
+                loaders.Add(loader);
+            }
+
+            return loaders;
+        }
+
+        private void DeallocateChunksOutsideLoaderRadii(NonAllocatingList<ChunkLoader> loaders, EntityManager entityManager)
+        {
+            foreach ((Vector3i origin, Entity entity) in _VoxelWorld)
+            {
+                bool disposable = true;
+
+                foreach (ChunkLoader loader in loaders)
+                {
+                    if (loader.IsWithinRadius(origin))
+                    {
+                        disposable = false;
+                    }
+                }
+
+                if (disposable)
+                {
+                    // todo it would be nice to just dispose of chunks outright, instead of deferring it
+                    _VoxelWorld.TryDeallocate(origin);
+                    _ChunksPendingDisposal.Push(entity.Component<Chunk>()!);
+                    entityManager.RemoveEntity(entity);
+                }
+            }
+        }
+
+        private async ValueTask AllocateChunksWithinLoaderRadii(NonAllocatingList<ChunkLoader> loaders, EntityManager entityManager)
+        {
+            foreach (ChunkLoader chunkLoader in loaders)
             {
                 Vector3i yAdjustedOrigin = new Vector3i(chunkLoader.Origin.X, 0, chunkLoader.Origin.Z);
 
@@ -149,35 +191,7 @@ namespace Automata.Game.Chunks
                     await _VoxelWorld.TryAllocate(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 7, zPos));
                 }
             }
-
-            // deallocate chunks that aren't within loader radii
-            foreach ((Vector3i origin, Entity entity) in _VoxelWorld)
-            {
-                bool disposable = true;
-                foreach (ChunkLoader loader in entityManager.GetComponents<ChunkLoader>())
-                {
-                    if (loader.IsWithinRadius(origin))
-                    {
-                        disposable = false;
-                    }
-                }
-
-                if (disposable)
-                {
-                    // todo it would be nice to just dispose of chunks outright, instead of deferring it
-                    _VoxelWorld.TryDeallocate(origin);
-                    _ChunksPendingDisposal.Push(entity.Component<Chunk>()!);
-                    entityManager.RemoveEntity(entity);
-                }
-            }
-
-            UpdateRegionState();
         }
-
-        #endregion
-
-
-        #region UpdateRegionState
 
         private void UpdateRegionState()
         {
@@ -230,7 +244,5 @@ namespace Automata.Game.Chunks
             _VoxelWorld.TryGetChunkEntity(origin + new Vector3i(0, 0, -GenerationConstants.CHUNK_SIZE), out neighbor);
             origins[5] = neighbor?.Component<Chunk>();
         }
-
-        #endregion
     }
 }

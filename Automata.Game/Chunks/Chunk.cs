@@ -29,7 +29,7 @@ namespace Automata.Game.Chunks
         public ConcurrentChannel<ChunkModification> Modifications { get; } = new ConcurrentChannel<ChunkModification>(true, false);
         public int TimesMeshed { get; set; }
 
-        public bool IsGenerating => State is GenerationState.GeneratingTerrain or GenerationState.AwaitingStructures or GenerationState.GeneratingMesh;
+        public bool IsGenerating => State is GenerationState.GeneratingTerrain or GenerationState.GeneratingStructures or GenerationState.GeneratingMesh;
         public IEnumerable<Palette<Block>?> NeighborBlocks() => Neighbors.Select(chunk => chunk?.Blocks);
 
         public void DangerousRemeshNeighborhood()

@@ -26,8 +26,6 @@ namespace Automata.Game
         private readonly Dictionary<Vector3i, NonAllocatingList<ChunkModification>> _Modifications;
         private readonly ConcurrentChannel<(Vector3i, ChunkModification)> _ConcurrentModificationsQueue;
 
-        public ICollection<Vector3i> Origins => _Chunks.Keys;
-        public ICollection<Entity> Entities => _Chunks.Values;
         public int ChunkCount => _Chunks.Count;
 
         public Entity this[Vector3i origin] => _Chunks[origin];
@@ -59,6 +57,7 @@ namespace Automata.Game
             }
         }
 
+        public void TrimExcessCapacity() => _Chunks.TrimExcess();
 
         #region Chunk Addition / Removal
 

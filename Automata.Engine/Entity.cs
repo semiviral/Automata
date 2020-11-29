@@ -86,7 +86,7 @@ namespace Automata.Engine
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryComponent<TComponent>([MaybeNullWhen(false)] out TComponent? result) where TComponent : Component
+        public bool TryComponent<TComponent>([NotNullWhen(true)] out TComponent? result) where TComponent : Component
         {
             for (int index = 0; index < _Components.Count; index++)
             {
