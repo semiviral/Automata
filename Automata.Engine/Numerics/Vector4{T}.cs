@@ -1,8 +1,10 @@
+using System.Runtime.CompilerServices;
+
 namespace Automata.Engine.Numerics
 {
     public readonly struct Vector4<T> where T : unmanaged
     {
-        public static Vector4<T> Zero=> new Vector4<T>(default);
+        public static Vector4<T> Zero => new Vector4<T>(default);
         public static Vector4<T> One => new Vector4<T>(Primitive<T>.One);
         public static Vector4<T> UnitX => new Vector4<T>(Primitive<T>.One, default, default, default);
         public static Vector4<T> UnitY => new Vector4<T>(default, Primitive<T>.One, default, default);
@@ -38,9 +40,32 @@ namespace Automata.Engine.Numerics
 
         #region Operators
 
+        #region Add Operator
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector4<T> operator +(Vector4<T> a, T b) => a * new Vector4<T>(b);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector4<T> operator +(T a, Vector4<T> b) => new Vector4<T>(a) * b;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector4<T> operator +(Vector4<T> a, Vector4<T> b) => Vector.AddInternal(a, b);
+
+        #endregion
+
+
+        #region Multiply Operator
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector4<T> operator *(Vector4<T> a, T b) => a * new Vector4<T>(b);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector4<T> operator *(T a, Vector4<T> b) => new Vector4<T>(a) * b;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector4<T> operator *(Vector4<T> a, Vector4<T> b) => Vector.MultiplyInternal(a, b);
+
+        #endregion
 
         #endregion
     }

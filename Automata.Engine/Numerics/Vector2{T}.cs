@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // ReSharper disable ConvertToAutoProperty
@@ -33,9 +34,32 @@ namespace Automata.Engine.Numerics
 
         #region Operators
 
+        #region Add Operator
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2<T> operator +(Vector2<T> a, T b) => a * new Vector2<T>(b);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2<T> operator +(T a, Vector2<T> b) => new Vector2<T>(a) * b;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2<T> operator +(Vector2<T> a, Vector2<T> b) => Vector.AddInternal(a, b);
+
+        #endregion
+
+
+        #region Multiply Operator
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2<T> operator *(Vector2<T> a, T b) => a * new Vector2<T>(b);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2<T> operator *(T a, Vector2<T> b) => new Vector2<T>(a) * b;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2<T> operator *(Vector2<T> a, Vector2<T> b) => Vector.MultiplyInternal(a, b);
+
+#endregion
 
         #endregion
     }

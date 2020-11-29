@@ -1,10 +1,10 @@
-using System.Runtime.Intrinsics.X86;
+using System.Runtime.CompilerServices;
 
 namespace Automata.Engine.Numerics
 {
     public readonly struct Vector3<T> where T : unmanaged
     {
-        public static Vector3<T> Zero=> new Vector3<T>(default);
+        public static Vector3<T> Zero => new Vector3<T>(default);
         public static Vector3<T> One => new Vector3<T>(Primitive<T>.One);
         public static Vector3<T> UnitX => new Vector3<T>(Primitive<T>.One, default, default);
         public static Vector3<T> UnitY => new Vector3<T>(default, Primitive<T>.One, default);
@@ -35,9 +35,32 @@ namespace Automata.Engine.Numerics
 
         #region Operators
 
+        #region Add Operator
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3<T> operator +(Vector3<T> a, T b) => a * new Vector3<T>(b);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3<T> operator +(T a, Vector3<T> b) => new Vector3<T>(a) * b;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3<T> operator +(Vector3<T> a, Vector3<T> b) => Vector.AddInternal(a, b);
+
+        #endregion
+
+
+        #region Multiply Operator
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3<T> operator *(Vector3<T> a, T b) => a * new Vector3<T>(b);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3<T> operator *(T a, Vector3<T> b) => new Vector3<T>(a) * b;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3<T> operator *(Vector3<T> a, Vector3<T> b) => Vector.MultiplyInternal(a, b);
+
+        #endregion
 
         #endregion
     }

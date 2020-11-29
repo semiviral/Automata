@@ -8,31 +8,16 @@ namespace Automata.Engine.Benchmarks
     [RPlotExporter]
     public class BenchmarkVectorNumerics
     {
-        //[Benchmark]
-        public Vector2<short> Generic2()
-        {
-            Vector2<short> a = new Vector2<short>(9);
-            Vector2<short> b = new Vector2<short>(9);
-            return a * b;
-        }
+       // [Benchmark]
+        public Vector2<int> Generic2() => new Vector2<int>(9) + new Vector2<int>(9);
 
         //[Benchmark]
-        public Vector3<short> Generic3()
-        {
-            Vector3<short> a = new Vector3<short>(9);
-            Vector3<short> b = new Vector3<short>(9);
-            return a * b;
-        }
+        public Vector3<int> Generic3() => new Vector3<int>(9) + new Vector3<int>(9);
 
         [Benchmark]
-        public Vector4<short> Generic4()
-        {
-            Vector4<short> a = new Vector4<short>(9);
-            Vector4<short> b = new Vector4<short>(9);
-            return a * b;
-        }
+        public Vector4<short> Generic4() => new Vector4<short>(9) + new Vector4<short>(9);
 
-        [Benchmark]
-        public Vector4<double> GenericFloating2() => new Vector4<double>(7f) * new Vector4<double>(7f);
+        //[Benchmark]
+        public Vector4<double> GenericFloating2() => new Vector4<double>(7f) + new Vector4<double>(7f);
     }
 }
