@@ -42,6 +42,24 @@ namespace Automata.Engine.Numerics
             where TTo : unmanaged =>
             Unsafe.As<Vector4<TFrom>, Vector128<TTo>>(ref vector);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector256<TTo> AsVector256<TFrom, TTo>(this Vector2<TFrom> vector)
+            where TFrom : unmanaged
+            where TTo : unmanaged =>
+            Unsafe.As<Vector2<TFrom>, Vector256<TTo>>(ref vector);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector256<TTo> AsVector256<TFrom, TTo>(this Vector3<TFrom> vector)
+            where TFrom : unmanaged
+            where TTo : unmanaged =>
+            Unsafe.As<Vector3<TFrom>, Vector256<TTo>>(ref vector);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector256<TTo> AsVector256<TFrom, TTo>(this Vector4<TFrom> vector)
+            where TFrom : unmanaged
+            where TTo : unmanaged =>
+            Unsafe.As<Vector4<TFrom>, Vector256<TTo>>(ref vector);
+
         #endregion
 
 
@@ -69,6 +87,24 @@ namespace Automata.Engine.Numerics
             where TFrom : unmanaged
             where TTo : unmanaged =>
             Unsafe.As<Vector128<TFrom>, Vector4<TTo>>(ref vector);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2<TTo> AsVector2<TFrom, TTo>(this Vector256<TFrom> vector)
+            where TFrom : unmanaged
+            where TTo : unmanaged =>
+            Unsafe.As<Vector256<TFrom>, Vector2<TTo>>(ref vector);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3<TTo> AsVector3<TFrom, TTo>(this Vector256<TFrom> vector)
+            where TFrom : unmanaged
+            where TTo : unmanaged =>
+            Unsafe.As<Vector256<TFrom>, Vector3<TTo>>(ref vector);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector4<TTo> AsVector4<TFrom, TTo>(this Vector256<TFrom> vector)
+            where TFrom : unmanaged
+            where TTo : unmanaged =>
+            Unsafe.As<Vector256<TFrom>, Vector4<TTo>>(ref vector);
 
         #endregion
 
@@ -132,9 +168,17 @@ namespace Automata.Engine.Numerics
             {
                 return Sse41.MultiplyLow(a.AsVector128<T, int>(), b.AsVector128<T, int>()).AsVector2<int, T>();
             }
+            else if ((typeof(T) == typeof(uint)) && Sse41.IsSupported)
+            {
+                return Sse41.MultiplyLow(a.AsVector128<T, uint>(), b.AsVector128<T, uint>()).AsVector2<uint, T>();
+            }
             else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
             {
                 return (a.AsIntrinsic() * b.AsIntrinsic()).AsGeneric<T>();
+            }
+            else if ((typeof(T) == typeof(double)) && Avx.IsSupported)
+            {
+                return Avx.Multiply(a.AsVector256<T, double>(), b.AsVector256<T, double>()).AsVector2<double, T>();
             }
             else
             {
@@ -150,9 +194,17 @@ namespace Automata.Engine.Numerics
             {
                 return Sse41.MultiplyLow(a.AsVector128<T, int>(), b.AsVector128<T, int>()).AsVector3<int, T>();
             }
+            else if ((typeof(T) == typeof(uint)) && Sse41.IsSupported)
+            {
+                return Sse41.MultiplyLow(a.AsVector128<T, uint>(), b.AsVector128<T, uint>()).AsVector3<uint, T>();
+            }
             else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
             {
                 return Sse.Multiply(a.AsVector128<T, float>(), b.AsVector128<T, float>()).AsVector3<float, T>();
+            }
+            else if ((typeof(T) == typeof(double)) && Avx.IsSupported)
+            {
+                return Avx.Multiply(a.AsVector256<T, double>(), b.AsVector256<T, double>()).AsVector3<double, T>();
             }
             else
             {
@@ -168,9 +220,17 @@ namespace Automata.Engine.Numerics
             {
                 return Sse41.MultiplyLow(a.AsVector128<T, int>(), b.AsVector128<T, int>()).AsVector4<int, T>();
             }
+            else if ((typeof(T) == typeof(uint)) && Sse41.IsSupported)
+            {
+                return Sse41.MultiplyLow(a.AsVector128<T, uint>(), b.AsVector128<T, uint>()).AsVector4<uint, T>();
+            }
             else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
             {
                 return Sse.Multiply(a.AsVector128<T, float>(), b.AsVector128<T, float>()).AsVector4<float, T>();
+            }
+            else if ((typeof(T) == typeof(double)) && Avx.IsSupported)
+            {
+                return Avx.Multiply(a.AsVector256<T, double>(), b.AsVector256<T, double>()).AsVector4<double, T>();
             }
             else
             {
