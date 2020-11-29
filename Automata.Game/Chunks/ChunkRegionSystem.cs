@@ -213,22 +213,22 @@ namespace Automata.Game.Chunks
             Entity? neighbor;
 
             _VoxelWorld.TryGetChunkEntity(origin + new Vector3i(GenerationConstants.CHUNK_SIZE, 0, 0), out neighbor);
-            origins[0] = neighbor!.Component<Chunk>();
+            origins[0] = neighbor?.Component<Chunk>();
 
             _VoxelWorld.TryGetChunkEntity(origin + new Vector3i(0, GenerationConstants.CHUNK_SIZE, 0), out neighbor);
-            origins[1] = neighbor!.Component<Chunk>();
+            origins[1] = neighbor?.Component<Chunk>();
 
             _VoxelWorld.TryGetChunkEntity(origin + new Vector3i(0, 0, GenerationConstants.CHUNK_SIZE), out neighbor);
-            origins[2] = neighbor!.Component<Chunk>();
+            origins[2] = neighbor?.Component<Chunk>();
 
             _VoxelWorld.TryGetChunkEntity(origin + new Vector3i(-GenerationConstants.CHUNK_SIZE, 0, 0), out neighbor);
-            origins[3] = neighbor!.Component<Chunk>();
+            origins[3] = neighbor?.Component<Chunk>();
 
             _VoxelWorld.TryGetChunkEntity(origin + new Vector3i(0, -GenerationConstants.CHUNK_SIZE, 0), out neighbor);
-            origins[4] = neighbor!.Component<Chunk>();
+            origins[4] = neighbor?.Component<Chunk>();
 
             _VoxelWorld.TryGetChunkEntity(origin + new Vector3i(0, 0, -GenerationConstants.CHUNK_SIZE), out neighbor);
-            origins[5] = neighbor!.Component<Chunk>();
+            origins[5] = neighbor?.Component<Chunk>();
         }
 
         #endregion
