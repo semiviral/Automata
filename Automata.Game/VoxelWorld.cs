@@ -15,28 +15,22 @@ namespace Automata.Game
 {
     public class VoxelWorld : World
     {
-        private static readonly OcclusionBounds _ChunkOcclusionBounds = new OcclusionBounds
-        {
-            Spheric = new Sphere(new Vector3(GenerationConstants.CHUNK_RADIUS), GenerationConstants.CHUNK_RADIUS),
-            Cubic = new Cube(Vector3.Zero, new Vector3(GenerationConstants.CHUNK_SIZE))
-        };
-
-        private readonly Dictionary<Vector3i, Entity> _Chunks;
+        private readonly Dictionary<Vector3i, Chunk> _Chunks;
         private readonly Dictionary<Vector3i, NonAllocatingList<ChunkModification>> _Modifications;
         private readonly ConcurrentChannel<(Vector3i, ChunkModification)> _ConcurrentModifications;
 
         public int ChunkCount => _Chunks.Count;
 
-        public Entity this[Vector3i origin] => _Chunks[origin];
+        public Chunk this[Vector3i origin] => _Chunks[origin];
 
         public VoxelWorld(bool active) : base(active)
         {
-            _Chunks = new Dictionary<Vector3i, Entity>();
+            _Chunks = new Dictionary<Vector3i, Chunk>();
             _Modifications = new Dictionary<Vector3i, NonAllocatingList<ChunkModification>>();
             _ConcurrentModifications = new ConcurrentChannel<(Vector3i, ChunkModification)>(true, false);
         }
 
-        public bool TryGetChunk(Vector3i origin, [NotNullWhen(true)] out Entity? entity) => _Chunks.TryGetValue(origin, out entity);
+        public bool TryGetChunk(Vector3i origin, [NotNullWhen(true)] out Chunk? chunk) => _Chunks.TryGetValue(origin, out chunk);
 
         public bool TryGetBlock(Vector3i global, [MaybeNullWhen(false)] out Block block)
         {
@@ -44,7 +38,7 @@ namespace Automata.Game
             Vector3i local = Vector3i.Abs(global - origin);
             int index = Vector3i.Project1D(local, GenerationConstants.CHUNK_SIZE);
 
-            if (_Chunks.TryGetValue(origin, out Entity? entity) && entity!.TryComponent(out Chunk? chunk) && chunk?.Blocks is not null)
+            if (_Chunks.TryGetValue(origin, out Chunk? chunk) && chunk?.Blocks is not null)
             {
                 block = chunk.Blocks[index];
                 return true;
@@ -63,29 +57,23 @@ namespace Automata.Game
 
         public bool ChunkExists(Vector3i origin) => _Chunks.ContainsKey(origin);
 
-        public async ValueTask AllocateChunk(EntityManager entityManager, Vector3i origin)
+        public async ValueTask<Chunk?> AllocateChunk(Vector3i origin)
         {
             // it's better to double-check the key here, as opposed to
             // instantiating the entity data every call of this method
             //
             // it's pretty likely this first check returns true, so we manage to avoid
             // a lot of unnecessary allocations.
-            if (!_Chunks.ContainsKey(origin))
+            if (ChunkExists(origin))
+            {
+                return null;
+            }
+            else
             {
                 Chunk chunk = new Chunk();
+                _Chunks.Add(origin, chunk);
 
-                // todo try to handle adding entities outside this class, this method should only
-                //  accept chunk objects, or perhaps add and return new chunk objects for creating entities.
-                _Chunks.Add(origin, entityManager.CreateEntity(
-                    new Transform
-                    {
-                        Translation = origin
-                    },
-                    chunk,
-                    _ChunkOcclusionBounds
-                ));
-
-                // here all of the relevant modifications are loaded into the chunk
+                // all of the relevant modifications are loaded into the chunk
                 if (_Modifications.TryGetValue(origin, out NonAllocatingList<ChunkModification>? modifications))
                 {
                     foreach (ChunkModification modification in modifications!)
@@ -96,6 +84,8 @@ namespace Automata.Game
                     modifications.Dispose();
                     _Modifications.Remove(origin);
                 }
+
+                return chunk;
             }
         }
 
@@ -131,9 +121,9 @@ namespace Automata.Game
         {
             while (_ConcurrentModifications.TryTake(out (Vector3i Origin, ChunkModification Modification) entry))
             {
-                if (_Chunks.TryGetValue(entry.Origin, out Entity? entity))
+                if (_Chunks.TryGetValue(entry.Origin, out Chunk? chunk))
                 {
-                    await entity!.Component<Chunk>()!.Modifications.AddAsync(entry.Modification);
+                    await chunk!.Modifications.AddAsync(entry.Modification);
                 }
                 else
                 {
@@ -148,7 +138,7 @@ namespace Automata.Game
 
         #region IEnumerator
 
-        public Dictionary<Vector3i, Entity>.Enumerator GetEnumerator() => _Chunks.GetEnumerator();
+        public Dictionary<Vector3i, Chunk>.Enumerator GetEnumerator() => _Chunks.GetEnumerator();
 
         #endregion
     }

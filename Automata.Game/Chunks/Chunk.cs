@@ -24,6 +24,9 @@ namespace Automata.Game.Chunks
             }
         }
 
+        // todo having this variable is dumb, but it's simple for now. replace later.
+        internal Entity Entity { get; set; }
+
         public Palette<Block>? Blocks { get; set; }
         public Chunk?[] Neighbors { get; } = new Chunk?[6];
         public ConcurrentChannel<ChunkModification> Modifications { get; } = new ConcurrentChannel<ChunkModification>(true, false);
