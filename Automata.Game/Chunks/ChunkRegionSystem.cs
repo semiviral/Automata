@@ -20,14 +20,12 @@ namespace Automata.Game.Chunks
         private readonly VoxelWorld _VoxelWorld;
         private readonly Stack<Chunk> _ChunksPendingDisposal;
         private readonly Queue<Chunk> _ChunksRequiringRemesh;
-        private readonly HashSet<Vector3i> _LoadableChunks;
 
         public ChunkRegionSystem(VoxelWorld voxelWorld) : base(voxelWorld)
         {
             _VoxelWorld = voxelWorld;
             _ChunksRequiringRemesh = new Queue<Chunk>();
             _ChunksPendingDisposal = new Stack<Chunk>();
-            _LoadableChunks = new HashSet<Vector3i>();
         }
 
         public override void Registered(EntityManager entityManager)
@@ -129,8 +127,6 @@ namespace Automata.Game.Chunks
 
         private async ValueTask RecalculateLoadedRegions(EntityManager entityManager)
         {
-            _LoadableChunks.Clear();
-
             // calculate all loadable chunk origins
             foreach (ChunkLoader chunkLoader in entityManager.GetComponents<ChunkLoader>())
             {
@@ -143,29 +139,33 @@ namespace Automata.Game.Chunks
                     int zPos = z * GenerationConstants.CHUNK_SIZE;
 
                     // remark: this relies on GenerationConstants.WORLD_HEIGHT_IN_CHUNKS being 8
-                    _LoadableChunks.Add(yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 0, zPos));
-                    _LoadableChunks.Add(yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 1, zPos));
-                    _LoadableChunks.Add(yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 2, zPos));
-                    _LoadableChunks.Add(yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 3, zPos));
-                    _LoadableChunks.Add(yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 4, zPos));
-                    _LoadableChunks.Add(yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 5, zPos));
-                    _LoadableChunks.Add(yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 6, zPos));
-                    _LoadableChunks.Add(yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 7, zPos));
+                    await _VoxelWorld.TryAllocate(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 0, zPos));
+                    await _VoxelWorld.TryAllocate(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 1, zPos));
+                    await _VoxelWorld.TryAllocate(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 2, zPos));
+                    await _VoxelWorld.TryAllocate(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 3, zPos));
+                    await _VoxelWorld.TryAllocate(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 4, zPos));
+                    await _VoxelWorld.TryAllocate(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 5, zPos));
+                    await _VoxelWorld.TryAllocate(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 6, zPos));
+                    await _VoxelWorld.TryAllocate(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 7, zPos));
                 }
-            }
-
-            // allocate chunks
-            foreach (Vector3i origin in _LoadableChunks)
-            {
-                await _VoxelWorld.TryAllocate(entityManager, origin);
             }
 
             // deallocate chunks that aren't within loader radii
             foreach ((Vector3i origin, Entity entity) in _VoxelWorld)
             {
-                if (!_LoadableChunks.Contains(origin) && _VoxelWorld.TryDeallocate(origin))
+                bool disposable = true;
+                foreach (ChunkLoader loader in entityManager.GetComponents<ChunkLoader>())
+                {
+                    if (loader.IsWithinRadius(origin))
+                    {
+                        disposable = false;
+                    }
+                }
+
+                if (disposable)
                 {
                     // todo it would be nice to just dispose of chunks outright, instead of deferring it
+                    _VoxelWorld.TryDeallocate(origin);
                     _ChunksPendingDisposal.Push(entity.Component<Chunk>()!);
                     entityManager.RemoveEntity(entity);
                 }

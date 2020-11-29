@@ -73,6 +73,7 @@ namespace Automata.Game
             {
                 Chunk chunk = new Chunk();
 
+                // todo try to handle adding entities outside this class
                 _Chunks.Add(origin, entityManager.CreateEntity(
                     new Transform
                     {
