@@ -8,7 +8,7 @@ namespace Automata.Engine.Rendering.Vulkan
 
     public class VulkanPhysicalDevice : VulkanObject
     {
-        private readonly VulkanInstance _Instance;
+        private readonly VulkanContext _Context;
         private readonly PhysicalDevice _PhysicalDevice;
         private readonly Memory<VulkanExtension> _Extensions;
 
@@ -23,9 +23,14 @@ namespace Automata.Engine.Rendering.Vulkan
         public override nint Handle => _PhysicalDevice.Handle;
         public ReadOnlyMemory<VulkanExtension> Extensions => _Extensions;
 
-        internal unsafe VulkanPhysicalDevice(Vk vk, VulkanInstance instance, PhysicalDevice physicalDevice) : base(vk)
+        internal unsafe VulkanPhysicalDevice(Vk vk, VulkanContext context, PhysicalDevice physicalDevice) : base(vk)
         {
-            _Instance = instance;
+            if (context.Instance is null)
+            {
+                throw new NullReferenceException(nameof(context.Instance));
+            }
+
+            _Context = context;
             _PhysicalDevice = physicalDevice;
             VK.GetPhysicalDeviceProperties(this, out PhysicalDeviceProperties properties);
 
@@ -40,18 +45,16 @@ namespace Automata.Engine.Rendering.Vulkan
             _Extensions = GetExtensions();
         }
 
-
-        #region Creation
-
         private SwapChainSupportDetails GetSwapChainSupport()
         {
-            _Instance.SurfaceExtension.GetPhysicalDeviceSurfaceCapabilities(this, _Instance.Surface, out SurfaceCapabilitiesKHR surfaceCapabilities);
+            _Context.Instance!.SurfaceExtension.GetPhysicalDeviceSurfaceCapabilities(this, _Context.Instance!.Surface,
+                out SurfaceCapabilitiesKHR surfaceCapabilities);
 
             return new SwapChainSupportDetails
             {
                 SurfaceCapabilities = surfaceCapabilities,
-                Formats = _Instance.SurfaceExtension.GetPhysicalDeviceSurfaceFormats(this, _Instance.Surface),
-                PresentModes = _Instance.SurfaceExtension.GetPhysicalDeviceSurfacePresentModes(this, _Instance.Surface)
+                Formats = _Context.Instance!.SurfaceExtension.GetPhysicalDeviceSurfaceFormats(this, _Context.Instance!.Surface),
+                PresentModes = _Context.Instance!.SurfaceExtension.GetPhysicalDeviceSurfacePresentModes(this, _Context.Instance!.Surface)
             };
         }
 
@@ -62,9 +65,9 @@ namespace Automata.Engine.Rendering.Vulkan
             Span<ExtensionProperties> extensionPropertiesSpan = stackalloc ExtensionProperties[(int)extensionCount];
             VK.EnumerateDeviceExtensionProperties(this, string.Empty, &extensionCount, extensionPropertiesSpan);
             Memory<VulkanExtension> extensions = new VulkanExtension[extensionCount];
-            Span<VulkanExtension> extensionsSpan = _Extensions.Span;
+            Span<VulkanExtension> extensionsSpan = extensions.Span;
 
-            for (int index = 0; index < extensionCount; index++)
+            for (int index = 0; index < extensionsSpan.Length; index++)
             {
                 ExtensionProperties extensionProperties = extensionPropertiesSpan[index];
                 string name = SilkMarshal.PtrToString((nint)extensionProperties.ExtensionName);
@@ -73,9 +76,6 @@ namespace Automata.Engine.Rendering.Vulkan
 
             return extensions;
         }
-
-        #endregion
-
 
         public bool SupportsExtenstion(string extensionName)
         {
@@ -116,7 +116,7 @@ namespace Automata.Engine.Rendering.Vulkan
                     queueFamilyIndices.GraphicsFamily = index;
                 }
 
-                _Instance.SurfaceExtension.GetPhysicalDeviceSurfaceSupport(this, index, _Instance.Surface, out Bool32 presentationSupport);
+                _Context.Instance!.SurfaceExtension.GetPhysicalDeviceSurfaceSupport(this, index, _Context.Instance!.Surface, out Bool32 presentationSupport);
 
                 if (presentationSupport)
                 {
@@ -133,7 +133,7 @@ namespace Automata.Engine.Rendering.Vulkan
         }
 
         public VulkanLogicalDevice CreateLogicalDevice(string[] extensions, string[]? validationLayers) =>
-            new VulkanLogicalDevice(VK, this, extensions, validationLayers);
+            new VulkanLogicalDevice(VK, _Context with { PhysicalDevice = this }, extensions, validationLayers);
 
 
         #region Conversions

@@ -29,7 +29,7 @@ namespace Automata.Engine.Collections
 
         public TType GetItem<TType>() where TType : class, T => (_InternalDictionary[typeof(TType)] as TType)!;
 
-        public bool TryGetItem<TType>([NotNullWhen(true)] out TType? item) where TType : class, T
+        public bool TryGetItem<TType>([MaybeNullWhen(false)] out TType? item) where TType : class, T
         {
             if (_InternalDictionary.TryGetValue(typeof(TType), out T? value))
             {
@@ -41,7 +41,7 @@ namespace Automata.Engine.Collections
             return false;
         }
 
-        public bool TryGetItem(Type type, [NotNullWhen(true)] out T? item) => _InternalDictionary.TryGetValue(type, out item);
+        public bool TryGetItem(Type type, [MaybeNullWhen(false)] out T? item) => _InternalDictionary.TryGetValue(type, out item);
 
         public void Clear() => _InternalDictionary.Clear();
 
@@ -70,7 +70,7 @@ namespace Automata.Engine.Collections
 
         void IDictionary<Type, T>.Add(Type key, T value) => _InternalDictionary.Add(key, value);
         bool IDictionary<Type, T>.ContainsKey(Type key) => _InternalDictionary.ContainsKey(key);
-        bool IDictionary<Type, T>.TryGetValue(Type key, [NotNullWhen(true)] out T? value) => _InternalDictionary.TryGetValue(key, out value);
+        bool IDictionary<Type, T>.TryGetValue(Type key, [MaybeNullWhen(false)] out T? value) => _InternalDictionary.TryGetValue(key, out value);
 
         #endregion
 

@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using Automata.Engine.Rendering.Vulkan.NativeExtensions;
 using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
 
@@ -6,16 +8,22 @@ namespace Automata.Engine.Rendering.Vulkan
 {
     public class VulkanLogicalDevice : VulkanObject
     {
+        private readonly VulkanContext _Context;
         private readonly Device _LogicalDevice;
         private Queue _GraphicsQueue;
         private Queue _PresentationQueue;
 
+        public SwapchainExtension SwapchainExtension { get; }
+
         public override nint Handle => _LogicalDevice.Handle;
 
-        internal unsafe VulkanLogicalDevice(Vk vk, VulkanPhysicalDevice physicalDevice, string[] extensions, string[]? validationLayers) : base(vk)
+        internal unsafe VulkanLogicalDevice(Vk vk, VulkanContext context, string[] extensions, string[]? validationLayers) : base(vk)
         {
+            _Context = context;
+            SwapchainExtension = GetDeviceExtension<SwapchainExtension>();
+
             float queuePriority = 1f;
-            QueueFamilyIndices queueFamilyIndices = physicalDevice.GetQueueFamilies();
+            QueueFamilyIndices queueFamilyIndices = _Context.PhysicalDevice.GetQueueFamilies();
             uint queueFamiliesCount = queueFamilyIndices.GetLength;
             DeviceQueueCreateInfo* deviceQueueCreateInfos = stackalloc DeviceQueueCreateInfo[2];
 
@@ -54,7 +62,7 @@ namespace Automata.Engine.Rendering.Vulkan
                 deviceCreateInfo.PpEnabledLayerNames = (byte**)validationLayersPointer.Value;
             }
 
-            Result result = VK.CreateDevice(physicalDevice, &deviceCreateInfo, (AllocationCallbacks*)null!, out _LogicalDevice);
+            Result result = VK.CreateDevice(_Context.PhysicalDevice, &deviceCreateInfo, (AllocationCallbacks*)null!, out _LogicalDevice);
 
             if (result is not Result.Success)
             {
@@ -71,6 +79,27 @@ namespace Automata.Engine.Rendering.Vulkan
                 SilkMarshal.Free(validationLayersPointer.Value);
             }
         }
+
+        public VulkanSwapChain CreateSwapChain(
+            VulkanSwapChain.ChooseSwapChainSurfaceFormat chooseFormat,
+            VulkanSwapChain.ChooseSwapChainPresentMode choosePresentMode,
+            VulkanSwapChain.ChooseSwapChainExtents chooseExtents) =>
+            new VulkanSwapChain(VK, _Context with { LogicalDevice = this }, chooseFormat, choosePresentMode, chooseExtents);
+
+        public T GetDeviceExtension<T>() where T : NativeExtension<Vk>
+        {
+            if (TryGetDeviceExtension(out T? extension))
+            {
+                return extension;
+            }
+            else
+            {
+                throw new VulkanException(Result.ErrorExtensionNotPresent, "Could not load extension.");
+            }
+        }
+
+        public bool TryGetDeviceExtension<T>([NotNullWhen(true)] out T? extension) where T : NativeExtension<Vk> =>
+            VK.TryGetDeviceExtension(_Context.Instance!, this, out extension);
 
 
         #region Conversions

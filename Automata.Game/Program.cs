@@ -1,4 +1,6 @@
-﻿using System;
+﻿#define VULKAN
+
+using System;
 using System.Drawing;
 using System.IO;
 using System.Numerics;
@@ -194,6 +196,8 @@ namespace Automata.Game
             VulkanPhysicalDevice[] physicalDevices = instance.GetPhysicalDevices(IsPhysicalDeviceSuitable);
             VulkanPhysicalDevice physicalDevice = physicalDevices[0];
             VulkanLogicalDevice logicalDevice = physicalDevice.CreateLogicalDevice(VKAPI.LogicalDeviceExtensions, VKAPI.ValidationLayers);
+            VulkanSwapChain swapChain = logicalDevice.CreateSwapChain(ChooseSwapSurfaceFormat, ChooseSwapPresentationMode, ChooseSwapExtents);
+
         }
 
         private static bool IsPhysicalDeviceSuitable(VulkanPhysicalDevice physicalDevice)
@@ -225,6 +229,52 @@ namespace Automata.Game
             }
 
             return true;
+        }
+
+        private static SurfaceFormatKHR ChooseSwapSurfaceFormat(SurfaceFormatKHR[] availableFormats)
+        {
+            foreach (SurfaceFormatKHR surfaceFormat in availableFormats)
+            {
+                if ((surfaceFormat.Format == Format.B8G8R8Srgb) && (surfaceFormat.ColorSpace == ColorSpaceKHR.ColorspaceSrgbNonlinearKhr))
+                {
+                    return surfaceFormat;
+                }
+            }
+
+            return availableFormats[0];
+        }
+
+        private static PresentModeKHR ChooseSwapPresentationMode(PresentModeKHR[] availablePresentationModes)
+        {
+            foreach (PresentModeKHR presentationMode in availablePresentationModes)
+            {
+                if (presentationMode == PresentModeKHR.PresentModeMailboxKhr)
+                {
+                    return presentationMode;
+                }
+            }
+
+            return PresentModeKHR.PresentModeFifoKhr;
+        }
+
+        private static Extent2D ChooseSwapExtents(SurfaceCapabilitiesKHR surfaceCapabilities)
+        {
+            if (surfaceCapabilities.CurrentExtent.Width != int.MaxValue)
+            {
+                return surfaceCapabilities.CurrentExtent;
+            }
+            else
+            {
+                Extent2D adjustedExtent = new Extent2D((uint)AutomataWindow.Instance.Size.X, (uint)AutomataWindow.Instance.Size.Y);
+
+                adjustedExtent.Width = Math.Max(surfaceCapabilities.MinImageExtent.Width,
+                    Math.Min(surfaceCapabilities.MinImageExtent.Width, adjustedExtent.Width));
+
+                adjustedExtent.Height = Math.Max(surfaceCapabilities.MinImageExtent.Height,
+                    Math.Min(surfaceCapabilities.MinImageExtent.Height, adjustedExtent.Height));
+
+                return adjustedExtent;
+            }
         }
 
         #endregion

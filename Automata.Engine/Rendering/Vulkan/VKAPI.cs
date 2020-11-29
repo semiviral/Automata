@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Automata.Engine.Rendering.DirectX;
+using Automata.Engine.Rendering.Vulkan.NativeExtensions;
 using Serilog;
 using Silk.NET.Core.Contexts;
 using Silk.NET.Core.Native;
@@ -22,10 +23,6 @@ namespace Automata.Engine.Rendering.Vulkan
 
         private const int _MAX_FRAMES_IN_FLIGHT = 2;
 
-        private static readonly string _VulkanSurfaceCreationFormat = $"({nameof(VKAPI)}) Creating surface: {{0}}";
-        private static readonly string _VulkanDebugMessengerCreationFormat = $"({nameof(VKAPI)}) Creating debug messenger: {{0}}";
-        private static readonly string _VulkanPhysicalDeviceSelectionFormat = $"({nameof(VKAPI)}) Selecting physical device: {{0}}";
-        private static readonly string _VulkanLogicalDeviceCreationFormat = $"({nameof(VKAPI)}) Creating logical device: {{0}}";
         private static readonly string _VulkanSwapChainCreationFormat = $"({nameof(VKAPI)}) Creating swap chain: {{0}}";
         private static readonly string _VulkanImageViewCreationFormat = $"({nameof(VKAPI)}) Creating image views: {{0}}";
         private static readonly string _VulkanRenderPassCreationFormat = $"({nameof(VKAPI)}) Creating render pass: {{0}}";
@@ -49,7 +46,7 @@ namespace Automata.Engine.Rendering.Vulkan
 
         public static readonly string[] LogicalDeviceExtensions =
         {
-            KhrSwapchain.ExtensionName
+            SwapchainExtension.ExtensionName
         };
 
         private KhrSurface? _KHRSurface;

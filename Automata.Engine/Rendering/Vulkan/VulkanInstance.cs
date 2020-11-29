@@ -109,7 +109,10 @@ namespace Automata.Engine.Rendering.Vulkan
 
             foreach (PhysicalDevice physicalDevice in physicalDevices)
             {
-                VulkanPhysicalDevice vulkanPhysicalDevice = new VulkanPhysicalDevice(VK, this, physicalDevice);
+                VulkanPhysicalDevice vulkanPhysicalDevice = new VulkanPhysicalDevice(VK, new VulkanContext
+                {
+                    Instance = this
+                }, physicalDevice);
 
                 if (suitability(vulkanPhysicalDevice))
                 {
@@ -140,9 +143,6 @@ namespace Automata.Engine.Rendering.Vulkan
 
         public bool TryGetInstanceExtension<T>([NotNullWhen(true)] out T? extenstion) where T : NativeExtension<Vk> =>
             VK.TryGetInstanceExtension(_VKInstance, out extenstion);
-
-        public bool TryGetDeviceExtension<T>(Device device, [NotNullWhen(true)] out T? extension) where T : NativeExtension<Vk> =>
-            VK.TryGetDeviceExtension(_VKInstance, device, out extension);
 
         #endregion
 

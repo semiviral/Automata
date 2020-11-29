@@ -3,8 +3,8 @@ using Silk.NET.Vulkan.Extensions.KHR;
 
 namespace Automata.Engine.Rendering.Vulkan.NativeExtensions
 {
-    public abstract class SwapchainExtension : KhrSwapchain
+    public sealed class SwapchainExtension : KhrSwapchain
     {
-        protected SwapchainExtension(INativeContext nativeContext) : base(nativeContext) { }
+        public SwapchainExtension(INativeContext nativeContext) : base(nativeContext) { }
     }
 }

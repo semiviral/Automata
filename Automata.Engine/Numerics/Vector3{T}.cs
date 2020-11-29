@@ -1,9 +1,14 @@
 using System.Runtime.Intrinsics.X86;
 
-namespace Automata.Engine.Numerics.Shapes
+namespace Automata.Engine.Numerics
 {
     public readonly struct Vector3<T> where T : unmanaged
     {
+        public static Vector3<T> One => new Vector3<T>(Primitive<T>.One);
+        public static Vector3<T> UnitX => new Vector3<T>(Primitive<T>.One, default, default);
+        public static Vector3<T> UnitY => new Vector3<T>(default, Primitive<T>.One, default);
+        public static Vector3<T> UnitZ => new Vector3<T>(default, default, Primitive<T>.One);
+
         private readonly T _X;
         private readonly T _Y;
         private readonly T _Z;

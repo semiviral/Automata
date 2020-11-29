@@ -14,7 +14,7 @@ namespace Automata.Engine.Collections
         private T? _Current;
 
         public T Current => _Current!;
-        object IEnumerator.Current => Current;
+        object IEnumerator.Current => Current!;
 
         public SavableStackEnumerator(Stack<T> stack)
         {
