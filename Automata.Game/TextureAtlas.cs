@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Automata.Engine;
@@ -10,7 +11,7 @@ using SixLabors.ImageSharp.PixelFormats;
 
 namespace Automata.Game
 {
-    public class TextureAtlas : Singleton<TextureAtlas>
+    public class TextureAtlas : Singleton<TextureAtlas>, IDisposable
     {
         private readonly Dictionary<string, int> _TextureDepths;
 
@@ -55,5 +56,12 @@ namespace Automata.Game
         }
 
         public int GetTileDepth(string tileName) => _TextureDepths[tileName];
+
+        public void Dispose()
+        {
+            Blocks?.Dispose();
+            _TextureDepths.Clear();
+            GC.SuppressFinalize(this);
+        }
     }
 }

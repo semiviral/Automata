@@ -143,7 +143,7 @@ namespace Automata.Engine.Rendering
             // we also sort the entities by their render pipeline ID, so we can avoid doing a ton of rebinding
             foreach ((Entity entity, RenderMesh renderMesh, Material material) in GetRenderableEntities(entityManager, camera))
             {
-                Matrix4x4 model = entity.Component<Transform>().Match(transform => transform.Matrix, _ => Matrix4x4.Identity);
+                Matrix4x4 model = entity.Component<Transform>()?.Matrix ?? Matrix4x4.Identity;
                 Matrix4x4 modelViewProjection = model * viewProjection;
 
                 if (CheckClipFrustumOccludeEntity(entity, planes, modelViewProjection))

@@ -1,6 +1,4 @@
-﻿#define VULKAN
-
-using System;
+﻿using System;
 using System.Drawing;
 using System.IO;
 using System.Numerics;
@@ -57,7 +55,7 @@ namespace Automata.Game
         {
             World.DisposeWorlds();
             ProgramRegistry.Instance.Dispose();
-            TextureAtlas.Instance.Blocks?.Dispose();
+            TextureAtlas.Instance.Dispose();
             BoundedInvocationPool.Instance.Cancel();
         }
 
@@ -197,7 +195,6 @@ namespace Automata.Game
             VulkanPhysicalDevice physicalDevice = physicalDevices[0];
             VulkanLogicalDevice logicalDevice = physicalDevice.CreateLogicalDevice(VKAPI.LogicalDeviceExtensions, VKAPI.ValidationLayers);
             VulkanSwapChain swapChain = logicalDevice.CreateSwapChain(ChooseSwapSurfaceFormat, ChooseSwapPresentationMode, ChooseSwapExtents);
-
         }
 
         private static bool IsPhysicalDeviceSuitable(VulkanPhysicalDevice physicalDevice)

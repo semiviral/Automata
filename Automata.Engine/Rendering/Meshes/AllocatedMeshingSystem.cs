@@ -107,10 +107,8 @@ namespace Automata.Engine.Rendering.Meshes
 
                 if (!mesh.Data.IsEmpty)
                 {
-                    DrawElementsIndirectAllocation<TIndex, TVertex> allocation =
-                        entity.Component<DrawElementsIndirectAllocation<TIndex, TVertex>>().Match(
-                            result => result,
-                            _ => entityManager.RegisterComponent<DrawElementsIndirectAllocation<TIndex, TVertex>>(entity));
+                    if (!entity.TryComponent(out DrawElementsIndirectAllocation<TIndex, TVertex>? allocation))
+                        allocation = entityManager.RegisterComponent<DrawElementsIndirectAllocation<TIndex, TVertex>>(entity);
 
                     tasks.Add(CreateDrawIndirectAllocationAllocationImpl(allocation));
                     ConfigureMaterial(entityManager, entity);
@@ -176,7 +174,7 @@ namespace Automata.Engine.Rendering.Meshes
                     (uint)(allocation.Allocation!.VertexMemory.Index / (nuint)sizeof(TVertex)), (uint)index);
 
                 commands[index] = drawElementsIndirectCommand;
-                models[index] = entity.Component<Transform>().Match(transform => transform.Matrix, _ => Matrix4x4.Identity);
+                models[index] = entity.Component<Transform>()?.Matrix ?? Matrix4x4.Identity;
                 index += 1;
             }
 
@@ -194,15 +192,17 @@ namespace Automata.Engine.Rendering.Meshes
         {
             ProgramPipeline programPipeline = ProgramRegistry.Instance.Load("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl");
 
-            entity.Component<Material>().Match(material =>
+            if (entity.TryComponent(out Material? material))
             {
                 if (material.Pipeline.Handle != programPipeline.Handle)
                 {
                     material.Pipeline = programPipeline;
                 }
-
-                return material;
-            }, _ => { entityManager.RegisterComponent(entity, new Material(programPipeline)); });
+            }
+            else
+            {
+                entityManager.RegisterComponent(entity, new Material(programPipeline));
+            }
         }
 
         #endregion Data Processing

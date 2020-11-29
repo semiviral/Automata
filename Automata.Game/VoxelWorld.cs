@@ -45,7 +45,7 @@ namespace Automata.Game
             Vector3i local = Vector3i.Abs(global - origin);
             int index = Vector3i.Project1D(local, GenerationConstants.CHUNK_SIZE);
 
-            if (_Chunks.TryGetValue(origin, out Entity? entity) && entity!.TryComponent(out Chunk? chunk) && chunk.Blocks is not null)
+            if (_Chunks.TryGetValue(origin, out Entity? entity) && entity!.TryComponent(out Chunk? chunk) && chunk?.Blocks is not null)
             {
                 block = chunk.Blocks[index];
                 return true;
@@ -141,7 +141,7 @@ namespace Automata.Game
             {
                 if (_Chunks.TryGetValue(entry.Origin, out Entity? entity))
                 {
-                    await entity!.Component<Chunk>()!.Unwrap().Modifications.AddAsync(entry.Modification);
+                    await entity!.Component<Chunk>()!.Modifications.AddAsync(entry.Modification);
                 }
                 else
                 {

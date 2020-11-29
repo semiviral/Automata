@@ -56,16 +56,20 @@ namespace Automata.Engine
             }
         }
 
-        internal Result<TComponent, ComponentError> Remove<TComponent>() where TComponent : Component =>
-            Component<TComponent>().Match(result =>
-                {
-                    _Components.Remove(result);
-                    return result;
-                },
-                _ => { });
+        internal TComponent? Remove<TComponent>() where TComponent : Component
+        {
+            TComponent? result = Component<TComponent>();
+
+            if (result is not null)
+            {
+                _Components.Remove(result);
+            }
+
+            return result;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Result<TComponent, ComponentError> Component<TComponent>() where TComponent : Component
+        public TComponent? Component<TComponent>() where TComponent : Component
         {
             for (int index = 0; index < _Components.Count; index++)
             {
@@ -75,11 +79,11 @@ namespace Automata.Engine
                 }
             }
 
-            return ComponentError.NotExists;
+            return null;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryComponent<TComponent>([NotNullWhen(true)] out TComponent? result) where TComponent : Component
+        public bool TryComponent<TComponent>([MaybeNullWhen(false)] out TComponent? result) where TComponent : Component
         {
             for (int index = 0; index < _Components.Count; index++)
             {
