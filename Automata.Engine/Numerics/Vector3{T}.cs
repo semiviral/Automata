@@ -1,8 +1,12 @@
+using System;
+using System.Globalization;
+using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace Automata.Engine.Numerics
 {
-    public readonly struct Vector3<T> where T : unmanaged
+    public readonly struct Vector3<T>: IEquatable<Vector3<T>>, IFormattable where T : unmanaged
     {
         public static Vector3<T> Zero => new Vector3<T>(default);
         public static Vector3<T> One => new Vector3<T>(Primitive<T>.One);
@@ -32,6 +36,41 @@ namespace Automata.Engine.Numerics
             _Z = z;
         }
 
+        public Vector3<T> WithX(T x) => new Vector3<T>(x, _Y, _Z);
+        public Vector3<T> WithY(T y) => new Vector3<T>(_X, y, _Z);
+        public Vector3<T> WithZ(T z) => new Vector3<T>(_X, _Y, z);
+
+        public override int GetHashCode() => HashCode.Combine(_X, _Y);
+        public override bool Equals(object? obj) => obj is Vector3<T> other && Equals(other);
+        public override string ToString() => $"<{X}, {Y}, {Z}>";
+
+
+        #region IEquatable
+
+        public bool Equals(Vector3<T> other) => this == other;
+
+        #endregion
+
+
+        #region IFormattable
+
+        public string ToString(string? format, IFormatProvider? formatProvider)
+        {
+            StringBuilder builder = new StringBuilder();
+            string separator = NumberFormatInfo.GetInstance(formatProvider).NumberGroupSeparator;
+            builder.Append('<');
+            builder.Append((X as IFormattable)!.ToString(format, formatProvider));
+            builder.Append(separator);
+            builder.Append(' ');
+            builder.Append((Y as IFormattable)!.ToString(format, formatProvider));
+            builder.Append(separator);
+            builder.Append(' ');
+            builder.Append((Z as IFormattable)!.ToString(format, formatProvider));
+            builder.Append('>');
+            return builder.ToString();
+        }
+
+        #endregion
 
         #region Operators
 
