@@ -674,6 +674,334 @@ namespace Automata.Engine.Numerics
         #endregion
 
 
+        #region And
+
+        public static Vector2<T> AndInternal<T>(Vector2<T> a, Vector2<T> b) where T : unmanaged
+        {
+            if ((typeof(T) == typeof(long)) && Sse2.IsSupported)
+            {
+                return Sse2.And(a.AsVector128<T, long>(), b.AsVector128<T, long>()).AsVector2<long, T>();
+            }
+            else if ((typeof(T) == typeof(ulong)) && Sse2.IsSupported)
+            {
+                return Sse2.And(a.AsVector128<T, ulong>(), b.AsVector128<T, ulong>()).AsVector2<ulong, T>();
+            }
+            else if ((typeof(T) == typeof(int)) && Sse2.IsSupported)
+            {
+                return Sse2.And(a.AsVector128<T, int>(), b.AsVector128<T, int>()).AsVector2<int, T>();
+            }
+            else if ((typeof(T) == typeof(uint)) && Sse41.IsSupported)
+            {
+                return Sse2.And(a.AsVector128<T, uint>(), b.AsVector128<T, uint>()).AsVector2<uint, T>();
+            }
+            else if ((typeof(T) == typeof(short)) && Sse2.IsSupported)
+            {
+                return Sse2.And(a.AsVector128<T, short>(), b.AsVector128<T, short>()).AsVector2<short, T>();
+            }
+            else if ((typeof(T) == typeof(ushort)) && Sse2.IsSupported)
+            {
+                return Sse2.And(a.AsVector128<T, ushort>(), b.AsVector128<T, ushort>()).AsVector2<ushort, T>();
+            }
+            else if ((typeof(T) == typeof(sbyte)) && Sse2.IsSupported)
+            {
+                return Sse2.And(a.AsVector128<T, sbyte>(), b.AsVector128<T, sbyte>()).AsVector2<sbyte, T>();
+            }
+            else if ((typeof(T) == typeof(byte)) && Sse2.IsSupported)
+            {
+                return Sse2.And(a.AsVector128<T, byte>(), b.AsVector128<T, byte>()).AsVector2<byte, T>();
+            }
+            else if ((typeof(T) == typeof(bool)) && Sse2.IsSupported)
+            {
+                return Sse2.And(a.AsVector128<T, sbyte>(), b.AsVector128<T, sbyte>()).AsVector2<sbyte, T>();
+            }
+            else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
+            {
+                return Sse.And(a.AsVector128<T, float>(), b.AsVector128<T, float>()).AsVector2<float, T>();
+            }
+            else if ((typeof(T) == typeof(double)) && Sse2.IsSupported)
+            {
+                return Sse2.And(a.AsVector128<T, double>(), b.AsVector128<T, double>()).AsVector2<double, T>();
+            }
+            else
+            {
+                ThrowNotSupportedType();
+                return default;
+            }
+        }
+
+        public static Vector3<T> AndInternal<T>(Vector3<T> a, Vector3<T> b) where T : unmanaged
+        {
+            if ((typeof(T) == typeof(long)) && Avx2.IsSupported)
+            {
+                return Avx2.And(a.AsVector256<T, long>(), b.AsVector256<T, long>()).AsVector3<long, T>();
+            }
+            else if ((typeof(T) == typeof(ulong)) && Avx2.IsSupported)
+            {
+                return Avx2.And(a.AsVector256<T, ulong>(), b.AsVector256<T, ulong>()).AsVector3<ulong, T>();
+            }
+            else if ((typeof(T) == typeof(int)) && Sse2.IsSupported)
+            {
+                return Sse2.And(a.AsVector128<T, int>(), b.AsVector128<T, int>()).AsVector3<int, T>();
+            }
+            else if ((typeof(T) == typeof(uint)) && Sse41.IsSupported)
+            {
+                return Sse2.And(a.AsVector128<T, uint>(), b.AsVector128<T, uint>()).AsVector3<uint, T>();
+            }
+            else if ((typeof(T) == typeof(short)) && Sse2.IsSupported)
+            {
+                return Sse2.And(a.AsVector128<T, short>(), b.AsVector128<T, short>()).AsVector3<short, T>();
+            }
+            else if ((typeof(T) == typeof(ushort)) && Sse2.IsSupported)
+            {
+                return Sse2.And(a.AsVector128<T, ushort>(), b.AsVector128<T, ushort>()).AsVector3<ushort, T>();
+            }
+            else if ((typeof(T) == typeof(sbyte)) && Sse2.IsSupported)
+            {
+                return Sse2.And(a.AsVector128<T, sbyte>(), b.AsVector128<T, sbyte>()).AsVector3<sbyte, T>();
+            }
+            else if ((typeof(T) == typeof(byte)) && Sse2.IsSupported)
+            {
+                return Sse2.And(a.AsVector128<T, byte>(), b.AsVector128<T, byte>()).AsVector3<byte, T>();
+            }
+            else if ((typeof(T) == typeof(bool)) && Sse2.IsSupported)
+            {
+                return Sse2.And(a.AsVector128<T, sbyte>(), b.AsVector128<T, sbyte>()).AsVector3<sbyte, T>();
+            }
+            else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
+            {
+                return Sse.And(a.AsVector128<T, float>(), b.AsVector128<T, float>()).AsVector3<float, T>();
+            }
+            else if ((typeof(T) == typeof(double)) && Avx.IsSupported)
+            {
+                return Avx.And(a.AsVector256<T, double>(), b.AsVector256<T, double>()).AsVector3<double, T>();
+            }
+            else
+            {
+                ThrowNotSupportedType();
+                return default;
+            }
+        }
+
+        public static Vector4<T> AndInternal<T>(Vector4<T> a, Vector4<T> b) where T : unmanaged
+        {
+            if ((typeof(T) == typeof(long)) && Avx2.IsSupported)
+            {
+                return Avx2.And(a.AsVector256<T, long>(), b.AsVector256<T, long>()).AsVector4<long, T>();
+            }
+            else if ((typeof(T) == typeof(ulong)) && Avx2.IsSupported)
+            {
+                return Avx2.And(a.AsVector256<T, ulong>(), b.AsVector256<T, ulong>()).AsVector4<ulong, T>();
+            }
+            else if ((typeof(T) == typeof(int)) && Sse2.IsSupported)
+            {
+                return Sse2.And(a.AsVector128<T, int>(), b.AsVector128<T, int>()).AsVector4<int, T>();
+            }
+            else if ((typeof(T) == typeof(uint)) && Sse41.IsSupported)
+            {
+                return Sse2.And(a.AsVector128<T, uint>(), b.AsVector128<T, uint>()).AsVector4<uint, T>();
+            }
+            else if ((typeof(T) == typeof(short)) && Sse2.IsSupported)
+            {
+                return Sse2.And(a.AsVector128<T, short>(), b.AsVector128<T, short>()).AsVector4<short, T>();
+            }
+            else if ((typeof(T) == typeof(ushort)) && Sse2.IsSupported)
+            {
+                return Sse2.And(a.AsVector128<T, ushort>(), b.AsVector128<T, ushort>()).AsVector4<ushort, T>();
+            }
+            else if ((typeof(T) == typeof(sbyte)) && Sse2.IsSupported)
+            {
+                return Sse2.And(a.AsVector128<T, sbyte>(), b.AsVector128<T, sbyte>()).AsVector4<sbyte, T>();
+            }
+            else if ((typeof(T) == typeof(byte)) && Sse2.IsSupported)
+            {
+                return Sse2.And(a.AsVector128<T, byte>(), b.AsVector128<T, byte>()).AsVector4<byte, T>();
+            }
+            else if ((typeof(T) == typeof(bool)) && Sse2.IsSupported)
+            {
+                return Sse2.And(a.AsVector128<T, sbyte>(), b.AsVector128<T, sbyte>()).AsVector4<sbyte, T>();
+            }
+            else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
+            {
+                return Sse.And(a.AsVector128<T, float>(), b.AsVector128<T, float>()).AsVector4<float, T>();
+            }
+            else if ((typeof(T) == typeof(double)) && Avx.IsSupported)
+            {
+                return Avx.And(a.AsVector256<T, double>(), b.AsVector256<T, double>()).AsVector4<double, T>();
+            }
+            else
+            {
+                ThrowNotSupportedType();
+                return default;
+            }
+        }
+
+        #endregion
+
+
+        #region Or
+
+        public static Vector2<T> OrInternal<T>(Vector2<T> a, Vector2<T> b) where T : unmanaged
+        {
+            if ((typeof(T) == typeof(long)) && Sse2.IsSupported)
+            {
+                return Sse2.Or(a.AsVector128<T, long>(), b.AsVector128<T, long>()).AsVector2<long, T>();
+            }
+            else if ((typeof(T) == typeof(ulong)) && Sse2.IsSupported)
+            {
+                return Sse2.Or(a.AsVector128<T, ulong>(), b.AsVector128<T, ulong>()).AsVector2<ulong, T>();
+            }
+            else if ((typeof(T) == typeof(int)) && Sse2.IsSupported)
+            {
+                return Sse2.Or(a.AsVector128<T, int>(), b.AsVector128<T, int>()).AsVector2<int, T>();
+            }
+            else if ((typeof(T) == typeof(uint)) && Sse41.IsSupported)
+            {
+                return Sse2.Or(a.AsVector128<T, uint>(), b.AsVector128<T, uint>()).AsVector2<uint, T>();
+            }
+            else if ((typeof(T) == typeof(short)) && Sse2.IsSupported)
+            {
+                return Sse2.Or(a.AsVector128<T, short>(), b.AsVector128<T, short>()).AsVector2<short, T>();
+            }
+            else if ((typeof(T) == typeof(ushort)) && Sse2.IsSupported)
+            {
+                return Sse2.Or(a.AsVector128<T, ushort>(), b.AsVector128<T, ushort>()).AsVector2<ushort, T>();
+            }
+            else if ((typeof(T) == typeof(sbyte)) && Sse2.IsSupported)
+            {
+                return Sse2.Or(a.AsVector128<T, sbyte>(), b.AsVector128<T, sbyte>()).AsVector2<sbyte, T>();
+            }
+            else if ((typeof(T) == typeof(byte)) && Sse2.IsSupported)
+            {
+                return Sse2.Or(a.AsVector128<T, byte>(), b.AsVector128<T, byte>()).AsVector2<byte, T>();
+            }
+            else if ((typeof(T) == typeof(bool)) && Sse2.IsSupported)
+            {
+                return Sse2.Or(a.AsVector128<T, sbyte>(), b.AsVector128<T, sbyte>()).AsVector2<sbyte, T>();
+            }
+            else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
+            {
+                return Sse.Or(a.AsVector128<T, float>(), b.AsVector128<T, float>()).AsVector2<float, T>();
+            }
+            else if ((typeof(T) == typeof(double)) && Sse2.IsSupported)
+            {
+                return Sse2.Or(a.AsVector128<T, double>(), b.AsVector128<T, double>()).AsVector2<double, T>();
+            }
+            else
+            {
+                ThrowNotSupportedType();
+                return default;
+            }
+        }
+
+        public static Vector3<T> OrInternal<T>(Vector3<T> a, Vector3<T> b) where T : unmanaged
+        {
+            if ((typeof(T) == typeof(long)) && Avx2.IsSupported)
+            {
+                return Avx2.Or(a.AsVector256<T, long>(), b.AsVector256<T, long>()).AsVector3<long, T>();
+            }
+            else if ((typeof(T) == typeof(ulong)) && Avx2.IsSupported)
+            {
+                return Avx2.Or(a.AsVector256<T, ulong>(), b.AsVector256<T, ulong>()).AsVector3<ulong, T>();
+            }
+            else if ((typeof(T) == typeof(int)) && Sse2.IsSupported)
+            {
+                return Sse2.Or(a.AsVector128<T, int>(), b.AsVector128<T, int>()).AsVector3<int, T>();
+            }
+            else if ((typeof(T) == typeof(uint)) && Sse41.IsSupported)
+            {
+                return Sse2.Or(a.AsVector128<T, uint>(), b.AsVector128<T, uint>()).AsVector3<uint, T>();
+            }
+            else if ((typeof(T) == typeof(short)) && Sse2.IsSupported)
+            {
+                return Sse2.Or(a.AsVector128<T, short>(), b.AsVector128<T, short>()).AsVector3<short, T>();
+            }
+            else if ((typeof(T) == typeof(ushort)) && Sse2.IsSupported)
+            {
+                return Sse2.Or(a.AsVector128<T, ushort>(), b.AsVector128<T, ushort>()).AsVector3<ushort, T>();
+            }
+            else if ((typeof(T) == typeof(sbyte)) && Sse2.IsSupported)
+            {
+                return Sse2.Or(a.AsVector128<T, sbyte>(), b.AsVector128<T, sbyte>()).AsVector3<sbyte, T>();
+            }
+            else if ((typeof(T) == typeof(byte)) && Sse2.IsSupported)
+            {
+                return Sse2.Or(a.AsVector128<T, byte>(), b.AsVector128<T, byte>()).AsVector3<byte, T>();
+            }
+            else if ((typeof(T) == typeof(bool)) && Sse2.IsSupported)
+            {
+                return Sse2.Or(a.AsVector128<T, sbyte>(), b.AsVector128<T, sbyte>()).AsVector3<sbyte, T>();
+            }
+            else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
+            {
+                return Sse.Or(a.AsVector128<T, float>(), b.AsVector128<T, float>()).AsVector3<float, T>();
+            }
+            else if ((typeof(T) == typeof(double)) && Avx.IsSupported)
+            {
+                return Avx.Or(a.AsVector256<T, double>(), b.AsVector256<T, double>()).AsVector3<double, T>();
+            }
+            else
+            {
+                ThrowNotSupportedType();
+                return default;
+            }
+        }
+
+        public static Vector4<T> OrInternal<T>(Vector4<T> a, Vector4<T> b) where T : unmanaged
+        {
+            if ((typeof(T) == typeof(long)) && Avx2.IsSupported)
+            {
+                return Avx2.Or(a.AsVector256<T, long>(), b.AsVector256<T, long>()).AsVector4<long, T>();
+            }
+            else if ((typeof(T) == typeof(ulong)) && Avx2.IsSupported)
+            {
+                return Avx2.Or(a.AsVector256<T, ulong>(), b.AsVector256<T, ulong>()).AsVector4<ulong, T>();
+            }
+            else if ((typeof(T) == typeof(int)) && Sse2.IsSupported)
+            {
+                return Sse2.Or(a.AsVector128<T, int>(), b.AsVector128<T, int>()).AsVector4<int, T>();
+            }
+            else if ((typeof(T) == typeof(uint)) && Sse41.IsSupported)
+            {
+                return Sse2.Or(a.AsVector128<T, uint>(), b.AsVector128<T, uint>()).AsVector4<uint, T>();
+            }
+            else if ((typeof(T) == typeof(short)) && Sse2.IsSupported)
+            {
+                return Sse2.Or(a.AsVector128<T, short>(), b.AsVector128<T, short>()).AsVector4<short, T>();
+            }
+            else if ((typeof(T) == typeof(ushort)) && Sse2.IsSupported)
+            {
+                return Sse2.Or(a.AsVector128<T, ushort>(), b.AsVector128<T, ushort>()).AsVector4<ushort, T>();
+            }
+            else if ((typeof(T) == typeof(sbyte)) && Sse2.IsSupported)
+            {
+                return Sse2.Or(a.AsVector128<T, sbyte>(), b.AsVector128<T, sbyte>()).AsVector4<sbyte, T>();
+            }
+            else if ((typeof(T) == typeof(byte)) && Sse2.IsSupported)
+            {
+                return Sse2.Or(a.AsVector128<T, byte>(), b.AsVector128<T, byte>()).AsVector4<byte, T>();
+            }
+            else if ((typeof(T) == typeof(bool)) && Sse2.IsSupported)
+            {
+                return Sse2.Or(a.AsVector128<T, sbyte>(), b.AsVector128<T, sbyte>()).AsVector4<sbyte, T>();
+            }
+            else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
+            {
+                return Sse.Or(a.AsVector128<T, float>(), b.AsVector128<T, float>()).AsVector4<float, T>();
+            }
+            else if ((typeof(T) == typeof(double)) && Avx.IsSupported)
+            {
+                return Avx.Or(a.AsVector256<T, double>(), b.AsVector256<T, double>()).AsVector4<double, T>();
+            }
+            else
+            {
+                ThrowNotSupportedType();
+                return default;
+            }
+        }
+
+        #endregion
+
+
         #region Greater Than
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

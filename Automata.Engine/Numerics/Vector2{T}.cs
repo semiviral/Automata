@@ -164,6 +164,30 @@ namespace Automata.Engine.Numerics
         #endregion
 
 
+        #region And
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2<T> operator &(Vector2<T> a, T b) => a & new Vector2<T>(b);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2<T> operator &(T a, Vector2<T> b) => new Vector2<T>(a) & b;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2<T> operator &(Vector2<T> a, Vector2<T> b) => Vector.AndInternal(a, b);
+
+        #endregion
+
+
+        #region Or
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2<T> operator |(Vector2<T> a, T b) => a | new Vector2<T>(b);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2<T> operator |(T a, Vector2<T> b) => new Vector2<T>(a) | b;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2<T> operator |(Vector2<T> a, Vector2<T> b) => Vector.OrInternal(a, b);
+
+        #endregion
+
+
         #region Greater Than
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
