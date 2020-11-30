@@ -94,7 +94,7 @@ namespace Automata.Engine.Numerics
         public static Vector3<bool> operator ==(T a, Vector3<T> b) => new Vector3<T>(a) == b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3<bool> operator ==(Vector3<T> a, Vector3<T> b) => Vector.EqualsInternal(a, b);
+        public static Vector3<bool> operator ==(Vector3<T> a, Vector3<T> b) => Equals(a, b);
 
         #endregion
 
@@ -108,7 +108,7 @@ namespace Automata.Engine.Numerics
         public static Vector3<bool> operator !=(T a, Vector3<T> b) => new Vector3<T>(a) != b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3<bool> operator !=(Vector3<T> a, Vector3<T> b) => Vector.NotEqualsInternal(a, b);
+        public static Vector3<bool> operator !=(Vector3<T> a, Vector3<T> b) => NotEquals(a, b);
 
         #endregion
 
@@ -122,7 +122,7 @@ namespace Automata.Engine.Numerics
         public static Vector3<T> operator +(T a, Vector3<T> b) => new Vector3<T>(a) + b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3<T> operator +(Vector3<T> a, Vector3<T> b) => Vector.AddInternal(a, b);
+        public static Vector3<T> operator +(Vector3<T> a, Vector3<T> b) => Add(a, b);
 
         #endregion
 
@@ -136,7 +136,7 @@ namespace Automata.Engine.Numerics
         public static Vector3<T> operator -(T a, Vector3<T> b) => new Vector3<T>(a) - b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3<T> operator -(Vector3<T> a, Vector3<T> b) => Vector.SubtractInternal(a, b);
+        public static Vector3<T> operator -(Vector3<T> a, Vector3<T> b) => Subtract(a, b);
 
         #endregion
 
@@ -150,7 +150,7 @@ namespace Automata.Engine.Numerics
         public static Vector3<T> operator *(T a, Vector3<T> b) => new Vector3<T>(a) * b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3<T> operator *(Vector3<T> a, Vector3<T> b) => Vector.MultiplyInternal(a, b);
+        public static Vector3<T> operator *(Vector3<T> a, Vector3<T> b) => Multiply(a, b);
 
         #endregion
 
@@ -164,7 +164,7 @@ namespace Automata.Engine.Numerics
         public static Vector3<T> operator /(T a, Vector3<T> b) => new Vector3<T>(a) / b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3<T> operator /(Vector3<T> a, Vector3<T> b) => Vector.DivideInternal(a, b);
+        public static Vector3<T> operator /(Vector3<T> a, Vector3<T> b) => Divide(a, b);
 
         #endregion
 
@@ -175,7 +175,7 @@ namespace Automata.Engine.Numerics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3<T> operator &(T a, Vector3<T> b) => new Vector3<T>(a) & b;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3<T> operator &(Vector3<T> a, Vector3<T> b) => Vector.AndInternal(a, b);
+        public static Vector3<T> operator &(Vector3<T> a, Vector3<T> b) => And(a, b);
 
         #endregion
 
@@ -187,7 +187,7 @@ namespace Automata.Engine.Numerics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3<T> operator |(T a, Vector3<T> b) => new Vector3<T>(a) | b;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3<T> operator |(Vector3<T> a, Vector3<T> b) => Vector.OrInternal(a, b);
+        public static Vector3<T> operator |(Vector3<T> a, Vector3<T> b) => Or(a, b);
 
         #endregion
 
@@ -200,7 +200,7 @@ namespace Automata.Engine.Numerics
         public static Vector3<bool> operator >(T a, Vector3<T> b) => new Vector3<T>(a) > b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3<bool> operator >(Vector3<T> a, Vector3<T> b) => Vector.GreaterThanInternal(a, b);
+        public static Vector3<bool> operator >(Vector3<T> a, Vector3<T> b) => GreaterThan(a, b);
 
         #endregion
 
@@ -214,7 +214,7 @@ namespace Automata.Engine.Numerics
         public static Vector3<bool> operator <(T a, Vector3<T> b) => new Vector3<T>(a) < b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3<bool> operator <(Vector3<T> a, Vector3<T> b) => Vector.LessThanInternal(a, b);
+        public static Vector3<bool> operator <(Vector3<T> a, Vector3<T> b) => LessThan(a, b);
 
         #endregion
 
@@ -228,7 +228,7 @@ namespace Automata.Engine.Numerics
         public static Vector3<bool> operator >=(T a, Vector3<T> b) => new Vector3<T>(a) >= b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3<bool> operator >=(Vector3<T> a, Vector3<T> b) => Vector.GreaterThanInternal(a, b);
+        public static Vector3<bool> operator >=(Vector3<T> a, Vector3<T> b) => GreaterThanOrEqual(a, b);
 
         #endregion
 
@@ -243,7 +243,8 @@ namespace Automata.Engine.Numerics
         public static Vector3<bool> operator <=(T a, Vector3<T> b) => new Vector3<T>(a) < b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3<bool> operator <=(Vector3<T> a, Vector3<T> b) => Vector.LessThanInternal(a, b);
+        public static Vector3<bool> operator <=(Vector3<T> a, Vector3<T> b) => LessThanOrEqual(a, b);
+
 
         #endregion
 

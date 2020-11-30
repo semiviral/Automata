@@ -86,7 +86,7 @@ namespace Automata.Engine.Numerics
         public static Vector2<bool> operator ==(T a, Vector2<T> b) => new Vector2<T>(a) == b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector2<bool> operator ==(Vector2<T> a, Vector2<T> b) => Vector.EqualsInternal(a, b);
+        public static Vector2<bool> operator ==(Vector2<T> a, Vector2<T> b) => Equals(a, b);
 
         #endregion
 
@@ -100,7 +100,7 @@ namespace Automata.Engine.Numerics
         public static Vector2<bool> operator !=(T a, Vector2<T> b) => new Vector2<T>(a) != b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector2<bool> operator !=(Vector2<T> a, Vector2<T> b) => Vector.NotEqualsInternal(a, b);
+        public static Vector2<bool> operator !=(Vector2<T> a, Vector2<T> b) => NotEquals(a, b);
 
         #endregion
 
@@ -114,7 +114,7 @@ namespace Automata.Engine.Numerics
         public static Vector2<T> operator +(T a, Vector2<T> b) => new Vector2<T>(a) + b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector2<T> operator +(Vector2<T> a, Vector2<T> b) => Vector.AddInternal(a, b);
+        public static Vector2<T> operator +(Vector2<T> a, Vector2<T> b) => Add(a, b);
 
         #endregion
 
@@ -128,7 +128,7 @@ namespace Automata.Engine.Numerics
         public static Vector2<T> operator -(T a, Vector2<T> b) => new Vector2<T>(a) - b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector2<T> operator -(Vector2<T> a, Vector2<T> b) => Vector.SubtractInternal(a, b);
+        public static Vector2<T> operator -(Vector2<T> a, Vector2<T> b) => Subtract(a, b);
 
         #endregion
 
@@ -142,7 +142,7 @@ namespace Automata.Engine.Numerics
         public static Vector2<T> operator *(T a, Vector2<T> b) => new Vector2<T>(a) * b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector2<T> operator *(Vector2<T> a, Vector2<T> b) => Vector.MultiplyInternal(a, b);
+        public static Vector2<T> operator *(Vector2<T> a, Vector2<T> b) => Multiply(a, b);
 
         #endregion
 
@@ -156,7 +156,7 @@ namespace Automata.Engine.Numerics
         public static Vector2<T> operator /(T a, Vector2<T> b) => new Vector2<T>(a) / b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector2<T> operator /(Vector2<T> a, Vector2<T> b) => Vector.DivideInternal(a, b);
+        public static Vector2<T> operator /(Vector2<T> a, Vector2<T> b) => Divide(a, b);
 
         #endregion
 
@@ -170,7 +170,7 @@ namespace Automata.Engine.Numerics
         public static Vector2<T> operator &(T a, Vector2<T> b) => new Vector2<T>(a) & b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector2<T> operator &(Vector2<T> a, Vector2<T> b) => Vector.AndInternal(a, b);
+        public static Vector2<T> operator &(Vector2<T> a, Vector2<T> b) => And(a, b);
 
         #endregion
 
@@ -184,7 +184,7 @@ namespace Automata.Engine.Numerics
         public static Vector2<T> operator |(T a, Vector2<T> b) => new Vector2<T>(a) | b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector2<T> operator |(Vector2<T> a, Vector2<T> b) => Vector.OrInternal(a, b);
+        public static Vector2<T> operator |(Vector2<T> a, Vector2<T> b) => Or(a, b);
 
         #endregion
 
@@ -198,7 +198,7 @@ namespace Automata.Engine.Numerics
         public static Vector2<bool> operator >(T a, Vector2<T> b) => new Vector2<T>(a) > b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector2<bool> operator >(Vector2<T> a, Vector2<T> b) => Vector.GreaterThanInternal(a, b);
+        public static Vector2<bool> operator >(Vector2<T> a, Vector2<T> b) => GreaterThanOrEqual(a, b);
 
         #endregion
 
@@ -212,7 +212,7 @@ namespace Automata.Engine.Numerics
         public static Vector2<bool> operator <(T a, Vector2<T> b) => new Vector2<T>(a) < b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector2<bool> operator <(Vector2<T> a, Vector2<T> b) => Vector.LessThanInternal(a, b);
+        public static Vector2<bool> operator <(Vector2<T> a, Vector2<T> b) => LessThanOrEqual(a, b);
 
         #endregion
 

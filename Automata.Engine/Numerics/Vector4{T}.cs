@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -104,7 +105,7 @@ namespace Automata.Engine.Numerics
         public static Vector4<bool> operator ==(T a, Vector4<T> b) => new Vector4<T>(a) == b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector4<bool> operator ==(Vector4<T> a, Vector4<T> b) => Vector.EqualsInternal(a, b);
+        public static Vector4<bool> operator ==(Vector4<T> a, Vector4<T> b) => Equals(a, b);
 
         #endregion
 
@@ -118,7 +119,7 @@ namespace Automata.Engine.Numerics
         public static Vector4<bool> operator !=(T a, Vector4<T> b) => new Vector4<T>(a) != b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector4<bool> operator !=(Vector4<T> a, Vector4<T> b) => Vector.NotEqualsInternal(a, b);
+        public static Vector4<bool> operator !=(Vector4<T> a, Vector4<T> b) => NotEquals(a, b);
 
         #endregion
 
@@ -132,7 +133,7 @@ namespace Automata.Engine.Numerics
         public static Vector4<T> operator +(T a, Vector4<T> b) => new Vector4<T>(a) + b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector4<T> operator +(Vector4<T> a, Vector4<T> b) => Vector.AddInternal(a, b);
+        public static Vector4<T> operator +(Vector4<T> a, Vector4<T> b) => Add(a, b);
 
         #endregion
 
@@ -146,7 +147,7 @@ namespace Automata.Engine.Numerics
         public static Vector4<T> operator -(T a, Vector4<T> b) => new Vector4<T>(a) - b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector4<T> operator -(Vector4<T> a, Vector4<T> b) => Vector.SubtractInternal(a, b);
+        public static Vector4<T> operator -(Vector4<T> a, Vector4<T> b) => Subtract(a, b);
 
         #endregion
 
@@ -160,7 +161,7 @@ namespace Automata.Engine.Numerics
         public static Vector4<T> operator *(T a, Vector4<T> b) => new Vector4<T>(a) * b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector4<T> operator *(Vector4<T> a, Vector4<T> b) => Vector.MultiplyInternal(a, b);
+        public static Vector4<T> operator *(Vector4<T> a, Vector4<T> b) => Multiply(a, b);
 
         #endregion
 
@@ -174,7 +175,7 @@ namespace Automata.Engine.Numerics
         public static Vector4<T> operator /(T a, Vector4<T> b) => new Vector4<T>(a) / b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector4<T> operator /(Vector4<T> a, Vector4<T> b) => Vector.DivideInternal(a, b);
+        public static Vector4<T> operator /(Vector4<T> a, Vector4<T> b) => Divide(a, b);
 
         #endregion
 
@@ -185,7 +186,7 @@ namespace Automata.Engine.Numerics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector4<T> operator &(T a, Vector4<T> b) => new Vector4<T>(a) & b;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector4<T> operator &(Vector4<T> a, Vector4<T> b) => Vector.AndInternal(a, b);
+        public static Vector4<T> operator &(Vector4<T> a, Vector4<T> b) => And(a, b);
 
         #endregion
 
@@ -197,7 +198,7 @@ namespace Automata.Engine.Numerics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector4<T> operator |(T a, Vector4<T> b) => new Vector4<T>(a) | b;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector4<T> operator |(Vector4<T> a, Vector4<T> b) => Vector.OrInternal(a, b);
+        public static Vector4<T> operator |(Vector4<T> a, Vector4<T> b) => Or(a, b);
 
         #endregion
         #region Greater Than
@@ -209,7 +210,7 @@ namespace Automata.Engine.Numerics
         public static Vector4<bool> operator >(T a, Vector4<T> b) => new Vector4<T>(a) > b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector4<bool> operator >(Vector4<T> a, Vector4<T> b) => Vector.GreaterThanInternal(a, b);
+        public static Vector4<bool> operator >(Vector4<T> a, Vector4<T> b) => GreaterThanOrEqual(a, b);
 
         #endregion
 
@@ -223,7 +224,7 @@ namespace Automata.Engine.Numerics
         public static Vector4<bool> operator <(T a, Vector4<T> b) => new Vector4<T>(a) < b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector4<bool> operator <(Vector4<T> a, Vector4<T> b) => Vector.LessThanInternal(a, b);
+        public static Vector4<bool> operator <(Vector4<T> a, Vector4<T> b) => LessThanOrEqual(a, b);
 
         #endregion
 
