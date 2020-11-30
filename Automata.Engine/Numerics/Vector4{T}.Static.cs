@@ -47,7 +47,7 @@ namespace Automata.Engine.Numerics
             {
                 return Avx2.Add(a.AsVector256Ref<T, ulong>(), b.AsVector256Ref<T, ulong>()).AsVector4<ulong, T>();
             }
-            else if (typeof(T) == typeof(float) && Sse.IsSupported)
+            else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
             {
                 return Sse.Add(a.AsVector128Ref<T, float>(), b.AsVector128Ref<T, float>()).AsVector4<float, T>();
             }
@@ -97,7 +97,7 @@ namespace Automata.Engine.Numerics
             {
                 return Avx2.Subtract(a.AsVector256Ref<T, ulong>(), b.AsVector256Ref<T, ulong>()).AsVector4<ulong, T>();
             }
-            else if (typeof(T) == typeof(float) && Sse.IsSupported)
+            else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
             {
                 return Sse.Subtract(a.AsVector128Ref<T, float>(), b.AsVector128Ref<T, float>()).AsVector4<float, T>();
             }
@@ -141,7 +141,7 @@ namespace Automata.Engine.Numerics
                 // no long-sized SIMD multiply instruction, so defer to intrinsic
                 return (a.AsVectorRef() * b.AsVectorRef()).AsVector4();
             }
-            else if (typeof(T) == typeof(float) && Sse.IsSupported)
+            else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
             {
                 return Sse.Multiply(a.AsVector128Ref<T, float>(), b.AsVector128Ref<T, float>()).AsVector4<float, T>();
             }
@@ -159,7 +159,7 @@ namespace Automata.Engine.Numerics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector4<T> Divide(Vector4<T> a, Vector4<T> b)
         {
-            if (typeof(T) == typeof(float) && Sse.IsSupported)
+            if ((typeof(T) == typeof(float)) && Sse.IsSupported)
             {
                 return Sse.Divide(a.AsVector128Ref<T, float>(), b.AsVector128Ref<T, float>()).AsVector4<float, T>();
             }
@@ -345,6 +345,7 @@ namespace Automata.Engine.Numerics
             }
         }
 
+
         #region Comparison
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -497,7 +498,8 @@ namespace Automata.Engine.Numerics
             Intrinsic.GreaterThanOrEqual(a.AsVectorRef(), b.AsVectorRef()).BooleanReduce4();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Vector4<bool> LessThanOrEqual(Vector4<T> a, Vector4<T> b) => Intrinsic.LessThanOrEqual(a.AsVectorRef(), b.AsVectorRef()).BooleanReduce4();
+        private static Vector4<bool> LessThanOrEqual(Vector4<T> a, Vector4<T> b) =>
+            Intrinsic.LessThanOrEqual(a.AsVectorRef(), b.AsVectorRef()).BooleanReduce4();
 
         #endregion
     }

@@ -21,7 +21,7 @@ using Serilog;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.KHR;
 using Silk.NET.Windowing;
-using Vector = System.Numerics.Vector;
+using Vector = Automata.Engine.Numerics.Vector;
 
 namespace Automata.Game
 {
@@ -33,7 +33,7 @@ namespace Automata.Game
             Vector2<int> b = Vector2<int>.Zero;
             Vector2<bool> result = a < b;
 
-            bool final = Automata.Engine.Numerics.Vector.All(result);
+            bool final = Vector.All(result);
 
             Startup();
             await AutomataWindow.Instance.RunAsync();

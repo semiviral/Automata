@@ -1,15 +1,11 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Numerics;
 using System.Threading.Tasks;
 using Automata.Engine;
 using Automata.Engine.Collections;
 using Automata.Engine.Numerics;
-using Automata.Engine.Numerics.Shapes;
-using Automata.Engine.Rendering;
 using Automata.Game.Blocks;
 using Automata.Game.Chunks;
-using Automata.Game.Chunks.Generation;
 
 namespace Automata.Game
 {

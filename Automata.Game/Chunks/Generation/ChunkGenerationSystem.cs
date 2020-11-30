@@ -48,6 +48,7 @@ namespace Automata.Game.Chunks.Generation
             InputManager.Instance.RegisterInputAction(() =>
             {
                 IEnumerable<(GenerationState, int)> states = entityManager.GetComponents<Chunk>().Select(chunk => (chunk.State, chunk.TimesMeshed));
+
                 Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(DiagnosticsPool),
                     $"{string.Join(", ", states)} ———{entityManager.GetComponentCount<Chunk>()} TOTAL CHUNKS———"));
             }, Key.ShiftLeft, Key.V);

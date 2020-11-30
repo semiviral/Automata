@@ -9,7 +9,8 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
     {
         public Vector3<int> Size { get; }
 
-        public Texture3D(Vector3<int> size, WrapMode wrapMode, FilterMode filterMode, bool mipmap) : this(GLAPI.Instance.GL, size, wrapMode, filterMode, mipmap) { }
+        public Texture3D(Vector3<int> size, WrapMode wrapMode, FilterMode filterMode, bool mipmap) :
+            this(GLAPI.Instance.GL, size, wrapMode, filterMode, mipmap) { }
 
         public Texture3D(GL gl, Vector3<int> size, WrapMode wrapMode, FilterMode filterMode, bool mipmap) : base(gl, TextureTarget.Texture3D)
         {

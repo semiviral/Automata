@@ -234,6 +234,7 @@ namespace Automata.Engine.Numerics
 
         #endregion
 
+
         #region Greater Than Or Equal
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

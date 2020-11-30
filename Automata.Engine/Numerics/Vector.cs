@@ -336,6 +336,7 @@ namespace Automata.Engine.Numerics
 
         #endregion
 
+
         #region AsVector3
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -360,6 +361,7 @@ namespace Automata.Engine.Numerics
             Unsafe.As<Vector256<TFrom>, Vector3<TTo>>(ref vector);
 
         #endregion
+
 
         #region AsVector4
 

@@ -1,5 +1,3 @@
-using System;
-using System.Diagnostics.SymbolStore;
 using Automata.Engine;
 using Automata.Engine.Numerics;
 using Automata.Game.Chunks.Generation;

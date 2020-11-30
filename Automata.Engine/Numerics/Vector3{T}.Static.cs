@@ -47,7 +47,7 @@ namespace Automata.Engine.Numerics
             {
                 return Avx2.Add(a.AsVector256Ref<T, ulong>(), b.AsVector256Ref<T, ulong>()).AsVector3<ulong, T>();
             }
-            else if (typeof(T) == typeof(float) && Sse.IsSupported)
+            else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
             {
                 return Sse.Add(a.AsVector128Ref<T, float>(), b.AsVector128Ref<T, float>()).AsVector3<float, T>();
             }
@@ -97,7 +97,7 @@ namespace Automata.Engine.Numerics
             {
                 return Avx2.Subtract(a.AsVector256Ref<T, ulong>(), b.AsVector256Ref<T, ulong>()).AsVector3<ulong, T>();
             }
-            else if (typeof(T) == typeof(float) && Sse.IsSupported)
+            else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
             {
                 return Sse.Subtract(a.AsVector128Ref<T, float>(), b.AsVector128Ref<T, float>()).AsVector3<float, T>();
             }
@@ -141,7 +141,7 @@ namespace Automata.Engine.Numerics
                 // no long-sized SIMD multiply instruction, so defer to intrinsic
                 return (a.AsVectorRef() * b.AsVectorRef()).AsVector3();
             }
-            else if (typeof(T) == typeof(float) && Sse.IsSupported)
+            else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
             {
                 return Sse.Multiply(a.AsVector128Ref<T, float>(), b.AsVector128Ref<T, float>()).AsVector3<float, T>();
             }
@@ -159,7 +159,7 @@ namespace Automata.Engine.Numerics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3<T> Divide(Vector3<T> a, Vector3<T> b)
         {
-            if (typeof(T) == typeof(float) && Sse.IsSupported)
+            if ((typeof(T) == typeof(float)) && Sse.IsSupported)
             {
                 return Sse.Divide(a.AsVector128Ref<T, float>(), b.AsVector128Ref<T, float>()).AsVector3<float, T>();
             }

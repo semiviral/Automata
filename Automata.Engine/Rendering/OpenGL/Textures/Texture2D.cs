@@ -12,7 +12,8 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
     {
         public Vector2<int> Size { get; }
 
-        public Texture2D(Vector2<int> size, WrapMode wrapMode, FilterMode filterMode, bool mipmap) : this(GLAPI.Instance.GL, size, wrapMode, filterMode, mipmap) { }
+        public Texture2D(Vector2<int> size, WrapMode wrapMode, FilterMode filterMode, bool mipmap) :
+            this(GLAPI.Instance.GL, size, wrapMode, filterMode, mipmap) { }
 
         public Texture2D(GL gl, Vector2<int> size, WrapMode wrapMode, FilterMode filterMode, bool mipmap) : base(gl, TextureTarget.Texture2D)
         {

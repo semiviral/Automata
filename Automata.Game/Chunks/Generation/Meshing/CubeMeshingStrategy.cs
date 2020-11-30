@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Automata.Engine.Collections;
-using Automata.Engine.Numerics;
 using Automata.Engine.Rendering.OpenGL;
 using Automata.Game.Blocks;
 
@@ -152,10 +151,11 @@ namespace Automata.Game.Chunks.Generation.Meshing
                             // remark: if there's no neighbor at the index given, then no chunk exists there (for instance,
                             //     chunks at the edge of render distance). In this case, return NullID so no face is rendered on edges.
                             int facedBlockIndex = 1; // todo Vector3<int>.Project1D(
-                                // neighborLocalPosition & GenerationConstants.CHUNK_SIZE_MASK,
-                                // (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_SHIFT * 1)) & GenerationConstants.CHUNK_SIZE_MASK,
-                                // (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_SHIFT * 2)) & GenerationConstants.CHUNK_SIZE_MASK,
-                                // GenerationConstants.CHUNK_SIZE);
+
+                            // neighborLocalPosition & GenerationConstants.CHUNK_SIZE_MASK,
+                            // (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_SHIFT * 1)) & GenerationConstants.CHUNK_SIZE_MASK,
+                            // (neighborLocalPosition >> (GenerationConstants.CHUNK_SIZE_SHIFT * 2)) & GenerationConstants.CHUNK_SIZE_MASK,
+                            // GenerationConstants.CHUNK_SIZE);
 
                             ushort facedBlockID = neighbors[normalIndex]?[facedBlockIndex].ID ?? BlockRegistry.NullID;
 

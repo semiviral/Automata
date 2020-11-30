@@ -4,7 +4,6 @@ using System.Numerics;
 using System.Threading.Tasks;
 using Automata.Engine;
 using Automata.Engine.Collections;
-using Automata.Engine.Extensions;
 using Automata.Engine.Input;
 using Automata.Engine.Numerics;
 using Automata.Engine.Numerics.Shapes;
