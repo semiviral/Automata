@@ -23,7 +23,7 @@ namespace Automata.Engine.Benchmarks
         }
 
         [Benchmark]
-        public Vector4<float> Generic() => _GenericA * _GenericB;
+        public Vector4<float> Generic() => _GenericA + _GenericB;
 
         //[Benchmark]
         public Vector4<float> Intrinsic() => _GenericA / _GenericB;

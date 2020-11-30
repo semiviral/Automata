@@ -47,11 +47,9 @@ namespace Automata.Engine.Numerics
             {
                 return Avx2.Add(a.AsVector256Ref<T, ulong>(), b.AsVector256Ref<T, ulong>()).AsVector4<ulong, T>();
             }
-            else if (typeof(T) == typeof(float))
+            else if (typeof(T) == typeof(float) && Sse.IsSupported)
             {
-                // just defer to intrinsics for floats, they're faster
-                Vector4 result = a.AsRef<T, Vector4>() + b.AsRef<T, Vector4>();
-                return result.AsGenericRef<T>();
+                return Sse.Add(a.AsVector128Ref<T, float>(), b.AsVector128Ref<T, float>()).AsVector4<float, T>();
             }
             else if ((typeof(T) == typeof(double)) && Avx.IsSupported)
             {
@@ -99,11 +97,9 @@ namespace Automata.Engine.Numerics
             {
                 return Avx2.Subtract(a.AsVector256Ref<T, ulong>(), b.AsVector256Ref<T, ulong>()).AsVector4<ulong, T>();
             }
-            else if (typeof(T) == typeof(float))
+            else if (typeof(T) == typeof(float) && Sse.IsSupported)
             {
-                // just defer to intrinsics for floats, they're faster
-                Vector4 result = a.AsRef<T, Vector4>() - b.AsRef<T, Vector4>();
-                return result.AsGenericRef<T>();
+                return Sse.Subtract(a.AsVector128Ref<T, float>(), b.AsVector128Ref<T, float>()).AsVector4<float, T>();
             }
             else if ((typeof(T) == typeof(double)) && Avx.IsSupported)
             {
@@ -145,7 +141,7 @@ namespace Automata.Engine.Numerics
                 // no long-sized SIMD multiply instruction, so defer to intrinsic
                 return (a.AsVectorRef() * b.AsVectorRef()).AsVector4();
             }
-            else if (typeof(T) == typeof(float))
+            else if (typeof(T) == typeof(float) && Sse.IsSupported)
             {
                 return Sse.Multiply(a.AsVector128Ref<T, float>(), b.AsVector128Ref<T, float>()).AsVector4<float, T>();
             }
@@ -163,7 +159,7 @@ namespace Automata.Engine.Numerics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector4<T> Divide(Vector4<T> a, Vector4<T> b)
         {
-            if (typeof(T) == typeof(float))
+            if (typeof(T) == typeof(float) && Sse.IsSupported)
             {
                 return Sse.Divide(a.AsVector128Ref<T, float>(), b.AsVector128Ref<T, float>()).AsVector4<float, T>();
             }
