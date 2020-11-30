@@ -147,9 +147,7 @@ namespace Automata.Engine.Numerics
             }
             else if (typeof(T) == typeof(float))
             {
-                // just defer to intrinsics for floats, they're faster
-                Vector4 result = a.AsRef<T, Vector4>() * b.AsRef<T, Vector4>();
-                return result.AsGenericRef<T>();
+                return Sse.Multiply(a.AsVector128Ref<T, float>(), b.AsVector128Ref<T, float>()).AsVector4<float, T>();
             }
             else if ((typeof(T) == typeof(double)) && Avx.IsSupported)
             {
@@ -167,9 +165,7 @@ namespace Automata.Engine.Numerics
         {
             if (typeof(T) == typeof(float))
             {
-                // just defer to intrinsics for floats, they're faster
-                Vector4 result = a.AsRef<T, Vector4>() * b.AsRef<T, Vector4>();
-                return result.AsGenericRef<T>();
+                return Sse.Divide(a.AsVector128Ref<T, float>(), b.AsVector128Ref<T, float>()).AsVector4<float, T>();
             }
             else if ((typeof(T) == typeof(double)) && Avx.IsSupported)
             {
@@ -332,6 +328,26 @@ namespace Automata.Engine.Numerics
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector4<T> Ceiling(Vector4<T> a)
+        {
+            if (typeof(T) == typeof(float))
+            {
+                return Sse41.IsSupported
+                    ? Sse41.Ceiling(a.AsVector128Ref<T, float>()).AsVector4<float, T>()
+                    : Intrinsic.Ceiling(a.AsVector<T, float>()).AsVector4<float, T>();
+            }
+            else if (typeof(T) == typeof(double))
+            {
+                return Avx.IsSupported
+                    ? Avx.Ceiling(a.AsVector256Ref<T, double>()).AsVector4<double, T>()
+                    : Intrinsic.Ceiling(a.AsVector<T, float>()).AsVector4<float, T>();
+            }
+            else
+            {
+                return a;
+            }
+        }
 
         #region Comparison
 

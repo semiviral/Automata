@@ -147,9 +147,7 @@ namespace Automata.Engine.Numerics
             }
             else if (typeof(T) == typeof(float))
             {
-                // just defer to intrinsics for floats, they're faster
-                Vector2 result = a.AsRef<T, Vector2>() * b.AsRef<T, Vector2>();
-                return result.AsGenericRef<T>();
+                return Sse.Multiply(a.AsVector128Ref<T, float>(), b.AsVector128Ref<T, float>()).AsVector2<float, T>();
             }
             else if ((typeof(T) == typeof(double)) && Sse2.IsSupported)
             {
@@ -167,9 +165,7 @@ namespace Automata.Engine.Numerics
         {
             if (typeof(T) == typeof(float))
             {
-                // just defer to intrinsics for floats, they're faster
-                Vector2 result = a.AsRef<T, Vector2>() * b.AsRef<T, Vector2>();
-                return result.AsGenericRef<T>();
+                return Sse.Divide(a.AsVector128Ref<T, float>(), b.AsVector128Ref<T, float>()).AsVector2<float, T>();
             }
             else if ((typeof(T) == typeof(double)) && Sse2.IsSupported)
             {

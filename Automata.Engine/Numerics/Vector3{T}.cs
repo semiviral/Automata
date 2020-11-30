@@ -168,12 +168,15 @@ namespace Automata.Engine.Numerics
 
         #endregion
 
+
         #region And
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3<T> operator &(Vector3<T> a, T b) => a & new Vector3<T>(b);
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3<T> operator &(T a, Vector3<T> b) => new Vector3<T>(a) & b;
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3<T> operator &(Vector3<T> a, Vector3<T> b) => And(a, b);
 
@@ -184,12 +187,15 @@ namespace Automata.Engine.Numerics
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3<T> operator |(Vector3<T> a, T b) => a | new Vector3<T>(b);
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3<T> operator |(T a, Vector3<T> b) => new Vector3<T>(a) | b;
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3<T> operator |(Vector3<T> a, Vector3<T> b) => Or(a, b);
 
         #endregion
+
 
         #region Greater Than
 
@@ -235,7 +241,6 @@ namespace Automata.Engine.Numerics
 
         #region Less Than Or Equal
 
-        // todo
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3<bool> operator <=(Vector3<T> a, T b) => a < new Vector3<T>(b);
 
@@ -244,7 +249,6 @@ namespace Automata.Engine.Numerics
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3<bool> operator <=(Vector3<T> a, Vector3<T> b) => LessThanOrEqual(a, b);
-
 
         #endregion
 
