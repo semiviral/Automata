@@ -95,7 +95,7 @@ namespace Automata.Engine.Input
         /// <returns></returns>
         /// <exception cref="IndexOutOfRangeException"></exception>
         public Vector2<float> GetMousePositionCenterRelative(int mouseIndex) =>
-            GetMousePosition(mouseIndex) - AutomataWindow.Instance.Center.Coerce<int, float>();
+            GetMousePosition(mouseIndex) - AutomataWindow.Instance.Center.Convert<float>();
 
         public void SetMousePositionCenterRelative(int mouseIndex, Vector2<float> position)
         {
@@ -104,7 +104,7 @@ namespace Automata.Engine.Input
                 throw new IndexOutOfRangeException(nameof(mouseIndex));
             }
 
-            position += AutomataWindow.Instance.Center.Coerce<int, float>();
+            position += AutomataWindow.Instance.Center.Convert<float>();
             _Mice[mouseIndex].Position = position.AsPointF();
         }
 

@@ -12,48 +12,98 @@ namespace Automata.Engine.Numerics
     public readonly partial struct Vector4<T> where T : unmanaged
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector4<T> Add(Vector4<T> a, Vector4<T> b) =>
-            typeof(T) == typeof(float)
-                ? (a.As<T, Vector4>() + b.As<T, Vector4>()).AsGeneric<T>()
-                : (a.AsVector() + b.AsVector()).AsVector4();
+        public static Vector4<T> Add(Vector4<T> a, Vector4<T> b)
+        {
+            if (typeof(T) == typeof(float))
+            {
+                Vector4 result = a.As<T, Vector4>() + b.As<T, Vector4>();
+                return result.AsGeneric<T>();
+            }
+            else
+            {
+                Vector<T> result = a.AsVector() + b.AsVector();
+                return result.AsVector4();
+            }
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector4<T> Subtract(Vector4<T> a, Vector4<T> b) =>
-            typeof(T) == typeof(float)
-                ? (a.As<T, Vector4>() - b.As<T, Vector4>()).AsGeneric<T>()
-                : (a.AsVector() - b.AsVector()).AsVector4();
+        public static Vector4<T> Subtract(Vector4<T> a, Vector4<T> b)
+        {
+            if (typeof(T) == typeof(float))
+            {
+                Vector4 result = a.As<T, Vector4>() - b.As<T, Vector4>();
+                return result.AsGeneric<T>();
+            }
+            else
+            {
+                Vector<T> result = a.AsVector() - b.AsVector();
+                return result.AsVector4();
+            }
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector4<T> Multiply(Vector4<T> a, Vector4<T> b) =>
-            typeof(T) == typeof(float)
-                ? (a.As<T, Vector4>() * b.As<T, Vector4>()).AsGeneric<T>()
-                : (a.AsVector() * b.AsVector()).AsVector4();
+        public static Vector4<T> Multiply(Vector4<T> a, Vector4<T> b)
+        {
+            if (typeof(T) == typeof(float))
+            {
+                Vector4 result = a.As<T, Vector4>() * b.As<T, Vector4>();
+                return result.AsGeneric<T>();
+            }
+            else
+            {
+                Vector<T> result = a.AsVector() * b.AsVector();
+                return result.AsVector4();
+            }
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector4<T> Divide(Vector4<T> a, Vector4<T> b) =>
-            typeof(T) == typeof(float)
-                ? (a.As<T, Vector4>() * b.As<T, Vector4>()).AsGeneric<T>()
-                : (a.AsVector() / b.AsVector()).AsVector4();
+        public static Vector4<T> Divide(Vector4<T> a, Vector4<T> b)
+        {
+            if (typeof(T) == typeof(float))
+            {
+                Vector4 result = a.As<T, Vector4>() / b.As<T, Vector4>();
+                return result.AsGeneric<T>();
+            }
+            else
+            {
+                Vector<T> result = a.AsVector() / b.AsVector();
+                return result.AsVector4();
+            }
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector4<T> And(Vector4<T> a, Vector4<T> b) => Intrinsic.BitwiseAnd(a.AsVector(), b.AsVector()).AsVector4();
+        public static Vector4<T> And(Vector4<T> a, Vector4<T> b)
+        {
+            Vector<T> result = Intrinsic.BitwiseAnd(a.AsVector(), b.AsVector());
+            return result.AsVector4();
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector4<T> Or(Vector4<T> a, Vector4<T> b) => Intrinsic.BitwiseOr(a.AsVector(), b.AsVector()).AsVector4();
+        public static Vector4<T> Or(Vector4<T> a, Vector4<T> b)
+        {
+            Vector<T> result = Intrinsic.BitwiseOr(a.AsVector(), b.AsVector());
+            return result.AsVector4();
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector4<T> Abs(Vector4<T> a) => Intrinsic.Abs(a.AsVector()).AsVector4();
+        public static Vector4<T> Abs(Vector4<T> a)
+        {
+            Vector<T> result = Intrinsic.Abs(a.AsVector());
+            return result.AsVector4();
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector4<T> Floor(Vector4<T> a)
         {
             if (typeof(T) == typeof(float))
             {
-                return Intrinsic.Floor(a.AsVector<T, float>()).AsVector4<float, T>();
+                Vector<float> result = Intrinsic.Floor(a.AsVector<T, float>());
+                return result.AsVector4<float, T>();
             }
             else if (typeof(T) == typeof(double))
             {
-                return Intrinsic.Floor(a.AsVector<T, double>()).AsVector4<double, T>();
+                Vector<double> result = Intrinsic.Floor(a.AsVector<T, double>());
+                return result.AsVector4<double, T>();
             }
             else
             {
