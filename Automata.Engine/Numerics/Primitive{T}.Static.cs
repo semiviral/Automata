@@ -8,8 +8,6 @@ namespace Automata.Engine.Numerics
 
         static Primitive()
         {
-            ThrowNotSupportedType();
-
             if (typeof(T) == typeof(long))
             {
                 One = (T)(object)(long)1;

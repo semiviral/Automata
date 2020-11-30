@@ -17,7 +17,10 @@ namespace Automata.Engine.Benchmarks
         //[Benchmark]
         public Vector4<uint> Generic4() => new Vector4<uint>(9) - new Vector4<uint>(9);
 
-        [Benchmark]
+        //[Benchmark]
         public Vector4<float> GenericFloating4() => new Vector4<float>(7f) / new Vector4<float>(7f);
+
+        [Benchmark]
+        public Vector4<bool> GreaterThan() => new Vector4<uint>(1) > new Vector4<uint>(0);
     }
 }

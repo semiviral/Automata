@@ -1,12 +1,11 @@
 using System;
 using System.Globalization;
-using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Automata.Engine.Numerics
 {
-    public readonly struct Vector3<T>: IEquatable<Vector3<T>>, IFormattable where T : unmanaged
+    public readonly struct Vector3<T> : IEquatable<Vector3<T>>, IFormattable where T : unmanaged
     {
         public static Vector3<T> Zero => new Vector3<T>(default);
         public static Vector3<T> One => new Vector3<T>(Primitive<T>.One);
@@ -71,6 +70,7 @@ namespace Automata.Engine.Numerics
         }
 
         #endregion
+
 
         #region Operators
 
@@ -154,6 +154,34 @@ namespace Automata.Engine.Numerics
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3<T> operator /(Vector3<T> a, Vector3<T> b) => Vector.DivideInternal(a, b);
+
+        #endregion
+
+
+        #region Greater Than
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3<bool> operator >(Vector3<T> a, T b) => a > new Vector3<T>(b);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3<bool> operator >(T a, Vector3<T> b) => new Vector3<T>(a) > b;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3<bool> operator >(Vector3<T> a, Vector3<T> b) => Vector.GreaterThanInternal(a, b);
+
+        #endregion
+
+
+        #region Less Than
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3<bool> operator <(Vector3<T> a, T b) => a < new Vector3<T>(b);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3<bool> operator <(T a, Vector3<T> b) => new Vector3<T>(a) < b;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3<bool> operator <(Vector3<T> a, Vector3<T> b) => Vector.LessThanInternal(a, b);
 
         #endregion
 

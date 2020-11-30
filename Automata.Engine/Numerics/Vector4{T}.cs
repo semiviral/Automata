@@ -166,6 +166,34 @@ namespace Automata.Engine.Numerics
 
         #endregion
 
+
+        #region Greater Than
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector4<bool> operator >(Vector4<T> a, T b) => a > new Vector4<T>(b);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector4<bool> operator >(T a, Vector4<T> b) => new Vector4<T>(a) > b;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector4<bool> operator >(Vector4<T> a, Vector4<T> b) => Vector.GreaterThanInternal(a, b);
+
+        #endregion
+
+
+        #region Less Than
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector4<bool> operator <(Vector4<T> a, T b) => a < new Vector4<T>(b);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector4<bool> operator <(T a, Vector4<T> b) => new Vector4<T>(a) < b;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector4<bool> operator <(Vector4<T> a, Vector4<T> b) => Vector.LessThanInternal(a, b);
+
+        #endregion
+
         #endregion
     }
 }

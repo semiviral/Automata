@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Automata.Engine;
 using Automata.Engine.Concurrency;
 using Automata.Engine.Input;
+using Automata.Engine.Numerics;
 using Automata.Engine.Rendering;
 using Automata.Engine.Rendering.Meshes;
 using Automata.Engine.Rendering.OpenGL;
@@ -20,6 +21,7 @@ using Serilog;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.KHR;
 using Silk.NET.Windowing;
+using Vector = System.Numerics.Vector;
 
 namespace Automata.Game
 {
@@ -27,6 +29,12 @@ namespace Automata.Game
     {
         public static async Task Main(string[] args)
         {
+            Vector2<int> a = new Vector2<int>(-1);
+            Vector2<int> b = Vector2<int>.Zero;
+            Vector2<bool> result = a < b;
+
+            bool final = Automata.Engine.Numerics.Vector.All(result);
+
             Startup();
             await AutomataWindow.Instance.RunAsync();
             AutomataWindow.Instance.Dispose();
