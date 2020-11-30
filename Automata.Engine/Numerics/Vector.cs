@@ -49,7 +49,7 @@ namespace Automata.Engine.Numerics
         #region Reduce
 
         /// <summary>
-        ///     Reduces a given <see cref="Vector128" /> to booleans representing each of its elements.
+        ///     Reduces a given <see cref="Vector128" /> to sbytes representing the bottom 8 bits its elements.
         /// </summary>
         /// <param name="a"><see cref="Vector128{T}" /> to reduce.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -92,9 +92,9 @@ namespace Automata.Engine.Numerics
         }
 
         /// <summary>
-        ///     Reduces a given <see cref="Vector128" /> to booleans representing each of its elements.
+        ///     Reduces a given <see cref="Vector256" /> to sbytes representing the bottom 8 bits its elements.
         /// </summary>
-        /// <param name="a"><see cref="Vector128{T}" /> to reduce.</param>
+        /// <param name="a"><see cref="Vector256{T}" /> to reduce.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector256<sbyte> Reduce<TType>(this Vector256<TType> a) where TType : unmanaged
         {
@@ -134,7 +134,26 @@ namespace Automata.Engine.Numerics
             }
         }
 
-        public static unsafe Vector4<bool> BooleanReduce<T>(this Vector<T> a) where T : unmanaged
+        public static unsafe Vector2<bool> BooleanReduce2<T>(this Vector<T> a) where T : unmanaged
+        {
+            byte* pointer = (byte*)&a;
+
+            return new Vector2<bool>(
+                *(pointer + (sizeof(T) * 0)) != default,
+                *(pointer + (sizeof(T) * 1)) != default);
+        }
+
+        public static unsafe Vector3<bool> BooleanReduce3<T>(this Vector<T> a) where T : unmanaged
+        {
+            byte* pointer = (byte*)&a;
+
+            return new Vector3<bool>(
+                *(pointer + (sizeof(T) * 0)) != default,
+                *(pointer + (sizeof(T) * 1)) != default,
+                *(pointer + (sizeof(T) * 2)) != default);
+        }
+
+        public static unsafe Vector4<bool> BooleanReduce4<T>(this Vector<T> a) where T : unmanaged
         {
             byte* pointer = (byte*)&a;
 
@@ -292,7 +311,57 @@ namespace Automata.Engine.Numerics
         #endregion
 
 
-        #region AsVector2/3/4
+        #region AsVector2
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2<T> AsVector2<T>(this Vector<T> vector) where T : unmanaged => Unsafe.As<Vector<T>, Vector2<T>>(ref vector);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2<TTo> AsVector2<TFrom, TTo>(this Vector<TFrom> vector)
+            where TFrom : unmanaged
+            where TTo : unmanaged =>
+            Unsafe.As<Vector<TFrom>, Vector2<TTo>>(ref vector);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2<TTo> AsVector2<TFrom, TTo>(this Vector128<TFrom> vector)
+            where TFrom : unmanaged
+            where TTo : unmanaged =>
+            Unsafe.As<Vector128<TFrom>, Vector2<TTo>>(ref vector);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2<TTo> AsVector2<TFrom, TTo>(this Vector256<TFrom> vector)
+            where TFrom : unmanaged
+            where TTo : unmanaged =>
+            Unsafe.As<Vector256<TFrom>, Vector2<TTo>>(ref vector);
+
+        #endregion
+
+        #region AsVector3
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3<T> AsVector3<T>(this Vector<T> vector) where T : unmanaged => Unsafe.As<Vector<T>, Vector3<T>>(ref vector);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3<TTo> AsVector3<TFrom, TTo>(this Vector<TFrom> vector)
+            where TFrom : unmanaged
+            where TTo : unmanaged =>
+            Unsafe.As<Vector<TFrom>, Vector3<TTo>>(ref vector);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3<TTo> AsVector3<TFrom, TTo>(this Vector128<TFrom> vector)
+            where TFrom : unmanaged
+            where TTo : unmanaged =>
+            Unsafe.As<Vector128<TFrom>, Vector3<TTo>>(ref vector);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3<TTo> AsVector3<TFrom, TTo>(this Vector256<TFrom> vector)
+            where TFrom : unmanaged
+            where TTo : unmanaged =>
+            Unsafe.As<Vector256<TFrom>, Vector3<TTo>>(ref vector);
+
+        #endregion
+
+        #region AsVector4
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector4<T> AsVector4<T>(this Vector<T> vector) where T : unmanaged => Unsafe.As<Vector<T>, Vector4<T>>(ref vector);
@@ -359,6 +428,18 @@ namespace Automata.Engine.Numerics
         #region AsVector128Ref
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ref Vector128<TTo> AsVector128Ref<TFrom, TTo>(ref this Vector2<TFrom> a)
+            where TFrom : unmanaged
+            where TTo : unmanaged
+            => ref Unsafe.As<Vector2<TFrom>, Vector128<TTo>>(ref a);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ref Vector128<TTo> AsVector128Ref<TFrom, TTo>(ref this Vector3<TFrom> a)
+            where TFrom : unmanaged
+            where TTo : unmanaged
+            => ref Unsafe.As<Vector3<TFrom>, Vector128<TTo>>(ref a);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ref Vector128<TTo> AsVector128Ref<TFrom, TTo>(ref this Vector4<TFrom> a)
             where TFrom : unmanaged
             where TTo : unmanaged
@@ -368,6 +449,18 @@ namespace Automata.Engine.Numerics
 
 
         #region AsVector256Ref
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ref Vector256<TTo> AsVector256Ref<TFrom, TTo>(ref this Vector2<TFrom> a)
+            where TFrom : unmanaged
+            where TTo : unmanaged
+            => ref Unsafe.As<Vector2<TFrom>, Vector256<TTo>>(ref a);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ref Vector256<TTo> AsVector256Ref<TFrom, TTo>(ref this Vector3<TFrom> a)
+            where TFrom : unmanaged
+            where TTo : unmanaged
+            => ref Unsafe.As<Vector3<TFrom>, Vector256<TTo>>(ref a);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ref Vector256<TTo> AsVector256Ref<TFrom, TTo>(ref this Vector4<TFrom> a)

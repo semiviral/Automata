@@ -165,19 +165,7 @@ namespace Automata.Engine.Numerics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector4<T> Divide(Vector4<T> a, Vector4<T> b)
         {
-            if ((typeof(T) == typeof(sbyte))
-                || (typeof(T) == typeof(byte))
-                || (typeof(T) == typeof(short))
-                || (typeof(T) == typeof(ushort))
-                || (typeof(T) == typeof(int))
-                || (typeof(T) == typeof(uint))
-                || (typeof(T) == typeof(long))
-                || (typeof(T) == typeof(ulong)))
-            {
-                // divide only has floating point instructions, so defer to intrinsics
-                return (a.AsVectorRef() / b.AsVectorRef()).AsVector4();
-            }
-            else if (typeof(T) == typeof(float))
+            if (typeof(T) == typeof(float))
             {
                 // just defer to intrinsics for floats, they're faster
                 Vector4 result = a.AsRef<T, Vector4>() * b.AsRef<T, Vector4>();
@@ -189,8 +177,8 @@ namespace Automata.Engine.Numerics
             }
             else
             {
-                Vector.ThrowNotSupportedType();
-                return default;
+                // divide only has floating point instructions, so defer to intrinsics
+                return (a.AsVectorRef() / b.AsVectorRef()).AsVector4();
             }
         }
 
@@ -365,7 +353,7 @@ namespace Automata.Engine.Numerics
             else if (((typeof(T) == typeof(long)) || (typeof(T) == typeof(ulong))) && Avx2.IsSupported)
             {
                 // we can't reduce longs, so just convert to intrinsic vectors
-                return Intrinsic.Equals(a.AsVectorRef(), b.AsVectorRef()).BooleanReduce();
+                return Intrinsic.Equals(a.AsVectorRef(), b.AsVectorRef()).BooleanReduce4();
             }
             else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
             {
@@ -403,7 +391,7 @@ namespace Automata.Engine.Numerics
             else if (((typeof(T) == typeof(long)) || (typeof(T) == typeof(ulong))) && Avx2.IsSupported)
             {
                 // we can't reduce longs, so just convert to intrinsic vectors
-                return Intrinsic.OnesComplement(Intrinsic.Equals(a.AsVectorRef(), b.AsVectorRef())).BooleanReduce();
+                return Intrinsic.OnesComplement(Intrinsic.Equals(a.AsVectorRef(), b.AsVectorRef())).BooleanReduce4();
             }
             else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
             {
@@ -440,7 +428,7 @@ namespace Automata.Engine.Numerics
             else if (((typeof(T) == typeof(long)) || (typeof(T) == typeof(ulong))) && Avx2.IsSupported)
             {
                 // we can't reduce longs, so just convert to intrinsic vectors
-                return Intrinsic.GreaterThan(a.AsVectorRef(), b.AsVectorRef()).BooleanReduce();
+                return Intrinsic.GreaterThan(a.AsVectorRef(), b.AsVectorRef()).BooleanReduce4();
             }
             else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
             {
@@ -475,7 +463,7 @@ namespace Automata.Engine.Numerics
             else if (((typeof(T) == typeof(long)) || (typeof(T) == typeof(ulong))) && Avx2.IsSupported)
             {
                 // we can't reduce longs, so just convert to intrinsic vectors
-                return Intrinsic.LessThan(a.AsVectorRef(), b.AsVectorRef()).BooleanReduce();
+                return Intrinsic.LessThan(a.AsVectorRef(), b.AsVectorRef()).BooleanReduce4();
             }
             else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
             {
@@ -494,10 +482,10 @@ namespace Automata.Engine.Numerics
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Vector4<bool> GreaterThanOrEqual(Vector4<T> a, Vector4<T> b) =>
-            Intrinsic.GreaterThanOrEqual(a.AsVectorRef(), b.AsVectorRef()).BooleanReduce();
+            Intrinsic.GreaterThanOrEqual(a.AsVectorRef(), b.AsVectorRef()).BooleanReduce4();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Vector4<bool> LessThanOrEqual(Vector4<T> a, Vector4<T> b) => Intrinsic.LessThanOrEqual(a.AsVectorRef(), b.AsVectorRef()).BooleanReduce();
+        private static Vector4<bool> LessThanOrEqual(Vector4<T> a, Vector4<T> b) => Intrinsic.LessThanOrEqual(a.AsVectorRef(), b.AsVectorRef()).BooleanReduce4();
 
         #endregion
     }
