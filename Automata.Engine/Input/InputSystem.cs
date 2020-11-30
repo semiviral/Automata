@@ -3,6 +3,7 @@ using System.Numerics;
 using System.Threading.Tasks;
 using Automata.Engine.Numerics;
 using Silk.NET.Input;
+using Vector = Automata.Engine.Numerics.Vector;
 
 namespace Automata.Engine.Input
 {
@@ -31,7 +32,7 @@ namespace Automata.Engine.Input
             // without this line, the x-axis rotation will be backwards
             relativeMousePosition = relativeMousePosition.WithX(-relativeMousePosition.X);
 
-            if (relativeMousePosition == Vector2<float>.Zero)
+            if (Vector.All(relativeMousePosition == Vector2<float>.Zero))
             {
                 return;
             }

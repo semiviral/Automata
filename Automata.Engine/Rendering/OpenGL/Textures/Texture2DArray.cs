@@ -31,10 +31,10 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             {
                 throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
             }
-            // else if (Vector2b.Any(size < 0))
-            // {
-            //     throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0 and <TexSize");
-            // }
+            else if (Vector.Any(size < 0))
+            {
+                throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0 and <TexSize");
+            }
 
             GL.TextureSubImage3D(Handle, 0, offset.X, offset.Y, offset.Z, (uint)size.X, (uint)size.Y, 1u, _PixelFormat, _PixelType, pixels);
         }

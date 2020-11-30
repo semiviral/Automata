@@ -35,18 +35,31 @@ namespace Automata.Engine.Numerics
             _Z = z;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector3<T> WithX(T x) => new Vector3<T>(x, _Y, _Z);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector3<T> WithY(T y) => new Vector3<T>(_X, y, _Z);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector3<T> WithZ(T z) => new Vector3<T>(_X, _Y, z);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Vector3<TTo> Convert<TTo>() where TTo : unmanaged => new Vector3<TTo>((TTo)(object)_X, (TTo)(object)_Y, (TTo)(object)_Z);
+
+
+        #region `Object` Overrides
 
         public override int GetHashCode() => HashCode.Combine(_X, _Y);
         public override bool Equals(object? obj) => obj is Vector3<T> other && Equals(other);
         public override string ToString() => $"<{X}, {Y}, {Z}>";
 
+        #endregion
+
 
         #region IEquatable
 
-        public bool Equals(Vector3<T> other) => this == other;
+        public bool Equals(Vector3<T> other) => Vector.All(this == other);
 
         #endregion
 
@@ -77,13 +90,13 @@ namespace Automata.Engine.Numerics
         #region Equals
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(Vector3<T> a, T b) => a == new Vector3<T>(b);
+        public static Vector3<bool> operator ==(Vector3<T> a, T b) => a == new Vector3<T>(b);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(T a, Vector3<T> b) => new Vector3<T>(a) == b;
+        public static Vector3<bool> operator ==(T a, Vector3<T> b) => new Vector3<T>(a) == b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(Vector3<T> a, Vector3<T> b) => Vector.EqualsInternal(a, b);
+        public static Vector3<bool> operator ==(Vector3<T> a, Vector3<T> b) => Vector.EqualsInternal(a, b);
 
         #endregion
 
@@ -91,13 +104,13 @@ namespace Automata.Engine.Numerics
         #region Not Equals
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(Vector3<T> a, T b) => a != new Vector3<T>(b);
+        public static Vector3<bool> operator !=(Vector3<T> a, T b) => a != new Vector3<T>(b);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(T a, Vector3<T> b) => new Vector3<T>(a) != b;
+        public static Vector3<bool> operator !=(T a, Vector3<T> b) => new Vector3<T>(a) != b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(Vector3<T> a, Vector3<T> b) => Vector.NotEqualsInternal(a, b);
+        public static Vector3<bool> operator !=(Vector3<T> a, Vector3<T> b) => Vector.NotEqualsInternal(a, b);
 
         #endregion
 
@@ -182,6 +195,35 @@ namespace Automata.Engine.Numerics
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3<bool> operator <(Vector3<T> a, Vector3<T> b) => Vector.LessThanInternal(a, b);
+
+        #endregion
+
+
+        #region Greater Than Or Equal
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3<bool> operator >=(Vector3<T> a, T b) => a >= new Vector3<T>(b);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3<bool> operator >=(T a, Vector3<T> b) => new Vector3<T>(a) >= b;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3<bool> operator >=(Vector3<T> a, Vector3<T> b) => Vector.GreaterThanInternal(a, b);
+
+        #endregion
+
+
+        #region Less Than Or Equal
+
+        // todo
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3<bool> operator <=(Vector3<T> a, T b) => a < new Vector3<T>(b);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3<bool> operator <=(T a, Vector3<T> b) => new Vector3<T>(a) < b;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3<bool> operator <=(Vector3<T> a, Vector3<T> b) => Vector.LessThanInternal(a, b);
 
         #endregion
 

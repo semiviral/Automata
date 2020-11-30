@@ -34,17 +34,28 @@ namespace Automata.Engine.Numerics
             _Y = y;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector2<T> WithX(T x) => new Vector2<T>(x, _Y);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector2<T> WithY(T y) => new Vector2<T>(_X, y);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Vector2<TTo> Convert<TTo>() where TTo : unmanaged => new Vector2<TTo>((TTo)(object)_X, (TTo)(object)_Y);
+
+
+        #region `Object` Overrides
 
         public override int GetHashCode() => HashCode.Combine(_X, _Y);
         public override bool Equals(object? obj) => obj is Vector2<T> other && Equals(other);
         public override string ToString() => $"<{X}, {Y}>";
 
+        #endregion
+
 
         #region IEquatable
 
-        public bool Equals(Vector2<T> other) => this == other;
+        public bool Equals(Vector2<T> other) => Vector.All(this == other);
 
         #endregion
 
@@ -72,13 +83,13 @@ namespace Automata.Engine.Numerics
         #region Equals
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(Vector2<T> a, T b) => a == new Vector2<T>(b);
+        public static Vector2<bool> operator ==(Vector2<T> a, T b) => a == new Vector2<T>(b);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(T a, Vector2<T> b) => new Vector2<T>(a) == b;
+        public static Vector2<bool> operator ==(T a, Vector2<T> b) => new Vector2<T>(a) == b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(Vector2<T> a, Vector2<T> b) => Vector.EqualsInternal(a, b);
+        public static Vector2<bool> operator ==(Vector2<T> a, Vector2<T> b) => Vector.EqualsInternal(a, b);
 
         #endregion
 
@@ -86,13 +97,13 @@ namespace Automata.Engine.Numerics
         #region Not Equals
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(Vector2<T> a, T b) => a != new Vector2<T>(b);
+        public static Vector2<bool> operator !=(Vector2<T> a, T b) => a != new Vector2<T>(b);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(T a, Vector2<T> b) => new Vector2<T>(a) != b;
+        public static Vector2<bool> operator !=(T a, Vector2<T> b) => new Vector2<T>(a) != b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(Vector2<T> a, Vector2<T> b) => Vector.NotEqualsInternal(a, b);
+        public static Vector2<bool> operator !=(Vector2<T> a, Vector2<T> b) => Vector.NotEqualsInternal(a, b);
 
         #endregion
 
@@ -177,6 +188,7 @@ namespace Automata.Engine.Numerics
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2<bool> operator <(Vector2<T> a, Vector2<T> b) => Vector.LessThanInternal(a, b);
+
         #endregion
 
         #endregion

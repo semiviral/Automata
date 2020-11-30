@@ -5,11 +5,13 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
+// ReSharper disable CognitiveComplexity
+
 namespace Automata.Engine.Numerics
 {
     public static class Vector
     {
-        private static void ThrowNotSupportedType() => throw new NotSupportedException("Generic vectors only support primitive types.");
+        public static void ThrowNotSupportedType() => throw new NotSupportedException("Generic vectors only support primitive types.");
 
 
         #region Vector<bool> Methods
@@ -71,6 +73,29 @@ namespace Automata.Engine.Numerics
 
         public static Size AsSize(this Vector2<int> vector) => Unsafe.As<Vector2<int>, Size>(ref vector);
         public static Vector2<int> AsVector(this Size size) => Unsafe.As<Size, Vector2<int>>(ref size);
+
+        #endregion
+
+
+        #region Vector2/3/4 As
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2<TTo> As<TFrom, TTo>(ref Vector2<TFrom> vector)
+            where TFrom : unmanaged
+            where TTo : unmanaged =>
+            Unsafe.As<Vector2<TFrom>, Vector2<TTo>>(ref vector);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3<TTo> As<TFrom, TTo>(ref Vector3<TFrom> vector)
+            where TFrom : unmanaged
+            where TTo : unmanaged =>
+            Unsafe.As<Vector3<TFrom>, Vector3<TTo>>(ref vector);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector4<TTo> As<TFrom, TTo>(ref Vector4<TFrom> vector)
+            where TFrom : unmanaged
+            where TTo : unmanaged =>
+            Unsafe.As<Vector4<TFrom>, Vector4<TTo>>(ref vector);
 
         #endregion
 
@@ -273,16 +298,185 @@ namespace Automata.Engine.Numerics
 
         #region Arithmetic
 
+        /// <summary>
+        ///     Reduces a given <see cref="Vector128{T}" /> to booleans representing each of its elements.
+        /// </summary>
+        /// <param name="a"><see cref="Vector128{T}" /> to reduce.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static Vector2<bool> BooleanReduction2<T>(this Vector128<T> a) where T : unmanaged
+        {
+            if (((typeof(T) == typeof(int)) || (typeof(T) == typeof(uint))) && Sse2.IsSupported)
+            {
+                Vector128<short> intermediate = Sse2.PackSignedSaturate(a.As<T, int>(), Vector128<int>.Zero);
+                return Sse2.PackSignedSaturate(intermediate, Vector128<short>.Zero).AsVector2<sbyte, bool>();
+            }
+            else if (((typeof(T) == typeof(short)) || (typeof(T) == typeof(ushort))) && Sse2.IsSupported)
+            {
+                return Sse2.PackSignedSaturate(a.As<T, short>(), Vector128<short>.Zero).AsVector2<sbyte, bool>();
+            }
+            else if (((typeof(T) == typeof(sbyte)) || (typeof(T) == typeof(byte))) && Sse2.IsSupported)
+            {
+                return a.AsVector2<T, bool>();
+            }
+            else if ((typeof(T) == typeof(float)) && Sse2.IsSupported)
+            {
+                Vector128<int> converted = Sse2.ConvertToVector128Int32(a.Coerce<T, float>());
+                Vector128<short> intermediate = Sse2.PackSignedSaturate(converted, Vector128<int>.Zero);
+                return Sse2.PackSignedSaturate(intermediate, Vector128<short>.Zero).AsVector2<sbyte, bool>();
+            }
+            else
+            {
+                ThrowNotSupportedType();
+                return default;
+            }
+        }
+
+        /// <summary>
+        ///     Reduces a given <see cref="Vector128{T}" /> to booleans representing each of its elements.
+        /// </summary>
+        /// <param name="a"><see cref="Vector128{T}" /> to reduce.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static Vector3<bool> BooleanReduction3<T>(this Vector128<T> a) where T : unmanaged
+        {
+            if (((typeof(T) == typeof(int)) || (typeof(T) == typeof(uint))) && Sse2.IsSupported)
+            {
+                Vector128<short> intermediate = Sse2.PackSignedSaturate(a.As<T, int>(), Vector128<int>.Zero);
+                return Sse2.PackSignedSaturate(intermediate, Vector128<short>.Zero).AsVector3<sbyte, bool>();
+            }
+            else if (((typeof(T) == typeof(short)) || (typeof(T) == typeof(ushort))) && Sse2.IsSupported)
+            {
+                return Sse2.PackSignedSaturate(a.As<T, short>(), Vector128<short>.Zero).AsVector3<sbyte, bool>();
+            }
+            else if (((typeof(T) == typeof(sbyte)) || (typeof(T) == typeof(byte))) && Sse2.IsSupported)
+            {
+                return a.AsVector3<T, bool>();
+            }
+            else if ((typeof(T) == typeof(float)) && Sse2.IsSupported)
+            {
+                Vector128<int> converted = Sse2.ConvertToVector128Int32(a.Coerce<T, float>());
+                Vector128<short> intermediate = Sse2.PackSignedSaturate(converted, Vector128<int>.Zero);
+                return Sse2.PackSignedSaturate(intermediate, Vector128<short>.Zero).AsVector3<sbyte, bool>();
+            }
+            else
+            {
+                ThrowNotSupportedType();
+                return default;
+            }
+        }
+
+        /// <summary>
+        ///     Reduces a given <see cref="Vector128{T}" /> to booleans representing each of its elements.
+        /// </summary>
+        /// <param name="a"><see cref="Vector128{T}" /> to reduce.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static Vector4<bool> BooleanReduction4<T>(this Vector128<T> a) where T : unmanaged
+        {
+            if (((typeof(T) == typeof(int)) || (typeof(T) == typeof(uint))) && Sse2.IsSupported)
+            {
+                Vector128<short> intermediate = Sse2.PackSignedSaturate(a.As<T, int>(), Vector128<int>.Zero);
+                return Sse2.PackSignedSaturate(intermediate, Vector128<short>.Zero).AsVector4<sbyte, bool>();
+            }
+            else if (((typeof(T) == typeof(short)) || (typeof(T) == typeof(ushort))) && Sse2.IsSupported)
+            {
+                return Sse2.PackSignedSaturate(a.As<T, short>(), Vector128<short>.Zero).AsVector4<sbyte, bool>();
+            }
+            else if ((typeof(T) == typeof(sbyte)) || (typeof(T) == typeof(byte)))
+            {
+                return a.AsVector4<T, bool>();
+            }
+            else if ((typeof(T) == typeof(float)) && Sse2.IsSupported)
+            {
+                Vector128<int> converted = Sse2.ConvertToVector128Int32(a.As<T, float>());
+                Vector128<short> intermediate = Sse2.PackSignedSaturate(converted, Vector128<int>.Zero);
+                return Sse2.PackSignedSaturate(intermediate, Vector128<short>.Zero).AsVector4<sbyte, bool>();
+            }
+            else
+            {
+                ThrowNotSupportedType();
+                return default;
+            }
+        }
+
+
         #region Equals
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static bool EqualsInternal<T>(Vector2<T> a, Vector2<T> b) where T : unmanaged => a.AsVector() == b.AsVector();
+        internal static Vector2<bool> EqualsInternal<T>(Vector2<T> a, Vector2<T> b) where T : unmanaged
+        {
+            if (((typeof(T) == typeof(int)) || (typeof(T) == typeof(uint))) && Sse2.IsSupported)
+            {
+                return Sse2.CompareEqual(a.AsVector128<T, int>(), b.AsVector128<T, int>()).BooleanReduction2();
+            }
+            else if (((typeof(T) == typeof(short)) || (typeof(T) == typeof(ushort))) && Sse2.IsSupported)
+            {
+                return Sse2.CompareEqual(a.AsVector128<T, short>(), b.AsVector128<T, short>()).BooleanReduction2();
+            }
+            else if (((typeof(T) == typeof(sbyte)) || (typeof(T) == typeof(byte))) && Sse2.IsSupported)
+            {
+                return Sse2.CompareEqual(a.AsVector128<T, sbyte>(), a.AsVector128<T, sbyte>()).BooleanReduction2();
+            }
+            else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
+            {
+                return Sse.CompareEqual(a.AsVector128<T, float>(), b.AsVector128<T, float>()).BooleanReduction2();
+            }
+            else
+            {
+                ThrowNotSupportedType();
+                return default;
+            }
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool EqualsInternal<T>(Vector3<T> a, Vector3<T> b) where T : unmanaged => a.AsVector() == b.AsVector();
+        public static Vector3<bool> EqualsInternal<T>(Vector3<T> a, Vector3<T> b) where T : unmanaged
+        {
+            if (((typeof(T) == typeof(int)) || (typeof(T) == typeof(uint))) && Sse2.IsSupported)
+            {
+                return Sse2.CompareEqual(a.AsVector128<T, int>(), b.AsVector128<T, int>()).BooleanReduction3();
+            }
+            else if (((typeof(T) == typeof(short)) || (typeof(T) == typeof(ushort))) && Sse2.IsSupported)
+            {
+                return Sse2.CompareEqual(a.AsVector128<T, short>(), b.AsVector128<T, short>()).BooleanReduction3();
+            }
+            else if (((typeof(T) == typeof(sbyte)) || (typeof(T) == typeof(byte))) && Sse2.IsSupported)
+            {
+                return Sse2.CompareEqual(a.AsVector128<T, sbyte>(), a.AsVector128<T, sbyte>()).BooleanReduction3();
+            }
+            else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
+            {
+                return Sse.CompareEqual(a.AsVector128<T, float>(), b.AsVector128<T, float>()).BooleanReduction3();
+            }
+            else
+            {
+                ThrowNotSupportedType();
+                return default;
+            }
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool EqualsInternal<T>(Vector4<T> a, Vector4<T> b) where T : unmanaged => a.AsVector() == b.AsVector();
+        public static Vector4<bool> EqualsInternal<T>(Vector4<T> a, Vector4<T> b) where T : unmanaged
+        {
+            if (((typeof(T) == typeof(int)) || (typeof(T) == typeof(uint))) && Sse2.IsSupported)
+            {
+                return Sse2.CompareEqual(a.AsVector128<T, int>(), b.AsVector128<T, int>()).BooleanReduction4();
+            }
+            else if (((typeof(T) == typeof(short)) || (typeof(T) == typeof(ushort))) && Sse2.IsSupported)
+            {
+                return Sse2.CompareEqual(a.AsVector128<T, short>(), b.AsVector128<T, short>()).BooleanReduction4();
+            }
+            else if (((typeof(T) == typeof(sbyte)) || (typeof(T) == typeof(byte))) && Sse2.IsSupported)
+            {
+                return Sse2.CompareEqual(a.AsVector128<T, sbyte>(), a.AsVector128<T, sbyte>()).BooleanReduction4();
+            }
+            else if ((typeof(T) == typeof(float)) && Sse2.IsSupported)
+            {
+                return Sse.CompareEqual(a.AsVector128<T, float>(), b.AsVector128<T, float>()).BooleanReduction4();
+            }
+            else
+            {
+                ThrowNotSupportedType();
+                return default;
+            }
+        }
 
         #endregion
 
@@ -290,13 +484,94 @@ namespace Automata.Engine.Numerics
         #region Not Equals
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static bool NotEqualsInternal<T>(Vector2<T> a, Vector2<T> b) where T : unmanaged => a.AsVector() != b.AsVector();
+        internal static Vector2<bool> NotEqualsInternal<T>(Vector2<T> a, Vector2<T> b) where T : unmanaged
+        {
+            if (((typeof(T) == typeof(int)) || (typeof(T) == typeof(uint))) && Sse2.IsSupported)
+            {
+                Vector128<int> compareEqual = Sse2.CompareEqual(a.AsVector128<T, int>(), b.AsVector128<T, int>());
+                return Sse2.AndNot(compareEqual, Vector128<int>.AllBitsSet).BooleanReduction2();
+            }
+            else if (((typeof(T) == typeof(short)) || (typeof(T) == typeof(ushort))) && Sse2.IsSupported)
+            {
+                Vector128<short> compareEqual = Sse2.CompareEqual(a.AsVector128<T, short>(), b.AsVector128<T, short>());
+                return Sse2.AndNot(compareEqual, Vector128<short>.AllBitsSet).BooleanReduction2();
+            }
+            else if (((typeof(T) == typeof(sbyte)) || (typeof(T) == typeof(byte))) && Sse2.IsSupported)
+            {
+                Vector128<sbyte> compareEqual = Sse2.CompareEqual(a.AsVector128<T, sbyte>(), a.AsVector128<T, sbyte>());
+                return Sse2.AndNot(compareEqual, Vector128<sbyte>.AllBitsSet).BooleanReduction2();
+            }
+            else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
+            {
+                Vector128<float> compareEqual = Sse.CompareEqual(a.AsVector128<T, float>(), b.AsVector128<T, float>());
+                return Sse.AndNot(compareEqual, Vector128<float>.AllBitsSet).BooleanReduction2();
+            }
+            else
+            {
+                ThrowNotSupportedType();
+                return default;
+            }
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool NotEqualsInternal<T>(Vector3<T> a, Vector3<T> b) where T : unmanaged => a.AsVector() != b.AsVector();
+        public static Vector3<bool> NotEqualsInternal<T>(Vector3<T> a, Vector3<T> b) where T : unmanaged
+        {
+            if (((typeof(T) == typeof(int)) || (typeof(T) == typeof(uint))) && Sse2.IsSupported)
+            {
+                Vector128<int> compareEqual = Sse2.CompareEqual(a.AsVector128<T, int>(), b.AsVector128<T, int>());
+                return Sse2.AndNot(compareEqual, Vector128<int>.AllBitsSet).BooleanReduction3();
+            }
+            else if (((typeof(T) == typeof(short)) || (typeof(T) == typeof(ushort))) && Sse2.IsSupported)
+            {
+                Vector128<short> compareEqual = Sse2.CompareEqual(a.AsVector128<T, short>(), b.AsVector128<T, short>());
+                return Sse2.AndNot(compareEqual, Vector128<short>.AllBitsSet).BooleanReduction3();
+            }
+            else if (((typeof(T) == typeof(sbyte)) || (typeof(T) == typeof(byte))) && Sse2.IsSupported)
+            {
+                Vector128<sbyte> compareEqual = Sse2.CompareEqual(a.AsVector128<T, sbyte>(), a.AsVector128<T, sbyte>());
+                return Sse2.AndNot(compareEqual, Vector128<sbyte>.AllBitsSet).BooleanReduction3();
+            }
+            else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
+            {
+                Vector128<float> compareEqual = Sse.CompareEqual(a.AsVector128<T, float>(), b.AsVector128<T, float>());
+                return Sse.AndNot(compareEqual, Vector128<float>.AllBitsSet).BooleanReduction3();
+            }
+            else
+            {
+                ThrowNotSupportedType();
+                return default;
+            }
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool NotEqualsInternal<T>(Vector4<T> a, Vector4<T> b) where T : unmanaged => a.AsVector() != b.AsVector();
+        public static Vector4<bool> NotEqualsInternal<T>(Vector4<T> a, Vector4<T> b) where T : unmanaged
+        {
+            if (((typeof(T) == typeof(int)) || (typeof(T) == typeof(uint))) && Sse2.IsSupported)
+            {
+                Vector128<int> compareEqual = Sse2.CompareEqual(a.AsVector128<T, int>(), b.AsVector128<T, int>());
+                return Sse2.AndNot(compareEqual, Vector128<int>.AllBitsSet).BooleanReduction4();
+            }
+            else if (((typeof(T) == typeof(short)) || (typeof(T) == typeof(ushort))) && Sse2.IsSupported)
+            {
+                Vector128<short> compareEqual = Sse2.CompareEqual(a.AsVector128<T, short>(), b.AsVector128<T, short>());
+                return Sse2.AndNot(compareEqual, Vector128<short>.AllBitsSet).BooleanReduction4();
+            }
+            else if (((typeof(T) == typeof(sbyte)) || (typeof(T) == typeof(byte))) && Sse2.IsSupported)
+            {
+                Vector128<sbyte> compareEqual = Sse2.CompareEqual(a.AsVector128<T, sbyte>(), a.AsVector128<T, sbyte>());
+                return Sse2.AndNot(compareEqual, Vector128<sbyte>.AllBitsSet).BooleanReduction4();
+            }
+            else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
+            {
+                Vector128<float> compareEqual = Sse.CompareEqual(a.AsVector128<T, float>(), b.AsVector128<T, float>());
+                return Sse.AndNot(compareEqual, Vector128<float>.AllBitsSet).BooleanReduction4();
+            }
+            else
+            {
+                ThrowNotSupportedType();
+                return default;
+            }
+        }
 
         #endregion
 
@@ -406,30 +681,19 @@ namespace Automata.Engine.Numerics
         {
             if (((typeof(T) == typeof(int)) || (typeof(T) == typeof(uint))) && Sse2.IsSupported)
             {
-                Vector128<int> comparison = Sse2.CompareGreaterThan(a.AsVector128<T, int>(), b.AsVector128<T, int>());
-                Vector128<short> intermediate = Sse2.PackSignedSaturate(comparison, Vector128<int>.Zero);
-                return Sse2.PackSignedSaturate(intermediate, Vector128<short>.Zero).AsVector2<sbyte, bool>();
+                return Sse2.CompareGreaterThan(a.AsVector128<T, int>(), b.AsVector128<T, int>()).BooleanReduction2();
             }
             else if (((typeof(T) == typeof(short)) || (typeof(T) == typeof(ushort))) && Sse2.IsSupported)
             {
-                Vector128<short> comparison = Sse2.CompareGreaterThan(a.AsVector128<T, short>(), b.AsVector128<T, short>());
-                return Sse2.PackSignedSaturate(comparison, Vector128<short>.Zero).AsVector2<sbyte, bool>();
+                return Sse2.CompareGreaterThan(a.AsVector128<T, short>(), b.AsVector128<T, short>()).BooleanReduction2();
             }
             else if (((typeof(T) == typeof(sbyte)) || (typeof(T) == typeof(byte))) && Sse2.IsSupported)
             {
-                return Sse2.CompareGreaterThan(a.AsVector128<T, sbyte>(), a.AsVector128<T, sbyte>()).AsVector2<sbyte, bool>();
+                return Sse2.CompareGreaterThan(a.AsVector128<T, sbyte>(), a.AsVector128<T, sbyte>()).BooleanReduction2();
             }
-            else if ((typeof(T) == typeof(float)) && Sse2.IsSupported)
+            else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
             {
-                Vector128<float> comparison = Sse.CompareGreaterThan(a.AsVector128<T, float>(), b.AsVector128<T, float>());
-                Vector128<int> converted = Sse2.ConvertToVector128Int32(comparison);
-                Vector128<short> intermediate = Sse2.PackSignedSaturate(converted, Vector128<int>.Zero);
-                return Sse2.PackSignedSaturate(intermediate, Vector128<short>.Zero).AsVector2<sbyte, bool>();
-            }
-            else if ((typeof(T) == typeof(double)) && Avx.IsSupported)
-            {
-                Vector256<double> comparison = Avx.CompareGreaterThan(a.AsVector256<T, double>(), b.AsVector256<T, double>());
-                throw new NotImplementedException();
+                return Sse.CompareGreaterThan(a.AsVector128<T, float>(), b.AsVector128<T, float>()).BooleanReduction2();
             }
             else
             {
@@ -443,30 +707,19 @@ namespace Automata.Engine.Numerics
         {
             if (((typeof(T) == typeof(int)) || (typeof(T) == typeof(uint))) && Sse2.IsSupported)
             {
-                Vector128<int> comparison = Sse2.CompareGreaterThan(a.AsVector128<T, int>(), b.AsVector128<T, int>());
-                Vector128<short> intermediate = Sse2.PackSignedSaturate(comparison, Vector128<int>.Zero);
-                return Sse2.PackSignedSaturate(intermediate, Vector128<short>.Zero).AsVector3<sbyte, bool>();
+                return Sse2.CompareGreaterThan(a.AsVector128<T, int>(), b.AsVector128<T, int>()).BooleanReduction3();
             }
             else if (((typeof(T) == typeof(short)) || (typeof(T) == typeof(ushort))) && Sse2.IsSupported)
             {
-                Vector128<short> comparison = Sse2.CompareGreaterThan(a.AsVector128<T, short>(), b.AsVector128<T, short>());
-                return Sse2.PackSignedSaturate(comparison, Vector128<short>.Zero).AsVector3<sbyte, bool>();
+                return Sse2.CompareGreaterThan(a.AsVector128<T, short>(), b.AsVector128<T, short>()).BooleanReduction3();
             }
             else if (((typeof(T) == typeof(sbyte)) || (typeof(T) == typeof(byte))) && Sse2.IsSupported)
             {
-                return Sse2.CompareGreaterThan(a.AsVector128<T, sbyte>(), a.AsVector128<T, sbyte>()).AsVector3<sbyte, bool>();
+                return Sse2.CompareGreaterThan(a.AsVector128<T, sbyte>(), a.AsVector128<T, sbyte>()).BooleanReduction3();
             }
-            else if ((typeof(T) == typeof(float)) && Sse2.IsSupported)
+            else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
             {
-                Vector128<float> comparison = Sse.CompareGreaterThan(a.AsVector128<T, float>(), b.AsVector128<T, float>());
-                Vector128<int> converted = Sse2.ConvertToVector128Int32(comparison);
-                Vector128<short> intermediate = Sse2.PackSignedSaturate(converted, Vector128<int>.Zero);
-                return Sse2.PackSignedSaturate(intermediate, Vector128<short>.Zero).AsVector3<sbyte, bool>();
-            }
-            else if ((typeof(T) == typeof(double)) && Avx.IsSupported)
-            {
-                Vector256<double> comparison = Avx.CompareGreaterThan(a.AsVector256<T, double>(), b.AsVector256<T, double>());
-                throw new NotImplementedException();
+                return Sse.CompareGreaterThan(a.AsVector128<T, float>(), b.AsVector128<T, float>()).BooleanReduction3();
             }
             else
             {
@@ -480,30 +733,19 @@ namespace Automata.Engine.Numerics
         {
             if (((typeof(T) == typeof(int)) || (typeof(T) == typeof(uint))) && Sse2.IsSupported)
             {
-                Vector128<int> comparison = Sse2.CompareGreaterThan(a.AsVector128<T, int>(), b.AsVector128<T, int>());
-                Vector128<short> intermediate = Sse2.PackSignedSaturate(comparison, Vector128<int>.Zero);
-                return Sse2.PackSignedSaturate(intermediate, Vector128<short>.Zero).AsVector4<sbyte, bool>();
+                return Sse2.CompareGreaterThan(a.AsVector128<T, int>(), b.AsVector128<T, int>()).BooleanReduction4();
             }
             else if (((typeof(T) == typeof(short)) || (typeof(T) == typeof(ushort))) && Sse2.IsSupported)
             {
-                Vector128<short> comparison = Sse2.CompareGreaterThan(a.AsVector128<T, short>(), b.AsVector128<T, short>());
-                return Sse2.PackSignedSaturate(comparison, Vector128<short>.Zero).AsVector4<sbyte, bool>();
+                return Sse2.CompareGreaterThan(a.AsVector128<T, short>(), b.AsVector128<T, short>()).BooleanReduction4();
             }
             else if (((typeof(T) == typeof(sbyte)) || (typeof(T) == typeof(byte))) && Sse2.IsSupported)
             {
-                return Sse2.CompareGreaterThan(a.AsVector128<T, sbyte>(), a.AsVector128<T, sbyte>()).AsVector4<sbyte, bool>();
+                return Sse2.CompareGreaterThan(a.AsVector128<T, sbyte>(), a.AsVector128<T, sbyte>()).BooleanReduction4();
             }
-            else if ((typeof(T) == typeof(float)) && Sse2.IsSupported)
+            else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
             {
-                Vector128<float> comparison = Sse.CompareGreaterThan(a.AsVector128<T, float>(), b.AsVector128<T, float>());
-                Vector128<int> converted = Sse2.ConvertToVector128Int32(comparison);
-                Vector128<short> intermediate = Sse2.PackSignedSaturate(converted, Vector128<int>.Zero);
-                return Sse2.PackSignedSaturate(intermediate, Vector128<short>.Zero).AsVector4<sbyte, bool>();
-            }
-            else if ((typeof(T) == typeof(double)) && Avx.IsSupported)
-            {
-                Vector256<double> comparison = Avx.CompareGreaterThan(a.AsVector256<T, double>(), b.AsVector256<T, double>());
-                throw new NotImplementedException();
+                return Sse.CompareGreaterThan(a.AsVector128<T, float>(), b.AsVector128<T, float>()).BooleanReduction4();
             }
             else
             {
@@ -522,30 +764,19 @@ namespace Automata.Engine.Numerics
         {
             if (((typeof(T) == typeof(int)) || (typeof(T) == typeof(uint))) && Sse2.IsSupported)
             {
-                Vector128<int> comparison = Sse2.CompareLessThan(a.AsVector128<T, int>(), b.AsVector128<T, int>());
-                Vector128<short> intermediate = Sse2.PackSignedSaturate(comparison, Vector128<int>.Zero);
-                return Sse2.PackSignedSaturate(intermediate, Vector128<short>.Zero).AsVector2<sbyte, bool>();
+                return Sse2.CompareLessThan(a.AsVector128<T, int>(), b.AsVector128<T, int>()).BooleanReduction2();
             }
             else if (((typeof(T) == typeof(short)) || (typeof(T) == typeof(ushort))) && Sse2.IsSupported)
             {
-                Vector128<short> comparison = Sse2.CompareLessThan(a.AsVector128<T, short>(), b.AsVector128<T, short>());
-                return Sse2.PackSignedSaturate(comparison, Vector128<short>.Zero).AsVector2<sbyte, bool>();
+                return Sse2.CompareLessThan(a.AsVector128<T, short>(), b.AsVector128<T, short>()).BooleanReduction2();
             }
             else if (((typeof(T) == typeof(sbyte)) || (typeof(T) == typeof(byte))) && Sse2.IsSupported)
             {
-                return Sse2.CompareLessThan(a.AsVector128<T, sbyte>(), a.AsVector128<T, sbyte>()).AsVector2<sbyte, bool>();
+                return Sse2.CompareLessThan(a.AsVector128<T, sbyte>(), a.AsVector128<T, sbyte>()).BooleanReduction2();
             }
-            else if ((typeof(T) == typeof(float)) && Sse2.IsSupported)
+            else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
             {
-                Vector128<float> comparison = Sse.CompareLessThan(a.AsVector128<T, float>(), b.AsVector128<T, float>());
-                Vector128<int> converted = Sse2.ConvertToVector128Int32(comparison);
-                Vector128<short> intermediate = Sse2.PackSignedSaturate(converted, Vector128<int>.Zero);
-                return Sse2.PackSignedSaturate(intermediate, Vector128<short>.Zero).AsVector2<sbyte, bool>();
-            }
-            else if ((typeof(T) == typeof(double)) && Avx.IsSupported)
-            {
-                Vector256<double> comparison = Avx.CompareLessThan(a.AsVector256<T, double>(), b.AsVector256<T, double>());
-                throw new NotImplementedException();
+                return Sse.CompareLessThan(a.AsVector128<T, float>(), b.AsVector128<T, float>()).BooleanReduction2();
             }
             else
             {
@@ -559,30 +790,19 @@ namespace Automata.Engine.Numerics
         {
             if (((typeof(T) == typeof(int)) || (typeof(T) == typeof(uint))) && Sse2.IsSupported)
             {
-                Vector128<int> comparison = Sse2.CompareLessThan(a.AsVector128<T, int>(), b.AsVector128<T, int>());
-                Vector128<short> intermediate = Sse2.PackSignedSaturate(comparison, Vector128<int>.Zero);
-                return Sse2.PackSignedSaturate(intermediate, Vector128<short>.Zero).AsVector3<sbyte, bool>();
+                return Sse2.CompareLessThan(a.AsVector128<T, int>(), b.AsVector128<T, int>()).BooleanReduction3();
             }
             else if (((typeof(T) == typeof(short)) || (typeof(T) == typeof(ushort))) && Sse2.IsSupported)
             {
-                Vector128<short> comparison = Sse2.CompareLessThan(a.AsVector128<T, short>(), b.AsVector128<T, short>());
-                return Sse2.PackSignedSaturate(comparison, Vector128<short>.Zero).AsVector3<sbyte, bool>();
+                return Sse2.CompareLessThan(a.AsVector128<T, short>(), b.AsVector128<T, short>()).BooleanReduction3();
             }
             else if (((typeof(T) == typeof(sbyte)) || (typeof(T) == typeof(byte))) && Sse2.IsSupported)
             {
-                return Sse2.CompareLessThan(a.AsVector128<T, sbyte>(), a.AsVector128<T, sbyte>()).AsVector3<sbyte, bool>();
+                return Sse2.CompareLessThan(a.AsVector128<T, sbyte>(), a.AsVector128<T, sbyte>()).BooleanReduction3();
             }
-            else if ((typeof(T) == typeof(float)) && Sse2.IsSupported)
+            else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
             {
-                Vector128<float> comparison = Sse.CompareLessThan(a.AsVector128<T, float>(), b.AsVector128<T, float>());
-                Vector128<int> converted = Sse2.ConvertToVector128Int32(comparison);
-                Vector128<short> intermediate = Sse2.PackSignedSaturate(converted, Vector128<int>.Zero);
-                return Sse2.PackSignedSaturate(intermediate, Vector128<short>.Zero).AsVector3<sbyte, bool>();
-            }
-            else if ((typeof(T) == typeof(double)) && Avx.IsSupported)
-            {
-                Vector256<double> comparison = Avx.CompareLessThan(a.AsVector256<T, double>(), b.AsVector256<T, double>());
-                throw new NotImplementedException();
+                return Sse.CompareLessThan(a.AsVector128<T, float>(), b.AsVector128<T, float>()).BooleanReduction3();
             }
             else
             {
@@ -596,30 +816,19 @@ namespace Automata.Engine.Numerics
         {
             if (((typeof(T) == typeof(int)) || (typeof(T) == typeof(uint))) && Sse2.IsSupported)
             {
-                Vector128<int> comparison = Sse2.CompareLessThan(a.AsVector128<T, int>(), b.AsVector128<T, int>());
-                Vector128<short> intermediate = Sse2.PackSignedSaturate(comparison, Vector128<int>.Zero);
-                return Sse2.PackSignedSaturate(intermediate, Vector128<short>.Zero).AsVector4<sbyte, bool>();
+                return Sse2.CompareLessThan(a.AsVector128<T, int>(), b.AsVector128<T, int>()).BooleanReduction4();
             }
             else if (((typeof(T) == typeof(short)) || (typeof(T) == typeof(ushort))) && Sse2.IsSupported)
             {
-                Vector128<short> comparison = Sse2.CompareLessThan(a.AsVector128<T, short>(), b.AsVector128<T, short>());
-                return Sse2.PackSignedSaturate(comparison, Vector128<short>.Zero).AsVector4<sbyte, bool>();
+                return Sse2.CompareLessThan(a.AsVector128<T, short>(), b.AsVector128<T, short>()).BooleanReduction4();
             }
             else if (((typeof(T) == typeof(sbyte)) || (typeof(T) == typeof(byte))) && Sse2.IsSupported)
             {
-                return Sse2.CompareLessThan(a.AsVector128<T, sbyte>(), a.AsVector128<T, sbyte>()).AsVector4<sbyte, bool>();
+                return Sse2.CompareLessThan(a.AsVector128<T, sbyte>(), a.AsVector128<T, sbyte>()).BooleanReduction4();
             }
-            else if ((typeof(T) == typeof(float)) && Sse2.IsSupported)
+            else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
             {
-                Vector128<float> comparison = Sse.CompareLessThan(a.AsVector128<T, float>(), b.AsVector128<T, float>());
-                Vector128<int> converted = Sse2.ConvertToVector128Int32(comparison);
-                Vector128<short> intermediate = Sse2.PackSignedSaturate(converted, Vector128<int>.Zero);
-                return Sse2.PackSignedSaturate(intermediate, Vector128<short>.Zero).AsVector4<sbyte, bool>();
-            }
-            else if ((typeof(T) == typeof(double)) && Avx.IsSupported)
-            {
-                Vector256<double> comparison = Avx.CompareLessThan(a.AsVector256<T, double>(), b.AsVector256<T, double>());
-                throw new NotImplementedException();
+                return Sse.CompareLessThan(a.AsVector128<T, float>(), b.AsVector128<T, float>()).BooleanReduction4();
             }
             else
             {

@@ -40,19 +40,34 @@ namespace Automata.Engine.Numerics
             _W = w;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector4<T> WithX(T x) => new Vector4<T>(x, _Y, _Z, _W);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector4<T> WithY(T y) => new Vector4<T>(_X, y, _Z, _W);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector4<T> WithZ(T z) => new Vector4<T>(_X, _Y, z, _W);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector4<T> WithW(T w) => new Vector4<T>(_X, _Y, _Z, w);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Vector4<TTo> Convert<TTo>() where TTo : unmanaged => new Vector4<TTo>((TTo)(object)_X, (TTo)(object)_Y, (TTo)(object)_Z, (TTo)(object)_W);
+
+
+        #region `Object` Overrides
 
         public override int GetHashCode() => HashCode.Combine(_X, _Y);
         public override bool Equals(object? obj) => obj is Vector4<T> other && Equals(other);
         public override string ToString() => $"<{X}, {Y}, {Z}, {W}>";
 
+        #endregion
+
 
         #region IEquatable
 
-        public bool Equals(Vector4<T> other) => this == other;
+        public bool Equals(Vector4<T> other) => Vector.All(this == other);
 
         #endregion
 
@@ -86,13 +101,13 @@ namespace Automata.Engine.Numerics
         #region Equals
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(Vector4<T> a, T b) => a == new Vector4<T>(b);
+        public static Vector4<bool> operator ==(Vector4<T> a, T b) => a == new Vector4<T>(b);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(T a, Vector4<T> b) => new Vector4<T>(a) == b;
+        public static Vector4<bool> operator ==(T a, Vector4<T> b) => new Vector4<T>(a) == b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(Vector4<T> a, Vector4<T> b) => Vector.EqualsInternal(a, b);
+        public static Vector4<bool> operator ==(Vector4<T> a, Vector4<T> b) => Vector.EqualsInternal(a, b);
 
         #endregion
 
@@ -100,13 +115,13 @@ namespace Automata.Engine.Numerics
         #region Not Equals
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(Vector4<T> a, T b) => a != new Vector4<T>(b);
+        public static Vector4<bool> operator !=(Vector4<T> a, T b) => a != new Vector4<T>(b);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(T a, Vector4<T> b) => new Vector4<T>(a) != b;
+        public static Vector4<bool> operator !=(T a, Vector4<T> b) => new Vector4<T>(a) != b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(Vector4<T> a, Vector4<T> b) => Vector.NotEqualsInternal(a, b);
+        public static Vector4<bool> operator !=(Vector4<T> a, Vector4<T> b) => Vector.NotEqualsInternal(a, b);
 
         #endregion
 
