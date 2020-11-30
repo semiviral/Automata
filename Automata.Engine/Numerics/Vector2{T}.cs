@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
+// ReSharper disable CognitiveComplexity
 // ReSharper disable ConvertToAutoProperty
 
 namespace Automata.Engine.Numerics
@@ -38,7 +39,11 @@ namespace Automata.Engine.Numerics
         public Vector2<T> WithY(T y) => new Vector2<T>(X, y);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Vector2<TTo> Convert<TTo>() where TTo : unmanaged => new Vector2<TTo>((TTo)(object)X, (TTo)(object)Y);
+        public Vector2<TTo> Convert<TTo>() where TTo : unmanaged
+        {
+            dynamic temp = this;
+            return new Vector2<TTo>((TTo)temp.X, (TTo)temp.Y);
+        }
 
 
         #region `Object` Overrides

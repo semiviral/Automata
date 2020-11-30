@@ -1,3 +1,4 @@
+using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics;
@@ -169,8 +170,10 @@ namespace Automata.Engine.Numerics
             }
             else
             {
-                // divide only has floating point instructions, so defer to intrinsics
-                return (a.AsVectorRef() / b.AsVectorRef()).AsVector3();
+                return new Vector3<T>(
+                    Primitive<T>.Divide(a.X, b.X),
+                    Primitive<T>.Divide(a.Y, b.Y),
+                    Primitive<T>.Divide(a.Z, b.Z));
             }
         }
 
@@ -345,6 +348,12 @@ namespace Automata.Engine.Numerics
             }
         }
 
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3<T> RoundBy(Vector3<T> a, Vector3<T> by) => (a / by) * by;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3<T> RoundBy(Vector3<T> a, T by) => (a / by) * by;
 
         #region Comparison
 

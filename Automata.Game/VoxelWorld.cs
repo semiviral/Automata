@@ -6,6 +6,7 @@ using Automata.Engine.Collections;
 using Automata.Engine.Numerics;
 using Automata.Game.Blocks;
 using Automata.Game.Chunks;
+using Automata.Game.Chunks.Generation;
 
 namespace Automata.Game
 {
@@ -30,9 +31,9 @@ namespace Automata.Game
 
         public bool TryGetBlock(Vector3<int> global, [MaybeNullWhen(false)] out Block block)
         {
-            Vector3<int> origin = Vector3<int>.One; // todo Vector3<int>.RoundBy(global, GenerationConstants.CHUNK_SIZE);
+            Vector3<int> origin = Vector3<int>.RoundBy(global, GenerationConstants.CHUNK_SIZE);
             Vector3<int> local = Vector3<int>.Abs(global - origin);
-            int index = 1; // todo Vector3<int>.Project1D(local, GenerationConstants.CHUNK_SIZE);
+            int index = Vector.Project1D(local, GenerationConstants.CHUNK_SIZE);
 
             if (_Chunks.TryGetValue(origin, out Chunk? chunk) && chunk?.Blocks is not null)
             {
@@ -94,11 +95,11 @@ namespace Automata.Game
 
         public async ValueTask AllocateChunkModification(Vector3<int> global, ushort blockID)
         {
-            Vector3<int> origin = Vector3<int>.One; // todo Vector3<int>.RoundBy(global, GenerationConstants.CHUNK_SIZE);
+            Vector3<int> origin = Vector3<int>.RoundBy(global, GenerationConstants.CHUNK_SIZE);
 
             ChunkModification modification = new ChunkModification
             {
-                BlockIndex = 1, // todo Vector3<int>.Project1D(Vector3<int>.Abs(global - origin), GenerationConstants.CHUNK_SIZE),
+                BlockIndex = Vector.Project1D(Vector3<int>.Abs(global - origin), GenerationConstants.CHUNK_SIZE),
                 BlockID = blockID
             };
 

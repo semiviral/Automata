@@ -1,3 +1,4 @@
+using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics;
@@ -156,6 +157,8 @@ namespace Automata.Engine.Numerics
             }
         }
 
+        private static readonly unsafe int fill_constant = Vector<T>.Count - (sizeof(T) * 2);
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2<T> Divide(Vector2<T> a, Vector2<T> b)
         {
@@ -169,8 +172,9 @@ namespace Automata.Engine.Numerics
             }
             else
             {
-                // divide only has floating point instructions, so defer to intrinsics
-                return (a.AsVectorRef() / b.AsVectorRef()).AsVector2();
+                return new Vector2<T>(
+                    Primitive<T>.Divide(a.X, b.X),
+                    Primitive<T>.Divide(a.Y, b.Y));
             }
         }
 
@@ -344,6 +348,12 @@ namespace Automata.Engine.Numerics
                 return a;
             }
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2<T> RoundBy(Vector2<T> a, Vector2<T> by) => (a / by) * by;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2<T> RoundBy(Vector2<T> a, T by) => (a / by) * by;
 
 
         #region Comparison

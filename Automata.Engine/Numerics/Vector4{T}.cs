@@ -50,7 +50,11 @@ namespace Automata.Engine.Numerics
         public Vector4<T> WithW(T w) => new Vector4<T>(X, Y, Z, w);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Vector4<TTo> Convert<TTo>() where TTo : unmanaged => new Vector4<TTo>((TTo)(object)X, (TTo)(object)Y, (TTo)(object)Z, (TTo)(object)W);
+        public Vector4<TTo> Convert<TTo>() where TTo : unmanaged
+        {
+            dynamic temp = this;
+            return new Vector4<TTo>((TTo)temp.X, (TTo)temp.Y, (TTo)temp.Z, (TTo)temp.W);
+        }
 
 
         #region `Object` Overrides

@@ -119,7 +119,7 @@ namespace Automata.Game.Chunks
                     continue;
                 }
 
-                chunkLoader.Origin = Vector3<int>.One; // todo transform.Translation.RoundBy(GenerationConstants.CHUNK_SIZE);
+                chunkLoader.Origin = Vector3<int>.RoundBy(transform.Translation.Convert<int>(), GenerationConstants.CHUNK_SIZE);
                 chunkLoader.RadiusChanged = false;
                 updatedChunkPositions = true;
             }

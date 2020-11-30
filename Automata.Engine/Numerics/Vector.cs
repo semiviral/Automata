@@ -13,6 +13,59 @@ namespace Automata.Engine.Numerics
     {
         internal static void ThrowNotSupportedType() => throw new NotSupportedException("Given type is not supported.");
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int Project1D(Vector2<int> a, int size) => a.X + (size * a.Y);
+
+        /// <summary>
+        /// </summary>
+        /// <remarks>
+        ///     This method assumes:
+        ///     X is left-right
+        ///     Z is forward-back
+        ///     Y is up-down
+        /// </remarks>
+        /// <param name="a"></param>
+        /// <param name="size"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int Project1D(Vector3<int> a, int size) => a.X + (size * (a.Z + (size * a.Y)));
+
+        /// <summary>
+        /// </summary>
+        /// <remarks>
+        ///     This method assumes:
+        ///     X is left-right
+        ///     Z is forward-back
+        ///     Y is up-down
+        /// </remarks>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        /// <param name="size"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int Project1D(int x, int y, int z, int size) => x + (size * (z + (size * y)));
+
+        /// <summary>
+        /// </summary>
+        /// <remarks>
+        ///     This method assumes:
+        ///     X is left-right
+        ///     Z is forward-back
+        ///     Y is up-down
+        /// </remarks>
+        /// <param name="index"></param>
+        /// <param name="bounds"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3<int> Project3D(int index, int bounds)
+        {
+            int xQuotient = Math.DivRem(index, bounds, out int x);
+            int zQuotient = Math.DivRem(xQuotient, bounds, out int z);
+            int y = zQuotient % bounds;
+            return new Vector3<int>(x, y, z);
+        }
+
 
         #region Vector<bool> Methods
 
@@ -430,22 +483,31 @@ namespace Automata.Engine.Numerics
         #region AsVector128Ref
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ref Vector128<T> AsVector128Ref<T>(ref this Vector<T> a) where T : unmanaged => ref Unsafe.As<Vector<T>, Vector128<T>>(ref a);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ref Vector128<TTo> AsVector128Ref<TFrom, TTo>(ref this Vector<TFrom> a)
+            where TFrom : unmanaged
+            where TTo : unmanaged =>
+            ref Unsafe.As<Vector<TFrom>, Vector128<TTo>>(ref a);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ref Vector128<TTo> AsVector128Ref<TFrom, TTo>(ref this Vector2<TFrom> a)
             where TFrom : unmanaged
-            where TTo : unmanaged
-            => ref Unsafe.As<Vector2<TFrom>, Vector128<TTo>>(ref a);
+            where TTo : unmanaged =>
+            ref Unsafe.As<Vector2<TFrom>, Vector128<TTo>>(ref a);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ref Vector128<TTo> AsVector128Ref<TFrom, TTo>(ref this Vector3<TFrom> a)
             where TFrom : unmanaged
-            where TTo : unmanaged
-            => ref Unsafe.As<Vector3<TFrom>, Vector128<TTo>>(ref a);
+            where TTo : unmanaged =>
+            ref Unsafe.As<Vector3<TFrom>, Vector128<TTo>>(ref a);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ref Vector128<TTo> AsVector128Ref<TFrom, TTo>(ref this Vector4<TFrom> a)
             where TFrom : unmanaged
-            where TTo : unmanaged
-            => ref Unsafe.As<Vector4<TFrom>, Vector128<TTo>>(ref a);
+            where TTo : unmanaged =>
+            ref Unsafe.As<Vector4<TFrom>, Vector128<TTo>>(ref a);
 
         #endregion
 
@@ -453,22 +515,25 @@ namespace Automata.Engine.Numerics
         #region AsVector256Ref
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ref Vector256<T> AsVector256Ref<T>(ref this Vector<T> a) where T : unmanaged => ref Unsafe.As<Vector<T>, Vector256<T>>(ref a);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ref Vector256<TTo> AsVector256Ref<TFrom, TTo>(ref this Vector2<TFrom> a)
             where TFrom : unmanaged
-            where TTo : unmanaged
-            => ref Unsafe.As<Vector2<TFrom>, Vector256<TTo>>(ref a);
+            where TTo : unmanaged =>
+            ref Unsafe.As<Vector2<TFrom>, Vector256<TTo>>(ref a);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ref Vector256<TTo> AsVector256Ref<TFrom, TTo>(ref this Vector3<TFrom> a)
             where TFrom : unmanaged
-            where TTo : unmanaged
-            => ref Unsafe.As<Vector3<TFrom>, Vector256<TTo>>(ref a);
+            where TTo : unmanaged =>
+            ref Unsafe.As<Vector3<TFrom>, Vector256<TTo>>(ref a);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ref Vector256<TTo> AsVector256Ref<TFrom, TTo>(ref this Vector4<TFrom> a)
             where TFrom : unmanaged
-            where TTo : unmanaged
-            => ref Unsafe.As<Vector4<TFrom>, Vector256<TTo>>(ref a);
+            where TTo : unmanaged =>
+            ref Unsafe.As<Vector4<TFrom>, Vector256<TTo>>(ref a);
 
         #endregion
 
