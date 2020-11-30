@@ -15,28 +15,28 @@ namespace Automata.Game
 {
     public class VoxelWorld : World
     {
-        private readonly Dictionary<Vector3i, Chunk> _Chunks;
-        private readonly Dictionary<Vector3i, NonAllocatingList<ChunkModification>> _Modifications;
-        private readonly ConcurrentChannel<(Vector3i, ChunkModification)> _ConcurrentModifications;
+        private readonly Dictionary<Vector3<int>, Chunk> _Chunks;
+        private readonly Dictionary<Vector3<int>, NonAllocatingList<ChunkModification>> _Modifications;
+        private readonly ConcurrentChannel<(Vector3<int>, ChunkModification)> _ConcurrentModifications;
 
         public int ChunkCount => _Chunks.Count;
 
-        public Chunk this[Vector3i origin] => _Chunks[origin];
+        public Chunk this[Vector3<int> origin] => _Chunks[origin];
 
         public VoxelWorld(bool active) : base(active)
         {
-            _Chunks = new Dictionary<Vector3i, Chunk>();
-            _Modifications = new Dictionary<Vector3i, NonAllocatingList<ChunkModification>>();
-            _ConcurrentModifications = new ConcurrentChannel<(Vector3i, ChunkModification)>(true, false);
+            _Chunks = new Dictionary<Vector3<int>, Chunk>();
+            _Modifications = new Dictionary<Vector3<int>, NonAllocatingList<ChunkModification>>();
+            _ConcurrentModifications = new ConcurrentChannel<(Vector3<int>, ChunkModification)>(true, false);
         }
 
-        public bool TryGetChunk(Vector3i origin, [NotNullWhen(true)] out Chunk? chunk) => _Chunks.TryGetValue(origin, out chunk);
+        public bool TryGetChunk(Vector3<int> origin, [NotNullWhen(true)] out Chunk? chunk) => _Chunks.TryGetValue(origin, out chunk);
 
-        public bool TryGetBlock(Vector3i global, [MaybeNullWhen(false)] out Block block)
+        public bool TryGetBlock(Vector3<int> global, [MaybeNullWhen(false)] out Block block)
         {
-            Vector3i origin = Vector3i.RoundBy(global, GenerationConstants.CHUNK_SIZE);
-            Vector3i local = Vector3i.Abs(global - origin);
-            int index = Vector3i.Project1D(local, GenerationConstants.CHUNK_SIZE);
+            Vector3<int> origin = Vector3<int>.One; // todo Vector3<int>.RoundBy(global, GenerationConstants.CHUNK_SIZE);
+            Vector3<int> local = Vector3<int>.Abs(global - origin);
+            int index = 1; // todo Vector3<int>.Project1D(local, GenerationConstants.CHUNK_SIZE);
 
             if (_Chunks.TryGetValue(origin, out Chunk? chunk) && chunk?.Blocks is not null)
             {
@@ -55,9 +55,9 @@ namespace Automata.Game
 
         #region Chunk Addition / Removal
 
-        public bool ChunkExists(Vector3i origin) => _Chunks.ContainsKey(origin);
+        public bool ChunkExists(Vector3<int> origin) => _Chunks.ContainsKey(origin);
 
-        public async ValueTask<Chunk?> AllocateChunk(Vector3i origin)
+        public async ValueTask<Chunk?> AllocateChunk(Vector3<int> origin)
         {
             // it's better to double-check the key here, as opposed to
             // instantiating the entity data every call of this method
@@ -89,29 +89,29 @@ namespace Automata.Game
             }
         }
 
-        public bool DeallocateChunk(Vector3i origin) => _Chunks.Remove(origin);
+        public bool DeallocateChunk(Vector3<int> origin) => _Chunks.Remove(origin);
 
         #endregion
 
 
         #region Chunk Modifications
 
-        public async ValueTask AllocateChunkModification(Vector3i global, ushort blockID)
+        public async ValueTask AllocateChunkModification(Vector3<int> global, ushort blockID)
         {
-            Vector3i origin = Vector3i.RoundBy(global, GenerationConstants.CHUNK_SIZE);
+            Vector3<int> origin = Vector3<int>.One; // todo Vector3<int>.RoundBy(global, GenerationConstants.CHUNK_SIZE);
 
             ChunkModification modification = new ChunkModification
             {
-                BlockIndex = Vector3i.Project1D(Vector3i.Abs(global - origin), GenerationConstants.CHUNK_SIZE),
+                BlockIndex = 1, // todo Vector3<int>.Project1D(Vector3<int>.Abs(global - origin), GenerationConstants.CHUNK_SIZE),
                 BlockID = blockID
             };
 
             await _ConcurrentModifications.AddAsync((origin, modification));
         }
 
-        public async ValueTask AllocateChunkModifications(IEnumerable<(Vector3i, ushort)> modifications)
+        public async ValueTask AllocateChunkModifications(IEnumerable<(Vector3<int>, ushort)> modifications)
         {
-            foreach ((Vector3i global, ushort blockID) in modifications)
+            foreach ((Vector3<int> global, ushort blockID) in modifications)
             {
                 await AllocateChunkModification(global, blockID);
             }
@@ -119,7 +119,7 @@ namespace Automata.Game
 
         public async ValueTask SynchronizeConcurrentModifications()
         {
-            while (_ConcurrentModifications.TryTake(out (Vector3i Origin, ChunkModification Modification) entry))
+            while (_ConcurrentModifications.TryTake(out (Vector3<int> Origin, ChunkModification Modification) entry))
             {
                 if (_Chunks.TryGetValue(entry.Origin, out Chunk? chunk))
                 {
@@ -138,7 +138,7 @@ namespace Automata.Game
 
         #region IEnumerator
 
-        public Dictionary<Vector3i, Chunk>.Enumerator GetEnumerator() => _Chunks.GetEnumerator();
+        public Dictionary<Vector3<int>, Chunk>.Enumerator GetEnumerator() => _Chunks.GetEnumerator();
 
         #endregion
     }

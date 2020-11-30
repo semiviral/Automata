@@ -23,13 +23,13 @@ namespace Automata.Game
         {
             const string group_with_sprite_name_format = "{0}:{1}";
 
-            Blocks = new Texture2DArray<Rgba32>(new Vector3i(8, 8, texturePaths.Count), Texture.WrapMode.Repeat, Texture.FilterMode.Point);
+            Blocks = new Texture2DArray<Rgba32>(new Vector3<int>(8, 8, texturePaths.Count), Texture.WrapMode.Repeat, Texture.FilterMode.Point);
 
             int depth = 0;
 
             foreach ((string group, string path) in texturePaths)
             {
-                Blocks.SetPixels(new Vector3i(0, 0, depth), new Vector2<int>(8, 8), Image.Load<Rgba32>(path).GetPixelSpan());
+                Blocks.SetPixels(new Vector3<int>(0, 0, depth), new Vector2<int>(8, 8), Image.Load<Rgba32>(path).GetPixelSpan());
 
                 string formattedName = string.Format(group_with_sprite_name_format, group, Path.GetFileNameWithoutExtension(path));
 

@@ -49,24 +49,24 @@ namespace Automata.Game
 
     public static class Directions
     {
-        public static Vector3i North { get; }
-        public static Vector3i East { get; }
-        public static Vector3i South { get; }
-        public static Vector3i West { get; }
-        public static Vector3i Up { get; }
-        public static Vector3i Down { get; }
+        public static Vector3<int> North { get; }
+        public static Vector3<int> East { get; }
+        public static Vector3<int> South { get; }
+        public static Vector3<int> West { get; }
+        public static Vector3<int> Up { get; }
+        public static Vector3<int> Down { get; }
 
-        public static Vector3i[] CardinalDirectionNormals { get; }
-        public static Vector3i[] AllDirectionNormals { get; }
+        public static Vector3<int>[] CardinalDirectionNormals { get; }
+        public static Vector3<int>[] AllDirectionNormals { get; }
 
         static Directions()
         {
-            North = new Vector3i(0, 0, 1);
-            East = new Vector3i(1, 0, 0);
-            South = new Vector3i(0, 0, -1);
-            West = new Vector3i(-1, 0, 0);
-            Up = new Vector3i(0, 1, 0);
-            Down = new Vector3i(0, -1, 0);
+            North = new Vector3<int>(0, 0, 1);
+            East = new Vector3<int>(1, 0, 0);
+            South = new Vector3<int>(0, 0, -1);
+            West = new Vector3<int>(-1, 0, 0);
+            Up = new Vector3<int>(0, 1, 0);
+            Down = new Vector3<int>(0, -1, 0);
 
             CardinalDirectionNormals = new[]
             {

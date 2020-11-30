@@ -7,13 +7,13 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
 {
     public class Texture3D<TPixel> : Texture where TPixel : unmanaged, IPixel<TPixel>
     {
-        public Vector3i Size { get; }
+        public Vector3<int> Size { get; }
 
-        public Texture3D(Vector3i size, WrapMode wrapMode, FilterMode filterMode, bool mipmap) : this(GLAPI.Instance.GL, size, wrapMode, filterMode, mipmap) { }
+        public Texture3D(Vector3<int> size, WrapMode wrapMode, FilterMode filterMode, bool mipmap) : this(GLAPI.Instance.GL, size, wrapMode, filterMode, mipmap) { }
 
-        public Texture3D(GL gl, Vector3i size, WrapMode wrapMode, FilterMode filterMode, bool mipmap) : base(gl, TextureTarget.Texture3D)
+        public Texture3D(GL gl, Vector3<int> size, WrapMode wrapMode, FilterMode filterMode, bool mipmap) : base(gl, TextureTarget.Texture3D)
         {
-            if (Vector3b.Any(size < 0))
+            if (Vector.Any(size < 0))
             {
                 throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
             }
@@ -30,13 +30,13 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             }
         }
 
-        public void SetPixels(Vector3i offset, Vector3i size, ReadOnlySpan<TPixel> pixels)
+        public void SetPixels(Vector3<int> offset, Vector3<int> size, ReadOnlySpan<TPixel> pixels)
         {
-            if (Vector3b.Any(offset < 0))
+            if (Vector.Any(offset < 0))
             {
                 throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
             }
-            else if (Vector3b.Any(size < 0))
+            else if (Vector.Any(size < 0))
             {
                 throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0 and <TexSize");
             }

@@ -13,6 +13,7 @@ using Automata.Game.Chunks.Generation;
 using DiagnosticsProviderNS;
 using Serilog;
 using Silk.NET.Input;
+using Vector = Automata.Engine.Numerics.Vector;
 
 namespace Automata.Game.Chunks
 {
@@ -112,14 +113,14 @@ namespace Automata.Game.Chunks
 
             foreach ((Transform transform, ChunkLoader chunkLoader) in entityManager.GetComponents<Transform, ChunkLoader>())
             {
-                Vector3 difference = Vector3.Abs(transform.Translation - chunkLoader.Origin);
+                Vector3<int> difference = Vector3<int>.Abs(transform.Translation.Convert<int>() - chunkLoader.Origin).WithY(0);
 
-                if (!chunkLoader.RadiusChanged && (difference.X < GenerationConstants.CHUNK_SIZE) && (difference.Z < GenerationConstants.CHUNK_SIZE))
+                if (!chunkLoader.RadiusChanged && Vector.All(difference < GenerationConstants.CHUNK_SIZE))
                 {
                     continue;
                 }
 
-                chunkLoader.Origin = Vector3i.FromVector3(transform.Translation.RoundBy(GenerationConstants.CHUNK_SIZE));
+                chunkLoader.Origin = Vector3<int>.One; // todo transform.Translation.RoundBy(GenerationConstants.CHUNK_SIZE);
                 chunkLoader.RadiusChanged = false;
                 updatedChunkPositions = true;
             }
@@ -150,7 +151,7 @@ namespace Automata.Game.Chunks
 
         private void DeallocateChunksOutsideLoaderRadii(NonAllocatingList<ChunkLoader> loaders, EntityManager entityManager)
         {
-            foreach ((Vector3i origin, Chunk chunk) in _VoxelWorld)
+            foreach ((Vector3<int> origin, Chunk chunk) in _VoxelWorld)
             {
                 bool disposable = true;
 
@@ -176,7 +177,7 @@ namespace Automata.Game.Chunks
         {
             foreach (ChunkLoader chunkLoader in loaders)
             {
-                Vector3i yAdjustedOrigin = new Vector3i(chunkLoader.Origin.X, 0, chunkLoader.Origin.Z);
+                Vector3<int> yAdjustedOrigin = chunkLoader.Origin.WithY(0);
 
                 for (int z = -chunkLoader.Radius; z < (chunkLoader.Radius + 1); z++)
                 for (int x = -chunkLoader.Radius; x < (chunkLoader.Radius + 1); x++)
@@ -185,19 +186,19 @@ namespace Automata.Game.Chunks
                     int zPos = z * GenerationConstants.CHUNK_SIZE;
 
                     // remark: this relies on GenerationConstants.WORLD_HEIGHT_IN_CHUNKS being 8
-                    await AllocateChunkEntity(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 0, zPos));
-                    await AllocateChunkEntity(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 1, zPos));
-                    await AllocateChunkEntity(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 2, zPos));
-                    await AllocateChunkEntity(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 3, zPos));
-                    await AllocateChunkEntity(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 4, zPos));
-                    await AllocateChunkEntity(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 5, zPos));
-                    await AllocateChunkEntity(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 6, zPos));
-                    await AllocateChunkEntity(entityManager, yAdjustedOrigin + new Vector3i(xPos, GenerationConstants.CHUNK_SIZE * 7, zPos));
+                    await AllocateChunkEntity(entityManager, yAdjustedOrigin + new Vector3<int>(xPos, GenerationConstants.CHUNK_SIZE * 0, zPos));
+                    await AllocateChunkEntity(entityManager, yAdjustedOrigin + new Vector3<int>(xPos, GenerationConstants.CHUNK_SIZE * 1, zPos));
+                    await AllocateChunkEntity(entityManager, yAdjustedOrigin + new Vector3<int>(xPos, GenerationConstants.CHUNK_SIZE * 2, zPos));
+                    await AllocateChunkEntity(entityManager, yAdjustedOrigin + new Vector3<int>(xPos, GenerationConstants.CHUNK_SIZE * 3, zPos));
+                    await AllocateChunkEntity(entityManager, yAdjustedOrigin + new Vector3<int>(xPos, GenerationConstants.CHUNK_SIZE * 4, zPos));
+                    await AllocateChunkEntity(entityManager, yAdjustedOrigin + new Vector3<int>(xPos, GenerationConstants.CHUNK_SIZE * 5, zPos));
+                    await AllocateChunkEntity(entityManager, yAdjustedOrigin + new Vector3<int>(xPos, GenerationConstants.CHUNK_SIZE * 6, zPos));
+                    await AllocateChunkEntity(entityManager, yAdjustedOrigin + new Vector3<int>(xPos, GenerationConstants.CHUNK_SIZE * 7, zPos));
                 }
             }
         }
 
-        private async ValueTask AllocateChunkEntity(EntityManager entityManager, Vector3i origin)
+        private async ValueTask AllocateChunkEntity(EntityManager entityManager, Vector3<int> origin)
         {
             Chunk? chunk = await _VoxelWorld.AllocateChunk(origin);
 
@@ -206,7 +207,7 @@ namespace Automata.Game.Chunks
                 Entity entity = entityManager.CreateEntity(
                     new Transform
                     {
-                        Translation = origin
+                        Translation = origin.Convert<float>()
                     },
                     _ChunkOcclusionBounds,
                     chunk);
@@ -217,7 +218,7 @@ namespace Automata.Game.Chunks
 
         private void UpdateRegionState()
         {
-            foreach ((Vector3i origin, Chunk chunk) in _VoxelWorld)
+            foreach ((Vector3<int> origin, Chunk chunk) in _VoxelWorld)
             {
                 // here we assign this chunk's neighbors
                 //
@@ -242,27 +243,27 @@ namespace Automata.Game.Chunks
             }
         }
 
-        private void AssignNeighbors(Vector3i origin, Chunk?[] origins)
+        private void AssignNeighbors(Vector3<int> origin, Chunk?[] neighbors)
         {
             Chunk? neighbor;
 
-            _VoxelWorld.TryGetChunk(origin + new Vector3i(GenerationConstants.CHUNK_SIZE, 0, 0), out neighbor);
-            origins[0] = neighbor;
+            _VoxelWorld.TryGetChunk(origin + new Vector3<int>(GenerationConstants.CHUNK_SIZE, 0, 0), out neighbor);
+            neighbors[0] = neighbor;
 
-            _VoxelWorld.TryGetChunk(origin + new Vector3i(0, GenerationConstants.CHUNK_SIZE, 0), out neighbor);
-            origins[1] = neighbor;
+            _VoxelWorld.TryGetChunk(origin + new Vector3<int>(0, GenerationConstants.CHUNK_SIZE, 0), out neighbor);
+            neighbors[1] = neighbor;
 
-            _VoxelWorld.TryGetChunk(origin + new Vector3i(0, 0, GenerationConstants.CHUNK_SIZE), out neighbor);
-            origins[2] = neighbor;
+            _VoxelWorld.TryGetChunk(origin + new Vector3<int>(0, 0, GenerationConstants.CHUNK_SIZE), out neighbor);
+            neighbors[2] = neighbor;
 
-            _VoxelWorld.TryGetChunk(origin + new Vector3i(-GenerationConstants.CHUNK_SIZE, 0, 0), out neighbor);
-            origins[3] = neighbor;
+            _VoxelWorld.TryGetChunk(origin + new Vector3<int>(-GenerationConstants.CHUNK_SIZE, 0, 0), out neighbor);
+            neighbors[3] = neighbor;
 
-            _VoxelWorld.TryGetChunk(origin + new Vector3i(0, -GenerationConstants.CHUNK_SIZE, 0), out neighbor);
-            origins[4] = neighbor;
+            _VoxelWorld.TryGetChunk(origin + new Vector3<int>(0, -GenerationConstants.CHUNK_SIZE, 0), out neighbor);
+            neighbors[4] = neighbor;
 
-            _VoxelWorld.TryGetChunk(origin + new Vector3i(0, 0, -GenerationConstants.CHUNK_SIZE), out neighbor);
-            origins[5] = neighbor;
+            _VoxelWorld.TryGetChunk(origin + new Vector3<int>(0, 0, -GenerationConstants.CHUNK_SIZE), out neighbor);
+            neighbors[5] = neighbor;
         }
     }
 }

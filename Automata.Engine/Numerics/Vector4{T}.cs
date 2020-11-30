@@ -1,11 +1,13 @@
 using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Automata.Engine.Numerics
 {
-    public readonly struct Vector4<T> where T : unmanaged
+    [StructLayout(LayoutKind.Sequential)]
+    public readonly partial struct Vector4<T> where T : unmanaged
     {
         public static Vector4<T> Zero => new Vector4<T>(default);
         public static Vector4<T> One => new Vector4<T>(Primitive<T>.One);
@@ -14,51 +16,46 @@ namespace Automata.Engine.Numerics
         public static Vector4<T> UnitZ => new Vector4<T>(default, default, Primitive<T>.One, default);
         public static Vector4<T> UnitW => new Vector4<T>(default, default, default, Primitive<T>.One);
 
-        private readonly T _X;
-        private readonly T _Y;
-        private readonly T _Z;
-        private readonly T _W;
-
-        public T X => _X;
-        public T Y => _Y;
-        public T Z => _Z;
-        public T W => _W;
+        public T X { get; }
+        public T Y { get; }
+        public T Z { get; }
+        public T W { get; }
 
         public Vector4(T xyzw)
         {
-            _X = xyzw;
-            _Y = xyzw;
-            _Z = xyzw;
-            _W = xyzw;
+            X = xyzw;
+            Y = xyzw;
+            Z = xyzw;
+            W = xyzw;
         }
 
         public Vector4(T x, T y, T z, T w)
         {
-            _X = x;
-            _Y = y;
-            _Z = z;
-            _W = w;
+            X = x;
+            Y = y;
+            Z = z;
+            W = w;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Vector4<T> WithX(T x) => new Vector4<T>(x, _Y, _Z, _W);
+        public Vector4<T> WithX(T x) => new Vector4<T>(x, Y, Z, W);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Vector4<T> WithY(T y) => new Vector4<T>(_X, y, _Z, _W);
+        public Vector4<T> WithY(T y) => new Vector4<T>(X, y, Z, W);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Vector4<T> WithZ(T z) => new Vector4<T>(_X, _Y, z, _W);
+        public Vector4<T> WithZ(T z) => new Vector4<T>(X, Y, z, W);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Vector4<T> WithW(T w) => new Vector4<T>(_X, _Y, _Z, w);
+        public Vector4<T> WithW(T w) => new Vector4<T>(X, Y, Z, w);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Vector4<TTo> Convert<TTo>() where TTo : unmanaged => new Vector4<TTo>((TTo)(object)_X, (TTo)(object)_Y, (TTo)(object)_Z, (TTo)(object)_W);
+        public Vector4<TTo> Convert<TTo>() where TTo : unmanaged => new Vector4<TTo>((TTo)(object)X, (TTo)(object)Y, (TTo)(object)Z, (TTo)(object)W);
 
 
         #region `Object` Overrides
 
-        public override int GetHashCode() => HashCode.Combine(_X, _Y);
+        public override int GetHashCode() => HashCode.Combine(X, Y);
         public override bool Equals(object? obj) => obj is Vector4<T> other && Equals(other);
         public override string ToString() => $"<{X}, {Y}, {Z}, {W}>";
 

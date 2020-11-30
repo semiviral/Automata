@@ -33,9 +33,9 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             }
         }
 
-        public void SetPixels(Vector3i offset, Vector2<int> size, ReadOnlySpan<TPixel> pixels)
+        public void SetPixels(Vector3<int> offset, Vector2<int> size, ReadOnlySpan<TPixel> pixels)
         {
-            if (Vector3b.Any(offset < 0))
+            if (Vector.Any(offset < 0))
             {
                 throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
             }
@@ -54,7 +54,7 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             using Image<TPixel> image = Image.Load<TPixel>(path);
             image.Mutate(img => img.Flip(FlipMode.Vertical));
             Texture2D<TPixel> texture = new Texture2D<TPixel>(new Vector2<int>(image.Width, image.Height), wrapMode, filterMode, mipmap);
-            texture.SetPixels(Vector3i.Zero, new Vector2<int>(image.Width, image.Height), image.GetPixelSpan());
+            texture.SetPixels(Vector3<int>.Zero, new Vector2<int>(image.Width, image.Height), image.GetPixelSpan());
 
             return texture;
         }

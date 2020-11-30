@@ -76,8 +76,8 @@ namespace Automata.Game.Chunks.Generation
                 switch (chunk.State)
                 {
                     case GenerationState.AwaitingTerrain:
-                        BoundedInvocationPool.Instance.Enqueue(_ => GenerateBlocks(chunk, Vector3i.FromVector3(transform.Translation),
-                            new IGenerationStep.Parameters(GenerationConstants.Seed, Vector3i.FromVector3(transform.Translation).GetHashCode())
+                        BoundedInvocationPool.Instance.Enqueue(_ => GenerateBlocks(chunk, transform.Translation.Convert<int>(),
+                            new IGenerationStep.Parameters(GenerationConstants.Seed, transform.Translation.Convert<int>().GetHashCode())
                             {
                                 Frequency = 0.008f
                             }));
@@ -86,7 +86,7 @@ namespace Automata.Game.Chunks.Generation
                         break;
 
                     case GenerationState.AwaitingStructures:
-                        //BoundedInvocationPool.Instance.Enqueue(_ => GenerateStructures(chunk, Vector3i.FromVector3(transform.Translation)));
+                        //BoundedInvocationPool.Instance.Enqueue(_ => GenerateStructures(chunk, Vector3<int>.FromVector3(transform.Translation)));
                         chunk.State += 1;
                         chunk.State += 1;
                         break;
@@ -104,7 +104,7 @@ namespace Automata.Game.Chunks.Generation
 
         #region Generation
 
-        private Task GenerateBlocks(Chunk chunk, Vector3i origin, IGenerationStep.Parameters parameters)
+        private Task GenerateBlocks(Chunk chunk, Vector3<int> origin, IGenerationStep.Parameters parameters)
         {
             Stopwatch stopwatch = DiagnosticsPool.Stopwatches.Rent();
 
@@ -137,7 +137,7 @@ namespace Automata.Game.Chunks.Generation
             return Task.CompletedTask;
         }
 
-        private async Task GenerateStructures(Chunk chunk, Vector3i origin)
+        private async Task GenerateStructures(Chunk chunk, Vector3<int> origin)
         {
             Stopwatch stopwatch = DiagnosticsPool.Stopwatches.Rent();
 
@@ -154,19 +154,19 @@ namespace Automata.Game.Chunks.Generation
             for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
             for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++, index++)
             {
-                Vector3i offset = new Vector3i(x, y, z);
+                Vector3<int> offset = new Vector3<int>(x, y, z);
 
                 if (!testStructure.CheckPlaceStructureAt(World, random, origin + offset))
                 {
                     continue;
                 }
 
-                foreach ((Vector3i local, ushort blockID) in testStructure.StructureBlocks)
+                foreach ((Vector3<int> local, ushort blockID) in testStructure.StructureBlocks)
                 {
-                    Vector3i modificationOffset = offset + local;
+                    Vector3<int> modificationOffset = offset + local;
 
                     // see if we can allocate the modification directly to the chunk
-                    if (Vector3b.All(modificationOffset >= 0) && Vector3b.All(modificationOffset < GenerationConstants.CHUNK_SIZE))
+                    if (Vector.All(modificationOffset >= 0) && Vector.All(modificationOffset < GenerationConstants.CHUNK_SIZE))
                     {
                         await chunk.Modifications.AddAsync(new ChunkModification
                         {

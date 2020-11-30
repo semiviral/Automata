@@ -1,11 +1,13 @@
 using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Automata.Engine.Numerics
 {
-    public readonly struct Vector3<T> : IEquatable<Vector3<T>>, IFormattable where T : unmanaged
+    [StructLayout(LayoutKind.Sequential)]
+    public readonly partial struct Vector3<T> : IEquatable<Vector3<T>>, IFormattable where T : unmanaged
     {
         public static Vector3<T> Zero => new Vector3<T>(default);
         public static Vector3<T> One => new Vector3<T>(Primitive<T>.One);
@@ -13,44 +15,40 @@ namespace Automata.Engine.Numerics
         public static Vector3<T> UnitY => new Vector3<T>(default, Primitive<T>.One, default);
         public static Vector3<T> UnitZ => new Vector3<T>(default, default, Primitive<T>.One);
 
-        private readonly T _X;
-        private readonly T _Y;
-        private readonly T _Z;
-
-        public T X => _X;
-        public T Y => _Y;
-        public T Z => _Z;
+        public T X { get; }
+        public T Y { get; }
+        public T Z { get; }
 
         public Vector3(T xyz)
         {
-            _X = xyz;
-            _Y = xyz;
-            _Z = xyz;
+            X = xyz;
+            Y = xyz;
+            Z = xyz;
         }
 
         public Vector3(T x, T y, T z)
         {
-            _X = x;
-            _Y = y;
-            _Z = z;
+            X = x;
+            Y = y;
+            Z = z;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Vector3<T> WithX(T x) => new Vector3<T>(x, _Y, _Z);
+        public Vector3<T> WithX(T x) => new Vector3<T>(x, Y, Z);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Vector3<T> WithY(T y) => new Vector3<T>(_X, y, _Z);
+        public Vector3<T> WithY(T y) => new Vector3<T>(X, y, Z);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Vector3<T> WithZ(T z) => new Vector3<T>(_X, _Y, z);
+        public Vector3<T> WithZ(T z) => new Vector3<T>(X, Y, z);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Vector3<TTo> Convert<TTo>() where TTo : unmanaged => new Vector3<TTo>((TTo)(object)_X, (TTo)(object)_Y, (TTo)(object)_Z);
+        public Vector3<TTo> Convert<TTo>() where TTo : unmanaged => new Vector3<TTo>((TTo)(object)X, (TTo)(object)Y, (TTo)(object)Z);
 
 
         #region `Object` Overrides
 
-        public override int GetHashCode() => HashCode.Combine(_X, _Y);
+        public override int GetHashCode() => HashCode.Combine(X, Y);
         public override bool Equals(object? obj) => obj is Vector3<T> other && Equals(other);
         public override string ToString() => $"<{X}, {Y}, {Z}>";
 

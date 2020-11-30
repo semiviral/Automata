@@ -2,6 +2,7 @@ using System.Numerics;
 using Automata.Engine.Numerics;
 using Automata.Engine.Numerics.Shapes;
 using BenchmarkDotNet.Attributes;
+using Vector = System.Numerics.Vector;
 
 namespace Automata.Engine.Benchmarks
 {
@@ -21,6 +22,9 @@ namespace Automata.Engine.Benchmarks
         public Vector4<float> GenericFloating4() => new Vector4<float>(7f) / new Vector4<float>(7f);
 
         [Benchmark]
-        public Vector4<bool> Equals() => new Vector4<uint>(1) < new Vector4<uint>(0);
+        public Vector4<int> Generic() => Vector4<int>.Abs(new Vector4<int>(1));
+
+        [Benchmark]
+        public Vector4<int> Core() => Vector.Abs(new Vector4<int>(1).AsVector()).AsVector4();
     }
 }

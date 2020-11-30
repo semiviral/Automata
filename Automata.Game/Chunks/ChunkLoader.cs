@@ -26,13 +26,13 @@ namespace Automata.Game.Chunks
 
         public int RadiusInBlocks => _RadiusInBlocks;
 
-        public Vector3i Origin { get; set; } = new Vector3i(int.MaxValue);
+        public Vector3<int> Origin { get; set; } = new Vector3<int>(int.MaxValue);
 
-        public bool IsWithinRadius(Vector3i origin)
+        public bool IsWithinRadius(Vector3<int> origin)
         {
-            Vector3i difference = Origin - origin;
+            Vector3<int> difference = (Origin - origin).WithY(0);
 
-            return Math.Abs(difference.X) <= RadiusInBlocks && Math.Abs(difference.Z) <= RadiusInBlocks;
+            return Vector.All(Vector3<int>.Abs(difference) <= RadiusInBlocks);
         }
     }
 }

@@ -11,7 +11,7 @@ namespace Automata.Engine.Numerics
 {
     public static class Vector
     {
-        public static void ThrowNotSupportedType() => throw new NotSupportedException("Generic vectors only support primitive types.");
+        internal static void ThrowNotSupportedType() => throw new NotSupportedException("Generic vectors only support primitive types.");
 
 
         #region Vector<bool> Methods
@@ -80,27 +80,54 @@ namespace Automata.Engine.Numerics
         #region Vector2/3/4 As
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector2<TTo> As<TFrom, TTo>(ref Vector2<TFrom> vector)
+        public static Vector2<TTo> Reinterpret<TFrom, TTo>(this Vector2<TFrom> vector)
             where TFrom : unmanaged
             where TTo : unmanaged =>
             Unsafe.As<Vector2<TFrom>, Vector2<TTo>>(ref vector);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3<TTo> As<TFrom, TTo>(ref Vector3<TFrom> vector)
+        public static Vector3<TTo> Reinterpret<TFrom, TTo>(this Vector3<TFrom> vector)
             where TFrom : unmanaged
             where TTo : unmanaged =>
             Unsafe.As<Vector3<TFrom>, Vector3<TTo>>(ref vector);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector4<TTo> As<TFrom, TTo>(ref Vector4<TFrom> vector)
+        public static Vector4<TTo> Reinterpret<TFrom, TTo>(this Vector4<TFrom> vector)
             where TFrom : unmanaged
             where TTo : unmanaged =>
             Unsafe.As<Vector4<TFrom>, Vector4<TTo>>(ref vector);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TTo As<TFrom, TTo>(this Vector2<TFrom> vector)
+            where TFrom : unmanaged
+            where TTo : unmanaged =>
+            Unsafe.As<Vector2<TFrom>, TTo>(ref vector);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TTo As<TFrom, TTo>(this Vector3<TFrom> vector)
+            where TFrom : unmanaged
+            where TTo : unmanaged =>
+            Unsafe.As<Vector3<TFrom>, TTo>(ref vector);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TTo As<TFrom, TTo>(this Vector4<TFrom> vector)
+            where TFrom : unmanaged
+            where TTo : unmanaged =>
+            Unsafe.As<Vector4<TFrom>, TTo>(ref vector);
 
         #endregion
 
 
         #region AsVector
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector<T> AsVector<T>(this Vector2<T> vector) where T : unmanaged => Unsafe.As<Vector2<T>, Vector<T>>(ref vector);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector<T> AsVector<T>(this Vector3<T> vector) where T : unmanaged => Unsafe.As<Vector3<T>, Vector<T>>(ref vector);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector<T> AsVector<T>(this Vector4<T> vector) where T : unmanaged => Unsafe.As<Vector4<T>, Vector<T>>(ref vector);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector<TTo> AsVector<TFrom, TTo>(this Vector128<TFrom> vector)
@@ -115,13 +142,22 @@ namespace Automata.Engine.Numerics
             => Unsafe.As<Vector256<TFrom>, Vector<TTo>>(ref vector);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector<T> AsVector<T>(this Vector2<T> vector) where T : unmanaged => Unsafe.As<Vector2<T>, Vector<T>>(ref vector);
+        public static Vector<TTo> AsVector<TFrom, TTo>(this Vector2<TFrom> vector)
+            where TFrom : unmanaged
+            where TTo : unmanaged =>
+            Unsafe.As<Vector2<TFrom>, Vector<TTo>>(ref vector);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector<T> AsVector<T>(this Vector3<T> vector) where T : unmanaged => Unsafe.As<Vector3<T>, Vector<T>>(ref vector);
+        public static Vector<TTo> AsVector<TFrom, TTo>(this Vector3<TFrom> vector)
+            where TFrom : unmanaged
+            where TTo : unmanaged =>
+            Unsafe.As<Vector3<TFrom>, Vector<TTo>>(ref vector);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector<T> AsVector<T>(this Vector4<T> vector) where T : unmanaged => Unsafe.As<Vector4<T>, Vector<T>>(ref vector);
+        public static Vector<TTo> AsVector<TFrom, TTo>(this Vector4<TFrom> vector)
+            where TFrom : unmanaged
+            where TTo : unmanaged =>
+            Unsafe.As<Vector4<TFrom>, Vector<TTo>>(ref vector);
 
         #endregion
 
@@ -177,6 +213,24 @@ namespace Automata.Engine.Numerics
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector4<T> AsVector4<T>(this Vector<T> vector) where T : unmanaged => Unsafe.As<Vector<T>, Vector4<T>>(ref vector);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2<TTo> AsVector2<TFrom, TTo>(this Vector<TFrom> vector)
+            where TFrom : unmanaged
+            where TTo : unmanaged =>
+            Unsafe.As<Vector<TFrom>, Vector2<TTo>>(ref vector);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3<TTo> AsVector3<TFrom, TTo>(this Vector<TFrom> vector)
+            where TFrom : unmanaged
+            where TTo : unmanaged =>
+            Unsafe.As<Vector<TFrom>, Vector3<TTo>>(ref vector);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector4<TTo> AsVector4<TFrom, TTo>(this Vector<TFrom> vector)
+            where TFrom : unmanaged
+            where TTo : unmanaged =>
+            Unsafe.As<Vector<TFrom>, Vector4<TTo>>(ref vector);
 
         #endregion
 
@@ -253,18 +307,17 @@ namespace Automata.Engine.Numerics
         ///     It's assumed that T is a valid type. No type checking is done by this method for performance.
         /// </remarks>
         /// <param name="vector">Vector to convert.</param>
-        /// <typeparam name="T">Unmanaged type to convert generic to.</typeparam>
         /// <returns>Intrinsic variant of the given vector.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector2 AsIntrinsic<T>(this Vector2<T> vector) where T : unmanaged => Unsafe.As<Vector2<T>, Vector2>(ref vector);
+        public static Vector2 AsIntrinsic(this Vector2<float> vector) => Unsafe.As<Vector2<float>, Vector2>(ref vector);
 
-        /// <inheritdoc cref="AsIntrinsic{T}(Automata.Engine.Numerics.Vector2{T})" />
+        /// <inheritdoc cref="AsIntrinsic(Automata.Engine.Numerics.Vector2{float})" />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3 AsIntrinsic<T>(this Vector3<T> vector) where T : unmanaged => Unsafe.As<Vector3<T>, Vector3>(ref vector);
+        public static Vector3 AsIntrinsic(this Vector3<float> vector) => Unsafe.As<Vector3<float>, Vector3>(ref vector);
 
-        /// <inheritdoc cref="AsIntrinsic{T}(Automata.Engine.Numerics.Vector2{T})" />
+        /// <inheritdoc cref="AsIntrinsic(Automata.Engine.Numerics.Vector2{float})" />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector4 AsIntrinsic<T>(this Vector4<T> vector) where T : unmanaged => Unsafe.As<Vector4<T>, Vector4>(ref vector);
+        public static Vector4 AsIntrinsic(this Vector4<float> vector) => Unsafe.As<Vector4<float>, Vector4>(ref vector);
 
         #endregion
 
@@ -609,13 +662,13 @@ namespace Automata.Engine.Numerics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Vector2<T> MultiplyInternal<T>(Vector2<T> a, Vector2<T> b) where T : unmanaged =>
             typeof(T) == typeof(float)
-                ? (a.AsIntrinsic() * b.AsIntrinsic()).AsGeneric<T>()
+                ? (a.As<T, Vector2>() * b.As<T, Vector2>()).AsGeneric<T>()
                 : (a.AsVector() * b.AsVector()).AsVector2();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3<T> MultiplyInternal<T>(Vector3<T> a, Vector3<T> b) where T : unmanaged =>
             typeof(T) == typeof(float)
-                ? (a.AsIntrinsic() * b.AsIntrinsic()).AsGeneric<T>()
+                ? (a.As<T, Vector3>() * b.As<T, Vector3>()).AsGeneric<T>()
                 : (a.AsVector() * b.AsVector()).AsVector3();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -640,7 +693,7 @@ namespace Automata.Engine.Numerics
             }
             else if ((typeof(T) == typeof(float)) && Sse.IsSupported)
             {
-                return (a.AsIntrinsic() * b.AsIntrinsic()).AsGeneric<T>();
+                return (a.As<T, Vector4>() * b.As<T, Vector4>()).AsGeneric<T>();
             }
             else
             {
@@ -656,19 +709,19 @@ namespace Automata.Engine.Numerics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Vector2<T> DivideInternal<T>(Vector2<T> a, Vector2<T> b) where T : unmanaged =>
             typeof(T) == typeof(float)
-                ? (a.AsIntrinsic() / b.AsIntrinsic()).AsGeneric<T>()
+                ? (a.As<T, Vector2>() * b.As<T, Vector2>()).AsGeneric<T>()
                 : (a.AsVector() / b.AsVector()).AsVector2();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3<T> DivideInternal<T>(Vector3<T> a, Vector3<T> b) where T : unmanaged =>
             typeof(T) == typeof(float)
-                ? (a.AsIntrinsic() / b.AsIntrinsic()).AsGeneric<T>()
+                ? (a.As<T, Vector3>() * b.As<T, Vector3>()).AsGeneric<T>()
                 : (a.AsVector() / b.AsVector()).AsVector3();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector4<T> DivideInternal<T>(Vector4<T> a, Vector4<T> b) where T : unmanaged =>
             (typeof(T) == typeof(float)) && Sse.IsSupported
-                ? (a.AsIntrinsic() / b.AsIntrinsic()).AsGeneric<T>()
+                ? (a.As<T, Vector4>() * b.As<T, Vector4>()).AsGeneric<T>()
                 : (a.AsVector() / b.AsVector()).AsVector4();
 
         #endregion
@@ -676,6 +729,7 @@ namespace Automata.Engine.Numerics
 
         #region And
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2<T> AndInternal<T>(Vector2<T> a, Vector2<T> b) where T : unmanaged
         {
             if ((typeof(T) == typeof(long)) && Sse2.IsSupported)
@@ -729,6 +783,7 @@ namespace Automata.Engine.Numerics
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3<T> AndInternal<T>(Vector3<T> a, Vector3<T> b) where T : unmanaged
         {
             if ((typeof(T) == typeof(long)) && Avx2.IsSupported)
@@ -782,6 +837,7 @@ namespace Automata.Engine.Numerics
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector4<T> AndInternal<T>(Vector4<T> a, Vector4<T> b) where T : unmanaged
         {
             if ((typeof(T) == typeof(long)) && Avx2.IsSupported)
@@ -840,6 +896,7 @@ namespace Automata.Engine.Numerics
 
         #region Or
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2<T> OrInternal<T>(Vector2<T> a, Vector2<T> b) where T : unmanaged
         {
             if ((typeof(T) == typeof(long)) && Sse2.IsSupported)
@@ -893,6 +950,7 @@ namespace Automata.Engine.Numerics
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3<T> OrInternal<T>(Vector3<T> a, Vector3<T> b) where T : unmanaged
         {
             if ((typeof(T) == typeof(long)) && Avx2.IsSupported)
@@ -946,6 +1004,7 @@ namespace Automata.Engine.Numerics
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector4<T> OrInternal<T>(Vector4<T> a, Vector4<T> b) where T : unmanaged
         {
             if ((typeof(T) == typeof(long)) && Avx2.IsSupported)

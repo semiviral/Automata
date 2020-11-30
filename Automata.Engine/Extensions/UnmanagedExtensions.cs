@@ -53,5 +53,11 @@ namespace Automata.Engine.Extensions
             where T : unmanaged
             where TComponent : unmanaged =>
             MemoryMarshal.CreateSpan(ref Unsafe.As<T, TComponent>(ref a), sizeof(T) / sizeof(TComponent));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TTo Coerce<TFrom, TTo>(this TFrom a)
+            where TFrom : unmanaged
+            where TTo : unmanaged =>
+            (TTo)(object)a;
     }
 }

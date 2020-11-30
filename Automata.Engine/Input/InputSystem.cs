@@ -60,7 +60,7 @@ namespace Automata.Engine.Input
 
             foreach ((Transform transform, KeyboardListener listener) in entityManager.GetComponents<Transform, KeyboardListener>())
             {
-                transform.Translation += listener.Sensitivity * Vector3.Transform(movementVector, transform.Rotation);
+                transform.Translation += (listener.Sensitivity * Vector3.Transform(movementVector, transform.Rotation)).AsGeneric<float>();
             }
         }
 

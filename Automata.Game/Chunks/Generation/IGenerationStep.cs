@@ -17,6 +17,6 @@ namespace Automata.Game.Chunks.Generation
             public Parameters(int seed, int randomSeed) => (Seed, SeededRandom) = (seed, new Random(randomSeed));
         }
 
-        public void Generate(Vector3i origin, Parameters parameters, Span<ushort> blocks);
+        public void Generate(Vector3<int> origin, Parameters parameters, Span<ushort> blocks);
     }
 }

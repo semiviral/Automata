@@ -26,7 +26,7 @@ namespace Automata.Engine
                     Matrix4x4 matrix = Matrix4x4.Identity;
                     matrix *= Matrix4x4.CreateScale(transform.Scale);
                     matrix *= Matrix4x4.CreateFromQuaternion(transform.Rotation);
-                    matrix *= Matrix4x4.CreateTranslation(transform.Translation);
+                    matrix *= Matrix4x4.CreateTranslation(transform.Translation.AsIntrinsic());
                     transform.Matrix = matrix;
 
                     if (Matrix4x4.Invert(matrix, out Matrix4x4 view))
@@ -37,7 +37,7 @@ namespace Automata.Engine
                 else
                 {
                     Matrix4x4 matrix = Matrix4x4.Identity;
-                    matrix *= Matrix4x4.CreateTranslation(transform.Translation);
+                    matrix *= Matrix4x4.CreateTranslation(transform.Translation.AsIntrinsic());
                     matrix *= Matrix4x4.CreateFromQuaternion(transform.Rotation);
                     matrix *= Matrix4x4.CreateScale(transform.Scale);
                     transform.Matrix = matrix;
