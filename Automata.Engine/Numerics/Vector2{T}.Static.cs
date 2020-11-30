@@ -11,18 +11,18 @@ namespace Automata.Engine.Numerics
 {
     public readonly partial struct Vector2<T> where T : unmanaged
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+[MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2<T> Add(Vector2<T> a, Vector2<T> b)
         {
             if (typeof(T) == typeof(float))
             {
-                Vector2 result = a.As<T, Vector2>() + b.As<T, Vector2>();
-                return result.AsGeneric<T>();
+                Vector2 result = a.AsRef<T, Vector2>() + b.AsRef<T, Vector2>();
+                return result.AsGenericRef<T>();
             }
             else
             {
-                Vector<T> result = a.AsVector() + b.AsVector();
-                return result.AsVector2();
+                Vector<T> result = a.AsVectorRef() + b.AsVectorRef();
+                return result.AsVector2Ref();
             }
         }
 
@@ -31,13 +31,13 @@ namespace Automata.Engine.Numerics
         {
             if (typeof(T) == typeof(float))
             {
-                Vector2 result = a.As<T, Vector2>() - b.As<T, Vector2>();
-                return result.AsGeneric<T>();
+                Vector2 result = a.AsRef<T, Vector2>() - b.AsRef<T, Vector2>();
+                return result.AsGenericRef<T>();
             }
             else
             {
-                Vector<T> result = a.AsVector() - b.AsVector();
-                return result.AsVector2();
+                Vector<T> result = a.AsVectorRef() - b.AsVectorRef();
+                return result.AsVector2Ref();
             }
         }
 
@@ -46,13 +46,13 @@ namespace Automata.Engine.Numerics
         {
             if (typeof(T) == typeof(float))
             {
-                Vector2 result = a.As<T, Vector2>() * b.As<T, Vector2>();
-                return result.AsGeneric<T>();
+                Vector2 result = a.AsRef<T, Vector2>() * b.AsRef<T, Vector2>();
+                return result.AsGenericRef<T>();
             }
             else
             {
-                Vector<T> result = a.AsVector() * b.AsVector();
-                return result.AsVector2();
+                Vector<T> result = a.AsVectorRef() * b.AsVectorRef();
+                return result.AsVector2Ref();
             }
         }
 
@@ -61,35 +61,35 @@ namespace Automata.Engine.Numerics
         {
             if (typeof(T) == typeof(float))
             {
-                Vector2 result = a.As<T, Vector2>() / b.As<T, Vector2>();
-                return result.AsGeneric<T>();
+                Vector2 result = a.AsRef<T, Vector2>() / b.AsRef<T, Vector2>();
+                return result.AsGenericRef<T>();
             }
             else
             {
-                Vector<T> result = a.AsVector() / b.AsVector();
-                return result.AsVector2();
+                Vector<T> result = a.AsVectorRef() / b.AsVectorRef();
+                return result.AsVector2Ref();
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2<T> And(Vector2<T> a, Vector2<T> b)
         {
-            Vector<T> result = Intrinsic.BitwiseAnd(a.AsVector(), b.AsVector());
-            return result.AsVector2();
+            Vector<T> result = Intrinsic.BitwiseAnd(a.AsVectorRef(), b.AsVectorRef());
+            return result.AsVector2Ref();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2<T> Or(Vector2<T> a, Vector2<T> b)
         {
-            Vector<T> result = Intrinsic.BitwiseOr(a.AsVector(), b.AsVector());
-            return result.AsVector2();
+            Vector<T> result = Intrinsic.BitwiseOr(a.AsVectorRef(), b.AsVectorRef());
+            return result.AsVector2Ref();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2<T> Abs(Vector2<T> a)
         {
-            Vector<T> result = Intrinsic.Abs(a.AsVector());
-            return result.AsVector2();
+            Vector<T> result = Intrinsic.Abs(a.AsVectorRef());
+            return result.AsVector2Ref();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -98,12 +98,12 @@ namespace Automata.Engine.Numerics
             if (typeof(T) == typeof(float))
             {
                 Vector<float> result = Intrinsic.Floor(a.AsVector<T, float>());
-                return result.AsVector2<float, T>();
+                return result.AsVector2Ref<float, T>();
             }
             else if (typeof(T) == typeof(double))
             {
                 Vector<double> result = Intrinsic.Floor(a.AsVector<T, double>());
-                return result.AsVector2<double, T>();
+                return result.AsVector2Ref<double, T>();
             }
             else
             {
@@ -125,24 +125,24 @@ namespace Automata.Engine.Numerics
                 !a[1].Equals(default));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector2<bool> Equals(Vector2<T> a, Vector2<T> b) => BooleanReduction(Intrinsic.Equals(a.AsVector(), b.AsVector()));
+        public static Vector2<bool> Equals(Vector2<T> a, Vector2<T> b) => BooleanReduction(Intrinsic.Equals(a.AsVectorRef(), b.AsVectorRef()));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2<bool> NotEquals(Vector2<T> a, Vector2<T> b) =>
-            BooleanReduction(Intrinsic.OnesComplement(Intrinsic.Equals(a.AsVector(), b.AsVector())));
+            BooleanReduction(Intrinsic.OnesComplement(Intrinsic.Equals(a.AsVectorRef(), b.AsVectorRef())));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector2<bool> GreaterThan(Vector2<T> a, Vector2<T> b) => BooleanReduction(Intrinsic.GreaterThan(a.AsVector(), b.AsVector()));
+        public static Vector2<bool> GreaterThan(Vector2<T> a, Vector2<T> b) => BooleanReduction(Intrinsic.GreaterThan(a.AsVectorRef(), b.AsVectorRef()));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector2<bool> LessThan(Vector2<T> a, Vector2<T> b) => BooleanReduction(Intrinsic.LessThan(a.AsVector(), b.AsVector()));
+        public static Vector2<bool> LessThan(Vector2<T> a, Vector2<T> b) => BooleanReduction(Intrinsic.LessThan(a.AsVectorRef(), b.AsVectorRef()));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Vector2<bool> GreaterThanOrEqual(Vector2<T> a, Vector2<T> b) =>
-            BooleanReduction(Intrinsic.GreaterThanOrEqual(a.AsVector(), b.AsVector()));
+            BooleanReduction(Intrinsic.GreaterThanOrEqual(a.AsVectorRef(), b.AsVectorRef()));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Vector2<bool> LessThanOrEqual(Vector2<T> a, Vector2<T> b) => BooleanReduction(Intrinsic.LessThanOrEqual(a.AsVector(), b.AsVector()));
+        private static Vector2<bool> LessThanOrEqual(Vector2<T> a, Vector2<T> b) => BooleanReduction(Intrinsic.LessThanOrEqual(a.AsVectorRef(), b.AsVectorRef()));
 
         #endregion
     }

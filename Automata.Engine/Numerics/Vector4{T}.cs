@@ -1,6 +1,5 @@
 using System;
 using System.Globalization;
-using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -179,12 +178,15 @@ namespace Automata.Engine.Numerics
 
         #endregion
 
+
         #region And
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector4<T> operator &(Vector4<T> a, T b) => a & new Vector4<T>(b);
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector4<T> operator &(T a, Vector4<T> b) => new Vector4<T>(a) & b;
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector4<T> operator &(Vector4<T> a, Vector4<T> b) => And(a, b);
 
@@ -195,12 +197,16 @@ namespace Automata.Engine.Numerics
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector4<T> operator |(Vector4<T> a, T b) => a | new Vector4<T>(b);
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector4<T> operator |(T a, Vector4<T> b) => new Vector4<T>(a) | b;
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector4<T> operator |(Vector4<T> a, Vector4<T> b) => Or(a, b);
 
         #endregion
+
+
         #region Greater Than
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -210,7 +216,7 @@ namespace Automata.Engine.Numerics
         public static Vector4<bool> operator >(T a, Vector4<T> b) => new Vector4<T>(a) > b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector4<bool> operator >(Vector4<T> a, Vector4<T> b) => GreaterThanOrEqual(a, b);
+        public static Vector4<bool> operator >(Vector4<T> a, Vector4<T> b) => GreaterThan(a, b);
 
         #endregion
 
@@ -224,7 +230,34 @@ namespace Automata.Engine.Numerics
         public static Vector4<bool> operator <(T a, Vector4<T> b) => new Vector4<T>(a) < b;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector4<bool> operator <(Vector4<T> a, Vector4<T> b) => LessThanOrEqual(a, b);
+        public static Vector4<bool> operator <(Vector4<T> a, Vector4<T> b) => LessThan(a, b);
+
+        #endregion
+
+        #region Greater Than Or Equal
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector4<bool> operator >=(Vector4<T> a, T b) => a > new Vector4<T>(b);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector4<bool> operator >=(T a, Vector4<T> b) => new Vector4<T>(a) > b;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector4<bool> operator >=(Vector4<T> a, Vector4<T> b) => GreaterThanOrEqual(a, b);
+
+        #endregion
+
+
+        #region Less Than Or Equal
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector4<bool> operator <=(Vector4<T> a, T b) => a < new Vector4<T>(b);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector4<bool> operator <=(T a, Vector4<T> b) => new Vector4<T>(a) < b;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector4<bool> operator <=(Vector4<T> a, Vector4<T> b) => LessThanOrEqual(a, b);
 
         #endregion
 
