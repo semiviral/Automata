@@ -4,3 +4,4 @@ obj/
 riderModule.iml
 /_ReSharper.Caches/
 .vs/Automata/v16/.suo
+*.v2

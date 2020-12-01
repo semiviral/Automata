@@ -98,8 +98,20 @@ namespace Automata.Engine.Numerics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe TTo Convert<TTo>(T from) where TTo : unmanaged
         {
+            // handle same-type casting
+            if (typeof(T) == typeof(TTo))
+            {
+                return (TTo)(object)from;
+            }
+
+            // integral<->integral can be in-place read as TTo
+            else if (IsIntegral() && Primitive<TTo>.IsIntegral())
+            {
+                return Unsafe.Read<TTo>(&from);
+            }
+
             // sbyte
-            if ((typeof(T) == typeof(sbyte)) && (typeof(TTo) == typeof(float)))
+            else if ((typeof(T) == typeof(sbyte)) && (typeof(TTo) == typeof(float)))
             {
                 sbyte temp = (sbyte)(object)from;
                 return (TTo)(object)(float)temp;
@@ -389,18 +401,6 @@ namespace Automata.Engine.Numerics
             {
                 decimal temp = (decimal)(object)from;
                 return (TTo)(object)(double)temp;
-            }
-
-            // integrals can be read bit-by-bit
-            else if (IsIntegral() && Primitive<TTo>.IsIntegral())
-            {
-                return Unsafe.Read<TTo>(&from);
-            }
-
-            // handle same-type casting
-            else if (typeof(T) == typeof(TTo))
-            {
-                return (TTo)(object)from;
             }
 
             // unsupported type

@@ -67,6 +67,7 @@ namespace Automata.Game.Chunks.Generation
                 }
                 else
                 {
+                    // if the mesh data isn't going to be used, ensure we dispose it
                     pendingMesh.Data.Dispose();
                 }
             }
