@@ -18,17 +18,17 @@ namespace Automata.Engine.Numerics
             else if (typeof(T) == typeof(ulong))
             {
                 One = (T)(object)(ulong)1u;
-                Zero = (T)(object)(long)0u;
+                Zero = (T)(object)(ulong)0u;
             }
             else if (typeof(T) == typeof(int))
             {
-                One = (T)(object)1;
-                Zero = (T)(object)0;
+                One = (T)(object)(int)1;
+                Zero = (T)(object)(int)0;
             }
             else if (typeof(T) == typeof(uint))
             {
-                One = (T)(object)1u;
-                Zero = (T)(object)0u;
+                One = (T)(object)(uint)1u;
+                Zero = (T)(object)(uint)0u;
             }
             else if (typeof(T) == typeof(short))
             {
@@ -37,8 +37,8 @@ namespace Automata.Engine.Numerics
             }
             else if (typeof(T) == typeof(ushort))
             {
-                One = (T)(object)(ushort)1;
-                Zero = (T)(object)(ushort)0;
+                One = (T)(object)(ushort)1u;
+                Zero = (T)(object)(ushort)0u;
             }
             else if (typeof(T) == typeof(sbyte))
             {
@@ -47,8 +47,8 @@ namespace Automata.Engine.Numerics
             }
             else if (typeof(T) == typeof(byte))
             {
-                One = (T)(object)(byte)1;
-                Zero = (T)(object)(byte)0;
+                One = (T)(object)(byte)1u;
+                Zero = (T)(object)(byte)0u;
             }
             else if (typeof(T) == typeof(float))
             {
@@ -60,10 +60,15 @@ namespace Automata.Engine.Numerics
                 One = (T)(object)1d;
                 Zero = (T)(object)0d;
             }
+            else if (typeof(T) == typeof(decimal))
+            {
+                One = (T)(object)1m;
+                Zero = (T)(object)0m;
+            }
             else if (typeof(T) == typeof(bool))
             {
-                One = (T)(object)true;
-                Zero = (T)(object)false;
+                One = (T)(object)(bool)true;
+                Zero = (T)(object)(bool)false;
             }
             else
             {
