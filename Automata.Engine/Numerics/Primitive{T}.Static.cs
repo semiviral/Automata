@@ -96,7 +96,7 @@ namespace Automata.Engine.Numerics
             || (typeof(T) == typeof(ulong));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TTo Convert<TTo>(T from) where TTo : unmanaged
+        public static unsafe TTo Convert<TTo>(T from) where TTo : unmanaged
         {
             // sbyte
             if ((typeof(T) == typeof(sbyte)) && (typeof(TTo) == typeof(float)))
@@ -276,6 +276,16 @@ namespace Automata.Engine.Numerics
                 float temp = (float)(object)from;
                 return (TTo)(object)(ulong)temp;
             }
+            else if ((typeof(T) == typeof(float)) && (typeof(TTo) == typeof(double)))
+            {
+                float temp = (float)(object)from;
+                return (TTo)(object)(double)temp;
+            }
+            else if ((typeof(T) == typeof(float)) && (typeof(TTo) == typeof(decimal)))
+            {
+                float temp = (float)(object)from;
+                return (TTo)(object)(decimal)temp;
+            }
 
             // double
             else if ((typeof(T) == typeof(double)) && (typeof(TTo) == typeof(sbyte)))
@@ -317,6 +327,16 @@ namespace Automata.Engine.Numerics
             {
                 double temp = (double)(object)from;
                 return (TTo)(object)(ulong)temp;
+            }
+            else if ((typeof(T) == typeof(double)) && (typeof(TTo) == typeof(float)))
+            {
+                double temp = (double)(object)from;
+                return (TTo)(object)(float)temp;
+            }
+            else if ((typeof(T) == typeof(double)) && (typeof(TTo) == typeof(decimal)))
+            {
+                double temp = (double)(object)from;
+                return (TTo)(object)(decimal)temp;
             }
 
             // decimal
@@ -360,11 +380,34 @@ namespace Automata.Engine.Numerics
                 decimal temp = (decimal)(object)from;
                 return (TTo)(object)(ulong)temp;
             }
+            else if ((typeof(T) == typeof(decimal)) && (typeof(TTo) == typeof(float)))
+            {
+                decimal temp = (decimal)(object)from;
+                return (TTo)(object)(float)temp;
+            }
+            else if ((typeof(T) == typeof(decimal)) && (typeof(TTo) == typeof(double)))
+            {
+                decimal temp = (decimal)(object)from;
+                return (TTo)(object)(double)temp;
+            }
 
-            // default
-            else
+            // integrals can be read bit-by-bit
+            else if (IsIntegral() && Primitive<TTo>.IsIntegral())
+            {
+                return Unsafe.Read<TTo>(&from);
+            }
+
+            // handle same-type casting
+            else if (typeof(T) == typeof(TTo))
             {
                 return (TTo)(object)from;
+            }
+
+            // unsupported type
+            else
+            {
+                ThrowNotSupportedType();
+                return default;
             }
         }
 
