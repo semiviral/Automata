@@ -55,6 +55,7 @@ namespace Automata.Game.Chunks
         {
             switch (newState)
             {
+                case { } when newState == State: break; // don't catch non-altering states
                 case GenerationState.Inactive:
                 case GenerationState.AwaitingTerrain when State is GenerationState.Inactive:
                 case GenerationState.AwaitingStructures when State is GenerationState.GeneratingTerrain:
@@ -63,7 +64,7 @@ namespace Automata.Game.Chunks
                 case GenerationState.GeneratingTerrain when State is GenerationState.AwaitingTerrain:
                 case GenerationState.GeneratingStructures when State is GenerationState.AwaitingStructures:
                 case GenerationState.GeneratingMesh when State is GenerationState.AwaitingMesh: break;
-                default: throw new InvalidOperationException("Attempted an invalid state modification");
+                default: throw new InvalidOperationException($"Attempted an invalid state modification: is {State}, attempted {newState}");
             }
         }
 

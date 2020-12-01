@@ -39,11 +39,10 @@ namespace Automata.Engine.Numerics
         public Vector2<T> WithY(T y) => new Vector2<T>(X, y);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Vector2<TTo> Convert<TTo>() where TTo : unmanaged
-        {
-            dynamic temp = this;
-            return new Vector2<TTo>((TTo)temp.X, (TTo)temp.Y);
-        }
+        public Vector2<TTo> Convert<TTo>() where TTo : unmanaged =>
+            new Vector2<TTo>(
+                Primitive<T>.Convert<TTo>(X),
+                Primitive<T>.Convert<TTo>(Y));
 
 
         #region `Object` Overrides

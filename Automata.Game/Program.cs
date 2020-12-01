@@ -16,6 +16,7 @@ using Automata.Game.Blocks;
 using Automata.Game.Chunks;
 using Automata.Game.Chunks.Generation;
 using Automata.Game.Chunks.Generation.Meshing;
+using DiagnosticsProviderNS;
 using Serilog;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.KHR;
@@ -34,6 +35,10 @@ namespace Automata.Game
 
         private static void Startup()
         {
+#if !FINAL_RELEASE
+            DiagnosticsProvider.Enabled = true;
+#endif
+
             Settings.Load();
             InitializeLoggerAndValidateFiles();
             InitializeBoundedPool();

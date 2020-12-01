@@ -43,11 +43,11 @@ namespace Automata.Engine.Numerics
         public Vector3<T> WithZ(T z) => new Vector3<T>(X, Y, z);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Vector3<TTo> Convert<TTo>() where TTo : unmanaged
-        {
-            dynamic temp = this;
-            return new Vector3<TTo>((TTo)temp.X, (TTo)temp.Y, (TTo)temp.Z);
-        }
+        public Vector3<TTo> Convert<TTo>() where TTo : unmanaged =>
+            new Vector3<TTo>(
+                Primitive<T>.Convert<TTo>(X),
+                Primitive<T>.Convert<TTo>(Y),
+                Primitive<T>.Convert<TTo>(Z));
 
 
         #region `Object` Overrides

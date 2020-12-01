@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Automata.Engine.Rendering.Vulkan.NativeExtensions;
@@ -19,6 +20,11 @@ namespace Automata.Engine.Rendering.Vulkan
 
         internal unsafe VulkanLogicalDevice(Vk vk, VulkanContext context, string[] extensions, string[]? validationLayers) : base(vk)
         {
+            if (context.Instance is null || context.PhysicalDevice is null)
+            {
+                throw new NullReferenceException($"{nameof(VulkanLogicalDevice)} requires a context with a valid instance and physical device.");
+            }
+
             _Context = context;
             SwapchainExtension = GetDeviceExtension<SwapchainExtension>();
 
