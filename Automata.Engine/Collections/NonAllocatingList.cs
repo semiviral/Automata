@@ -3,6 +3,7 @@ using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Automata.Engine.Collections
 {
@@ -40,11 +41,15 @@ namespace Automata.Engine.Collections
         /// <param name="index">
         ///     Index to get or set element at.
         /// </param>
-        public T this[uint index]
+        public T this[uint index, bool unsafeAccess = false]
         {
             get
             {
-                if (index >= Count)
+                if (unsafeAccess)
+                {
+                    return UnsafeAt((int)index);
+                }
+                else if (index >= Count)
                 {
                     ThrowHelper.ThrowIndexOutOfRangeException();
                     return default!;
@@ -179,6 +184,9 @@ namespace Automata.Engine.Collections
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int IndexOf(T item) => Array.IndexOf(_InternalArray, item, 0, Count);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public T UnsafeAt(int index) => Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(_InternalArray), index);
 
 
         #region Adding / Inserting
@@ -384,7 +392,7 @@ namespace Automata.Engine.Collections
         {
             private readonly NonAllocatingList<T> _List;
 
-            private uint _Index;
+            private int _Index;
             private T? _Current;
 
             public T Current => _Current!;
@@ -393,7 +401,7 @@ namespace Automata.Engine.Collections
             {
                 get
                 {
-                    if ((_Index == 0u) || (_Index >= (uint)_List.Count))
+                    if ((_Index == 0) || (_Index >= _List.Count))
                     {
                         ThrowHelper.ThrowInvalidOperationException("Enumerable has not been enumerated.");
                     }
@@ -405,7 +413,7 @@ namespace Automata.Engine.Collections
             internal Enumerator(NonAllocatingList<T> list)
             {
                 _List = list;
-                _Index = 0u;
+                _Index = 0;
                 _Current = default!;
             }
 
@@ -416,14 +424,14 @@ namespace Automata.Engine.Collections
                     return false;
                 }
 
-                _Current = _List._InternalArray[_Index];
-                _Index += 1u;
+                _Current = _List.UnsafeAt(_Index);
+                _Index += 1;
                 return true;
             }
 
             void IEnumerator.Reset()
             {
-                _Index = 0u;
+                _Index = 0;
                 _Current = default!;
             }
 

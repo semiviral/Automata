@@ -14,6 +14,14 @@ namespace Automata.Engine.Tests.Numerics.Primitive
         }
 
         [Theory]
+        [InlineData(-1)]
+        public void IntToLong(int a)
+        {
+            long convert = Primitive<int>.Convert<long>(a);
+            Debug.Assert(convert == a);
+        }
+
+        [Theory]
         [InlineData(-5f)]
         public void FloatToDouble(float a)
         {

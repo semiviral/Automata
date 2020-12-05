@@ -9,11 +9,7 @@ namespace Automata.Engine.Benchmarks
     {
         private static unsafe void Main(string[] args)
         {
-            int a = -1;
-            short b = Unsafe.Read<short>(&a);
-
-            int value = Primitive<short>.Convert<int>(1);
-            Summary summary = BenchmarkRunner.Run<BenchmarkVectorNumerics>();
+            Summary summary = BenchmarkRunner.Run<BenchmarkPrimitiveConvert>();
 
             //Console.ReadKey();
         }
