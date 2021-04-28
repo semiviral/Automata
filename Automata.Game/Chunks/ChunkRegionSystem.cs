@@ -222,8 +222,8 @@ namespace Automata.Game.Chunks
                 // here we assign this chunk's neighbors
                 //
                 // in addition, if this chunk is inactive (i.e. a new allocation) then
-                // we also enqueue each neighbor the a queue, signifying that once the neighbor
-                // enter the 'GenerationState.Finished' state, it needs to be remeshed.
+                // we also queue each neighbor for a remesh to ensure their meshes are
+                // up-to-date with the new world shape.
                 AssignNeighbors(origin, chunk!.Neighbors);
 
                 if (chunk.State is GenerationState.Inactive)

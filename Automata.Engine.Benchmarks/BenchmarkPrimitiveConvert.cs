@@ -9,6 +9,6 @@ namespace Automata.Engine.Benchmarks
         public long Unspecialized() => Primitive<int>.Convert<long>(5);
 
         [Benchmark]
-        public long Specialized() => Primitive<int>.ConvertSepcialized<long>(5);
+        public long Specialized() => Primitive<int>.ConvertSpecialized<long>(5);
     }
 }

@@ -112,7 +112,7 @@ namespace Automata.Engine.Numerics
             || (typeof(T) == typeof(ulong));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TTo ConvertSepcialized<TTo>(T from) where TTo : unmanaged => (TTo)(object)(long)(int)(object)from;
+        public static TTo ConvertSpecialized<TTo>(T from) where TTo : unmanaged => (TTo)(object)(long)(int)(object)from;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe TTo Convert<TTo>(T from) where TTo : unmanaged

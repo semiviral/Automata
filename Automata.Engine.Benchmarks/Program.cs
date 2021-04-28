@@ -9,9 +9,7 @@ namespace Automata.Engine.Benchmarks
     {
         private static unsafe void Main(string[] args)
         {
-            Summary summary = BenchmarkRunner.Run<BenchmarkPrimitiveConvert>();
 
-            //Console.ReadKey();
         }
     }
 }

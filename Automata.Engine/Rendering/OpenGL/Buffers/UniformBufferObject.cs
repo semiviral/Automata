@@ -42,7 +42,7 @@ namespace Automata.Engine.Rendering.OpenGL.Buffers
 
         public UniformBufferObject(GL gl, uint bindingIndex, nuint size, BufferStorageMask bufferStorageMask = _STORAGE_FLAGS) : base(gl)
         {
-            if (size > short.MaxValue)
+            if (size > (nuint)short.MaxValue)
             {
                 throw new ArgumentOutOfRangeException(nameof(size), "Size must be greater than zero and less than 16KB.");
             }

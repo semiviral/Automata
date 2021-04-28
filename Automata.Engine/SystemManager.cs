@@ -69,7 +69,13 @@ namespace Automata.Engine
 
                     if (_UpdateStopwatch.Elapsed >= AutomataWindow.Instance.VSyncFrameTime)
                     {
-                        Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(SystemManager), $"Excessive update time: {componentSystem.GetType()}"));
+                        Log.Debug(
+                            string.Format(
+                                FormatHelper.DEFAULT_LOGGING,
+                                nameof(SystemManager),
+                                $"Excessive update time ({_UpdateStopwatch.Elapsed.TotalSeconds:0.00}s): {componentSystem.GetType()}"
+                            )
+                        );
                     }
                 }
             }
