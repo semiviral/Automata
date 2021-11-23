@@ -26,19 +26,19 @@ namespace Automata.Engine.Rendering.Meshes
 
         public AllocatedMeshingSystem(World world) : base(world)
         {
-            DrawElementsType drawElementsType;
+            DrawElementsType draw_elements_type;
 
             if (typeof(TIndex) == typeof(byte))
             {
-                drawElementsType = DrawElementsType.UnsignedByte;
+                draw_elements_type = DrawElementsType.UnsignedByte;
             }
             else if (typeof(TIndex) == typeof(ushort))
             {
-                drawElementsType = DrawElementsType.UnsignedShort;
+                draw_elements_type = DrawElementsType.UnsignedShort;
             }
             else if (typeof(TIndex) == typeof(uint))
             {
-                drawElementsType = DrawElementsType.UnsignedInt;
+                draw_elements_type = DrawElementsType.UnsignedInt;
             }
             else
             {
@@ -51,7 +51,7 @@ namespace Automata.Engine.Rendering.Meshes
             //
             //  the expectaion being that you compose the mesh component, and keep the ID around to use with your own
             //  systems and such.
-            _MultiDrawIndirectMesh = new MultiDrawIndirectMesh(GLAPI.Instance.GL, 500_000_000, drawElementsType);
+            _MultiDrawIndirectMesh = new MultiDrawIndirectMesh(GLAPI.Instance.GL, 500_000_000, draw_elements_type);
 
             _MultiDrawIndirectMeshMaterial =
                 new Material(ProgramRegistry.Instance.Load("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl"));
@@ -82,31 +82,31 @@ namespace Automata.Engine.Rendering.Meshes
 
         private bool TryGetAggregateAllocationTasks(EntityManager entityManager, [NotNullWhen(true)] out NonAllocatingList<Task>? tasks)
         {
-            nint allocatedMeshDataCount = entityManager.GetComponentCount<AllocatedMeshData<TIndex, TVertex>>();
+            nint allocated_mesh_data_count = entityManager.GetComponentCount<AllocatedMeshData<TIndex, TVertex>>();
 
-            if (allocatedMeshDataCount is 0)
+            if (allocated_mesh_data_count is 0)
             {
                 tasks = null;
                 return false;
             }
 
-            tasks = new NonAllocatingList<Task>((int)allocatedMeshDataCount);
-            bool recreateCommandBuffer = false;
+            tasks = new NonAllocatingList<Task>((int)allocated_mesh_data_count);
+            bool recreate_command_buffer = false;
 
             foreach ((Entity entity, AllocatedMeshData<TIndex, TVertex> mesh) in
                 entityManager.GetEntitiesWithComponents<AllocatedMeshData<TIndex, TVertex>>())
             {
-                unsafe Task CreateDrawIndirectAllocationAllocationImpl(DrawElementsIndirectAllocation<TIndex, TVertex> pendingAllocation)
+                unsafe Task create_draw_indirect_allocation_allocation_impl_impl(DrawElementsIndirectAllocation<TIndex, TVertex> pendingAllocation)
                 {
                     pendingAllocation.Allocation?.Dispose();
 
-                    BufferMemory<TIndex> indexArrayMemory = _MultiDrawIndirectMesh.RentBufferMemory<TIndex>((nuint)sizeof(TIndex),
+                    BufferMemory<TIndex> index_array_memory = _MultiDrawIndirectMesh.RentBufferMemory<TIndex>((nuint)sizeof(TIndex),
                         MemoryMarshal.Cast<QuadIndexes<TIndex>, TIndex>(mesh.Data.Indexes.Segment));
 
-                    BufferMemory<TVertex> vertexArrayMemory = _MultiDrawIndirectMesh.RentBufferMemory<TVertex>((nuint)sizeof(TVertex),
+                    BufferMemory<TVertex> vertex_array_memory = _MultiDrawIndirectMesh.RentBufferMemory<TVertex>((nuint)sizeof(TVertex),
                         MemoryMarshal.Cast<QuadVertexes<TVertex>, TVertex>(mesh.Data.Vertexes.Segment));
 
-                    pendingAllocation.Allocation = new MeshMemory<TIndex, TVertex>(indexArrayMemory, vertexArrayMemory);
+                    pendingAllocation.Allocation = new MeshMemory<TIndex, TVertex>(index_array_memory, vertex_array_memory);
 
                     return Task.CompletedTask;
                 }
@@ -116,15 +116,15 @@ namespace Automata.Engine.Rendering.Meshes
                     if (!entity.TryComponent(out DrawElementsIndirectAllocation<TIndex, TVertex>? allocation))
                         allocation = entityManager.RegisterComponent<DrawElementsIndirectAllocation<TIndex, TVertex>>(entity);
 
-                    tasks.Add(CreateDrawIndirectAllocationAllocationImpl(allocation));
+                    tasks.Add(create_draw_indirect_allocation_allocation_impl_impl(allocation));
                     ConfigureMaterial(entityManager, entity);
-                    recreateCommandBuffer = true;
+                    recreate_command_buffer = true;
                 }
 
                 entityManager.RemoveComponent<AllocatedMeshData<TIndex, TVertex>>(entity);
             }
 
-            return recreateCommandBuffer;
+            return recreate_command_buffer;
         }
 
 
@@ -166,48 +166,48 @@ namespace Automata.Engine.Rendering.Meshes
             //
             // we could use stackalloc here and work with stack memory directly, but that's liable to end up in a StackOverflowException for
             // very large render distances
-            int drawIndirectAllocationsCount = (int)entityManager.GetComponentCount<DrawElementsIndirectAllocation<TIndex, TVertex>>();
-            DrawElementsIndirectCommand[] commands = ArrayPool<DrawElementsIndirectCommand>.Shared.Rent(drawIndirectAllocationsCount);
-            Matrix4x4[] models = ArrayPool<Matrix4x4>.Shared.Rent(drawIndirectAllocationsCount);
+            int draw_indirect_allocations_count = (int)entityManager.GetComponentCount<DrawElementsIndirectAllocation<TIndex, TVertex>>();
+            DrawElementsIndirectCommand[] commands = ArrayPool<DrawElementsIndirectCommand>.Shared.Rent(draw_indirect_allocations_count);
+            Matrix4x4[] models = ArrayPool<Matrix4x4>.Shared.Rent(draw_indirect_allocations_count);
 
             int index = 0;
 
             foreach ((Entity entity, DrawElementsIndirectAllocation<TIndex, TVertex> allocation) in
                 entityManager.GetEntitiesWithComponents<DrawElementsIndirectAllocation<TIndex, TVertex>>())
             {
-                DrawElementsIndirectCommand drawElementsIndirectCommand = new DrawElementsIndirectCommand(allocation.Allocation!.IndexesMemory.Count, 1u,
+                DrawElementsIndirectCommand draw_elements_indirect_command = new DrawElementsIndirectCommand(allocation.Allocation!.IndexesMemory.Count, 1u,
                     (uint)(allocation.Allocation!.IndexesMemory.Index / (nuint)sizeof(TIndex)),
                     (uint)(allocation.Allocation!.VertexMemory.Index / (nuint)sizeof(TVertex)), (uint)index);
 
-                commands[index] = drawElementsIndirectCommand;
+                commands[index] = draw_elements_indirect_command;
                 models[index] = entity.Component<Transform>()?.Matrix ?? Matrix4x4.Identity;
                 index += 1;
             }
 
             // make sure we slice the rentals here, since they're subject to arbitrary sizing rules (and may not be the exact requested minimum size).
-            _MultiDrawIndirectMesh.AllocateDrawCommands(new Span<DrawElementsIndirectCommand>(commands, 0, drawIndirectAllocationsCount));
-            _MultiDrawIndirectMesh.AllocateModelsData(new Span<Matrix4x4>(models, 0, drawIndirectAllocationsCount));
+            _MultiDrawIndirectMesh.AllocateDrawCommands(new Span<DrawElementsIndirectCommand>(commands, 0, draw_indirect_allocations_count));
+            _MultiDrawIndirectMesh.AllocateModelsData(new Span<Matrix4x4>(models, 0, draw_indirect_allocations_count));
             ArrayPool<DrawElementsIndirectCommand>.Shared.Return(commands);
             ArrayPool<Matrix4x4>.Shared.Return(models);
 
             Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(AllocatedMeshingSystem<TIndex, TVertex>),
-                $"Allocated {drawIndirectAllocationsCount} {nameof(DrawElementsIndirectCommand)}"));
+                $"Allocated {draw_indirect_allocations_count} {nameof(DrawElementsIndirectCommand)}"));
         }
 
         private static void ConfigureMaterial(EntityManager entityManager, Entity entity)
         {
-            ProgramPipeline programPipeline = ProgramRegistry.Instance.Load("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl");
+            ProgramPipeline program_pipeline = ProgramRegistry.Instance.Load("Resources/Shaders/PackedVertex.glsl", "Resources/Shaders/DefaultFragment.glsl");
 
             if (entity.TryComponent(out Material? material))
             {
-                if (material.Pipeline.Handle != programPipeline.Handle)
+                if (material.Pipeline.Handle != program_pipeline.Handle)
                 {
-                    material.Pipeline = programPipeline;
+                    material.Pipeline = program_pipeline;
                 }
             }
             else
             {
-                entityManager.RegisterComponent(entity, new Material(programPipeline));
+                entityManager.RegisterComponent(entity, new Material(program_pipeline));
             }
         }
 

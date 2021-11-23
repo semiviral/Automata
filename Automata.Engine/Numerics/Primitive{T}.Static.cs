@@ -134,8 +134,8 @@ namespace Automata.Engine.Numerics
                     nuint sign_extension = (nuint.MaxValue >> (sizeof(T) * 8)) << (sizeof(T) * 8);
 
                     nuint value = Unsafe.As<T, nuint>(ref from);
-                    nuint signByte = (value >> ((sizeof(T) * 8) - 1)) << sign_alignment_shift;
-                    value = (value & ~signByte) | signByte;
+                    nuint sign_byte = (value >> ((sizeof(T) * 8) - 1)) << sign_alignment_shift;
+                    value = (value & ~sign_byte) | sign_byte;
 
                     if (value < 0)
                     {

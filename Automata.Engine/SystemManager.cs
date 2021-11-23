@@ -59,12 +59,12 @@ namespace Automata.Engine
 
         public async ValueTask UpdateAsync(EntityManager entityManager, TimeSpan deltaTime)
         {
-            foreach (ComponentSystem componentSystem in _ComponentSystems)
+            foreach (ComponentSystem component_system in _ComponentSystems)
             {
-                if (componentSystem.Enabled && CheckSystemHandledTypesExist(entityManager, componentSystem))
+                if (component_system.Enabled && CheckSystemHandledTypesExist(entityManager, component_system))
                 {
                     _UpdateStopwatch.Restart();
-                    await componentSystem.UpdateAsync(entityManager, deltaTime).ConfigureAwait(false);
+                    await component_system.UpdateAsync(entityManager, deltaTime).ConfigureAwait(false);
                     _UpdateStopwatch.Stop();
 
                     if (_UpdateStopwatch.Elapsed >= AutomataWindow.Instance.VSyncFrameTime)
@@ -73,7 +73,7 @@ namespace Automata.Engine
                             string.Format(
                                 FormatHelper.DEFAULT_LOGGING,
                                 nameof(SystemManager),
-                                $"Excessive update time ({_UpdateStopwatch.Elapsed.TotalSeconds:0.00}s): {componentSystem.GetType()}"
+                                $"Excessive update time ({_UpdateStopwatch.Elapsed.TotalSeconds:0.00}s): {component_system.GetType()}"
                             )
                         );
                     }
@@ -83,7 +83,7 @@ namespace Automata.Engine
 
         private bool CheckSystemHandledTypesExist(EntityManager entityManager, ComponentSystem componentSystem)
         {
-            static bool HandledComponentsExistImpl(EntityManager entityManager, HandledComponents handledComponents) => handledComponents.Strategy switch
+            static bool handled_components_exist_impl_impl(EntityManager entityManager, HandledComponents handledComponents) => handledComponents.Strategy switch
             {
                 EnumerationStrategy.Any when handledComponents.All(type => entityManager.GetComponentCount(type) == 0u) => true,
                 EnumerationStrategy.All when handledComponents.Any(type => entityManager.GetComponentCount(type) > 0u) => true,
@@ -91,10 +91,10 @@ namespace Automata.Engine
                 _ => false
             };
 
-            if (_HandledComponentsArrays.TryGetValue(componentSystem.GetType(), out HandledComponents[]? handleComponentsArray))
+            if (_HandledComponentsArrays.TryGetValue(componentSystem.GetType(), out HandledComponents[]? handle_components_array))
             {
-                return handleComponentsArray!.Length is 0
-                       || handleComponentsArray.Any(handledComponents => HandledComponentsExistImpl(entityManager, handledComponents));
+                return handle_components_array!.Length is 0
+                       || handle_components_array.Any(handledComponents => handled_components_exist_impl_impl(entityManager, handledComponents));
             }
             else
             {
@@ -122,41 +122,41 @@ namespace Automata.Engine
             where TSystem : ComponentSystem
             where TBefore : ComponentSystem
         {
-            TSystem componentSystem = CreateSystem<TSystem>();
-            _ComponentSystems.AddBefore<TBefore>(componentSystem);
-            RegisterSystemInternal(componentSystem);
+            TSystem component_system = CreateSystem<TSystem>();
+            _ComponentSystems.AddBefore<TBefore>(component_system);
+            RegisterSystemInternal(component_system);
         }
 
         public void RegisterAfter<TSystem, TAfter>()
             where TSystem : ComponentSystem
             where TAfter : ComponentSystem
         {
-            TSystem componentSystem = CreateSystem<TSystem>();
-            _ComponentSystems.AddAfter<TAfter>(componentSystem);
-            RegisterSystemInternal(componentSystem);
+            TSystem component_system = CreateSystem<TSystem>();
+            _ComponentSystems.AddAfter<TAfter>(component_system);
+            RegisterSystemInternal(component_system);
         }
 
         public void RegisterFirst<TSystem>() where TSystem : ComponentSystem
         {
-            TSystem componentSystem = CreateSystem<TSystem>();
-            _ComponentSystems.AddFirst(componentSystem);
-            RegisterSystemInternal(componentSystem);
+            TSystem component_system = CreateSystem<TSystem>();
+            _ComponentSystems.AddFirst(component_system);
+            RegisterSystemInternal(component_system);
         }
 
         public void RegisterLast<TSystem>() where TSystem : ComponentSystem
         {
-            TSystem componentSystem = CreateSystem<TSystem>();
-            _ComponentSystems.AddLast(componentSystem);
-            RegisterSystemInternal(componentSystem);
+            TSystem component_system = CreateSystem<TSystem>();
+            _ComponentSystems.AddLast(component_system);
+            RegisterSystemInternal(component_system);
         }
 
         private TSystem CreateSystem<TSystem>() where TSystem : ComponentSystem => (Activator.CreateInstance(typeof(TSystem), _World) as TSystem)!;
 
         private void RegisterSystemInternal<TSystem>(TSystem componentSystem) where TSystem : ComponentSystem
         {
-            if (TryGetHandledComponents<TSystem>(out IEnumerable<HandledComponents>? handledComponentsEnumerable))
+            if (TryGetHandledComponents<TSystem>(out IEnumerable<HandledComponents>? handled_components_enumerable))
             {
-                _HandledComponentsArrays.Add(typeof(TSystem), handledComponentsEnumerable.ToArray());
+                _HandledComponentsArrays.Add(typeof(TSystem), handled_components_enumerable.ToArray());
             }
 
             componentSystem.Registered(_World.EntityManager);
@@ -167,8 +167,8 @@ namespace Automata.Engine
         private static bool TryGetHandledComponents<TSystem>([NotNullWhen(true)] out IEnumerable<HandledComponents>? handledComponentsEnumerable)
             where TSystem : ComponentSystem
         {
-            MethodBase? methodBase = typeof(TSystem).GetMethod(nameof(ComponentSystem.UpdateAsync));
-            handledComponentsEnumerable = methodBase?.GetCustomAttributes<HandledComponents>();
+            MethodBase? method_base = typeof(TSystem).GetMethod(nameof(ComponentSystem.UpdateAsync));
+            handledComponentsEnumerable = method_base?.GetCustomAttributes<HandledComponents>();
 
             return handledComponentsEnumerable is not null;
         }
@@ -187,9 +187,9 @@ namespace Automata.Engine
                 return;
             }
 
-            foreach (ComponentSystem componentSystem in _ComponentSystems)
+            foreach (ComponentSystem component_system in _ComponentSystems)
             {
-                if (componentSystem is IDisposable disposable)
+                if (component_system is IDisposable disposable)
                 {
                     disposable.Dispose();
                 }

@@ -12,7 +12,7 @@ namespace Automata.Engine.Tests
         [Fact]
         public void Add()
         {
-            static void AddAndVerifyImpl<T>(IList<T> list, T item, int length) where T : IEquatable<T>
+            static void add_and_verify_impl_impl<T>(IList<T> list, T item, int length) where T : IEquatable<T>
             {
                 Debug.Assert(list.Count == (length - 1));
 
@@ -24,14 +24,14 @@ namespace Automata.Engine.Tests
 
             using NonAllocatingList<uint> list = new NonAllocatingList<uint>();
 
-            AddAndVerifyImpl(list, 0u, 1);
-            AddAndVerifyImpl(list, 1u, 2);
-            AddAndVerifyImpl(list, 2u, 3);
-            AddAndVerifyImpl(list, 3u, 4);
-            AddAndVerifyImpl(list, 4u, 5);
-            AddAndVerifyImpl(list, 5u, 6);
-            AddAndVerifyImpl(list, 6u, 7);
-            AddAndVerifyImpl(list, 7u, 8);
+            add_and_verify_impl_impl(list, 0u, 1);
+            add_and_verify_impl_impl(list, 1u, 2);
+            add_and_verify_impl_impl(list, 2u, 3);
+            add_and_verify_impl_impl(list, 3u, 4);
+            add_and_verify_impl_impl(list, 4u, 5);
+            add_and_verify_impl_impl(list, 5u, 6);
+            add_and_verify_impl_impl(list, 6u, 7);
+            add_and_verify_impl_impl(list, 7u, 8);
         }
 
         [Fact]

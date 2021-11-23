@@ -11,7 +11,7 @@ namespace Automata.Engine.Benchmarks
     {
         private Vector4<float> _GenericA;
         private Vector4<float> _GenericB;
-        private Vector4 IntrinsicA;
+        private Vector4 _IntrinsicA;
         private Vector4 _IntrinsicB;
 
         [GlobalSetup]
@@ -20,7 +20,7 @@ namespace Automata.Engine.Benchmarks
             _GenericA = Vector4<float>.One;
             _GenericB = new Vector4<float>(4);
 
-            IntrinsicA = Vector4.One;
+            _IntrinsicA = Vector4.One;
             _IntrinsicB = new Vector4(4);
         }
 
@@ -28,7 +28,7 @@ namespace Automata.Engine.Benchmarks
         public Vector4<float> Generic() => _GenericA * _GenericB;
 
         [Benchmark]
-        public Vector4 Intrinsic() => IntrinsicA * _IntrinsicB;
+        public Vector4 Intrinsic() => _IntrinsicA * _IntrinsicB;
 
     }
 }

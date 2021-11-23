@@ -22,29 +22,29 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
         public ProgramPipeline Load(string vertexShaderPath, string fragmentShaderPath)
         {
             const string compound_shader_key_format = "{0}:{1}";
-            string compoundProgramKey = string.Format(compound_shader_key_format, vertexShaderPath, fragmentShaderPath);
+            string compound_program_key = string.Format(compound_shader_key_format, vertexShaderPath, fragmentShaderPath);
 
-            if (_CachedProgramPipelines.TryGetValue(compoundProgramKey, out ProgramPipeline? programPipeline))
+            if (_CachedProgramPipelines.TryGetValue(compound_program_key, out ProgramPipeline? program_pipeline))
             {
-                return programPipeline!;
+                return program_pipeline!;
             }
             else
             {
-                if (!_CachedVertexPrograms.TryGetValue(vertexShaderPath, out ShaderProgram? vertexShader))
+                if (!_CachedVertexPrograms.TryGetValue(vertexShaderPath, out ShaderProgram? vertex_shader))
                 {
-                    vertexShader = new ShaderProgram(GLAPI.Instance.GL, ShaderType.VertexShader, vertexShaderPath);
-                    _CachedVertexPrograms.Add(vertexShaderPath, vertexShader);
+                    vertex_shader = new ShaderProgram(GLAPI.Instance.GL, ShaderType.VertexShader, vertexShaderPath);
+                    _CachedVertexPrograms.Add(vertexShaderPath, vertex_shader);
                 }
 
-                if (!_CachedFragmentPrograms.TryGetValue(fragmentShaderPath, out ShaderProgram? fragmentShader))
+                if (!_CachedFragmentPrograms.TryGetValue(fragmentShaderPath, out ShaderProgram? fragment_shader))
                 {
-                    fragmentShader = new ShaderProgram(GLAPI.Instance.GL, ShaderType.FragmentShader, fragmentShaderPath);
-                    _CachedFragmentPrograms.Add(fragmentShaderPath, fragmentShader);
+                    fragment_shader = new ShaderProgram(GLAPI.Instance.GL, ShaderType.FragmentShader, fragmentShaderPath);
+                    _CachedFragmentPrograms.Add(fragmentShaderPath, fragment_shader);
                 }
 
-                programPipeline = new ProgramPipeline(GLAPI.Instance.GL, vertexShader!, fragmentShader!);
-                _CachedProgramPipelines.Add(compoundProgramKey, programPipeline);
-                return programPipeline;
+                program_pipeline = new ProgramPipeline(GLAPI.Instance.GL, vertex_shader!, fragment_shader!);
+                _CachedProgramPipelines.Add(compound_program_key, program_pipeline);
+                return program_pipeline;
             }
         }
 
@@ -58,19 +58,19 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
                 return;
             }
 
-            foreach ((_, ShaderProgram shaderProgram) in _CachedVertexPrograms)
+            foreach ((_, ShaderProgram shader_program) in _CachedVertexPrograms)
             {
-                shaderProgram.Dispose();
+                shader_program.Dispose();
             }
 
-            foreach ((_, ShaderProgram shaderProgram) in _CachedFragmentPrograms)
+            foreach ((_, ShaderProgram shader_program) in _CachedFragmentPrograms)
             {
-                shaderProgram.Dispose();
+                shader_program.Dispose();
             }
 
-            foreach ((_, ProgramPipeline programPipeline) in _CachedProgramPipelines)
+            foreach ((_, ProgramPipeline program_pipeline) in _CachedProgramPipelines)
             {
-                programPipeline.Dispose();
+                program_pipeline.Dispose();
             }
 
             Disposed = true;

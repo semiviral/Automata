@@ -109,10 +109,10 @@ namespace Automata.Engine.Rendering.DirectX
         {
             Log.Information(string.Format(_LogFormat, "Transpiling default GLSL shaders."));
 
-            string temporaryShader = Path.GetTempFileName();
-            File.WriteAllText(temporaryShader, _DEFAULT_VERTEX);
+            string temporary_shader = Path.GetTempFileName();
+            File.WriteAllText(temporary_shader, _DEFAULT_VERTEX);
 
-            if (TryTranspileShader(temporaryShader, out _DefaultVertexShader))
+            if (TryTranspileShader(temporary_shader, out _DefaultVertexShader))
             {
                 Log.Information(string.Format(_LogFormat, "Transpiled default vertex shader."));
             }
@@ -122,9 +122,9 @@ namespace Automata.Engine.Rendering.DirectX
                 return;
             }
 
-            File.WriteAllText(temporaryShader, _DEFAULT_FRAGMENT);
+            File.WriteAllText(temporary_shader, _DEFAULT_FRAGMENT);
 
-            if (TryTranspileShader(temporaryShader, out _DefaultFragmentShader))
+            if (TryTranspileShader(temporary_shader, out _DefaultFragmentShader))
             {
                 Log.Information(string.Format(_LogFormat, "Transpiled default fragment shader."));
             }
@@ -134,7 +134,7 @@ namespace Automata.Engine.Rendering.DirectX
                 return;
             }
 
-            File.Delete(temporaryShader);
+            File.Delete(temporary_shader);
         }
 
         public bool TryTranspileShader(string shaderPath, [NotNullWhen(true)] out byte[]? shaderBytes)
@@ -152,9 +152,9 @@ namespace Automata.Engine.Rendering.DirectX
                 return false;
             }
 
-            string tempOutputFile = Path.GetTempFileName();
+            string temp_output_file = Path.GetTempFileName();
 
-            _TranspilerProcess.StartInfo.Arguments = string.Format(_GLSLC_ARGUMENTS_FORMAT, tempOutputFile, shaderPath);
+            _TranspilerProcess.StartInfo.Arguments = string.Format(_GLSLC_ARGUMENTS_FORMAT, temp_output_file, shaderPath);
             _TranspilerProcess.Start();
             _TranspilerProcess.StartInfo.Arguments = string.Empty;
 
@@ -171,8 +171,8 @@ namespace Automata.Engine.Rendering.DirectX
                 return false;
             }
 
-            shaderBytes = File.ReadAllBytes(tempOutputFile);
-            File.Delete(tempOutputFile);
+            shaderBytes = File.ReadAllBytes(temp_output_file);
+            File.Delete(temp_output_file);
 
             return true;
         }

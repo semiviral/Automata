@@ -108,9 +108,9 @@ namespace Automata.Game
 
         public async ValueTask AllocateChunkModifications(IEnumerable<(Vector3<int>, ushort)> modifications)
         {
-            foreach ((Vector3<int> global, ushort blockID) in modifications)
+            foreach ((Vector3<int> global, ushort block_id) in modifications)
             {
-                await AllocateChunkModification(global, blockID);
+                await AllocateChunkModification(global, block_id);
             }
         }
 

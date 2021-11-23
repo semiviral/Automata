@@ -66,7 +66,7 @@ namespace Automata.Engine.Concurrency
             // dispatch method used to wrap invocations
             // this allows us to observe cancellations, wait on the semaphore, and
             // generally control internal state before and after invocation execution.
-            async Task DispatchImpl()
+            async Task dispatch_impl_impl()
             {
                 try
                 {
@@ -96,7 +96,7 @@ namespace Automata.Engine.Concurrency
             }
             else
             {
-                Task.Factory.StartNew(DispatchImpl, CancellationToken);
+                Task.Factory.StartNew(dispatch_impl_impl, CancellationToken);
             }
         }
 

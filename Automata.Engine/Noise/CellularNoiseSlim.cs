@@ -339,15 +339,15 @@ namespace Automata.Engine.Noise
                     {
                         Vector3 vec = Cell3D[Hash3D(seed, xi, yi, zi) & 255];
 
-                        float vecX = (xi - x) + (vec.X * jitter);
-                        float vecY = (yi - y) + (vec.Y * jitter);
-                        float vecZ = (zi - z) + (vec.Z * jitter);
+                        float vec_x = (xi - x) + (vec.X * jitter);
+                        float vec_y = (yi - y) + (vec.Y * jitter);
+                        float vec_z = (zi - z) + (vec.Z * jitter);
 
-                        float newDistance = (vecX * vecX) + (vecY * vecY) + (vecZ * vecZ);
+                        float new_distance = (vec_x * vec_x) + (vec_y * vec_y) + (vec_z * vec_z);
 
-                        if (newDistance < distance)
+                        if (new_distance < distance)
                         {
-                            distance = newDistance;
+                            distance = new_distance;
                             xc = xi;
                             yc = yi;
                             zc = zi;
@@ -362,15 +362,15 @@ namespace Automata.Engine.Noise
                     {
                         Vector3 vec = Cell3D[Hash3D(seed, xi, yi, zi) & 255];
 
-                        float vecX = (xi - x) + (vec.X * jitter);
-                        float vecY = (yi - y) + (vec.Y * jitter);
-                        float vecZ = (zi - z) + (vec.Z * jitter);
+                        float vec_x = (xi - x) + (vec.X * jitter);
+                        float vec_y = (yi - y) + (vec.Y * jitter);
+                        float vec_z = (zi - z) + (vec.Z * jitter);
 
-                        float newDistance = Math.Abs(vecX) + Math.Abs(vecY) + Math.Abs(vecZ);
+                        float new_distance = Math.Abs(vec_x) + Math.Abs(vec_y) + Math.Abs(vec_z);
 
-                        if (newDistance < distance)
+                        if (new_distance < distance)
                         {
-                            distance = newDistance;
+                            distance = new_distance;
                             xc = xi;
                             yc = yi;
                             zc = zi;
@@ -385,16 +385,16 @@ namespace Automata.Engine.Noise
                     {
                         Vector3 vec = Cell3D[Hash3D(seed, xi, yi, zi) & 255];
 
-                        float vecX = (xi - x) + (vec.X * jitter);
-                        float vecY = (yi - y) + (vec.Y * jitter);
-                        float vecZ = (zi - z) + (vec.Z * jitter);
+                        float vec_x = (xi - x) + (vec.X * jitter);
+                        float vec_y = (yi - y) + (vec.Y * jitter);
+                        float vec_z = (zi - z) + (vec.Z * jitter);
 
-                        float newDistance =
-                            Math.Abs(vecX) + Math.Abs(vecY) + Math.Abs(vecZ) + ((vecX * vecX) + (vecY * vecY) + (vecZ * vecZ));
+                        float new_distance =
+                            Math.Abs(vec_x) + Math.Abs(vec_y) + Math.Abs(vec_z) + ((vec_x * vec_x) + (vec_y * vec_y) + (vec_z * vec_z));
 
-                        if (newDistance < distance)
+                        if (new_distance < distance)
                         {
-                            distance = newDistance;
+                            distance = new_distance;
                             xc = xi;
                             yc = yi;
                             zc = zi;

@@ -21,29 +21,29 @@ namespace Automata.Engine.Rendering.Vulkan
         internal unsafe VulkanSwapChain(Vk vk, VulkanContext context, ChooseSwapChainSurfaceFormat chooseFormat, ChooseSwapChainPresentMode choosePresentMode,
             ChooseSwapChainExtents chooseExtents) : base(vk)
         {
-            static uint GetMaxImageCountImpl(SurfaceCapabilitiesKHR surfaceCapabilities)
+            static uint get_max_image_count_impl_impl(SurfaceCapabilitiesKHR surfaceCapabilities)
             {
-                uint minImageCount = surfaceCapabilities.MinImageCount + 1;
+                uint min_image_count = surfaceCapabilities.MinImageCount + 1;
 
-                if ((surfaceCapabilities.MinImageCount > 0) && (minImageCount > surfaceCapabilities.MaxImageCount))
+                if ((surfaceCapabilities.MinImageCount > 0) && (min_image_count > surfaceCapabilities.MaxImageCount))
                 {
-                    minImageCount = surfaceCapabilities.MaxImageCount;
+                    min_image_count = surfaceCapabilities.MaxImageCount;
                 }
 
-                return minImageCount;
+                return min_image_count;
             }
 
             _Context = context;
             SurfaceFormat = chooseFormat(_Context.PhysicalDevice!.SwapChainSupportDetails.Formats);
             PresentMode = choosePresentMode(_Context.PhysicalDevice!.SwapChainSupportDetails.PresentModes);
             Extents = chooseExtents(_Context.PhysicalDevice!.SwapChainSupportDetails.SurfaceCapabilities);
-            uint minImageCount = GetMaxImageCountImpl(_Context.PhysicalDevice!.SwapChainSupportDetails.SurfaceCapabilities);
+            uint min_image_count = get_max_image_count_impl_impl(_Context.PhysicalDevice!.SwapChainSupportDetails.SurfaceCapabilities);
 
-            SwapchainCreateInfoKHR swapchainCreateInfo = new SwapchainCreateInfoKHR
+            SwapchainCreateInfoKHR swapchain_create_info = new SwapchainCreateInfoKHR
             {
                 SType = StructureType.SwapchainCreateInfoKhr,
                 Surface = _Context.Instance!.Surface,
-                MinImageCount = minImageCount,
+                MinImageCount = min_image_count,
                 ImageFormat = SurfaceFormat.Format,
                 ImageColorSpace = SurfaceFormat.ColorSpace,
                 ImageExtent = Extents,
@@ -63,25 +63,25 @@ namespace Automata.Engine.Rendering.Vulkan
 
             if (indices.GraphicsFamily != indices.PresentationFamily)
             {
-                swapchainCreateInfo.ImageSharingMode = SharingMode.Concurrent;
-                swapchainCreateInfo.QueueFamilyIndexCount = 2;
-                swapchainCreateInfo.PQueueFamilyIndices = (uint*)&indices;
+                swapchain_create_info.ImageSharingMode = SharingMode.Concurrent;
+                swapchain_create_info.QueueFamilyIndexCount = 2;
+                swapchain_create_info.PQueueFamilyIndices = (uint*)&indices;
             }
 
-            Result result = _Context.LogicalDevice!.SwapchainExtension.CreateSwapchain(_Context.LogicalDevice!, &swapchainCreateInfo,
-                (AllocationCallbacks*)null!, out SwapchainKHR swapchainKHR);
+            Result result = _Context.LogicalDevice!.SwapchainExtension.CreateSwapchain(_Context.LogicalDevice!, &swapchain_create_info,
+                (AllocationCallbacks*)null!, out SwapchainKHR swapchain_khr);
 
             if (result is not Result.Success)
             {
                 throw new VulkanException(result, "Failed to create logical device.");
             }
 
-            _SwapchainKHR = swapchainKHR;
-            _Images = new Image[minImageCount];
+            _SwapchainKHR = swapchain_khr;
+            _Images = new Image[min_image_count];
 
-            fixed (Image* imagesFixed = _Images)
+            fixed (Image* images_fixed = _Images)
             {
-                _Context.LogicalDevice!.SwapchainExtension.GetSwapchainImages(_Context.LogicalDevice!, _SwapchainKHR, &minImageCount, imagesFixed);
+                _Context.LogicalDevice!.SwapchainExtension.GetSwapchainImages(_Context.LogicalDevice!, _SwapchainKHR, &min_image_count, images_fixed);
             }
         }
 

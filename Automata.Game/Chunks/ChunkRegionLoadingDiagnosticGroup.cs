@@ -21,8 +21,8 @@ namespace Automata.Game.Chunks
         {
             switch (data)
             {
-                case RegionLoadingTime regionLoadingTime:
-                    _RegionLoadingTimes.Enqueue(regionLoadingTime);
+                case RegionLoadingTime region_loading_time:
+                    _RegionLoadingTimes.Enqueue(region_loading_time);
                     break;
                 default: throw new ArgumentOutOfRangeException(nameof(data));
             }

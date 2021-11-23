@@ -70,7 +70,7 @@ namespace Automata.Engine
 
         public void CreateWindow(WindowOptions windowOptions, ContextAPI contextAPI)
         {
-            IWindow ConstructWindowImpl(WindowOptions options)
+            IWindow construct_window_impl_impl(WindowOptions options)
             {
                 options.API = contextAPI switch
                 {
@@ -89,10 +89,10 @@ namespace Automata.Engine
 
             try
             {
-                _Window = ConstructWindowImpl(windowOptions);
+                _Window = construct_window_impl_impl(windowOptions);
                 _Window.Initialize();
             }
-            catch (GlfwException glfwException) when (glfwException.ErrorCode is ErrorCode.VersionUnavailable)
+            catch (GlfwException glfw_exception) when (glfw_exception.ErrorCode is ErrorCode.VersionUnavailable)
             {
                 throw new OpenGLVersionNotSupportedException(_PreferredOGLVersion);
             }
@@ -106,10 +106,10 @@ namespace Automata.Engine
         {
             const double default_refresh_rate = 60d;
 
-            double refreshRate = Window.Monitor?.VideoMode.RefreshRate.GetValueOrDefault() ?? default_refresh_rate;
+            double refresh_rate = Window.Monitor?.VideoMode.RefreshRate.GetValueOrDefault() ?? default_refresh_rate;
 
-            VSyncFrameTime = TimeSpan.FromSeconds(1d / refreshRate);
-            Log.Information(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(AutomataWindow), $"VSync framerate configured to {refreshRate} FPS."));
+            VSyncFrameTime = TimeSpan.FromSeconds(1d / refresh_rate);
+            Log.Information(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(AutomataWindow), $"VSync framerate configured to {refresh_rate} FPS."));
         }
 
         #endregion Creation
@@ -121,15 +121,15 @@ namespace Automata.Engine
         {
             try
             {
-                Stopwatch deltaTimer = new Stopwatch();
+                Stopwatch delta_timer = new Stopwatch();
                 BoundedConcurrentQueue<double> fps = new BoundedConcurrentQueue<double>(60);
                 fps.Enqueue(0d); // so we don't get a 'Sequence contains no elements' exception.
 
                 while (!Window.IsClosing)
                 {
-                    TimeSpan deltaTime = deltaTimer.Elapsed;
+                    TimeSpan delta_time = delta_timer.Elapsed;
 
-                    deltaTimer.Restart();
+                    delta_timer.Restart();
                     Window.DoEvents();
 
                     if (InputManager.Instance.IsKeyPressed(Key.Escape))
@@ -139,7 +139,7 @@ namespace Automata.Engine
 
                     if (!Window.IsClosing)
                     {
-                        await World.GlobalUpdateAsync(deltaTime);
+                        await World.GlobalUpdateAsync(delta_time);
                         InputManager.Instance.CheckAndExecuteInputActions();
 
                         Window.DoEvents();
@@ -148,10 +148,10 @@ namespace Automata.Engine
 
                     if (Window.VSync)
                     {
-                        WaitForNextMonitorRefresh(deltaTimer);
+                        WaitForNextMonitorRefresh(delta_timer);
                     }
 
-                    fps.Enqueue(1d / deltaTimer.Elapsed.TotalSeconds);
+                    fps.Enqueue(1d / delta_timer.Elapsed.TotalSeconds);
                     Title = $"Automata {fps.Average():0.00} FPS";
                 }
             }

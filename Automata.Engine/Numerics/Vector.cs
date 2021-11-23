@@ -60,9 +60,9 @@ namespace Automata.Engine.Numerics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3<int> Project3D(int index, int bounds)
         {
-            int xQuotient = Math.DivRem(index, bounds, out int x);
-            int zQuotient = Math.DivRem(xQuotient, bounds, out int z);
-            int y = zQuotient % bounds;
+            int x_quotient = Math.DivRem(index, bounds, out int x);
+            int z_quotient = Math.DivRem(x_quotient, bounds, out int z);
+            int y = z_quotient % bounds;
             return new Vector3<int>(x, y, z);
         }
 

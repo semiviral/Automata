@@ -33,25 +33,25 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
         [SkipLocalsInit]
         public unsafe bool TryGetInfoLog([NotNullWhen(true)] out string? infoLog)
         {
-            GL.GetProgramPipeline(Handle, PipelineParameterName.InfoLogLength, out int infoLogLength);
+            GL.GetProgramPipeline(Handle, PipelineParameterName.InfoLogLength, out int info_log_length);
 
-            if (infoLogLength is 0)
+            if (info_log_length is 0)
             {
                 infoLog = string.Empty;
                 return false;
             }
 
-            Span<byte> infoLogSpan = stackalloc byte[infoLogLength];
-            GL.GetProgramPipelineInfoLog(Handle, (uint)infoLogLength, (uint*)&infoLogLength, infoLogSpan);
-            infoLog = Encoding.ASCII.GetString(infoLogSpan);
+            Span<byte> info_log_span = stackalloc byte[info_log_length];
+            GL.GetProgramPipelineInfoLog(Handle, (uint)info_log_length, (uint*)&info_log_length, info_log_span);
+            infoLog = Encoding.ASCII.GetString(info_log_span);
             return true;
         }
 
         private void CheckInfoLogAndThrow()
         {
-            if (TryGetInfoLog(out string? infoLog))
+            if (TryGetInfoLog(out string? info_log))
             {
-                throw new ShaderLoadException((ShaderType)0, infoLog);
+                throw new ShaderLoadException((ShaderType)0, info_log);
             }
         }
 

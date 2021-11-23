@@ -53,12 +53,12 @@ namespace Automata.Engine.Rendering.OpenGL
                 return;
             }
 
-            GLEnum glError = Instance.GL.GetError();
+            GLEnum gl_error = Instance.GL.GetError();
 
-            switch (glError)
+            switch (gl_error)
             {
                 case GLEnum.NoError: break;
-                default: throw new OpenGLException(glError);
+                default: throw new OpenGLException(gl_error);
             }
         }
 
@@ -68,34 +68,34 @@ namespace Automata.Engine.Rendering.OpenGL
 
         private static void DebugOutputCallback(GLEnum source, GLEnum type, int id, GLEnum severity, int length, nint messagePtr, nint userParamPtr)
         {
-            static void LogOGLDebugMessageImpl(DebugSource debugSource, DebugType debugType, DebugSeverity debugSeverity, string message)
+            static void log_ogl_debug_message_impl_impl(DebugSource debugSource, DebugType debugType, DebugSeverity debugSeverity, string message)
             {
                 const string ogl_log_format = "[DEBUG {0}] {1}: {2}";
 
-                string logString = string.Format(ogl_log_format, debugSource, debugType, message);
+                string log_string = string.Format(ogl_log_format, debugSource, debugType, message);
 
                 switch (debugSeverity)
                 {
                     case DebugSeverity.DontCare:
-                        Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(GLAPI), logString));
+                        Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(GLAPI), log_string));
                         break;
                     case DebugSeverity.DebugSeverityNotification:
-                        Log.Information(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(GLAPI), logString));
+                        Log.Information(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(GLAPI), log_string));
                         break;
                     case DebugSeverity.DebugSeverityLow:
-                        Log.Warning(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(GLAPI), logString));
+                        Log.Warning(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(GLAPI), log_string));
                         break;
                     case DebugSeverity.DebugSeverityMedium:
-                        Log.Error(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(GLAPI), logString));
+                        Log.Error(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(GLAPI), log_string));
                         break;
                     case DebugSeverity.DebugSeverityHigh:
-                        Log.Fatal(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(GLAPI), logString));
+                        Log.Fatal(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(GLAPI), log_string));
                         break;
                     default: throw new ArgumentOutOfRangeException(nameof(debugSeverity), debugSeverity, null);
                 }
             }
 
-            LogOGLDebugMessageImpl((DebugSource)source, (DebugType)type, (DebugSeverity)severity, SilkMarshal.PtrToString(messagePtr));
+            log_ogl_debug_message_impl_impl((DebugSource)source, (DebugType)type, (DebugSeverity)severity, SilkMarshal.PtrToString(messagePtr));
         }
     }
 }

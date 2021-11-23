@@ -43,9 +43,9 @@ namespace Automata.Engine.Rendering.OpenGL
 
         public void Dispose()
         {
-            foreach (FenceSync? fenceSync in _RingSyncs)
+            foreach (FenceSync? fence_sync in _RingSyncs)
             {
-                fenceSync?.Dispose();
+                fence_sync?.Dispose();
             }
 
             GC.SuppressFinalize(this);

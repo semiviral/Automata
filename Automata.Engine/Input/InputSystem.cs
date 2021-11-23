@@ -26,22 +26,22 @@ namespace Automata.Engine.Input
 
         private static void HandleMouseListeners(EntityManager entityManager, TimeSpan delta)
         {
-            Vector2<float> relativeMousePosition = InputManager.Instance.GetMousePositionCenterRelative(0) * (float)delta.TotalSeconds;
+            Vector2<float> relative_mouse_position = InputManager.Instance.GetMousePositionCenterRelative(0) * (float)delta.TotalSeconds;
 
             // invert axis for proper rotation
             // without this line, the x-axis rotation will be backwards
-            relativeMousePosition = relativeMousePosition.WithX(-relativeMousePosition.X);
+            relative_mouse_position = relative_mouse_position.WithX(-relative_mouse_position.X);
 
-            if (Vector.All(relativeMousePosition == Vector2<float>.Zero))
+            if (Vector.All(relative_mouse_position == Vector2<float>.Zero))
             {
                 return;
             }
 
-            foreach ((Transform transform, MouseListener mouseListener) in entityManager.GetComponents<Transform, MouseListener>())
+            foreach ((Transform transform, MouseListener mouse_listener) in entityManager.GetComponents<Transform, MouseListener>())
             {
-                mouseListener.AccumulatedAngles += relativeMousePosition * mouseListener.Sensitivity;
-                Quaternion yaw = Quaternion.CreateFromAxisAngle(Vector3.UnitY, mouseListener.AccumulatedAngles.X);
-                Quaternion pitch = Quaternion.CreateFromAxisAngle(Vector3.UnitX, mouseListener.AccumulatedAngles.Y);
+                mouse_listener.AccumulatedAngles += relative_mouse_position * mouse_listener.Sensitivity;
+                Quaternion yaw = Quaternion.CreateFromAxisAngle(Vector3.UnitY, mouse_listener.AccumulatedAngles.X);
+                Quaternion pitch = Quaternion.CreateFromAxisAngle(Vector3.UnitX, mouse_listener.AccumulatedAngles.Y);
                 transform.Rotation = yaw * pitch;
             }
 
@@ -51,44 +51,44 @@ namespace Automata.Engine.Input
 
         private static void HandleKeyboardListeners(EntityManager entityManager, TimeSpan delta)
         {
-            Vector3 movementVector = -GetMovementVector((float)delta.TotalSeconds);
+            Vector3 movement_vector = -GetMovementVector((float)delta.TotalSeconds);
 
-            if (movementVector == Vector3.Zero)
+            if (movement_vector == Vector3.Zero)
             {
                 return;
             }
 
             foreach ((Transform transform, KeyboardListener listener) in entityManager.GetComponents<Transform, KeyboardListener>())
             {
-                transform.Translation += (listener.Sensitivity * Vector3.Transform(movementVector, transform.Rotation)).AsGeneric<float>();
+                transform.Translation += (listener.Sensitivity * Vector3.Transform(movement_vector, transform.Rotation)).AsGeneric<float>();
             }
         }
 
         private static Vector3 GetMovementVector(float deltaTime)
         {
-            Vector3 movementVector = Vector3.Zero;
+            Vector3 movement_vector = Vector3.Zero;
 
             if (InputManager.Instance.IsKeyPressed(Key.W))
             {
-                movementVector += Vector3.UnitZ * deltaTime;
+                movement_vector += Vector3.UnitZ * deltaTime;
             }
 
             if (InputManager.Instance.IsKeyPressed(Key.S))
             {
-                movementVector -= Vector3.UnitZ * deltaTime;
+                movement_vector -= Vector3.UnitZ * deltaTime;
             }
 
             if (InputManager.Instance.IsKeyPressed(Key.A))
             {
-                movementVector += Vector3.UnitX * deltaTime;
+                movement_vector += Vector3.UnitX * deltaTime;
             }
 
             if (InputManager.Instance.IsKeyPressed(Key.D))
             {
-                movementVector -= Vector3.UnitX * deltaTime;
+                movement_vector -= Vector3.UnitX * deltaTime;
             }
 
-            return movementVector;
+            return movement_vector;
         }
     }
 }

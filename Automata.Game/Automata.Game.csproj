@@ -7,7 +7,7 @@
         <Nullable>enable</Nullable>
         <Company>Astalon Arts</Company>
         <Product>Automata</Product>
-        <LangVersion>9</LangVersion>
+        <LangVersion>default</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>

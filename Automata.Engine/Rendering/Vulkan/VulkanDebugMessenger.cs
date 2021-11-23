@@ -30,7 +30,7 @@ namespace Automata.Engine.Rendering.Vulkan
         {
             _DebugUtils = instance.GetInstanceExtension<ExtDebugUtils>();
 
-            DebugUtilsMessengerCreateInfoEXT createInfo = new DebugUtilsMessengerCreateInfo(StructureType.DebugUtilsMessengerCreateInfoExt, null, 0u,
+            DebugUtilsMessengerCreateInfoEXT create_info = new DebugUtilsMessengerCreateInfo(StructureType.DebugUtilsMessengerCreateInfoExt, null, 0u,
                 _MESSAGE_SEVERITY_IMPORTANT,
                 DebugUtilsMessageTypeFlagsEXT.DebugUtilsMessageTypeGeneralBitExt
                 | DebugUtilsMessageTypeFlagsEXT.DebugUtilsMessageTypeValidationBitExt
@@ -38,7 +38,7 @@ namespace Automata.Engine.Rendering.Vulkan
                 &DebugCallback
             );
 
-            Result result = _DebugUtils.CreateDebugUtilsMessenger(instance, &createInfo, (AllocationCallbacks*)null!, out _Messenger);
+            Result result = _DebugUtils.CreateDebugUtilsMessenger(instance, &create_info, (AllocationCallbacks*)null!, out _Messenger);
 
             if (result is not Result.Success)
             {
@@ -49,21 +49,21 @@ namespace Automata.Engine.Rendering.Vulkan
         private static unsafe uint DebugCallback(DebugUtilsMessageSeverityFlagsEXT messageSeverity, DebugUtilsMessageTypeFlagsEXT messageType,
             DebugUtilsMessengerCallbackDataEXT* callbackData, void* userData)
         {
-            string messageFormat = $"({nameof(VKAPI)}) {{0}}: {{1}}";
+            string message_format = $"({nameof(VKAPI)}) {{0}}: {{1}}";
 
             switch (messageSeverity)
             {
                 case DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityVerboseBitExt:
-                    Log.Verbose(string.Format(messageFormat, messageType, Marshal.PtrToStringAnsi((IntPtr)callbackData->PMessage)));
+                    Log.Verbose(string.Format(message_format, messageType, Marshal.PtrToStringAnsi((IntPtr)callbackData->PMessage)));
                     break;
                 case DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityInfoBitExt:
-                    Log.Information(string.Format(messageFormat, messageType, Marshal.PtrToStringAnsi((IntPtr)callbackData->PMessage)));
+                    Log.Information(string.Format(message_format, messageType, Marshal.PtrToStringAnsi((IntPtr)callbackData->PMessage)));
                     break;
                 case DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityWarningBitExt:
-                    Log.Warning(string.Format(messageFormat, messageType, Marshal.PtrToStringAnsi((IntPtr)callbackData->PMessage)));
+                    Log.Warning(string.Format(message_format, messageType, Marshal.PtrToStringAnsi((IntPtr)callbackData->PMessage)));
                     break;
                 case DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityErrorBitExt:
-                    Log.Error(string.Format(messageFormat, messageType, Marshal.PtrToStringAnsi((IntPtr)callbackData->PMessage)));
+                    Log.Error(string.Format(message_format, messageType, Marshal.PtrToStringAnsi((IntPtr)callbackData->PMessage)));
                     break;
                 default: throw new ArgumentOutOfRangeException(nameof(messageSeverity), messageSeverity, null);
             }

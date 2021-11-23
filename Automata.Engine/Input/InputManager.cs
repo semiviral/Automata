@@ -110,21 +110,21 @@ namespace Automata.Engine.Input
 
         public void CheckAndExecuteInputActions()
         {
-            foreach (InputAction inputAction in _InputActions)
+            foreach (InputAction input_action in _InputActions)
             {
-                if (inputAction.KeyCombination.All(IsKeyPressed))
+                if (input_action.KeyCombination.All(IsKeyPressed))
                 {
-                    if (inputAction.Activated)
+                    if (input_action.Activated)
                     {
                         continue;
                     }
 
-                    inputAction.Activated = true;
-                    inputAction.Action.Invoke();
+                    input_action.Activated = true;
+                    input_action.Action.Invoke();
                 }
                 else
                 {
-                    inputAction.Activated = false;
+                    input_action.Activated = false;
                 }
             }
         }

@@ -108,23 +108,23 @@ namespace Automata.Game.Chunks
 
         private static bool UpdateChunkLoaders(EntityManager entityManager)
         {
-            bool updatedChunkPositions = false;
+            bool updated_chunk_positions = false;
 
-            foreach ((Transform transform, ChunkLoader chunkLoader) in entityManager.GetComponents<Transform, ChunkLoader>())
+            foreach ((Transform transform, ChunkLoader chunk_loader) in entityManager.GetComponents<Transform, ChunkLoader>())
             {
-                Vector3<int> difference = Vector3<int>.Abs(transform.Translation.Convert<int>() - chunkLoader.Origin).WithY(0);
+                Vector3<int> difference = Vector3<int>.Abs(transform.Translation.Convert<int>() - chunk_loader.Origin).WithY(0);
 
-                if (!chunkLoader.RadiusChanged && Vector.All(difference < GenerationConstants.CHUNK_SIZE))
+                if (!chunk_loader.RadiusChanged && Vector.All(difference < GenerationConstants.CHUNK_SIZE))
                 {
                     continue;
                 }
 
-                chunkLoader.Origin = Vector3<int>.RoundBy(transform.Translation.Convert<int>(), GenerationConstants.CHUNK_SIZE);
-                chunkLoader.RadiusChanged = false;
-                updatedChunkPositions = true;
+                chunk_loader.Origin = Vector3<int>.RoundBy(transform.Translation.Convert<int>(), GenerationConstants.CHUNK_SIZE);
+                chunk_loader.RadiusChanged = false;
+                updated_chunk_positions = true;
             }
 
-            return updatedChunkPositions;
+            return updated_chunk_positions;
         }
 
         private async ValueTask RecalculateLoadedRegions(EntityManager entityManager)
@@ -137,8 +137,8 @@ namespace Automata.Game.Chunks
 
         private static NonAllocatingList<ChunkLoader> GetChunkLoaders(EntityManager entityManager)
         {
-            int chunkLoaderCount = (int)entityManager.GetComponentCount<ChunkLoader>();
-            NonAllocatingList<ChunkLoader> loaders = new NonAllocatingList<ChunkLoader>(chunkLoaderCount);
+            int chunk_loader_count = (int)entityManager.GetComponentCount<ChunkLoader>();
+            NonAllocatingList<ChunkLoader> loaders = new NonAllocatingList<ChunkLoader>(chunk_loader_count);
 
             foreach (ChunkLoader loader in entityManager.GetComponents<ChunkLoader>())
             {
@@ -174,25 +174,25 @@ namespace Automata.Game.Chunks
 
         private async ValueTask AllocateChunksWithinLoaderRadii(NonAllocatingList<ChunkLoader> loaders, EntityManager entityManager)
         {
-            foreach (ChunkLoader chunkLoader in loaders)
+            foreach (ChunkLoader chunk_loader in loaders)
             {
-                Vector3<int> yAdjustedOrigin = chunkLoader.Origin.WithY(0);
+                Vector3<int> y_adjusted_origin = chunk_loader.Origin.WithY(0);
 
-                for (int z = -chunkLoader.Radius; z < (chunkLoader.Radius + 1); z++)
-                for (int x = -chunkLoader.Radius; x < (chunkLoader.Radius + 1); x++)
+                for (int z = -chunk_loader.Radius; z < (chunk_loader.Radius + 1); z++)
+                for (int x = -chunk_loader.Radius; x < (chunk_loader.Radius + 1); x++)
                 {
-                    int xPos = x * GenerationConstants.CHUNK_SIZE;
-                    int zPos = z * GenerationConstants.CHUNK_SIZE;
+                    int x_pos = x * GenerationConstants.CHUNK_SIZE;
+                    int z_pos = z * GenerationConstants.CHUNK_SIZE;
 
                     // remark: this relies on GenerationConstants.WORLD_HEIGHT_IN_CHUNKS being 8
-                    await AllocateChunkEntity(entityManager, yAdjustedOrigin + new Vector3<int>(xPos, GenerationConstants.CHUNK_SIZE * 0, zPos));
-                    await AllocateChunkEntity(entityManager, yAdjustedOrigin + new Vector3<int>(xPos, GenerationConstants.CHUNK_SIZE * 1, zPos));
-                    await AllocateChunkEntity(entityManager, yAdjustedOrigin + new Vector3<int>(xPos, GenerationConstants.CHUNK_SIZE * 2, zPos));
-                    await AllocateChunkEntity(entityManager, yAdjustedOrigin + new Vector3<int>(xPos, GenerationConstants.CHUNK_SIZE * 3, zPos));
-                    await AllocateChunkEntity(entityManager, yAdjustedOrigin + new Vector3<int>(xPos, GenerationConstants.CHUNK_SIZE * 4, zPos));
-                    await AllocateChunkEntity(entityManager, yAdjustedOrigin + new Vector3<int>(xPos, GenerationConstants.CHUNK_SIZE * 5, zPos));
-                    await AllocateChunkEntity(entityManager, yAdjustedOrigin + new Vector3<int>(xPos, GenerationConstants.CHUNK_SIZE * 6, zPos));
-                    await AllocateChunkEntity(entityManager, yAdjustedOrigin + new Vector3<int>(xPos, GenerationConstants.CHUNK_SIZE * 7, zPos));
+                    await AllocateChunkEntity(entityManager, y_adjusted_origin + new Vector3<int>(x_pos, GenerationConstants.CHUNK_SIZE * 0, z_pos));
+                    await AllocateChunkEntity(entityManager, y_adjusted_origin + new Vector3<int>(x_pos, GenerationConstants.CHUNK_SIZE * 1, z_pos));
+                    await AllocateChunkEntity(entityManager, y_adjusted_origin + new Vector3<int>(x_pos, GenerationConstants.CHUNK_SIZE * 2, z_pos));
+                    await AllocateChunkEntity(entityManager, y_adjusted_origin + new Vector3<int>(x_pos, GenerationConstants.CHUNK_SIZE * 3, z_pos));
+                    await AllocateChunkEntity(entityManager, y_adjusted_origin + new Vector3<int>(x_pos, GenerationConstants.CHUNK_SIZE * 4, z_pos));
+                    await AllocateChunkEntity(entityManager, y_adjusted_origin + new Vector3<int>(x_pos, GenerationConstants.CHUNK_SIZE * 5, z_pos));
+                    await AllocateChunkEntity(entityManager, y_adjusted_origin + new Vector3<int>(x_pos, GenerationConstants.CHUNK_SIZE * 6, z_pos));
+                    await AllocateChunkEntity(entityManager, y_adjusted_origin + new Vector3<int>(x_pos, GenerationConstants.CHUNK_SIZE * 7, z_pos));
                 }
             }
         }

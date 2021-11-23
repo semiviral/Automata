@@ -57,37 +57,37 @@ namespace Automata.Game.Chunks.Generation
 
         public override string ToString()
         {
-            double buildingTime = BuildingTimes.DefaultIfEmpty().Average(time => ((TimeSpan)time).TotalMilliseconds);
-            double insertionTimes = InsertionTimes.DefaultIfEmpty().Average(time => ((TimeSpan)time).TotalMilliseconds);
-            double structuresTimes = StructuresTimes.DefaultIfEmpty().Average(time => ((TimeSpan)time).TotalMilliseconds);
-            double meshingTime = MeshingTimes.DefaultIfEmpty().Average(time => ((TimeSpan)time).TotalMilliseconds);
-            double applyMeshTime = ApplyMeshTimes.DefaultIfEmpty().Average(time => ((TimeSpan)time).TotalMilliseconds);
+            double building_time = BuildingTimes.DefaultIfEmpty().Average(time => ((TimeSpan)time).TotalMilliseconds);
+            double insertion_times = InsertionTimes.DefaultIfEmpty().Average(time => ((TimeSpan)time).TotalMilliseconds);
+            double structures_times = StructuresTimes.DefaultIfEmpty().Average(time => ((TimeSpan)time).TotalMilliseconds);
+            double meshing_time = MeshingTimes.DefaultIfEmpty().Average(time => ((TimeSpan)time).TotalMilliseconds);
+            double apply_mesh_time = ApplyMeshTimes.DefaultIfEmpty().Average(time => ((TimeSpan)time).TotalMilliseconds);
 
-            return $"{nameof(BuildingTime)} {buildingTime:0.00}ms, "
-                   + $"{nameof(InsertionTime)} {insertionTimes:0.00}ms, "
-                   + $"{nameof(StructuresTime)} {structuresTimes:0.00}ms, "
-                   + $"{nameof(MeshingTime)} {meshingTime:0.00}ms, "
-                   + $"{nameof(ApplyMeshTime)} {applyMeshTime:0.00}ms";
+            return $"{nameof(BuildingTime)} {building_time:0.00}ms, "
+                   + $"{nameof(InsertionTime)} {insertion_times:0.00}ms, "
+                   + $"{nameof(StructuresTime)} {structures_times:0.00}ms, "
+                   + $"{nameof(MeshingTime)} {meshing_time:0.00}ms, "
+                   + $"{nameof(ApplyMeshTime)} {apply_mesh_time:0.00}ms";
         }
 
         public void CommitData<TDataType>(IDiagnosticData<TDataType> data)
         {
             switch (data)
             {
-                case BuildingTime buildingTime:
-                    _BuildingTimes.Enqueue(buildingTime);
+                case BuildingTime building_time:
+                    _BuildingTimes.Enqueue(building_time);
                     break;
-                case InsertionTime insertionTime:
-                    _InsertionTimes.Enqueue(insertionTime);
+                case InsertionTime insertion_time:
+                    _InsertionTimes.Enqueue(insertion_time);
                     break;
-                case StructuresTime structuresTime:
-                    _StructuresTimes.Enqueue(structuresTime);
+                case StructuresTime structures_time:
+                    _StructuresTimes.Enqueue(structures_time);
                     break;
-                case MeshingTime meshingTime:
-                    _MeshingTimes.Enqueue(meshingTime);
+                case MeshingTime meshing_time:
+                    _MeshingTimes.Enqueue(meshing_time);
                     break;
-                case ApplyMeshTime applyMeshTime:
-                    _ApplyMeshTimes.Enqueue(applyMeshTime);
+                case ApplyMeshTime apply_mesh_time:
+                    _ApplyMeshTimes.Enqueue(apply_mesh_time);
                     break;
                 default: throw new ArgumentException("Data is not of a valid type for this diagnostic group.", nameof(data));
             }

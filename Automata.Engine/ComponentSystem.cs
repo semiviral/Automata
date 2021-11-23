@@ -5,13 +5,13 @@ namespace Automata.Engine
 {
     public abstract class ComponentSystem
     {
-        protected World World { get; }
+        protected World _World { get; }
 
         public bool Enabled { get; protected set; }
 
         public ComponentSystem(World world)
         {
-            World = world;
+            _World = world;
             Enabled = true;
         }
 
@@ -25,6 +25,6 @@ namespace Automata.Engine
         /// </summary>
         public virtual ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta) => ValueTask.CompletedTask;
 
-        protected TComponentSystem? GetSystem<TComponentSystem>() where TComponentSystem : ComponentSystem => World.SystemManager.GetSystem<TComponentSystem>();
+        protected TComponentSystem? GetSystem<TComponentSystem>() where TComponentSystem : ComponentSystem => _World.SystemManager.GetSystem<TComponentSystem>();
     }
 }

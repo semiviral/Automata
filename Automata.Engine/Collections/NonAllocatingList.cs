@@ -273,20 +273,20 @@ namespace Automata.Engine.Collections
             }
 
             // ensure we have enough capacity to insert the items
-            int endIndex = index + items.Length;
-            EnsureCapacityOrResize(endIndex);
+            int end_index = index + items.Length;
+            EnsureCapacityOrResize(end_index);
 
-            Span<T> internalSpan = _InternalArray.AsSpan();
+            Span<T> internal_span = _InternalArray.AsSpan();
 
             if (index != Count)
 
                 // make space for the insertion, copying the elements past it
             {
-                internalSpan.Slice(index, Count).CopyTo(internalSpan.Slice(endIndex));
+                internal_span.Slice(index, Count).CopyTo(internal_span.Slice(end_index));
             }
 
             // copy items to range
-            items.CopyTo(internalSpan.Slice(index));
+            items.CopyTo(internal_span.Slice(index));
             Count += items.Length;
         }
 
@@ -298,12 +298,12 @@ namespace Automata.Engine.Collections
                 return;
             }
 
-            int idealCapacity = _InternalArray.Length is 0 ? _DEFAULT_CAPACITY : _InternalArray.Length * 2;
-            int newCapacity = Math.Max(minimumCapacity, idealCapacity);
+            int ideal_capacity = _InternalArray.Length is 0 ? _DEFAULT_CAPACITY : _InternalArray.Length * 2;
+            int new_capacity = Math.Max(minimumCapacity, ideal_capacity);
 
-            T[] newArray = ArrayPool<T>.Shared.Rent(newCapacity);
-            CopyTo(newArray);
-            _InternalArray = newArray;
+            T[] new_array = ArrayPool<T>.Shared.Rent(new_capacity);
+            CopyTo(new_array);
+            _InternalArray = new_array;
         }
 
         #endregion
