@@ -10,13 +10,14 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
 {
     public class Texture2D<TPixel> : Texture where TPixel : unmanaged, IPixel<TPixel>
     {
-        public Vector2i Size { get; }
+        public Vector2<int> Size { get; }
 
-        public Texture2D(Vector2i size, WrapMode wrapMode, FilterMode filterMode, bool mipmap) : this(GLAPI.Instance.GL, size, wrapMode, filterMode, mipmap) { }
+        public Texture2D(Vector2<int> size, WrapMode wrapMode, FilterMode filterMode, bool mipmap) :
+            this(GLAPI.Instance.GL, size, wrapMode, filterMode, mipmap) { }
 
-        public Texture2D(GL gl, Vector2i size, WrapMode wrapMode, FilterMode filterMode, bool mipmap) : base(gl, TextureTarget.Texture2D)
+        public Texture2D(GL gl, Vector2<int> size, WrapMode wrapMode, FilterMode filterMode, bool mipmap) : base(gl, TextureTarget.Texture2D)
         {
-            if (Vector2b.Any(size < 0))
+            if (Vector.Any(size < 0))
             {
                 throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
             }
@@ -33,13 +34,13 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             }
         }
 
-        public void SetPixels(Vector3i offset, Vector2i size, ReadOnlySpan<TPixel> pixels)
+        public void SetPixels(Vector3<int> offset, Vector2<int> size, ReadOnlySpan<TPixel> pixels)
         {
-            if (Vector3b.Any(offset < 0))
+            if (Vector.Any(offset < 0))
             {
                 throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
             }
-            else if (Vector2b.Any(size < 0))
+            else if (Vector.Any(size < 0))
             {
                 throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0 and <TexSize");
             }
@@ -53,8 +54,8 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
         {
             using Image<TPixel> image = Image.Load<TPixel>(path);
             image.Mutate(img => img.Flip(FlipMode.Vertical));
-            Texture2D<TPixel> texture = new Texture2D<TPixel>(new Vector2i(image.Width, image.Height), wrapMode, filterMode, mipmap);
-            texture.SetPixels(Vector3i.Zero, new Vector2i(image.Width, image.Height), image.GetPixelSpan());
+            Texture2D<TPixel> texture = new Texture2D<TPixel>(new Vector2<int>(image.Width, image.Height), wrapMode, filterMode, mipmap);
+            texture.SetPixels(Vector3<int>.Zero, new Vector2<int>(image.Width, image.Height), image.GetPixelSpan());
 
             return texture;
         }

@@ -7,35 +7,35 @@ namespace Automata.Engine.Rendering.OpenGL
     public class RingFenceSync : IDisposable
     {
         private readonly GL _GL;
-        private readonly Ring _Ring;
+        private readonly RingIncrementer _RingIncrementer;
         private readonly FenceSync?[] _RingSyncs;
 
-        public nuint Current => _Ring.Current;
+        public nuint Current => _RingIncrementer.Current;
 
         public RingFenceSync(GL gl, nuint count)
         {
             _GL = gl;
-            _Ring = new Ring(count);
+            _RingIncrementer = new RingIncrementer(count);
             _RingSyncs = new FenceSync?[count];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WaitCurrent() => _RingSyncs[(int)_Ring.Current]?.BusyWaitCPU();
+        public void WaitCurrent() => _RingSyncs[(int)_RingIncrementer.Current]?.BusyWaitCPU();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WaitEnterNext()
         {
             // wait to enter next ring, then increment to it
-            _RingSyncs[(int)_Ring.NextRing()]?.BusyWaitCPU();
-            _Ring.Increment();
+            _RingSyncs[(int)_RingIncrementer.NextRing()]?.BusyWaitCPU();
+            _RingIncrementer.Increment();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void FenceCurrent()
         {
             // create fence for current ring
-            _RingSyncs[(int)_Ring.Current]?.Dispose();
-            _RingSyncs[(int)_Ring.Current] = new FenceSync(_GL);
+            _RingSyncs[(int)_RingIncrementer.Current]?.Dispose();
+            _RingSyncs[(int)_RingIncrementer.Current] = new FenceSync(_GL);
         }
 
 
@@ -43,9 +43,9 @@ namespace Automata.Engine.Rendering.OpenGL
 
         public void Dispose()
         {
-            foreach (FenceSync? fenceSync in _RingSyncs)
+            foreach (FenceSync? fence_sync in _RingSyncs)
             {
-                fenceSync?.Dispose();
+                fence_sync?.Dispose();
             }
 
             GC.SuppressFinalize(this);

@@ -58,10 +58,10 @@ namespace Automata.Engine.Noise
         private static float Simplex2D(int seed, float frequency, Vector2 xy)
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static float CalculateTImpl(Vector2 a) => 0.5f - a.X - a.Y;
+            static float calculate_t_impl_impl(Vector2 a) => 0.5f - a.X - a.Y;
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static float GradCoord2DImpl(int seed, Vector2 hashVector, Vector2 gradMultiplier)
+            static float grad_coord_2d_impl_impl(int seed, Vector2 hashVector, Vector2 gradMultiplier)
             {
                 int hash = seed;
                 hash ^= _X_PRIME * (int)hashVector.X;
@@ -78,7 +78,7 @@ namespace Automata.Engine.Noise
                 out Vector2 xy1, out Vector2 xy2, out Vector2 xy3);
 
             Vector3 n;
-            t = CalculateTImpl(xy1 * xy1);
+            t = calculate_t_impl_impl(xy1 * xy1);
 
             if (t < 0f)
             {
@@ -87,10 +87,10 @@ namespace Automata.Engine.Noise
             else
             {
                 t *= t;
-                n.X = t * t * GradCoord2DImpl(seed, ij0, xy1);
+                n.X = t * t * grad_coord_2d_impl_impl(seed, ij0, xy1);
             }
 
-            t = CalculateTImpl(xy2 * xy2);
+            t = calculate_t_impl_impl(xy2 * xy2);
 
             if (t < 0f)
             {
@@ -99,10 +99,10 @@ namespace Automata.Engine.Noise
             else
             {
                 t *= t;
-                n.Y = t * t * GradCoord2DImpl(seed, ij0 + ij1, xy2);
+                n.Y = t * t * grad_coord_2d_impl_impl(seed, ij0 + ij1, xy2);
             }
 
-            t = CalculateTImpl(xy3 * xy3);
+            t = calculate_t_impl_impl(xy3 * xy3);
 
             if (t < 0f)
             {
@@ -111,7 +111,7 @@ namespace Automata.Engine.Noise
             else
             {
                 t *= t;
-                n.Z = t * t * GradCoord2DImpl(seed, ij0 + Vector2.One, xy3);
+                n.Z = t * t * grad_coord_2d_impl_impl(seed, ij0 + Vector2.One, xy3);
             }
 
             return 50f * n.Sum();
@@ -149,10 +149,10 @@ namespace Automata.Engine.Noise
         private static float Simplex3D(int seed, float frequency, Vector3 xyz)
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static float CalculateTImpl(Vector3 a) => 0.6f - a.X - a.Y - a.Z;
+            static float calculate_t_impl_impl(Vector3 a) => 0.6f - a.X - a.Y - a.Z;
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static float GradCoord3DImpl(int seed, Vector3 hashVector, Vector3 gradMultiplier)
+            static float grad_coord_3d_impl_impl(int seed, Vector3 hashVector, Vector3 gradMultiplier)
             {
                 int hash = seed;
                 hash ^= _X_PRIME * (int)hashVector.X;
@@ -170,7 +170,7 @@ namespace Automata.Engine.Noise
                 out Vector3 xyz0, out Vector3 xyz1, out Vector3 xyz2, out Vector3 xyz3);
 
             Vector4 n;
-            t = CalculateTImpl(xyz0 * xyz0);
+            t = calculate_t_impl_impl(xyz0 * xyz0);
 
             if (t < 0f)
             {
@@ -179,10 +179,10 @@ namespace Automata.Engine.Noise
             else
             {
                 t *= t;
-                n.X = t * t * GradCoord3DImpl(seed, ijk0, xyz0);
+                n.X = t * t * grad_coord_3d_impl_impl(seed, ijk0, xyz0);
             }
 
-            t = CalculateTImpl(xyz1 * xyz1);
+            t = calculate_t_impl_impl(xyz1 * xyz1);
 
             if (t < 0f)
             {
@@ -191,10 +191,10 @@ namespace Automata.Engine.Noise
             else
             {
                 t *= t;
-                n.Y = t * t * GradCoord3DImpl(seed, ijk0 + ijk1, xyz1);
+                n.Y = t * t * grad_coord_3d_impl_impl(seed, ijk0 + ijk1, xyz1);
             }
 
-            t = CalculateTImpl(xyz2 * xyz2);
+            t = calculate_t_impl_impl(xyz2 * xyz2);
 
             if (t < 0f)
             {
@@ -203,10 +203,10 @@ namespace Automata.Engine.Noise
             else
             {
                 t *= t;
-                n.Z = t * t * GradCoord3DImpl(seed, ijk0 + ijk2, xyz2);
+                n.Z = t * t * grad_coord_3d_impl_impl(seed, ijk0 + ijk2, xyz2);
             }
 
-            t = CalculateTImpl(xyz3 * xyz3);
+            t = calculate_t_impl_impl(xyz3 * xyz3);
 
             if (t < 0f)
             {
@@ -215,7 +215,7 @@ namespace Automata.Engine.Noise
             else
             {
                 t *= t;
-                n.W = t * t * GradCoord3DImpl(seed, ijk0 + Vector3.One, xyz3);
+                n.W = t * t * grad_coord_3d_impl_impl(seed, ijk0 + Vector3.One, xyz3);
             }
 
             return 32f * n.Sum();

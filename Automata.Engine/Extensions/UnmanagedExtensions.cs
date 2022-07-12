@@ -23,10 +23,10 @@ namespace Automata.Engine.Extensions
         {
             T result = new T();
 
-            ref TComponent aComponent = ref a.GetComponent<T, TComponent>(index);
-            ref TComponent resultComponent = ref result.GetComponent<T, TComponent>(index);
+            ref TComponent a_component = ref a.GetComponent<T, TComponent>(index);
+            ref TComponent result_component = ref result.GetComponent<T, TComponent>(index);
 
-            Unsafe.WriteUnaligned(ref Unsafe.As<TComponent, byte>(ref resultComponent), aComponent);
+            Unsafe.WriteUnaligned(ref Unsafe.As<TComponent, byte>(ref result_component), a_component);
 
             return result;
         }
@@ -53,5 +53,11 @@ namespace Automata.Engine.Extensions
             where T : unmanaged
             where TComponent : unmanaged =>
             MemoryMarshal.CreateSpan(ref Unsafe.As<T, TComponent>(ref a), sizeof(T) / sizeof(TComponent));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TTo Coerce<TFrom, TTo>(this TFrom a)
+            where TFrom : unmanaged
+            where TTo : unmanaged =>
+            (TTo)(object)a;
     }
 }

@@ -32,7 +32,7 @@ namespace Automata.Game.Chunks.Generation.Meshing
                 return NonAllocatingQuadsMeshData<uint, PackedVertex>.Empty;
             }
 
-            BlockRegistry blockRegistry = BlockRegistry.Instance;
+            BlockRegistry block_registry = BlockRegistry.Instance;
             NonAllocatingList<QuadIndexes<uint>> indexes = new NonAllocatingList<QuadIndexes<uint>>(_DEFAULT_INDEXES_CAPACITY);
             NonAllocatingList<QuadVertexes<PackedVertex>> vertexes = new NonAllocatingList<QuadVertexes<PackedVertex>>(_DEFAULT_VERTEXES_CAPACITY);
             Span<Block> blocks = stackalloc Block[GenerationConstants.CHUNK_SIZE_CUBED];
@@ -52,11 +52,11 @@ namespace Automata.Game.Chunks.Generation.Meshing
                     continue;
                 }
 
-                IMeshingStrategy meshingStrategy = MeshingStrategies[blockRegistry.GetBlockDefinition(block.ID).MeshingStrategyIndex];
-                int localPosition = x | (y << GenerationConstants.CHUNK_SIZE_SHIFT) | (z << (GenerationConstants.CHUNK_SIZE_SHIFT * 2));
+                IMeshingStrategy meshing_strategy = MeshingStrategies[block_registry.GetBlockDefinition(block.ID).MeshingStrategyIndex];
+                int local_position = x | (y << GenerationConstants.CHUNK_SIZE_SHIFT) | (z << (GenerationConstants.CHUNK_SIZE_SHIFT * 2));
 
-                meshingStrategy.Mesh(blocks, faces, indexes, vertexes, neighbors, index, localPosition, block,
-                    blockRegistry.CheckBlockHasProperty(block.ID, IBlockDefinition.Attribute.Transparent));
+                meshing_strategy.Mesh(blocks, faces, indexes, vertexes, neighbors, index, local_position, block,
+                    block_registry.CheckBlockHasProperty(block.ID, IBlockDefinition.Attribute.Transparent));
             }
 
             return new NonAllocatingQuadsMeshData<uint, PackedVertex>(indexes, vertexes);

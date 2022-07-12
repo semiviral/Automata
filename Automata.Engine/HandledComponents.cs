@@ -25,7 +25,7 @@ namespace Automata.Engine
 
             HashSet<Type> processed = new HashSet<Type>();
 
-            int hashCode = 17;
+            int hash_code = 17;
 
             foreach (Type type in types)
             {
@@ -39,12 +39,12 @@ namespace Automata.Engine
                 }
                 else
                 {
-                    hashCode = HashCode.Combine(hashCode, type.GetHashCode());
+                    hash_code = HashCode.Combine(hash_code, type.GetHashCode());
                 }
             }
 
             _Types = types;
-            _CompositeHashCode = hashCode;
+            _CompositeHashCode = hash_code;
         }
 
 

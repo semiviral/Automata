@@ -21,8 +21,8 @@ namespace Automata.Game.Chunks
         {
             switch (data)
             {
-                case ChunkModificationTime chunkModificationTime:
-                    _ChunkModificationTimes.Enqueue(chunkModificationTime);
+                case ChunkModificationTime chunk_modification_time:
+                    _ChunkModificationTimes.Enqueue(chunk_modification_time);
                     break;
                 default: throw new ArgumentOutOfRangeException(nameof(data));
             }

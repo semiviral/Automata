@@ -27,8 +27,8 @@ namespace Automata.Engine.Collections
                     ThrowHelper.ThrowIndexOutOfRangeException();
                 }
 
-                uint value = GetValue(index, _IndexBits, _IndexMask, _InternalArray);
-                return _LookupTable[(int)value];
+                uint lookup_value = GetLookupIndexValue(index, _IndexBits, _IndexMask, _InternalArray);
+                return _LookupTable[(int)lookup_value];
             }
             set
             {
@@ -37,15 +37,15 @@ namespace Automata.Engine.Collections
                     ThrowHelper.ThrowIndexOutOfRangeException();
                 }
 
-                int paletteIndex = _LookupTable.IndexOf(value);
+                int palette_index = _LookupTable.IndexOf(value);
 
-                if (paletteIndex == -1)
+                if (palette_index == -1)
                 {
                     AllocateLookupEntry(value);
-                    paletteIndex = _LookupTable.IndexOf(value);
+                    palette_index = _LookupTable.IndexOf(value);
                 }
 
-                SetValue(index, (uint)paletteIndex, _IndexBits, _IndexMask, _InternalArray);
+                SetLookupIndexValue(index, (uint)palette_index, _IndexBits, _IndexMask, _InternalArray);
             }
         }
 
@@ -110,8 +110,8 @@ namespace Automata.Engine.Collections
             }
 
             // expand palette
-            byte oldBits = _IndexBits;
-            uint oldMask = _IndexMask;
+            byte old_bits = _IndexBits;
+            uint old_mask = _IndexMask;
 
             IncreaseIndexBits();
 
@@ -119,8 +119,8 @@ namespace Automata.Engine.Collections
 
             for (int index = 0; index < Count; index++)
             {
-                uint value = GetValue(index, oldBits, oldMask, _InternalArray);
-                SetValue(index, value, _IndexBits, _IndexMask, palette);
+                uint value = GetLookupIndexValue(index, old_bits, old_mask, _InternalArray);
+                SetLookupIndexValue(index, value, _IndexBits, _IndexMask, palette);
             }
 
             ReallocatePalette(palette.Length);
@@ -138,21 +138,21 @@ namespace Automata.Engine.Collections
             Array.Clear(_InternalArray, 0, _InternalArray.Length);
         }
 
-        private static void SetValue(int index, uint lookupIndex, byte bits, uint mask, Span<uint> palette)
+        private static void SetLookupIndexValue(int index, uint lookupIndex, byte bits, uint mask, Span<uint> palette)
         {
-            int paletteIndex = (index * bits) / _UINT_32_BITS;
-            int offset = (index - (paletteIndex * (_UINT_32_BITS / bits))) * bits;
-            palette[paletteIndex] = (palette[paletteIndex] & ~(mask << offset)) | (lookupIndex << offset);
+            int palette_index = (index * bits) / _UINT_32_BITS;
+            int offset = (index - (palette_index * (_UINT_32_BITS / bits))) * bits;
+            palette[palette_index] = (palette[palette_index] & ~(mask << offset)) | (lookupIndex << offset);
 
-            Debug.Assert(GetValue(index, bits, mask, palette).Equals(lookupIndex), $"{nameof(SetValue)} failed.");
+            Debug.Assert(GetLookupIndexValue(index, bits, mask, palette).Equals(lookupIndex), $"{nameof(SetLookupIndexValue)} failed.");
         }
 
-        private static uint GetValue(int index, byte bits, uint mask, ReadOnlySpan<uint> palette)
+        private static uint GetLookupIndexValue(int index, byte bits, uint mask, ReadOnlySpan<uint> palette)
         {
-            int paletteIndex = (index * bits) / _UINT_32_BITS;
-            int offset = (index - (paletteIndex * (_UINT_32_BITS / bits))) * bits;
+            int palette_index = (index * bits) / _UINT_32_BITS;
+            int offset = (index - (palette_index * (_UINT_32_BITS / bits))) * bits;
 
-            return (uint)((palette[paletteIndex] & (mask << offset)) >> offset);
+            return (uint)((palette[palette_index] & (mask << offset)) >> offset);
         }
 
         private void IncreaseIndexBits()
@@ -243,8 +243,8 @@ namespace Automata.Engine.Collections
                     return false;
                 }
 
-                int lookupIndex = (int)((_Palette._InternalArray![_Index] >> _Offset) & _Palette._IndexMask);
-                _Current = _Palette._LookupTable[lookupIndex];
+                int lookup_index = (int)((_Palette._InternalArray![_Index] >> _Offset) & _Palette._IndexMask);
+                _Current = _Palette._LookupTable[lookup_index];
                 _Offset += _Palette._IndexBits;
 
                 if ((uint)_Offset >= _UINT_32_BITS)

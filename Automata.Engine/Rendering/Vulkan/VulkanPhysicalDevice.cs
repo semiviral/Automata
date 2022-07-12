@@ -48,11 +48,11 @@ namespace Automata.Engine.Rendering.Vulkan
         private SwapChainSupportDetails GetSwapChainSupport()
         {
             _Context.Instance!.SurfaceExtension.GetPhysicalDeviceSurfaceCapabilities(this, _Context.Instance!.Surface,
-                out SurfaceCapabilitiesKHR surfaceCapabilities);
+                out SurfaceCapabilitiesKHR surface_capabilities);
 
             return new SwapChainSupportDetails
             {
-                SurfaceCapabilities = surfaceCapabilities,
+                SurfaceCapabilities = surface_capabilities,
                 Formats = _Context.Instance!.SurfaceExtension.GetPhysicalDeviceSurfaceFormats(this, _Context.Instance!.Surface),
                 PresentModes = _Context.Instance!.SurfaceExtension.GetPhysicalDeviceSurfacePresentModes(this, _Context.Instance!.Surface)
             };
@@ -60,18 +60,18 @@ namespace Automata.Engine.Rendering.Vulkan
 
         private unsafe Memory<VulkanExtension> GetExtensions()
         {
-            uint extensionCount = 0u;
-            VK.EnumerateDeviceExtensionProperties(this, (byte*)null!, &extensionCount, (ExtensionProperties*)null!);
-            Span<ExtensionProperties> extensionPropertiesSpan = stackalloc ExtensionProperties[(int)extensionCount];
-            VK.EnumerateDeviceExtensionProperties(this, string.Empty, &extensionCount, extensionPropertiesSpan);
-            Memory<VulkanExtension> extensions = new VulkanExtension[extensionCount];
-            Span<VulkanExtension> extensionsSpan = extensions.Span;
+            uint extension_count = 0u;
+            VK.EnumerateDeviceExtensionProperties(this, (byte*)null!, &extension_count, (ExtensionProperties*)null!);
+            Span<ExtensionProperties> extension_properties_span = stackalloc ExtensionProperties[(int)extension_count];
+            VK.EnumerateDeviceExtensionProperties(this, string.Empty, &extension_count, extension_properties_span);
+            Memory<VulkanExtension> extensions = new VulkanExtension[extension_count];
+            Span<VulkanExtension> extensions_span = extensions.Span;
 
-            for (int index = 0; index < extensionsSpan.Length; index++)
+            for (int index = 0; index < extensions_span.Length; index++)
             {
-                ExtensionProperties extensionProperties = extensionPropertiesSpan[index];
-                string name = SilkMarshal.PtrToString((nint)extensionProperties.ExtensionName);
-                extensionsSpan[index] = new VulkanExtension(name, extensionProperties.SpecVersion);
+                ExtensionProperties extension_properties = extension_properties_span[index];
+                string name = SilkMarshal.PtrToString((nint)extension_properties.ExtensionName);
+                extensions_span[index] = new VulkanExtension(name, extension_properties.SpecVersion);
             }
 
             return extensions;
@@ -92,44 +92,44 @@ namespace Automata.Engine.Rendering.Vulkan
 
         public PhysicalDeviceFeatures GetFeatures()
         {
-            VK.GetPhysicalDeviceFeatures(this, out PhysicalDeviceFeatures physicalDeviceFeatures);
-            return physicalDeviceFeatures;
+            VK.GetPhysicalDeviceFeatures(this, out PhysicalDeviceFeatures physical_device_features);
+            return physical_device_features;
         }
 
         public unsafe QueueFamilyIndices GetQueueFamilies()
         {
             // todo make this choose with a dynamic predicate
 
-            QueueFamilyIndices queueFamilyIndices = new QueueFamilyIndices();
+            QueueFamilyIndices queue_family_indices = new QueueFamilyIndices();
 
-            uint queueFamilyPropertiesCount = 0u;
-            VK.GetPhysicalDeviceQueueFamilyProperties(this, &queueFamilyPropertiesCount, (QueueFamilyProperties*)null!);
-            QueueFamilyProperties* queueFamilyPropertiesPointer = stackalloc QueueFamilyProperties[(int)queueFamilyPropertiesCount];
-            VK.GetPhysicalDeviceQueueFamilyProperties(this, &queueFamilyPropertiesCount, queueFamilyPropertiesPointer);
+            uint queue_family_properties_count = 0u;
+            VK.GetPhysicalDeviceQueueFamilyProperties(this, &queue_family_properties_count, (QueueFamilyProperties*)null!);
+            QueueFamilyProperties* queue_family_properties_pointer = stackalloc QueueFamilyProperties[(int)queue_family_properties_count];
+            VK.GetPhysicalDeviceQueueFamilyProperties(this, &queue_family_properties_count, queue_family_properties_pointer);
 
-            for (uint index = 0; index < queueFamilyPropertiesCount; index++)
+            for (uint index = 0; index < queue_family_properties_count; index++)
             {
-                QueueFamilyProperties queueFamilyProperties = queueFamilyPropertiesPointer[index];
+                QueueFamilyProperties queue_family_properties = queue_family_properties_pointer[index];
 
-                if (queueFamilyProperties.QueueFlags.HasFlag(QueueFlags.QueueGraphicsBit))
+                if (queue_family_properties.QueueFlags.HasFlag(QueueFlags.QueueGraphicsBit))
                 {
-                    queueFamilyIndices.GraphicsFamily = index;
+                    queue_family_indices.GraphicsFamily = index;
                 }
 
-                _Context.Instance!.SurfaceExtension.GetPhysicalDeviceSurfaceSupport(this, index, _Context.Instance!.Surface, out Bool32 presentationSupport);
+                _Context.Instance!.SurfaceExtension.GetPhysicalDeviceSurfaceSupport(this, index, _Context.Instance!.Surface, out Bool32 presentation_support);
 
-                if (presentationSupport)
+                if (presentation_support)
                 {
-                    queueFamilyIndices.PresentationFamily = index;
+                    queue_family_indices.PresentationFamily = index;
                 }
 
-                if (queueFamilyIndices.IsCompleted())
+                if (queue_family_indices.IsCompleted())
                 {
                     break;
                 }
             }
 
-            return queueFamilyIndices;
+            return queue_family_indices;
         }
 
         public VulkanLogicalDevice CreateLogicalDevice(string[] extensions, string[]? validationLayers) =>

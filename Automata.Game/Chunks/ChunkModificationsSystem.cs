@@ -14,15 +14,27 @@ namespace Automata.Game.Chunks
         [HandledComponents(EnumerationStrategy.All, typeof(Chunk))]
         public override async ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta)
         {
-            await _VoxelWorld.ProcessConcurrentModifications();
+            await _VoxelWorld.SynchronizeConcurrentModifications();
 
             foreach (Chunk chunk in entityManager.GetComponents<Chunk>())
             {
-                if (chunk.State is GenerationState.AwaitingMesh or GenerationState.Finished
-                    && Array.TrueForAll(chunk.Neighbors, neighbor => neighbor?.State is not GenerationState.GeneratingMesh)
-                    && TryProcessChunkModifications(chunk))
+                if (chunk.State is GenerationState.AwaitingMesh or GenerationState.Finished)
                 {
-                    chunk.RemeshNeighborhood(true);
+                    bool remeshable = true;
+
+                    foreach (Chunk? neighbor in chunk.Neighbors)
+                    {
+                        if (neighbor?.State is GenerationState.GeneratingMesh)
+                        {
+                            remeshable = false;
+                            break;
+                        }
+                    }
+
+                    if (remeshable && TryProcessChunkModifications(chunk))
+                    {
+                        chunk.DangerousRemeshNeighborhood();
+                    }
                 }
             }
         }

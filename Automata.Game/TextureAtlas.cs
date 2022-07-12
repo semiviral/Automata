@@ -23,30 +23,30 @@ namespace Automata.Game
         {
             const string group_with_sprite_name_format = "{0}:{1}";
 
-            Blocks = new Texture2DArray<Rgba32>(new Vector3i(8, 8, texturePaths.Count), Texture.WrapMode.Repeat, Texture.FilterMode.Point);
+            Blocks = new Texture2DArray<Rgba32>(new Vector3<int>(8, 8, texturePaths.Count), Texture.WrapMode.Repeat, Texture.FilterMode.Point);
 
             int depth = 0;
 
             foreach ((string group, string path) in texturePaths)
             {
-                Blocks.SetPixels(new Vector3i(0, 0, depth), new Vector2i(8, 8), Image.Load<Rgba32>(path).GetPixelSpan());
+                Blocks.SetPixels(new Vector3<int>(0, 0, depth), new Vector2<int>(8, 8), Image.Load<Rgba32>(path).GetPixelSpan());
 
-                string formattedName = string.Format(group_with_sprite_name_format, group, Path.GetFileNameWithoutExtension(path));
+                string formatted_name = string.Format(group_with_sprite_name_format, group, Path.GetFileNameWithoutExtension(path));
 
                 // it shouldn't be too uncommon for multiple identical paths to be parsed out
                 // as it just means multiple blocks are using the same texture
-                if (_TextureDepths.ContainsKey(formattedName))
+                if (_TextureDepths.ContainsKey(formatted_name))
                 {
                     continue;
                 }
 
-                if (_TextureDepths.TryAdd(formattedName, depth))
+                if (_TextureDepths.TryAdd(formatted_name, depth))
                 {
-                    Log.Debug(string.Format(_LogFormat, $"Registered texture: \"{formattedName}\" depth {depth}"));
+                    Log.Debug(string.Format(_LogFormat, $"Registered texture: \"{formatted_name}\" depth {depth}"));
                 }
                 else
                 {
-                    Log.Warning(string.Format(_LogFormat, $"Failed to register texture: \"{formattedName}\" depth {depth}"));
+                    Log.Warning(string.Format(_LogFormat, $"Failed to register texture: \"{formatted_name}\" depth {depth}"));
                 }
 
                 depth += 1;

@@ -67,15 +67,15 @@ namespace Automata.Engine.Memory
             {
                 nuint index = 0;
 
-                foreach (MemoryBlock memoryBlock in _MemoryMap)
+                foreach (MemoryBlock memory_block in _MemoryMap)
                 {
-                    if (memoryBlock.Index != index)
+                    if (memory_block.Index != index)
                     {
-                        throw new ArgumentOutOfRangeException(nameof(memoryBlock.Index), $"{nameof(MemoryBlock)} index does not follow previous block.");
+                        throw new ArgumentOutOfRangeException(nameof(memory_block.Index), $"{nameof(MemoryBlock)} index does not follow previous block.");
                     }
                     else
                     {
-                        index += memoryBlock.Size;
+                        index += memory_block.Size;
                     }
                 }
             }
@@ -107,9 +107,9 @@ namespace Automata.Engine.Memory
 
             lock (_AccessLock)
             {
-                nuint sizeInBytes = (nuint)size * (nuint)sizeof(T);
+                nuint size_in_bytes = (nuint)size * (nuint)sizeof(T);
 
-                if (sizeInBytes <= RemainingSize)
+                if (size_in_bytes <= RemainingSize)
                 {
                     for (LinkedListNode<MemoryBlock>? current = SafeGetFirstNode(); current is not null; current = current.Next)
                     {
@@ -117,23 +117,23 @@ namespace Automata.Engine.Memory
                         // be in units of `T`, so to properly align memory blocks, we need a byte-length representation of
                         // the provided `size` parameter's value.
 
-                        if (!TryAllocateMemoryBlock(current, alignment, sizeInBytes))
+                        if (!TryAllocateMemoryBlock(current, alignment, size_in_bytes))
                         {
                             continue;
                         }
 
                         index = current.Value.Index;
-                        IMemoryOwner<T> memoryOwner = CreateMemoryOwner<T>(index, size);
-                        RentedSize += sizeInBytes;
+                        IMemoryOwner<T> memory_owner = CreateMemoryOwner<T>(index, size);
+                        RentedSize += size_in_bytes;
                         RentedBlocks += 1;
 
                         if (clear)
                         {
                             // this can be pretty expensive, so make sure we only clear when the user wants to
-                            memoryOwner.Memory.Span.Clear();
+                            memory_owner.Memory.Span.Clear();
                         }
 
-                        return memoryOwner;
+                        return memory_owner;
                     }
                 }
             }
@@ -161,9 +161,9 @@ namespace Automata.Engine.Memory
             else if (current.Value.Size > sizeInBytes)
             {
                 // allocate new block after current with remaining length
-                nuint afterBlockIndex = current.Value.Index + sizeInBytes;
-                nuint afterBlockLength = current.Value.Size - sizeInBytes;
-                _MemoryMap.AddAfter(current, new MemoryBlock(afterBlockIndex, afterBlockLength, false));
+                nuint after_block_index = current.Value.Index + sizeInBytes;
+                nuint after_block_length = current.Value.Size - sizeInBytes;
+                _MemoryMap.AddAfter(current, new MemoryBlock(after_block_index, after_block_length, false));
 
                 // modify current block to reflect proper size
                 current.Value = current.Value with { Size = sizeInBytes, Owned = true };
@@ -181,40 +181,40 @@ namespace Automata.Engine.Memory
         {
             Debug.Assert(!current.Value.Owned);
 
-            nuint alignmentPadding = (alignment - (current.Value.Index % alignment)) % alignment;
-            nuint alignedIndex = current.Value.Index + alignmentPadding;
-            nuint alignedSize = current.Value.Size - alignmentPadding;
+            nuint alignment_padding = (alignment - (current.Value.Index % alignment)) % alignment;
+            nuint aligned_index = current.Value.Index + alignment_padding;
+            nuint aligned_size = current.Value.Size - alignment_padding;
 
             // check for an overflow, in which case size is too small.
-            if (alignedSize > current.Value.Size)
+            if (aligned_size > current.Value.Size)
             {
                 return false;
             }
-            else if (alignmentPadding is 0u && (current.Value.Size == sizeInBytes))
+            else if (alignment_padding is 0u && (current.Value.Size == sizeInBytes))
             {
                 current.Value = current.Value with { Owned = true };
             }
-            else if (alignedSize >= sizeInBytes)
+            else if (aligned_size >= sizeInBytes)
             {
                 // if our alignment forces us out-of-alignment with
                 // this block's index, then allocate a block before to
                 // facilitate the unaligned size
-                if (alignedIndex > current.Value.Index)
+                if (aligned_index > current.Value.Index)
                 {
-                    nuint beforeBlockIndex = current.Value.Index;
-                    nuint beforeBlockSize = alignmentPadding;
-                    MemoryBlock beforeBlock = new MemoryBlock(beforeBlockIndex, beforeBlockSize, false);
-                    _MemoryMap.AddBefore(current, beforeBlock);
+                    nuint before_block_index = current.Value.Index;
+                    nuint before_block_size = alignment_padding;
+                    MemoryBlock before_block = new MemoryBlock(before_block_index, before_block_size, false);
+                    _MemoryMap.AddBefore(current, before_block);
 
-                    nuint newCurrentSize = current.Value.Size - alignmentPadding;
-                    current.Value = current.Value with { Index = alignedIndex, Size = newCurrentSize, Owned = true };
+                    nuint new_current_size = current.Value.Size - alignment_padding;
+                    current.Value = current.Value with { Index = aligned_index, Size = new_current_size, Owned = true };
                 }
 
                 // allocate block after current to hold remaining length
-                nuint afterBlockIndex = current.Value.Index + sizeInBytes;
-                nuint afterBlockSize = current.Value.Size - sizeInBytes;
-                MemoryBlock afterBlock = new MemoryBlock(afterBlockIndex, afterBlockSize, false);
-                _MemoryMap.AddAfter(current, afterBlock);
+                nuint after_block_index = current.Value.Index + sizeInBytes;
+                nuint after_block_size = current.Value.Size - sizeInBytes;
+                MemoryBlock after_block = new MemoryBlock(after_block_index, after_block_size, false);
+                _MemoryMap.AddAfter(current, after_block);
 
                 // modify current block to reflect proper size
                 current.Value = current.Value with { Size = sizeInBytes, Owned = true };
@@ -244,10 +244,10 @@ namespace Automata.Engine.Memory
             // T will not often be the same size as _Pointer (i.e. a byte), so it's important to take care in calling this
             // method with a valid index and size that won't misalign. With this in mind, ensure that instantiating the
             // NativeMemoryManager ALWAYS uses the units-of-T size.
-            NativeMemoryManager<T> memoryManager = new NativeMemoryManager<T>((T*)(_Pointer + index), size);
-            IMemoryOwner<T> memoryOwner = new NativeMemoryPoolOwner<T>(this, index, memoryManager.Memory);
+            NativeMemoryManager<T> memory_manager = new NativeMemoryManager<T>((T*)(_Pointer + index), size);
+            IMemoryOwner<T> memory_owner = new NativeMemoryPoolOwner<T>(this, index, memory_manager.Memory);
 
-            return memoryOwner;
+            return memory_owner;
         }
 
         #endregion
@@ -272,17 +272,17 @@ namespace Automata.Engine.Memory
                 // attempt to merge current block & its precedent node
                 if (before?.Value.Owned is false)
                 {
-                    nuint newIndex = before.Value.Index;
-                    nuint newSize = before.Value.Size + current.Value.Size;
-                    current.Value = current.Value with { Index = newIndex, Size = newSize };
+                    nuint new_index = before.Value.Index;
+                    nuint new_size = before.Value.Size + current.Value.Size;
+                    current.Value = current.Value with { Index = new_index, Size = new_size };
                     _MemoryMap.Remove(before);
                 }
 
                 // attempt to merge current block & its antecedent node
                 if (after?.Value.Owned is false)
                 {
-                    nuint newLength = current.Value.Size + after.Value.Size;
-                    current.Value = current.Value with { Size = newLength };
+                    nuint new_length = current.Value.Size + after.Value.Size;
+                    current.Value = current.Value with { Size = new_length };
                     _MemoryMap.Remove(after);
                 }
 

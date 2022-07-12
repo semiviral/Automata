@@ -16,6 +16,7 @@ using Automata.Game.Blocks;
 using Automata.Game.Chunks;
 using Automata.Game.Chunks.Generation;
 using Automata.Game.Chunks.Generation.Meshing;
+using DiagnosticsProviderNS;
 using Serilog;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.KHR;
@@ -32,11 +33,12 @@ namespace Automata.Game
             AutomataWindow.Instance.Dispose();
         }
 
-
-        #region Main
-
         private static void Startup()
         {
+#if !FINAL_RELEASE
+            DiagnosticsProvider.Enabled = true;
+#endif
+
             Settings.Load();
             InitializeLoggerAndValidateFiles();
             InitializeBoundedPool();
@@ -59,22 +61,20 @@ namespace Automata.Game
             BoundedInvocationPool.Instance.Cancel();
         }
 
-        #endregion
-
 
         #region Initialization
 
         private static void InitializeLoggerAndValidateFiles()
         {
-            string specialPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData, Environment.SpecialFolderOption.Create);
-            string rootPath = Path.Combine(specialPath, "Automata/");
-            Directory.CreateDirectory(rootPath);
-            Directory.CreateDirectory(Path.Combine(rootPath, "Worlds"));
+            string special_path = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData, Environment.SpecialFolderOption.Create);
+            string root_path = Path.Combine(special_path, "Automata/");
+            Directory.CreateDirectory(root_path);
+            Directory.CreateDirectory(Path.Combine(root_path, "Worlds"));
 
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .WriteTo.Console()
-                .WriteTo.Async(config => config.File(Path.Combine(rootPath, "Today.log")))
+                .WriteTo.Async(config => config.File(Path.Combine(root_path, "Today.log")))
                 .CreateLogger();
 
             Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(Serilog), "Logger initialized."));
@@ -120,9 +120,9 @@ namespace Automata.Game
             world.SystemManager.RegisterBefore<TransformMatrixSystem, LastOrderSystem>();
             world.SystemManager.RegisterBefore<AllocatedMeshingSystem<uint, PackedVertex>, LastOrderSystem>();
 
-            AllocatedMeshingSystem<uint, PackedVertex> allocatedMeshingSystem = world.SystemManager.GetSystem<AllocatedMeshingSystem<uint, PackedVertex>>();
+            AllocatedMeshingSystem<uint, PackedVertex> allocated_meshing_system = world.SystemManager.GetSystem<AllocatedMeshingSystem<uint, PackedVertex>>();
 
-            allocatedMeshingSystem.AllocateVertexAttributes(true, true,
+            allocated_meshing_system.AllocateVertexAttributes(true, true,
 
                 // vert
                 new VertexAttribute<int>(0u, 1u, 0u, 0u),
@@ -137,7 +137,7 @@ namespace Automata.Game
                 new VertexAttribute<float>(2u + 3u, 4u, (uint)Marshal.OffsetOf<Matrix4x4>(nameof(Matrix4x4.M41)), 1u)
             );
 
-            allocatedMeshingSystem.SetTexture("Blocks", TextureAtlas.Instance.Blocks!);
+            allocated_meshing_system.SetTexture("Blocks", TextureAtlas.Instance.Blocks!);
 
             world.SystemManager.RegisterBefore<ChunkRegionSystem, DefaultOrderSystem>();
             world.SystemManager.RegisterAfter<ChunkModificationsSystem, ChunkRegionSystem>();
@@ -189,12 +189,12 @@ namespace Automata.Game
                 new VulkanInstanceInfo("Automata.Game", new Version32(0u, 1u, 0u), "Automata.Engine", new Version32(0u, 1u, 0u), Vk.Version12),
                 VKAPI.DebugInstanceExtensions, VKAPI.ValidationLayers);
 
-            VulkanDebugMessenger debugMessenger = new VulkanDebugMessenger(instance);
+            VulkanDebugMessenger debug_messenger = new VulkanDebugMessenger(instance);
 
-            VulkanPhysicalDevice[] physicalDevices = instance.GetPhysicalDevices(IsPhysicalDeviceSuitable);
-            VulkanPhysicalDevice physicalDevice = physicalDevices[0];
-            VulkanLogicalDevice logicalDevice = physicalDevice.CreateLogicalDevice(VKAPI.LogicalDeviceExtensions, VKAPI.ValidationLayers);
-            VulkanSwapChain swapChain = logicalDevice.CreateSwapChain(ChooseSwapSurfaceFormat, ChooseSwapPresentationMode, ChooseSwapExtents);
+            VulkanPhysicalDevice[] physical_devices = instance.GetPhysicalDevices(IsPhysicalDeviceSuitable);
+            VulkanPhysicalDevice physical_device = physical_devices[0];
+            VulkanLogicalDevice logical_device = physical_device.CreateLogicalDevice(VKAPI.LogicalDeviceExtensions, VKAPI.ValidationLayers);
+            VulkanSwapChain swap_chain = logical_device.CreateSwapChain(ChooseSwapSurfaceFormat, ChooseSwapPresentationMode, ChooseSwapExtents);
         }
 
         private static bool IsPhysicalDeviceSuitable(VulkanPhysicalDevice physicalDevice)
@@ -204,23 +204,23 @@ namespace Automata.Game
                 return false;
             }
 
-            SwapChainSupportDetails supportDetails = physicalDevice.SwapChainSupportDetails;
+            SwapChainSupportDetails support_details = physicalDevice.SwapChainSupportDetails;
 
-            if (supportDetails.Formats.Length is 0 || supportDetails.PresentModes.Length is 0)
+            if (support_details.Formats.Length is 0 || support_details.PresentModes.Length is 0)
             {
                 return false;
             }
 
-            QueueFamilyIndices queueFamilyIndices = physicalDevice.GetQueueFamilies();
+            QueueFamilyIndices queue_family_indices = physicalDevice.GetQueueFamilies();
 
-            if (!queueFamilyIndices.IsCompleted())
+            if (!queue_family_indices.IsCompleted())
             {
                 return false;
             }
 
-            PhysicalDeviceFeatures physicalDeviceFeatures = physicalDevice.GetFeatures();
+            PhysicalDeviceFeatures physical_device_features = physicalDevice.GetFeatures();
 
-            if (!physicalDeviceFeatures.GeometryShader)
+            if (!physical_device_features.GeometryShader)
             {
                 return false;
             }
@@ -230,11 +230,11 @@ namespace Automata.Game
 
         private static SurfaceFormatKHR ChooseSwapSurfaceFormat(SurfaceFormatKHR[] availableFormats)
         {
-            foreach (SurfaceFormatKHR surfaceFormat in availableFormats)
+            foreach (SurfaceFormatKHR surface_format in availableFormats)
             {
-                if ((surfaceFormat.Format == Format.B8G8R8Srgb) && (surfaceFormat.ColorSpace == ColorSpaceKHR.ColorspaceSrgbNonlinearKhr))
+                if ((surface_format.Format == Format.B8G8R8Srgb) && (surface_format.ColorSpace == ColorSpaceKHR.ColorspaceSrgbNonlinearKhr))
                 {
-                    return surfaceFormat;
+                    return surface_format;
                 }
             }
 
@@ -243,11 +243,11 @@ namespace Automata.Game
 
         private static PresentModeKHR ChooseSwapPresentationMode(PresentModeKHR[] availablePresentationModes)
         {
-            foreach (PresentModeKHR presentationMode in availablePresentationModes)
+            foreach (PresentModeKHR presentation_mode in availablePresentationModes)
             {
-                if (presentationMode == PresentModeKHR.PresentModeMailboxKhr)
+                if (presentation_mode == PresentModeKHR.PresentModeMailboxKhr)
                 {
-                    return presentationMode;
+                    return presentation_mode;
                 }
             }
 
@@ -262,15 +262,15 @@ namespace Automata.Game
             }
             else
             {
-                Extent2D adjustedExtent = new Extent2D((uint)AutomataWindow.Instance.Size.X, (uint)AutomataWindow.Instance.Size.Y);
+                Extent2D adjusted_extent = new Extent2D((uint)AutomataWindow.Instance.Size.X, (uint)AutomataWindow.Instance.Size.Y);
 
-                adjustedExtent.Width = Math.Max(surfaceCapabilities.MinImageExtent.Width,
-                    Math.Min(surfaceCapabilities.MinImageExtent.Width, adjustedExtent.Width));
+                adjusted_extent.Width = Math.Max(surfaceCapabilities.MinImageExtent.Width,
+                    Math.Min(surfaceCapabilities.MinImageExtent.Width, adjusted_extent.Width));
 
-                adjustedExtent.Height = Math.Max(surfaceCapabilities.MinImageExtent.Height,
-                    Math.Min(surfaceCapabilities.MinImageExtent.Height, adjustedExtent.Height));
+                adjusted_extent.Height = Math.Max(surfaceCapabilities.MinImageExtent.Height,
+                    Math.Min(surfaceCapabilities.MinImageExtent.Height, adjusted_extent.Height));
 
-                return adjustedExtent;
+                return adjusted_extent;
             }
         }
 

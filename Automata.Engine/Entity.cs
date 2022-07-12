@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using Automata.Engine.Collections;
 
@@ -39,14 +38,17 @@ namespace Automata.Engine
             Disposed = false;
         }
 
+        public override string ToString() =>
+            $"{nameof(Entity)}(ID {_HashCode}: {string.Join(", ", _Components)})";
+
 
         #region Generic
 
-        internal Result<TComponent, ComponentError> Add<TComponent>() where TComponent : Component, new()
+        internal TComponent Add<TComponent>() where TComponent : Component, new()
         {
             if (Contains<TComponent>())
             {
-                return ComponentError.Exists;
+                throw new InvalidOperationException("Component already exists.");
             }
             else
             {
@@ -83,7 +85,7 @@ namespace Automata.Engine
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryComponent<TComponent>([MaybeNullWhen(false)] out TComponent? result) where TComponent : Component
+        public bool TryComponent<TComponent>([NotNullWhen(true)] out TComponent? result) where TComponent : Component
         {
             for (int index = 0; index < _Components.Count; index++)
             {
@@ -177,9 +179,6 @@ namespace Automata.Engine
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int GetHashCode() => _HashCode;
-
-        public override string ToString() =>
-            $"{nameof(Entity)}(ID {_HashCode}: {string.Join(", ", _Components.Select(component => component.GetType().Name))})";
 
         #endregion
 

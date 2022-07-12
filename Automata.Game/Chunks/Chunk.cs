@@ -9,21 +9,34 @@ namespace Automata.Game.Chunks
 {
     public class Chunk : Component
     {
-        public GenerationState State { get; set; }
+        private GenerationState _State;
+
+        public GenerationState State
+        {
+            get => _State;
+            set
+            {
+#if DEBUG
+                ValidateStateChange(value);
+#endif
+
+                _State = value;
+            }
+        }
+
+        // todo having this variable is dumb, but it's simple for now. replace later.
+        internal Entity Entity { get; set; }
+
         public Palette<Block>? Blocks { get; set; }
         public Chunk?[] Neighbors { get; } = new Chunk?[6];
         public ConcurrentChannel<ChunkModification> Modifications { get; } = new ConcurrentChannel<ChunkModification>(true, false);
         public int TimesMeshed { get; set; }
 
+        public bool IsGenerating => State is GenerationState.GeneratingTerrain or GenerationState.GeneratingStructures or GenerationState.GeneratingMesh;
         public IEnumerable<Palette<Block>?> NeighborBlocks() => Neighbors.Select(chunk => chunk?.Blocks);
 
-        public void RemeshNeighborhood(bool remesh)
+        public void DangerousRemeshNeighborhood()
         {
-            if (!remesh)
-            {
-                return;
-            }
-
             State = GenerationState.AwaitingMesh;
 
             foreach (Chunk? neighbor in Neighbors)
@@ -34,6 +47,28 @@ namespace Automata.Game.Chunks
                 }
             }
         }
+
+
+        #region Debug
+
+        private void ValidateStateChange(GenerationState newState)
+        {
+            switch (newState)
+            {
+                case { } when newState == State: break; // don't catch non-altering states
+                case GenerationState.Inactive:
+                case GenerationState.AwaitingTerrain when State is GenerationState.Inactive:
+                case GenerationState.AwaitingStructures when State is GenerationState.GeneratingTerrain:
+                case GenerationState.AwaitingMesh when State is GenerationState.GeneratingStructures or GenerationState.Finished:
+                case GenerationState.Finished when State is GenerationState.GeneratingMesh:
+                case GenerationState.GeneratingTerrain when State is GenerationState.AwaitingTerrain:
+                case GenerationState.GeneratingStructures when State is GenerationState.AwaitingStructures:
+                case GenerationState.GeneratingMesh when State is GenerationState.AwaitingMesh: break;
+                default: throw new InvalidOperationException($"Attempted an invalid state modification: is {State}, attempted {newState}");
+            }
+        }
+
+        #endregion
 
 
         #region IDisposable

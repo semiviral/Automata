@@ -70,7 +70,7 @@ namespace Automata.Engine.Collections
 
         void IDictionary<Type, T>.Add(Type key, T value) => _InternalDictionary.Add(key, value);
         bool IDictionary<Type, T>.ContainsKey(Type key) => _InternalDictionary.ContainsKey(key);
-        bool IDictionary<Type, T>.TryGetValue(Type key, [MaybeNullWhen(false)] out T? value) => _InternalDictionary.TryGetValue(key, out value);
+        bool IDictionary<Type, T>.TryGetValue(Type key, [MaybeNullWhen(false)] out T value) => _InternalDictionary.TryGetValue(key, out value);
 
         #endregion
 

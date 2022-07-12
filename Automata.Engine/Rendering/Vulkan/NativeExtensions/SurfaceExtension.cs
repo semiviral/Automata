@@ -11,36 +11,36 @@ namespace Automata.Engine.Rendering.Vulkan.NativeExtensions
 
         public unsafe SurfaceFormatKHR[] GetPhysicalDeviceSurfaceFormats(VulkanPhysicalDevice physicalDevice, SurfaceKHR surface)
         {
-            uint formatsCount = 0u;
-            GetPhysicalDeviceSurfaceFormats(physicalDevice, surface, &formatsCount, (SurfaceFormatKHR*)null!);
+            uint formats_count = 0u;
+            GetPhysicalDeviceSurfaceFormats(physicalDevice, surface, &formats_count, (SurfaceFormatKHR*)null!);
 
-            if (formatsCount is 0u)
+            if (formats_count is 0u)
             {
                 return Array.Empty<SurfaceFormatKHR>();
             }
 
-            SurfaceFormatKHR* surfaceFormatsPointer = stackalloc SurfaceFormatKHR[(int)formatsCount];
-            GetPhysicalDeviceSurfaceFormats(physicalDevice, surface, &formatsCount, surfaceFormatsPointer);
-            SurfaceFormatKHR[] surfaceFormats = new SurfaceFormatKHR[formatsCount];
-            new Span<SurfaceFormatKHR>(surfaceFormatsPointer, (int)formatsCount).CopyTo(surfaceFormats);
-            return surfaceFormats;
+            SurfaceFormatKHR* surface_formats_pointer = stackalloc SurfaceFormatKHR[(int)formats_count];
+            GetPhysicalDeviceSurfaceFormats(physicalDevice, surface, &formats_count, surface_formats_pointer);
+            SurfaceFormatKHR[] surface_formats = new SurfaceFormatKHR[formats_count];
+            new Span<SurfaceFormatKHR>(surface_formats_pointer, (int)formats_count).CopyTo(surface_formats);
+            return surface_formats;
         }
 
         public unsafe PresentModeKHR[] GetPhysicalDeviceSurfacePresentModes(VulkanPhysicalDevice physicalDevice, SurfaceKHR surface)
         {
-            uint presentationCount = 0u;
-            GetPhysicalDeviceSurfacePresentModes(physicalDevice, surface, &presentationCount, (PresentModeKHR*)null!);
+            uint presentation_count = 0u;
+            GetPhysicalDeviceSurfacePresentModes(physicalDevice, surface, &presentation_count, (PresentModeKHR*)null!);
 
-            if (presentationCount is 0u)
+            if (presentation_count is 0u)
             {
                 return Array.Empty<PresentModeKHR>();
             }
 
-            PresentModeKHR* presentModesPointer = stackalloc PresentModeKHR[(int)presentationCount];
-            GetPhysicalDeviceSurfacePresentModes(physicalDevice, surface, &presentationCount, presentModesPointer);
-            PresentModeKHR[] presentModes = new PresentModeKHR[presentationCount];
-            new Span<PresentModeKHR>(presentModesPointer, (int)presentationCount).CopyTo(presentModes);
-            return presentModes;
+            PresentModeKHR* present_modes_pointer = stackalloc PresentModeKHR[(int)presentation_count];
+            GetPhysicalDeviceSurfacePresentModes(physicalDevice, surface, &presentation_count, present_modes_pointer);
+            PresentModeKHR[] present_modes = new PresentModeKHR[presentation_count];
+            new Span<PresentModeKHR>(present_modes_pointer, (int)presentation_count).CopyTo(present_modes);
+            return present_modes;
         }
     }
 }

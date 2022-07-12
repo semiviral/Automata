@@ -39,30 +39,30 @@ namespace Automata.Engine.Rendering.Vulkan
 
         private unsafe void CreateInstance(IVkSurface vkSurface, string[] requestedExtensions, string[]? validationLayers, out Instance instance)
         {
-            nint applicationName = Info.ApplicationName.Marshal();
-            nint engineName = Info.EngineName.Marshal();
+            nint application_name = Info.ApplicationName.Marshal();
+            nint engine_name = Info.EngineName.Marshal();
 
-            ApplicationInfo applicationInfo = new ApplicationInfo
+            ApplicationInfo application_info = new ApplicationInfo
             {
                 SType = StructureType.ApplicationInfo,
-                PApplicationName = (byte*)applicationName,
+                PApplicationName = (byte*)application_name,
                 ApplicationVersion = Info.ApplicationVersion,
-                PEngineName = (byte*)engineName,
+                PEngineName = (byte*)engine_name,
                 EngineVersion = Info.EngineVersion,
                 ApiVersion = Info.APIVersion
             };
 
-            string[] requiredExtensions = VKAPI.GetRequiredExtensions(vkSurface, requestedExtensions);
-            nint requiredExtensionsPointer = SilkMarshal.StringArrayToPtr(requiredExtensions);
-            nint enabledLayerNames = 0x0;
-            int enabledLayerCount = 0;
+            string[] required_extensions = VKAPI.GetRequiredExtensions(vkSurface, requestedExtensions);
+            nint required_extensions_pointer = SilkMarshal.StringArrayToPtr(required_extensions);
+            nint enabled_layer_names = 0x0;
+            int enabled_layer_count = 0;
 
-            InstanceCreateInfo createInfo = new InstanceCreateInfo
+            InstanceCreateInfo create_info = new InstanceCreateInfo
             {
                 SType = StructureType.InstanceCreateInfo,
-                PApplicationInfo = &applicationInfo,
-                PpEnabledExtensionNames = (byte**)requiredExtensionsPointer,
-                EnabledExtensionCount = (uint)requiredExtensions.Length,
+                PApplicationInfo = &application_info,
+                PpEnabledExtensionNames = (byte**)required_extensions_pointer,
+                EnabledExtensionCount = (uint)required_extensions.Length,
                 PpEnabledLayerNames = (byte**)null!,
                 EnabledLayerCount = 0,
                 PNext = (void*)null!
@@ -72,27 +72,27 @@ namespace Automata.Engine.Rendering.Vulkan
             {
                 VKAPI.VerifyValidationLayerSupport(VK, validationLayers);
 
-                enabledLayerNames = SilkMarshal.StringArrayToPtr(validationLayers);
-                enabledLayerCount = validationLayers.Length;
-                createInfo.PpEnabledLayerNames = (byte**)enabledLayerNames;
-                createInfo.EnabledLayerCount = (uint)enabledLayerCount;
+                enabled_layer_names = SilkMarshal.StringArrayToPtr(validationLayers);
+                enabled_layer_count = validationLayers.Length;
+                create_info.PpEnabledLayerNames = (byte**)enabled_layer_names;
+                create_info.EnabledLayerCount = (uint)enabled_layer_count;
             }
 
             Log.Information(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(VulkanInstance), "allocating instance."));
-            Result result = VK.CreateInstance(&createInfo, (AllocationCallbacks*)null!, out instance);
+            Result result = VK.CreateInstance(&create_info, (AllocationCallbacks*)null!, out instance);
 
             if (result is not Result.Success)
             {
                 throw new VulkanException(result, "Failed to create Vulkan instance.");
             }
 
-            SilkMarshal.FreeString(applicationName);
-            SilkMarshal.FreeString(engineName);
-            SilkMarshal.FreeString(requiredExtensionsPointer);
+            SilkMarshal.FreeString(application_name);
+            SilkMarshal.FreeString(engine_name);
+            SilkMarshal.FreeString(required_extensions_pointer);
 
-            if (enabledLayerNames is not 0x0 && enabledLayerCount is not 0)
+            if (enabled_layer_names is not 0x0 && enabled_layer_count is not 0)
             {
-                SilkMarshal.FreeString(enabledLayerNames);
+                SilkMarshal.FreeString(enabled_layer_names);
             }
         }
 
@@ -100,30 +100,30 @@ namespace Automata.Engine.Rendering.Vulkan
         {
             suitability ??= _ => true;
 
-            uint deviceCount = 0u;
-            VK.EnumeratePhysicalDevices(_VKInstance, &deviceCount, Span<PhysicalDevice>.Empty);
-            Span<PhysicalDevice> physicalDevices = stackalloc PhysicalDevice[(int)deviceCount];
-            VK.EnumeratePhysicalDevices(_VKInstance, &deviceCount, physicalDevices);
-            VulkanPhysicalDevice[] tempSuitable = ArrayPool<VulkanPhysicalDevice>.Shared.Rent((int)deviceCount);
+            uint device_count = 0u;
+            VK.EnumeratePhysicalDevices(_VKInstance, &device_count, Span<PhysicalDevice>.Empty);
+            Span<PhysicalDevice> physical_devices = stackalloc PhysicalDevice[(int)device_count];
+            VK.EnumeratePhysicalDevices(_VKInstance, &device_count, physical_devices);
+            VulkanPhysicalDevice[] temp_suitable = ArrayPool<VulkanPhysicalDevice>.Shared.Rent((int)device_count);
             int index = 0;
 
-            foreach (PhysicalDevice physicalDevice in physicalDevices)
+            foreach (PhysicalDevice physical_device in physical_devices)
             {
-                VulkanPhysicalDevice vulkanPhysicalDevice = new VulkanPhysicalDevice(VK, new VulkanContext
+                VulkanPhysicalDevice vulkan_physical_device = new VulkanPhysicalDevice(VK, new VulkanContext
                 {
                     Instance = this
-                }, physicalDevice);
+                }, physical_device);
 
-                if (suitability(vulkanPhysicalDevice))
+                if (suitability(vulkan_physical_device))
                 {
-                    tempSuitable[index] = vulkanPhysicalDevice;
+                    temp_suitable[index] = vulkan_physical_device;
                     index += 1;
                 }
             }
 
-            VulkanPhysicalDevice[] finalSuitable = tempSuitable[..index];
-            ArrayPool<VulkanPhysicalDevice>.Shared.Return(tempSuitable);
-            return finalSuitable;
+            VulkanPhysicalDevice[] final_suitable = temp_suitable[..index];
+            ArrayPool<VulkanPhysicalDevice>.Shared.Return(temp_suitable);
+            return final_suitable;
         }
 
 

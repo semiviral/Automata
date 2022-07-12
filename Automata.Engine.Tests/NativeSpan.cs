@@ -17,11 +17,11 @@ namespace Automata.Engine.Tests
                 2u
             };
 
-            NativeSpan<uint> nativeSpan = new NativeSpan<uint>(ptr, 2u);
+            NativeSpan<uint> native_span = new NativeSpan<uint>(ptr, 2u);
 
-            Debug.Assert(nativeSpan.Length is 2u);
-            Debug.Assert(nativeSpan[0u] is 1u);
-            Debug.Assert(nativeSpan[1u] is 2u);
+            Debug.Assert(native_span.Length is 2u);
+            Debug.Assert(native_span[0u] is 1u);
+            Debug.Assert(native_span[1u] is 2u);
         }
 
         [Fact]
@@ -33,11 +33,11 @@ namespace Automata.Engine.Tests
                 1u
             };
 
-            NativeSpan<uint> nativeSpan = array;
+            NativeSpan<uint> native_span = array;
 
-            Debug.Assert(nativeSpan.Length is 2u);
-            Debug.Assert(nativeSpan[0u] is 0u);
-            Debug.Assert(nativeSpan[1u] is 1u);
+            Debug.Assert(native_span.Length is 2u);
+            Debug.Assert(native_span[0u] is 0u);
+            Debug.Assert(native_span[1u] is 1u);
         }
 
         [Fact]
@@ -50,11 +50,11 @@ namespace Automata.Engine.Tests
             };
 
             Span<uint> temp = new Span<uint>(array);
-            NativeSpan<uint> nativeSpan = new NativeSpan<uint>(temp);
+            NativeSpan<uint> native_span = new NativeSpan<uint>(temp);
 
-            Debug.Assert(nativeSpan.Length is 2u);
-            Debug.Assert(nativeSpan[0u] is 0u);
-            Debug.Assert(nativeSpan[1u] is 1u);
+            Debug.Assert(native_span.Length is 2u);
+            Debug.Assert(native_span[0u] is 0u);
+            Debug.Assert(native_span[1u] is 1u);
         }
 
         [Fact]
@@ -65,9 +65,9 @@ namespace Automata.Engine.Tests
             NativeSpan<uint> span = array;
             span.Clear();
 
-            foreach (uint _uint in span)
+            foreach (uint @uint in span)
             {
-                Debug.Assert(_uint is 0u);
+                Debug.Assert(@uint is 0u);
             }
         }
 
@@ -81,11 +81,11 @@ namespace Automata.Engine.Tests
             };
 
             NativeSpan<uint> span1 = new NativeSpan<uint>(array);
-            uint[] toArray = span1.ToArray();
+            uint[] to_array = span1.ToArray();
 
-            Debug.Assert(toArray.Length == array.Length);
-            Debug.Assert(toArray[0] is 1u);
-            Debug.Assert(toArray[1] is 2u);
+            Debug.Assert(to_array.Length == array.Length);
+            Debug.Assert(to_array[0] is 1u);
+            Debug.Assert(to_array[1] is 2u);
         }
 
         [Fact]
@@ -103,14 +103,14 @@ namespace Automata.Engine.Tests
                 2u
             };
 
-            NativeSpan<uint> nativeSpan1 = new NativeSpan<uint>(array1);
-            NativeSpan<uint> nativeSpan2 = new NativeSpan<uint>(array2);
+            NativeSpan<uint> native_span1 = new NativeSpan<uint>(array1);
+            NativeSpan<uint> native_span2 = new NativeSpan<uint>(array2);
 
-            nativeSpan2.CopyTo(nativeSpan1);
+            native_span2.CopyTo(native_span1);
 
-            Debug.Assert(nativeSpan2.Length is 2u);
-            Debug.Assert(nativeSpan2[0u] is 1u);
-            Debug.Assert(nativeSpan2[1u] is 2u);
+            Debug.Assert(native_span2.Length is 2u);
+            Debug.Assert(native_span2[0u] is 1u);
+            Debug.Assert(native_span2[1u] is 2u);
         }
     }
 }

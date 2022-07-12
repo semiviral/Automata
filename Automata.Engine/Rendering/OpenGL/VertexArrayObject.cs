@@ -74,42 +74,42 @@ namespace Automata.Engine.Rendering.OpenGL
             // calculate strides for new VBO bindings
             Dictionary<uint, uint> strides = new Dictionary<uint, uint>();
 
-            foreach (IVertexAttribute vertexAttribute in _VertexAttributes)
+            foreach (IVertexAttribute vertex_attribute in _VertexAttributes)
             {
-                GL.EnableVertexArrayAttrib(Handle, vertexAttribute.Index);
-                vertexAttribute.CommitFormat(GL, Handle);
-                GL.VertexArrayAttribBinding(Handle, vertexAttribute.Index, vertexAttribute.BindingIndex);
+                GL.EnableVertexArrayAttrib(Handle, vertex_attribute.Index);
+                vertex_attribute.CommitFormat(GL, Handle);
+                GL.VertexArrayAttribBinding(Handle, vertex_attribute.Index, vertex_attribute.BindingIndex);
 
                 // set or add stride by binding index of vertex attribute
-                if (strides.ContainsKey(vertexAttribute.BindingIndex))
+                if (strides.ContainsKey(vertex_attribute.BindingIndex))
                 {
-                    strides[vertexAttribute.BindingIndex] += vertexAttribute.Stride;
+                    strides[vertex_attribute.BindingIndex] += vertex_attribute.Stride;
                 }
                 else
                 {
-                    strides.Add(vertexAttribute.BindingIndex, vertexAttribute.Stride);
+                    strides.Add(vertex_attribute.BindingIndex, vertex_attribute.Stride);
                 }
 
                 Log.Verbose(string.Format(FormatHelper.DEFAULT_LOGGING, $"{nameof(VertexArrayObject)} 0x{Handle}",
-                    $"Committed vertex attribute: {vertexAttribute}"));
+                    $"Committed vertex attribute: {vertex_attribute}"));
             }
 
             // commit VBO bindings
-            foreach ((uint bindingIndex, VertexBufferObjectBinding binding) in _VertexBufferObjectBindings)
+            foreach ((uint binding_index, VertexBufferObjectBinding binding) in _VertexBufferObjectBindings)
             {
                 // reset strides to ensure we update with new vertex attrib formats
-                binding.Stride = strides.TryGetValue(bindingIndex, out uint stride) ? stride : 0u;
+                binding.Stride = strides.TryGetValue(binding_index, out uint stride) ? stride : 0u;
 
                 // bind given VBO binding
-                GL.VertexArrayVertexBuffer(Handle, bindingIndex, binding.Handle, binding.VertexOffset, binding.Stride);
+                GL.VertexArrayVertexBuffer(Handle, binding_index, binding.Handle, binding.VertexOffset, binding.Stride);
 
                 if (binding.Divisor is not 0u)
                 {
-                    GL.VertexArrayBindingDivisor(Handle, bindingIndex, binding.Divisor);
+                    GL.VertexArrayBindingDivisor(Handle, binding_index, binding.Divisor);
                 }
 
                 Log.Verbose(String.Format(FormatHelper.DEFAULT_LOGGING, $"{nameof(VertexArrayObject)} 0x{Handle}",
-                    $"Bound VBO: Handle 0x{binding.Handle:x}, BindingIndex {bindingIndex}, Stride {stride}, VertexOffset {binding.VertexOffset}, Divisor {binding.Divisor}"));
+                    $"Bound VBO: Handle 0x{binding.Handle:x}, BindingIndex {binding_index}, Stride {stride}, VertexOffset {binding.VertexOffset}, Divisor {binding.Divisor}"));
             }
 
             if (ebo is not null)

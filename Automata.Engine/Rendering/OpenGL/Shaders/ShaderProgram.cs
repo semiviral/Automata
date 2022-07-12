@@ -20,13 +20,13 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
 
         public unsafe ShaderProgram(GL gl, ShaderType shaderType, string path) : base(gl)
         {
-            void CacheUniformsImpl()
+            void cache_uniforms_impl_impl()
             {
-                GL.GetProgram(Handle, ProgramPropertyARB.ActiveUniforms, out int uniformCount);
+                GL.GetProgram(Handle, ProgramPropertyARB.ActiveUniforms, out int uniform_count);
 
-                for (uint uniformIndex = 0; uniformIndex < uniformCount; uniformIndex++)
+                for (uint uniform_index = 0; uniform_index < uniform_count; uniform_index++)
                 {
-                    string name = GL.GetActiveUniform(Handle, uniformIndex, out _, out _);
+                    string name = GL.GetActiveUniform(Handle, uniform_index, out _, out _);
                     int location = GL.GetUniformLocation(Handle, name);
                     _CachedUniforms.Add(name, location);
                 }
@@ -39,33 +39,33 @@ namespace Automata.Engine.Rendering.OpenGL.Shaders
             byte* shader = (byte*)SilkMarshal.StringToPtr(File.ReadAllText(path));
             Handle = GL.CreateShaderProgram(Type, 1, shader);
             CheckInfoLogAndThrow();
-            CacheUniformsImpl();
+            cache_uniforms_impl_impl();
 
             Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(ShaderProgram), $"Loaded ({Type}): {path}"));
         }
 
         private void CheckInfoLogAndThrow()
         {
-            if (TryGetInfoLog(out string? infoLog))
+            if (TryGetInfoLog(out string? info_log))
             {
-                throw new ShaderLoadException(Type, infoLog);
+                throw new ShaderLoadException(Type, info_log);
             }
         }
 
         [SkipLocalsInit]
         public unsafe bool TryGetInfoLog([NotNullWhen(true)] out string? infoLog)
         {
-            GL.GetProgram(Handle, ProgramPropertyARB.InfoLogLength, out int infoLogLength);
+            GL.GetProgram(Handle, ProgramPropertyARB.InfoLogLength, out int info_log_length);
 
-            if (infoLogLength is 0)
+            if (info_log_length is 0)
             {
                 infoLog = string.Empty;
                 return false;
             }
 
-            Span<byte> infoLogSpan = stackalloc byte[infoLogLength];
-            GL.GetProgramInfoLog(Handle, (uint)infoLogLength, (uint*)&infoLogLength, infoLogSpan);
-            infoLog = Encoding.ASCII.GetString(infoLogSpan);
+            Span<byte> info_log_span = stackalloc byte[info_log_length];
+            GL.GetProgramInfoLog(Handle, (uint)info_log_length, (uint*)&info_log_length, info_log_span);
+            infoLog = Encoding.ASCII.GetString(info_log_span);
             return true;
         }
 

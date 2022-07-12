@@ -7,13 +7,13 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
 {
     public class Texture2DArray<TPixel> : Texture where TPixel : unmanaged, IPixel<TPixel>
     {
-        public Vector3i Size { get; }
+        public Vector3<int> Size { get; }
 
-        public Texture2DArray(Vector3i size, WrapMode wrapMode, FilterMode filterMode) : this(GLAPI.Instance.GL, size, wrapMode, filterMode) { }
+        public Texture2DArray(Vector3<int> size, WrapMode wrapMode, FilterMode filterMode) : this(GLAPI.Instance.GL, size, wrapMode, filterMode) { }
 
-        public Texture2DArray(GL gl, Vector3i size, WrapMode wrapMode, FilterMode filterMode) : base(gl, TextureTarget.Texture2DArray)
+        public Texture2DArray(GL gl, Vector3<int> size, WrapMode wrapMode, FilterMode filterMode) : base(gl, TextureTarget.Texture2DArray)
         {
-            if (Vector3b.Any(size < 0))
+            if (Vector.Any(size < 0))
             {
                 throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
             }
@@ -25,13 +25,13 @@ namespace Automata.Engine.Rendering.OpenGL.Textures
             GL.TextureStorage3D(Handle, 1, _InternalFormat, (uint)size.X, (uint)size.Y, (uint)size.Z);
         }
 
-        public void SetPixels(Vector3i offset, Vector2i size, ReadOnlySpan<TPixel> pixels)
+        public void SetPixels(Vector3<int> offset, Vector2<int> size, ReadOnlySpan<TPixel> pixels)
         {
-            if (Vector3b.Any(offset < 0))
+            if (Vector.Any(offset < 0))
             {
                 throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0");
             }
-            else if (Vector2b.Any(size < 0))
+            else if (Vector.Any(size < 0))
             {
                 throw new ArgumentOutOfRangeException(nameof(size), "All components must be >=0 and <TexSize");
             }

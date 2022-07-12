@@ -120,10 +120,10 @@ namespace Automata.Engine.Rendering
                     continue;
                 }
 
-                CameraUniforms cameraUniforms = new CameraUniforms(AutomataWindow.Instance.Viewport, camera.Projection.Parameters, camera.Projection.Matrix,
+                CameraUniforms camera_uniforms = new CameraUniforms(AutomataWindow.Instance.Viewport, camera.Projection.Parameters, camera.Projection.Matrix,
                     camera.View);
 
-                _ViewUniforms.Write(ref cameraUniforms);
+                _ViewUniforms.Write(ref camera_uniforms);
                 _ViewUniforms.Bind(BufferTargetARB.UniformBuffer, 0u);
                 DrawModels(entityManager, camera, planes);
                 _ViewUniforms.FenceRing();
@@ -136,30 +136,30 @@ namespace Automata.Engine.Rendering
         {
             Debug.Assert(camera.Projection is not null, "This should be verified outside this method.");
 
-            Matrix4x4 viewProjection = camera.View * camera.Projection.Matrix;
-            Material? cachedMaterial = null;
+            Matrix4x4 view_projection = camera.View * camera.Projection.Matrix;
+            Material? cached_material = null;
 
             // iterate every valid entity and try to render it
             // we also sort the entities by their render pipeline ID, so we can avoid doing a ton of rebinding
-            foreach ((Entity entity, RenderMesh renderMesh, Material material) in GetRenderableEntities(entityManager, camera))
+            foreach ((Entity entity, RenderMesh render_mesh, Material material) in GetRenderableEntities(entityManager, camera))
             {
                 Matrix4x4 model = entity.Component<Transform>()?.Matrix ?? Matrix4x4.Identity;
-                Matrix4x4 modelViewProjection = model * viewProjection;
+                Matrix4x4 model_view_projection = model * view_projection;
 
-                if (CheckClipFrustumOccludeEntity(entity, planes, modelViewProjection))
+                if (CheckClipFrustumOccludeEntity(entity, planes, model_view_projection))
                 {
                     continue;
                 }
 
-                if (!material.Equals(cachedMaterial))
+                if (!material.Equals(cached_material))
                 {
                     ApplyMaterial(material);
-                    cachedMaterial = material;
+                    cached_material = material;
                 }
 
-                Matrix4x4.Invert(model, out Matrix4x4 modelInverted);
-                ModelUniforms modelUniforms = new ModelUniforms(modelViewProjection, modelInverted, model);
-                _ModelUniforms.Write(ref modelUniforms);
+                Matrix4x4.Invert(model, out Matrix4x4 model_inverted);
+                ModelUniforms model_uniforms = new ModelUniforms(model_view_projection, model_inverted, model);
+                _ModelUniforms.Write(ref model_uniforms);
                 _ModelUniforms.Bind(BufferTargetARB.UniformBuffer, 1u);
 
 #if DEBUG
@@ -171,7 +171,7 @@ namespace Automata.Engine.Rendering
                 }
 #endif
 
-                renderMesh.Mesh!.Draw();
+                render_mesh.Mesh!.Draw();
                 _ModelUniforms.FenceRing();
                 Interlocked.Increment(ref _DrawCalls);
             }
@@ -215,12 +215,12 @@ namespace Automata.Engine.Rendering
         {
             material.Pipeline.Bind();
             Texture.BindMany(_GL, 0u, material.Textures.Values);
-            ShaderProgram fragmentShader = material.Pipeline.Stage(ShaderType.FragmentShader);
+            ShaderProgram fragment_shader = material.Pipeline.Stage(ShaderType.FragmentShader);
             int index = 0;
 
             foreach (string key in material.Textures.Keys)
             {
-                fragmentShader.TrySetUniform($"tex_{key}", index);
+                fragment_shader.TrySetUniform($"tex_{key}", index);
                 index += 1;
             }
         }

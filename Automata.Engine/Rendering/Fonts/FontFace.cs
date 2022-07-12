@@ -62,7 +62,7 @@ namespace Automata.Engine.Rendering.Fonts
         public int FaceIndex => Face.FaceIndex;
         public int GlyphCount => Face.GlyphCount;
 
-        public ushort UnitsPerEM => Face.UnitsPerEM;
+        public ushort UnitsPerEm => Face.UnitsPerEM;
         public short Ascender => Face.Ascender;
         public short Descender => Face.Descender;
         public short Height => Face.Height;
@@ -105,12 +105,12 @@ namespace Automata.Engine.Rendering.Fonts
         /// </remarks>
         public void ParseAvailableCharacters()
         {
-            uint charCode = FirstCharacterCode(out uint glyphIndex);
+            uint char_code = FirstCharacterCode(out uint glyph_index);
 
-            while (glyphIndex > 0u)
+            while (glyph_index > 0u)
             {
-                _AvailableCharacters.Add(new Rune(charCode));
-                charCode = NextCharacterCode(charCode, out glyphIndex);
+                _AvailableCharacters.Add(new Rune(char_code));
+                char_code = NextCharacterCode(char_code, out glyph_index);
             }
         }
 

@@ -93,35 +93,35 @@ namespace Automata.Engine.Rendering.Vulkan
 
         public static unsafe string[] GetRequiredExtensions(IVkSurface vkSurface, string[] requestedExtensions)
         {
-            string[] requiredExtensions = SilkMarshal.MarshalPtrToStringArray((nint)vkSurface.GetRequiredExtensions(out uint extensionCount),
-                (int)extensionCount);
+            string[] required_extensions = SilkMarshal.MarshalPtrToStringArray((nint)vkSurface.GetRequiredExtensions(out uint extension_count),
+                (int)extension_count);
 
-            string[] extensions = new string[requiredExtensions.Length + requestedExtensions.Length];
-            requestedExtensions.CopyTo(extensions, requiredExtensions.Length);
-            requiredExtensions.CopyTo(extensions, 0);
+            string[] extensions = new string[required_extensions.Length + requestedExtensions.Length];
+            requestedExtensions.CopyTo(extensions, required_extensions.Length);
+            required_extensions.CopyTo(extensions, 0);
 
             return extensions;
         }
 
         public static unsafe void VerifyValidationLayerSupport(Vk vk, IEnumerable<string> validationLayers)
         {
-            uint layerCount = 0u;
-            vk.EnumerateInstanceLayerProperties(&layerCount, (LayerProperties*)null!);
-            Span<LayerProperties> layerProperties = stackalloc LayerProperties[(int)layerCount];
-            vk.EnumerateInstanceLayerProperties(ref layerCount, ref layerProperties[0]);
+            uint layer_count = 0u;
+            vk.EnumerateInstanceLayerProperties(&layer_count, (LayerProperties*)null!);
+            Span<LayerProperties> layer_properties = stackalloc LayerProperties[(int)layer_count];
+            vk.EnumerateInstanceLayerProperties(ref layer_count, ref layer_properties[0]);
 
             HashSet<string?> layers = new HashSet<string?>();
 
-            foreach (LayerProperties layerPropertiesElement in layerProperties)
+            foreach (LayerProperties layer_properties_element in layer_properties)
             {
-                layers.Add(Marshal.PtrToStringAnsi((nint)layerPropertiesElement.LayerName));
+                layers.Add(Marshal.PtrToStringAnsi((nint)layer_properties_element.LayerName));
             }
 
-            foreach (string validationLayer in validationLayers)
+            foreach (string validation_layer in validationLayers)
             {
-                if (!layers.Contains(validationLayer))
+                if (!layers.Contains(validation_layer))
                 {
-                    throw new VulkanException(Result.ErrorLayerNotPresent, $"Validation layer '{validationLayer}' not present.");
+                    throw new VulkanException(Result.ErrorLayerNotPresent, $"Validation layer '{validation_layer}' not present.");
                 }
             }
         }
@@ -146,64 +146,64 @@ namespace Automata.Engine.Rendering.Vulkan
         {
             Debug.Assert(_KHRSwapChain != null, "Field should already be initialized.");
 
-            uint imageIndex = 0u;
+            uint image_index = 0u;
 
             _KHRSwapChain.AcquireNextImage(_LogicalDevice, _SwapChain, ulong.MaxValue, _ImageAvailableSemaphores[_CurrentFrame], default,
-                &imageIndex);
+                &image_index);
 
-            Semaphore* waitSemaphores = stackalloc[]
+            Semaphore* wait_semaphores = stackalloc[]
             {
                 _ImageAvailableSemaphores[_CurrentFrame]
             };
 
-            Semaphore* signalSemaphores = stackalloc[]
+            Semaphore* signal_semaphores = stackalloc[]
             {
                 _RenderFinishedSemaphores[_CurrentFrame]
             };
 
-            PipelineStageFlags* waitStages = stackalloc[]
+            PipelineStageFlags* wait_stages = stackalloc[]
             {
                 PipelineStageFlags.PipelineStageColorAttachmentOutputBit
             };
 
-            SubmitInfo submitInfo = new SubmitInfo
+            SubmitInfo submit_info = new SubmitInfo
             {
                 SType = StructureType.SubmitInfo,
                 WaitSemaphoreCount = 1,
-                PWaitSemaphores = waitSemaphores,
-                PWaitDstStageMask = waitStages,
+                PWaitSemaphores = wait_semaphores,
+                PWaitDstStageMask = wait_stages,
                 SignalSemaphoreCount = 1,
-                PSignalSemaphores = signalSemaphores
+                PSignalSemaphores = signal_semaphores
             };
 
-            fixed (CommandBuffer* commandBufferFixed = &_CommandBuffers[imageIndex])
+            fixed (CommandBuffer* command_buffer_fixed = &_CommandBuffers[image_index])
             {
-                submitInfo.CommandBufferCount = 1;
-                submitInfo.PCommandBuffers = commandBufferFixed;
+                submit_info.CommandBufferCount = 1;
+                submit_info.PCommandBuffers = command_buffer_fixed;
             }
 
-            if (VK.QueueSubmit(_GraphicsQueue, 1, &submitInfo, default) != Result.Success)
+            if (VK.QueueSubmit(_GraphicsQueue, 1, &submit_info, default) != Result.Success)
             {
                 throw new Exception("Failed to submit draw command to command buffer.");
             }
 
-            PresentInfoKHR presentInfo = new PresentInfoKHR
+            PresentInfoKHR present_info = new PresentInfoKHR
             {
                 SType = StructureType.PresentInfoKhr,
                 WaitSemaphoreCount = 1,
-                PWaitSemaphores = signalSemaphores
+                PWaitSemaphores = signal_semaphores
             };
 
-            fixed (SwapchainKHR* swapChainFixed = &_SwapChain)
+            fixed (SwapchainKHR* swap_chain_fixed = &_SwapChain)
             {
-                presentInfo.SwapchainCount = 1;
-                presentInfo.PSwapchains = swapChainFixed;
-                presentInfo.PImageIndices = &imageIndex;
+                present_info.SwapchainCount = 1;
+                present_info.PSwapchains = swap_chain_fixed;
+                present_info.PImageIndices = &image_index;
             }
 
-            presentInfo.PResults = null;
+            present_info.PResults = null;
 
-            _KHRSwapChain.QueuePresent(_PresentationQueue, &presentInfo);
+            _KHRSwapChain.QueuePresent(_PresentationQueue, &present_info);
 
             VK.QueueWaitIdle(_PresentationQueue);
             VK.DeviceWaitIdle(_LogicalDevice);
@@ -219,46 +219,46 @@ namespace Automata.Engine.Rendering.Vulkan
             Log.Information(string.Format(_VulkanSwapChainCreationFormat, "-begin-"));
 
             Log.Information(string.Format(_VulkanSwapChainCreationFormat, "determining optimal surface format."));
-            SurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(_SwapChainSupportDetails.Formats);
+            SurfaceFormatKHR surface_format = ChooseSwapSurfaceFormat(_SwapChainSupportDetails.Formats);
 
             Log.Information(string.Format(_VulkanSwapChainCreationFormat, "determining optimal surface presentation mode."));
-            PresentModeKHR presentationMode = ChooseSwapPresentationMode(_SwapChainSupportDetails.PresentModes);
+            PresentModeKHR presentation_mode = ChooseSwapPresentationMode(_SwapChainSupportDetails.PresentModes);
 
             Log.Information(string.Format(_VulkanSwapChainCreationFormat, "determining extents."));
             Extent2D extents = ChooseSwapExtents(_SwapChainSupportDetails.SurfaceCapabilities);
 
             Log.Information(string.Format(_VulkanSwapChainCreationFormat, "determining minimum image buffer length."));
-            uint minImageCount = _SwapChainSupportDetails.SurfaceCapabilities.MinImageCount + 1;
+            uint min_image_count = _SwapChainSupportDetails.SurfaceCapabilities.MinImageCount + 1;
 
             if ((_SwapChainSupportDetails.SurfaceCapabilities.MaxImageCount > 0)
-                && (minImageCount > _SwapChainSupportDetails.SurfaceCapabilities.MaxImageCount))
+                && (min_image_count > _SwapChainSupportDetails.SurfaceCapabilities.MaxImageCount))
             {
-                minImageCount = _SwapChainSupportDetails.SurfaceCapabilities.MaxImageCount;
+                min_image_count = _SwapChainSupportDetails.SurfaceCapabilities.MaxImageCount;
             }
 
             Log.Information(string.Format(_VulkanSwapChainCreationFormat, "initializing swap chain creation info."));
 
-            SwapchainCreateInfoKHR swapChainCreateInfo = new SwapchainCreateInfoKHR
+            SwapchainCreateInfoKHR swap_chain_create_info = new SwapchainCreateInfoKHR
             {
                 SType = StructureType.SwapchainCreateInfoKhr,
                 Surface = _Surface,
-                MinImageCount = minImageCount,
-                ImageFormat = surfaceFormat.Format,
-                ImageColorSpace = surfaceFormat.ColorSpace,
+                MinImageCount = min_image_count,
+                ImageFormat = surface_format.Format,
+                ImageColorSpace = surface_format.ColorSpace,
                 ImageExtent = extents,
                 ImageArrayLayers = 1,
                 ImageUsage = ImageUsageFlags.ImageUsageColorAttachmentBit,
                 PreTransform = _SwapChainSupportDetails.SurfaceCapabilities.CurrentTransform,
                 CompositeAlpha = CompositeAlphaFlagsKHR.CompositeAlphaOpaqueBitKhr,
-                PresentMode = presentationMode,
+                PresentMode = presentation_mode,
                 Clipped = Vk.True,
                 OldSwapchain = default
             };
 
             if (_QueueFamilyIndices.GraphicsFamily != _QueueFamilyIndices.PresentationFamily)
             {
-                swapChainCreateInfo.ImageSharingMode = SharingMode.Concurrent;
-                swapChainCreateInfo.QueueFamilyIndexCount = 2;
+                swap_chain_create_info.ImageSharingMode = SharingMode.Concurrent;
+                swap_chain_create_info.QueueFamilyIndexCount = 2;
 
                 Debug.Assert(_QueueFamilyIndices.GraphicsFamily.HasValue);
                 Debug.Assert(_QueueFamilyIndices.PresentationFamily.HasValue);
@@ -269,20 +269,20 @@ namespace Automata.Engine.Rendering.Vulkan
                     _QueueFamilyIndices.PresentationFamily.Value
                 };
 
-                swapChainCreateInfo.PQueueFamilyIndices = indices;
+                swap_chain_create_info.PQueueFamilyIndices = indices;
             }
             else
             {
-                swapChainCreateInfo.ImageSharingMode = SharingMode.Exclusive;
-                swapChainCreateInfo.QueueFamilyIndexCount = 0;
-                swapChainCreateInfo.PQueueFamilyIndices = (uint*)null!;
+                swap_chain_create_info.ImageSharingMode = SharingMode.Exclusive;
+                swap_chain_create_info.QueueFamilyIndexCount = 0;
+                swap_chain_create_info.PQueueFamilyIndices = (uint*)null!;
             }
 
             Log.Information(string.Format(_VulkanSwapChainCreationFormat, "creating swap chain."));
 
-            fixed (SwapchainKHR* swapChainFixed = &_SwapChain)
+            fixed (SwapchainKHR* swap_chain_fixed = &_SwapChain)
             {
-                if (_KHRSwapChain.CreateSwapchain(_LogicalDevice, &swapChainCreateInfo, (AllocationCallbacks*)null!, swapChainFixed)
+                if (_KHRSwapChain.CreateSwapchain(_LogicalDevice, &swap_chain_create_info, (AllocationCallbacks*)null!, swap_chain_fixed)
                     != Result.Success)
                 {
                     throw new Exception("Failed to create swap chain.");
@@ -291,17 +291,17 @@ namespace Automata.Engine.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanSwapChainCreationFormat, "getting swap chain images."));
 
-            _KHRSwapChain.GetSwapchainImages(_LogicalDevice, _SwapChain, &minImageCount, (Image*)null!);
-            _SwapChainImages = new Image[minImageCount];
+            _KHRSwapChain.GetSwapchainImages(_LogicalDevice, _SwapChain, &min_image_count, (Image*)null!);
+            _SwapChainImages = new Image[min_image_count];
 
-            fixed (Image* swapChainImagesFixed = _SwapChainImages)
+            fixed (Image* swap_chain_images_fixed = _SwapChainImages)
             {
-                _KHRSwapChain.GetSwapchainImages(_LogicalDevice, _SwapChain, &minImageCount, swapChainImagesFixed);
+                _KHRSwapChain.GetSwapchainImages(_LogicalDevice, _SwapChain, &min_image_count, swap_chain_images_fixed);
             }
 
             Log.Information(string.Format(_VulkanSwapChainCreationFormat, "assigning global state variables."));
 
-            _SwapChainImageFormat = surfaceFormat.Format;
+            _SwapChainImageFormat = surface_format.Format;
             _SwapChainExtents = extents;
 
             Log.Information(string.Format(_VulkanSwapChainCreationFormat, "-success-"));
@@ -309,11 +309,11 @@ namespace Automata.Engine.Rendering.Vulkan
 
         private static SurfaceFormatKHR ChooseSwapSurfaceFormat(IReadOnlyList<SurfaceFormatKHR> availableFormats)
         {
-            foreach (SurfaceFormatKHR surfaceFormat in availableFormats)
+            foreach (SurfaceFormatKHR surface_format in availableFormats)
             {
-                if ((surfaceFormat.Format == Format.B8G8R8Srgb) && (surfaceFormat.ColorSpace == ColorSpaceKHR.ColorspaceSrgbNonlinearKhr))
+                if ((surface_format.Format == Format.B8G8R8Srgb) && (surface_format.ColorSpace == ColorSpaceKHR.ColorspaceSrgbNonlinearKhr))
                 {
-                    return surfaceFormat;
+                    return surface_format;
                 }
             }
 
@@ -322,11 +322,11 @@ namespace Automata.Engine.Rendering.Vulkan
 
         private static PresentModeKHR ChooseSwapPresentationMode(IEnumerable<PresentModeKHR> availablePresentationModes)
         {
-            foreach (PresentModeKHR presentationMode in availablePresentationModes)
+            foreach (PresentModeKHR presentation_mode in availablePresentationModes)
             {
-                if (presentationMode == PresentModeKHR.PresentModeMailboxKhr)
+                if (presentation_mode == PresentModeKHR.PresentModeMailboxKhr)
                 {
-                    return presentationMode;
+                    return presentation_mode;
                 }
             }
 
@@ -341,15 +341,15 @@ namespace Automata.Engine.Rendering.Vulkan
             }
             else
             {
-                Extent2D adjustedExtent = new Extent2D((uint)AutomataWindow.Instance.Size.X, (uint)AutomataWindow.Instance.Size.Y);
+                Extent2D adjusted_extent = new Extent2D((uint)AutomataWindow.Instance.Size.X, (uint)AutomataWindow.Instance.Size.Y);
 
-                adjustedExtent.Width = Math.Max(surfaceCapabilities.MinImageExtent.Width,
-                    Math.Min(surfaceCapabilities.MinImageExtent.Width, adjustedExtent.Width));
+                adjusted_extent.Width = Math.Max(surfaceCapabilities.MinImageExtent.Width,
+                    Math.Min(surfaceCapabilities.MinImageExtent.Width, adjusted_extent.Width));
 
-                adjustedExtent.Height = Math.Max(surfaceCapabilities.MinImageExtent.Height,
-                    Math.Min(surfaceCapabilities.MinImageExtent.Height, adjustedExtent.Height));
+                adjusted_extent.Height = Math.Max(surfaceCapabilities.MinImageExtent.Height,
+                    Math.Min(surfaceCapabilities.MinImageExtent.Height, adjusted_extent.Height));
 
-                return adjustedExtent;
+                return adjusted_extent;
             }
         }
 
@@ -368,7 +368,7 @@ namespace Automata.Engine.Rendering.Vulkan
             {
                 Log.Information(string.Format(_VulkanImageViewCreationFormat, $"initializing image view creation info ({index})."));
 
-                ImageViewCreateInfo imageViewCreateInfo = new ImageViewCreateInfo
+                ImageViewCreateInfo image_view_create_info = new ImageViewCreateInfo
                 {
                     SType = StructureType.ImageViewCreateInfo,
                     Image = _SwapChainImages[index],
@@ -380,9 +380,9 @@ namespace Automata.Engine.Rendering.Vulkan
 
                 Log.Information(string.Format(_VulkanImageViewCreationFormat, $"creating and assigning image view ({index})."));
 
-                fixed (ImageView* swapChainImageViews = &_SwapChainImageViews[index])
+                fixed (ImageView* swap_chain_image_views = &_SwapChainImageViews[index])
                 {
-                    if (VK.CreateImageView(_LogicalDevice, &imageViewCreateInfo, (AllocationCallbacks*)null!, swapChainImageViews)
+                    if (VK.CreateImageView(_LogicalDevice, &image_view_create_info, (AllocationCallbacks*)null!, swap_chain_image_views)
                         != Result.Success)
                     {
                         throw new Exception($"Failed to create image views for index {index}.");
@@ -404,7 +404,7 @@ namespace Automata.Engine.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanRenderPassCreationFormat, "creating attachment descriptions."));
 
-            AttachmentDescription colorAttachment = new AttachmentDescription
+            AttachmentDescription color_attachment = new AttachmentDescription
             {
                 Format = _SwapChainImageFormat,
                 Samples = SampleCountFlags.SampleCount1Bit,
@@ -416,22 +416,22 @@ namespace Automata.Engine.Rendering.Vulkan
                 FinalLayout = ImageLayout.PresentSrcKhr
             };
 
-            AttachmentReference subpassAttachmentReference = new AttachmentReference
+            AttachmentReference subpass_attachment_reference = new AttachmentReference
             {
                 Attachment = 0,
                 Layout = ImageLayout.ColorAttachmentOptimal
             };
 
-            SubpassDescription subpassDescription = new SubpassDescription
+            SubpassDescription subpass_description = new SubpassDescription
             {
                 PipelineBindPoint = PipelineBindPoint.Graphics,
                 ColorAttachmentCount = 1,
-                PColorAttachments = &subpassAttachmentReference
+                PColorAttachments = &subpass_attachment_reference
             };
 
             Log.Information(string.Format(_VulkanRenderPassCreationFormat, "creating subpass dependency information."));
 
-            SubpassDependency subpassDependency = new SubpassDependency
+            SubpassDependency subpass_dependency = new SubpassDependency
             {
                 SrcSubpass = Vk.SubpassExternal,
                 DstSubpass = 0,
@@ -443,22 +443,22 @@ namespace Automata.Engine.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanRenderPassCreationFormat, "creating render pass information."));
 
-            RenderPassCreateInfo renderPassCreateInfo = new RenderPassCreateInfo
+            RenderPassCreateInfo render_pass_create_info = new RenderPassCreateInfo
             {
                 SType = StructureType.RenderPassCreateInfo,
                 AttachmentCount = 1,
-                PAttachments = &colorAttachment,
+                PAttachments = &color_attachment,
                 SubpassCount = 1,
-                PSubpasses = &subpassDescription,
+                PSubpasses = &subpass_description,
                 DependencyCount = 1,
-                PDependencies = &subpassDependency
+                PDependencies = &subpass_dependency
             };
 
             Log.Information(string.Format(_VulkanRenderPassCreationFormat, "assigning render pass."));
 
-            fixed (RenderPass* renderPassFixed = &_RenderPass)
+            fixed (RenderPass* render_pass_fixed = &_RenderPass)
             {
-                if (VK.CreateRenderPass(_LogicalDevice, &renderPassCreateInfo, (AllocationCallbacks*)null!, renderPassFixed) != Result.Success)
+                if (VK.CreateRenderPass(_LogicalDevice, &render_pass_create_info, (AllocationCallbacks*)null!, render_pass_fixed) != Result.Success)
                 {
                     throw new Exception("Failed to create render pass.");
                 }
@@ -478,38 +478,38 @@ namespace Automata.Engine.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "loading default shaders."));
 
-            ShaderModule vertexShader = CreateShaderModule((byte[])GLSLXPLR.Instance.DefaultVertexShader);
-            ShaderModule fragmentShader = CreateShaderModule((byte[])GLSLXPLR.Instance.DefaultFragmentShader);
+            ShaderModule vertex_shader = CreateShaderModule((byte[])GLSLXPLR.Instance.DefaultVertexShader);
+            ShaderModule fragment_shader = CreateShaderModule((byte[])GLSLXPLR.Instance.DefaultFragmentShader);
 
             Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "creating shader stage information."));
 
-            PipelineShaderStageCreateInfo vertexShaderStageCreateInfo = new PipelineShaderStageCreateInfo
+            PipelineShaderStageCreateInfo vertex_shader_stage_create_info = new PipelineShaderStageCreateInfo
             {
                 SType = StructureType.PipelineShaderStageCreateInfo,
                 Stage = ShaderStageFlags.ShaderStageVertexBit,
                 PName = (byte*)SilkMarshal.MarshalStringToPtr("main"),
-                Module = vertexShader,
+                Module = vertex_shader,
                 PSpecializationInfo = null
             };
 
-            PipelineShaderStageCreateInfo fragmentShaderStageCreateInfo = new PipelineShaderStageCreateInfo
+            PipelineShaderStageCreateInfo fragment_shader_stage_create_info = new PipelineShaderStageCreateInfo
             {
                 SType = StructureType.PipelineShaderStageCreateInfo,
                 Stage = ShaderStageFlags.ShaderStageFragmentBit,
                 PName = (byte*)SilkMarshal.MarshalStringToPtr("main"),
-                Module = fragmentShader,
+                Module = fragment_shader,
                 PSpecializationInfo = null
             };
 
-            PipelineShaderStageCreateInfo* shaderStages = stackalloc[]
+            PipelineShaderStageCreateInfo* shader_stages = stackalloc[]
             {
-                vertexShaderStageCreateInfo,
-                fragmentShaderStageCreateInfo
+                vertex_shader_stage_create_info,
+                fragment_shader_stage_create_info
             };
 
             Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "creating vertex stage information."));
 
-            PipelineVertexInputStateCreateInfo vertexInputStateCreateInfo = new PipelineVertexInputStateCreateInfo
+            PipelineVertexInputStateCreateInfo vertex_input_state_create_info = new PipelineVertexInputStateCreateInfo
             {
                 SType = StructureType.PipelineVertexInputStateCreateInfo,
                 VertexAttributeDescriptionCount = 0,
@@ -520,7 +520,7 @@ namespace Automata.Engine.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "creating assembly stage information."));
 
-            PipelineInputAssemblyStateCreateInfo assemblyStateCreateInfo = new PipelineInputAssemblyStateCreateInfo
+            PipelineInputAssemblyStateCreateInfo assembly_state_create_info = new PipelineInputAssemblyStateCreateInfo
             {
                 SType = StructureType.PipelineInputAssemblyStateCreateInfo,
                 Topology = PrimitiveTopology.TriangleList,
@@ -549,7 +549,7 @@ namespace Automata.Engine.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "aggregating viewport state information."));
 
-            PipelineViewportStateCreateInfo viewportStateCreateInfo = new PipelineViewportStateCreateInfo
+            PipelineViewportStateCreateInfo viewport_state_create_info = new PipelineViewportStateCreateInfo
             {
                 SType = StructureType.PipelineViewportStateCreateInfo,
                 ViewportCount = 1,
@@ -560,7 +560,7 @@ namespace Automata.Engine.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "creating rasterization information."));
 
-            PipelineRasterizationStateCreateInfo rasterizationStateCreateInfo = new PipelineRasterizationStateCreateInfo
+            PipelineRasterizationStateCreateInfo rasterization_state_create_info = new PipelineRasterizationStateCreateInfo
             {
                 SType = StructureType.PipelineRasterizationStateCreateInfo,
                 DepthClampEnable = Vk.False,
@@ -576,7 +576,7 @@ namespace Automata.Engine.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "creating multisampling information."));
 
-            PipelineMultisampleStateCreateInfo multisampleStateCreateInfo = new PipelineMultisampleStateCreateInfo
+            PipelineMultisampleStateCreateInfo multisample_state_create_info = new PipelineMultisampleStateCreateInfo
             {
                 SType = StructureType.PipelineMultisampleStateCreateInfo,
                 SampleShadingEnable = Vk.False,
@@ -589,7 +589,7 @@ namespace Automata.Engine.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "creating color blender information."));
 
-            PipelineColorBlendAttachmentState colorBlendAttachmentState = new PipelineColorBlendAttachmentState
+            PipelineColorBlendAttachmentState color_blend_attachment_state = new PipelineColorBlendAttachmentState
             {
                 ColorWriteMask = ColorComponentFlags.ColorComponentRBit
                                  | ColorComponentFlags.ColorComponentGBit
@@ -604,37 +604,37 @@ namespace Automata.Engine.Rendering.Vulkan
                 AlphaBlendOp = BlendOp.Add
             };
 
-            PipelineColorBlendStateCreateInfo colorBlendStateCreateInfo = new PipelineColorBlendStateCreateInfo
+            PipelineColorBlendStateCreateInfo color_blend_state_create_info = new PipelineColorBlendStateCreateInfo
             {
                 SType = StructureType.PipelineColorBlendStateCreateInfo,
                 LogicOpEnable = Vk.False,
                 LogicOp = LogicOp.Copy,
                 AttachmentCount = 1,
-                PAttachments = &colorBlendAttachmentState
+                PAttachments = &color_blend_attachment_state
             };
 
-            colorBlendStateCreateInfo.BlendConstants[0] =
-                colorBlendStateCreateInfo.BlendConstants[1] =
-                    colorBlendStateCreateInfo.BlendConstants[2] =
-                        colorBlendStateCreateInfo.BlendConstants[3] = 0.0f;
+            color_blend_state_create_info.BlendConstants[0] =
+                color_blend_state_create_info.BlendConstants[1] =
+                    color_blend_state_create_info.BlendConstants[2] =
+                        color_blend_state_create_info.BlendConstants[3] = 0.0f;
 
             Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "configuring dynamic state."));
 
-            DynamicState* dynamicStates = stackalloc[]
+            DynamicState* dynamic_states = stackalloc[]
             {
                 DynamicState.Viewport
             };
 
-            PipelineDynamicStateCreateInfo dynamicStateCreateInfo = new PipelineDynamicStateCreateInfo
+            PipelineDynamicStateCreateInfo dynamic_state_create_info = new PipelineDynamicStateCreateInfo
             {
                 SType = StructureType.PipelineDynamicStateCreateInfo,
                 DynamicStateCount = 1,
-                PDynamicStates = dynamicStates
+                PDynamicStates = dynamic_states
             };
 
             Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "creating pipeline layout information."));
 
-            PipelineLayoutCreateInfo pipelineLayoutCreateInfo = new PipelineLayoutCreateInfo
+            PipelineLayoutCreateInfo pipeline_layout_create_info = new PipelineLayoutCreateInfo
             {
                 SType = StructureType.PipelineLayoutCreateInfo,
                 SetLayoutCount = 0,
@@ -645,9 +645,9 @@ namespace Automata.Engine.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "assigning pipeline layout."));
 
-            fixed (PipelineLayout* pipelineLayoutFixed = &_PipelineLayout)
+            fixed (PipelineLayout* pipeline_layout_fixed = &_PipelineLayout)
             {
-                if (VK.CreatePipelineLayout(_LogicalDevice, &pipelineLayoutCreateInfo, (AllocationCallbacks*)null!, pipelineLayoutFixed)
+                if (VK.CreatePipelineLayout(_LogicalDevice, &pipeline_layout_create_info, (AllocationCallbacks*)null!, pipeline_layout_fixed)
                     != Result.Success)
                 {
                     throw new Exception("Failed to create pipeline layout.");
@@ -656,18 +656,18 @@ namespace Automata.Engine.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "creating final graphics pipeline."));
 
-            GraphicsPipelineCreateInfo graphicsPipelineCreateInfo = new GraphicsPipelineCreateInfo
+            GraphicsPipelineCreateInfo graphics_pipeline_create_info = new GraphicsPipelineCreateInfo
             {
                 SType = StructureType.GraphicsPipelineCreateInfo,
                 StageCount = 2,
-                PStages = shaderStages,
-                PVertexInputState = &vertexInputStateCreateInfo,
-                PInputAssemblyState = &assemblyStateCreateInfo,
-                PViewportState = &viewportStateCreateInfo,
-                PRasterizationState = &rasterizationStateCreateInfo,
-                PMultisampleState = &multisampleStateCreateInfo,
+                PStages = shader_stages,
+                PVertexInputState = &vertex_input_state_create_info,
+                PInputAssemblyState = &assembly_state_create_info,
+                PViewportState = &viewport_state_create_info,
+                PRasterizationState = &rasterization_state_create_info,
+                PMultisampleState = &multisample_state_create_info,
                 PDepthStencilState = null,
-                PColorBlendState = &colorBlendStateCreateInfo,
+                PColorBlendState = &color_blend_state_create_info,
                 PDynamicState = null,
                 Layout = _PipelineLayout,
                 RenderPass = _RenderPass,
@@ -678,10 +678,10 @@ namespace Automata.Engine.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "assigning graphics pipeline."));
 
-            fixed (Pipeline* graphicsPipelineFixed = &_GraphicsPipeline)
+            fixed (Pipeline* graphics_pipeline_fixed = &_GraphicsPipeline)
             {
-                if (VK.CreateGraphicsPipelines(_LogicalDevice, default, 1, &graphicsPipelineCreateInfo, (AllocationCallbacks*)null!,
-                        graphicsPipelineFixed)
+                if (VK.CreateGraphicsPipelines(_LogicalDevice, default, 1, &graphics_pipeline_create_info, (AllocationCallbacks*)null!,
+                        graphics_pipeline_fixed)
                     != Result.Success)
                 {
                     throw new Exception("Failed to create graphics pipeline.");
@@ -690,33 +690,33 @@ namespace Automata.Engine.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "destroying shader modules."));
 
-            VK.DestroyShaderModule(_LogicalDevice, vertexShader, (AllocationCallbacks*)null!);
-            VK.DestroyShaderModule(_LogicalDevice, fragmentShader, (AllocationCallbacks*)null!);
+            VK.DestroyShaderModule(_LogicalDevice, vertex_shader, (AllocationCallbacks*)null!);
+            VK.DestroyShaderModule(_LogicalDevice, fragment_shader, (AllocationCallbacks*)null!);
 
             Log.Information(string.Format(_VulkanGraphicsPipelineCreationFormat, "-success-"));
         }
 
         private unsafe ShaderModule CreateShaderModule(byte[] byteCode)
         {
-            ShaderModuleCreateInfo shaderModuleCreateInfo = new ShaderModuleCreateInfo
+            ShaderModuleCreateInfo shader_module_create_info = new ShaderModuleCreateInfo
             {
                 SType = StructureType.ShaderModuleCreateInfo,
                 CodeSize = (UIntPtr)byteCode.Length
             };
 
-            fixed (byte* byteCodeFixed = byteCode)
+            fixed (byte* byte_code_fixed = byteCode)
             {
-                shaderModuleCreateInfo.PCode = (uint*)byteCodeFixed;
+                shader_module_create_info.PCode = (uint*)byte_code_fixed;
             }
 
-            ShaderModule shaderModule;
+            ShaderModule shader_module;
 
-            if (VK.CreateShaderModule(_LogicalDevice, &shaderModuleCreateInfo, (AllocationCallbacks*)null!, &shaderModule) != Result.Success)
+            if (VK.CreateShaderModule(_LogicalDevice, &shader_module_create_info, (AllocationCallbacks*)null!, &shader_module) != Result.Success)
             {
                 throw new Exception("Failed to create shader module.");
             }
 
-            return shaderModule;
+            return shader_module;
         }
 
         #endregion
@@ -743,7 +743,7 @@ namespace Automata.Engine.Rendering.Vulkan
                     _SwapChainImageViews[index]
                 };
 
-                FramebufferCreateInfo framebufferCreateInfo = new FramebufferCreateInfo
+                FramebufferCreateInfo framebuffer_create_info = new FramebufferCreateInfo
                 {
                     SType = StructureType.FramebufferCreateInfo,
                     RenderPass = _RenderPass,
@@ -756,9 +756,9 @@ namespace Automata.Engine.Rendering.Vulkan
 
                 Log.Information(string.Format(_VulkanFramebuffersCreationFormat, $"assigning framebuffer {index}."));
 
-                fixed (Framebuffer* swapChainFramebuffersFixed = _SwapChainFramebuffers)
+                fixed (Framebuffer* swap_chain_framebuffers_fixed = _SwapChainFramebuffers)
                 {
-                    if (VK.CreateFramebuffer(_LogicalDevice, &framebufferCreateInfo, (AllocationCallbacks*)null!, &swapChainFramebuffersFixed[index])
+                    if (VK.CreateFramebuffer(_LogicalDevice, &framebuffer_create_info, (AllocationCallbacks*)null!, &swap_chain_framebuffers_fixed[index])
                         != Result.Success)
                     {
                         throw new Exception($"Failed to create framebuffer (index {index}).");
@@ -782,7 +782,7 @@ namespace Automata.Engine.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanCommandPoolCreationFormat, "creating command pool."));
 
-            CommandPoolCreateInfo commandPoolCreateInfo = new CommandPoolCreateInfo
+            CommandPoolCreateInfo command_pool_create_info = new CommandPoolCreateInfo
             {
                 SType = StructureType.CommandPoolCreateInfo,
                 QueueFamilyIndex = _QueueFamilyIndices.GraphicsFamily.Value,
@@ -791,9 +791,9 @@ namespace Automata.Engine.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanCommandPoolCreationFormat, "assigning command pool."));
 
-            fixed (CommandPool* commandPoolFixed = &_CommandPool)
+            fixed (CommandPool* command_pool_fixed = &_CommandPool)
             {
-                if (VK.CreateCommandPool(_LogicalDevice, &commandPoolCreateInfo, (AllocationCallbacks*)null!, commandPoolFixed) != Result.Success)
+                if (VK.CreateCommandPool(_LogicalDevice, &command_pool_create_info, (AllocationCallbacks*)null!, command_pool_fixed) != Result.Success)
                 {
                     throw new Exception("Failed to create command pool.");
                 }
@@ -817,7 +817,7 @@ namespace Automata.Engine.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanCommandBuffersCreationFormat, "creating command buffers."));
 
-            CommandBufferAllocateInfo commandBufferAllocateInfo = new CommandBufferAllocateInfo
+            CommandBufferAllocateInfo command_buffer_allocate_info = new CommandBufferAllocateInfo
             {
                 SType = StructureType.CommandBufferAllocateInfo,
                 CommandPool = _CommandPool,
@@ -827,9 +827,9 @@ namespace Automata.Engine.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanCommandBuffersCreationFormat, "assigning command buffers."));
 
-            fixed (CommandBuffer* commandBuffersFixed = _CommandBuffers)
+            fixed (CommandBuffer* command_buffers_fixed = _CommandBuffers)
             {
-                if (VK.AllocateCommandBuffers(_LogicalDevice, &commandBufferAllocateInfo, commandBuffersFixed) != Result.Success)
+                if (VK.AllocateCommandBuffers(_LogicalDevice, &command_buffer_allocate_info, command_buffers_fixed) != Result.Success)
                 {
                     throw new Exception("Failed to create command buffers.");
                 }
@@ -839,31 +839,31 @@ namespace Automata.Engine.Rendering.Vulkan
 
             for (int index = 0; index < _CommandBuffers.Length; index++)
             {
-                CommandBufferBeginInfo commandBufferBeginInfo = new CommandBufferBeginInfo
+                CommandBufferBeginInfo command_buffer_begin_info = new CommandBufferBeginInfo
                 {
                     SType = StructureType.CommandBufferBeginInfo,
                     Flags = 0,
                     PInheritanceInfo = null
                 };
 
-                if (VK.BeginCommandBuffer(_CommandBuffers[index], &commandBufferBeginInfo) != Result.Success)
+                if (VK.BeginCommandBuffer(_CommandBuffers[index], &command_buffer_begin_info) != Result.Success)
                 {
                     throw new Exception("Failed to begin recording command buffer.");
                 }
 
-                ClearValue clearValue = new ClearValue(new ClearColorValue(0f, 0f, 0f, 1f));
+                ClearValue clear_value = new ClearValue(new ClearColorValue(0f, 0f, 0f, 1f));
 
-                RenderPassBeginInfo renderPassBeginInfo = new RenderPassBeginInfo
+                RenderPassBeginInfo render_pass_begin_info = new RenderPassBeginInfo
                 {
                     SType = StructureType.RenderPassBeginInfo,
                     RenderPass = _RenderPass,
                     Framebuffer = _SwapChainFramebuffers[index],
                     RenderArea = new Rect2D(new Offset2D(0), _SwapChainExtents),
                     ClearValueCount = 1,
-                    PClearValues = &clearValue
+                    PClearValues = &clear_value
                 };
 
-                VK.CmdBeginRenderPass(_CommandBuffers[index], &renderPassBeginInfo, SubpassContents.Inline);
+                VK.CmdBeginRenderPass(_CommandBuffers[index], &render_pass_begin_info, SubpassContents.Inline);
                 VK.CmdBindPipeline(_CommandBuffers[index], PipelineBindPoint.Graphics, _GraphicsPipeline);
                 VK.CmdDraw(_CommandBuffers[index], 3, 1, 0, 0);
                 VK.CmdEndRenderPass(_CommandBuffers[index]);
@@ -888,7 +888,7 @@ namespace Automata.Engine.Rendering.Vulkan
 
             Log.Information(string.Format(_VulkanSemaphoreCreationFormat, "creating semaphores."));
 
-            SemaphoreCreateInfo semaphoreCreateInfo = new SemaphoreCreateInfo
+            SemaphoreCreateInfo semaphore_create_info = new SemaphoreCreateInfo
             {
                 SType = StructureType.SemaphoreCreateInfo
             };
@@ -896,21 +896,21 @@ namespace Automata.Engine.Rendering.Vulkan
             _ImageAvailableSemaphores = new Semaphore[_MAX_FRAMES_IN_FLIGHT];
             _RenderFinishedSemaphores = new Semaphore[_MAX_FRAMES_IN_FLIGHT];
 
-            fixed (Semaphore* imageAvailableSemaphoresFixed = _ImageAvailableSemaphores)
+            fixed (Semaphore* image_available_semaphores_fixed = _ImageAvailableSemaphores)
             {
-                fixed (Semaphore* renderFinishedSemaphoresFixed = _RenderFinishedSemaphores)
+                fixed (Semaphore* render_finished_semaphores_fixed = _RenderFinishedSemaphores)
                 {
                     for (int index = 0; index < _MAX_FRAMES_IN_FLIGHT; index++)
                     {
-                        if (VK.CreateSemaphore(_LogicalDevice, &semaphoreCreateInfo, (AllocationCallbacks*)null!,
-                                &imageAvailableSemaphoresFixed[index])
+                        if (VK.CreateSemaphore(_LogicalDevice, &semaphore_create_info, (AllocationCallbacks*)null!,
+                                &image_available_semaphores_fixed[index])
                             != Result.Success)
                         {
                             throw new Exception("Failed to create image availability semaphore.");
                         }
 
-                        if (VK.CreateSemaphore(_LogicalDevice, &semaphoreCreateInfo, (AllocationCallbacks*)null!,
-                                &renderFinishedSemaphoresFixed[index])
+                        if (VK.CreateSemaphore(_LogicalDevice, &semaphore_create_info, (AllocationCallbacks*)null!,
+                                &render_finished_semaphores_fixed[index])
                             != Result.Success)
                         {
                             throw new Exception("Failed to create render finished semaphore.");
@@ -944,9 +944,9 @@ namespace Automata.Engine.Rendering.Vulkan
             VK.DestroyRenderPass(_LogicalDevice, _RenderPass, (AllocationCallbacks*)null!);
             VK.DestroyPipelineLayout(_LogicalDevice, _PipelineLayout, (AllocationCallbacks*)null!);
 
-            foreach (ImageView imageView in _SwapChainImageViews)
+            foreach (ImageView image_view in _SwapChainImageViews)
             {
-                VK.DestroyImageView(_LogicalDevice, imageView, (AllocationCallbacks*)null!);
+                VK.DestroyImageView(_LogicalDevice, image_view, (AllocationCallbacks*)null!);
             }
 
             _KHRSwapChain.DestroySwapchain(_LogicalDevice, _SwapChain, (AllocationCallbacks*)null!);

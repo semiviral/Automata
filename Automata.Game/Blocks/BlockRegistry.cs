@@ -40,35 +40,35 @@ namespace Automata.Game.Blocks
 
         private IEnumerable<(string group, string path)> LoadMetadata()
         {
-            string[] metadataFiles = Directory.GetFiles(@".\Resources\", "Metadata.json", SearchOption.AllDirectories);
-            List<(string, Resource)> resources = metadataFiles.Select(path => (Path.GetDirectoryName(path) ?? String.Empty, Resource.Load(path))).ToList();
+            string[] metadata_files = Directory.GetFiles(@".\Resources\", "Metadata.json", SearchOption.AllDirectories);
+            List<(string, Resource)> resources = metadata_files.Select(path => (Path.GetDirectoryName(path) ?? String.Empty, Resource.Load(path))).ToList();
 
-            foreach ((string directoryPath, Resource resource) in resources)
+            foreach ((string directory_path, Resource resource) in resources)
             {
                 if (resource.Group is null)
                 {
                     continue;
                 }
 
-                foreach (Resource.BlockDefinition blockDefinition in resource.BlockDefinitions ?? Enumerable.Empty<Resource.BlockDefinition>())
+                foreach (Resource.BlockDefinition block_definition in resource.BlockDefinitions ?? Enumerable.Empty<Resource.BlockDefinition>())
                 {
-                    if (blockDefinition.Name is null)
+                    if (block_definition.Name is null)
                     {
                         continue;
                     }
 
                     IBlockDefinition.Attribute attributes = 0;
 
-                    if (blockDefinition.Attributes is not null && !TryParseAttributes(blockDefinition.Attributes, out attributes))
+                    if (block_definition.Attributes is not null && !TryParseAttributes(block_definition.Attributes, out attributes))
                     {
                         continue;
                     }
 
-                    ushort id = RegisterBlock(resource.Group, blockDefinition.Name, attributes, blockDefinition.MeshingStrategy);
+                    ushort id = RegisterBlock(resource.Group, block_definition.Name, attributes, block_definition.MeshingStrategy);
 
                     if (resource.Group.Equals("Core"))
                     {
-                        switch (blockDefinition.Name)
+                        switch (block_definition.Name)
                         {
                             case "Null":
                                 NullID = id;
@@ -79,10 +79,10 @@ namespace Automata.Game.Blocks
                         }
                     }
 
-                    foreach (string textureName in blockDefinition.Textures ?? Enumerable.Empty<string>())
+                    foreach (string texture_name in block_definition.Textures ?? Enumerable.Empty<string>())
                     {
-                        string fileName = $"{(textureName.Equals("Self") ? blockDefinition.Name : textureName)}.png";
-                        yield return (resource.Group, Path.Combine(directoryPath, resource.RelativeTexturesPath ?? string.Empty, fileName));
+                        string file_name = $"{(texture_name.Equals("Self") ? block_definition.Name : texture_name)}.png";
+                        yield return (resource.Group, Path.Combine(directory_path, resource.RelativeTexturesPath ?? string.Empty, file_name));
                     }
                 }
             }
@@ -96,16 +96,16 @@ namespace Automata.Game.Blocks
             {
                 if (attribute.StartsWith("Alias"))
                 {
-                    string aliasName = attribute.Substring(attribute.IndexOf(' ') + 1);
+                    string alias_name = attribute.Substring(attribute.IndexOf(' ') + 1);
 
-                    if (_AttributeAliases.TryGetValue(aliasName, out IBlockDefinition.Attribute aliasAttribute))
+                    if (_AttributeAliases.TryGetValue(alias_name, out IBlockDefinition.Attribute alias_attribute))
                     {
-                        result |= aliasAttribute;
+                        result |= alias_attribute;
                     }
                     else
                     {
                         Log.Error(string.Format(_LogFormat,
-                            $"Failed to parse {nameof(IBlockDefinition.Attribute)}: alias \"{aliasName}\" does not exist."));
+                            $"Failed to parse {nameof(IBlockDefinition.Attribute)}: alias \"{alias_name}\" does not exist."));
 
                         return false;
                     }
@@ -135,18 +135,18 @@ namespace Automata.Game.Blocks
                 throw new OverflowException($"{nameof(BlockRegistry)} has run out of valid block IDs.");
             }
 
-            ushort blockID = (ushort)Blocks.Count;
-            string groupedName = string.Format(group_with_block_name_format, group, blockName);
+            ushort block_id = (ushort)Blocks.Count;
+            string grouped_name = string.Format(group_with_block_name_format, group, blockName);
 
-            int strategyIndex = ChunkMesher.MeshingStrategies.GetMeshingStrategyIndex(meshingStrategy ?? ChunkMesher.DEFAULT_STRATEGY);
-            IBlockDefinition blockDefinition = new BlockDefinition(blockID, groupedName, strategyIndex, attributes);
+            int strategy_index = ChunkMesher.MeshingStrategies.GetMeshingStrategyIndex(meshingStrategy ?? ChunkMesher.DEFAULT_STRATEGY);
+            IBlockDefinition block_definition = new BlockDefinition(block_id, grouped_name, strategy_index, attributes);
 
-            Blocks.Add(blockDefinition);
-            BlocksIndexer.Add(groupedName, blockID);
+            Blocks.Add(block_definition);
+            BlocksIndexer.Add(grouped_name, block_id);
 
-            Log.Debug($"({nameof(BlockRegistry)}) Registered ID {blockID}: \"{groupedName}\"");
+            Log.Debug($"({nameof(BlockRegistry)}) Registered ID {block_id}: \"{grouped_name}\"");
 
-            return blockDefinition.ID;
+            return block_definition.ID;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -48,7 +48,9 @@ namespace Automata.Game.Chunks.Generation
             InputManager.Instance.RegisterInputAction(() =>
             {
                 IEnumerable<(GenerationState, int)> states = entityManager.GetComponents<Chunk>().Select(chunk => (chunk.State, chunk.TimesMeshed));
-                Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(DiagnosticsPool), string.Join(", ", states)));
+
+                Log.Debug(string.Format(FormatHelper.DEFAULT_LOGGING, nameof(DiagnosticsPool),
+                    $"{string.Join(", ", states)} ———{entityManager.GetComponentCount<Chunk>()} TOTAL CHUNKS———"));
             }, Key.ShiftLeft, Key.V);
         }
 
@@ -56,22 +58,17 @@ namespace Automata.Game.Chunks.Generation
         public override ValueTask UpdateAsync(EntityManager entityManager, TimeSpan delta)
         {
             // empty channel of any pending meshes, apply the meshes, and update the material
-            while (_PendingMeshes.TryTake(out (Entity Entity, Chunk Chunk, NonAllocatingQuadsMeshData<uint, PackedVertex> Data) pendingMesh))
+            while (_PendingMeshes.TryTake(out (Entity Entity, Chunk Chunk, NonAllocatingQuadsMeshData<uint, PackedVertex> Data) pending_mesh))
             {
-                if (!pendingMesh.Entity.Disposed && pendingMesh.Chunk.State is GenerationState.GeneratingMesh)
+                if (!pending_mesh.Entity.Disposed && pending_mesh.Chunk.State is GenerationState.GeneratingMesh)
                 {
-                    entityManager.RegisterComponent(pendingMesh.Entity, new AllocatedMeshData<uint, PackedVertex>(pendingMesh.Data));
+                    entityManager.RegisterComponent(pending_mesh.Entity, new AllocatedMeshData<uint, PackedVertex>(pending_mesh.Data));
+                    pending_mesh.Chunk.State += 1;
                 }
                 else
                 {
-                    pendingMesh.Data.Dispose();
-                }
-
-                // we ALWAYS update chunk state, so we can properly dispose of it
-                // and be conscious of not doing so when its generating
-                if (pendingMesh.Chunk.State is not GenerationState.GeneratingMesh and not GenerationState.GeneratingStructures)
-                {
-                    pendingMesh.Chunk.State += 1;
+                    // if the mesh data isn't going to be used, ensure we dispose it
+                    pending_mesh.Data.Dispose();
                 }
             }
 
@@ -81,8 +78,8 @@ namespace Automata.Game.Chunks.Generation
                 switch (chunk.State)
                 {
                     case GenerationState.AwaitingTerrain:
-                        BoundedInvocationPool.Instance.Enqueue(_ => GenerateBlocks(chunk, Vector3i.FromVector3(transform.Translation),
-                            new IGenerationStep.Parameters(GenerationConstants.Seed, Vector3i.FromVector3(transform.Translation).GetHashCode())
+                        BoundedInvocationPool.Instance.Enqueue(_ => GenerateBlocks(chunk, transform.Translation.Convert<int>(),
+                            new IGenerationStep.Parameters(GenerationConstants.Seed, transform.Translation.Convert<int>().GetHashCode())
                             {
                                 Frequency = 0.008f
                             }));
@@ -91,8 +88,9 @@ namespace Automata.Game.Chunks.Generation
                         break;
 
                     case GenerationState.AwaitingStructures:
-                        //BoundedInvocationPool.Instance.Enqueue(_ => GenerateStructures(chunk, Vector3i.FromVector3(transform.Translation)));
-                        chunk.State += 2;
+                        //BoundedInvocationPool.Instance.Enqueue(_ => GenerateStructures(chunk, Vector3<int>.FromVector3(transform.Translation)));
+                        chunk.State += 1;
+                        chunk.State += 1;
                         break;
 
                     case GenerationState.AwaitingMesh when chunk.Neighbors.All(neighbor => neighbor?.State is null or >= GenerationState.AwaitingMesh):
@@ -108,7 +106,7 @@ namespace Automata.Game.Chunks.Generation
 
         #region Generation
 
-        private Task GenerateBlocks(Chunk chunk, Vector3i origin, IGenerationStep.Parameters parameters)
+        private Task GenerateBlocks(Chunk chunk, Vector3<int> origin, IGenerationStep.Parameters parameters)
         {
             Stopwatch stopwatch = DiagnosticsPool.Stopwatches.Rent();
 
@@ -117,9 +115,9 @@ namespace Automata.Game.Chunks.Generation
             // block ids for generating
             Span<ushort> data = stackalloc ushort[GenerationConstants.CHUNK_SIZE_CUBED];
 
-            foreach (IGenerationStep generationStep in _BuildSteps)
+            foreach (IGenerationStep generation_step in _BuildSteps)
             {
-                generationStep.Generate(origin, parameters, data);
+                generation_step.Generate(origin, parameters, data);
             }
 
             DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new BuildingTime(stopwatch.Elapsed));
@@ -141,7 +139,7 @@ namespace Automata.Game.Chunks.Generation
             return Task.CompletedTask;
         }
 
-        private async Task GenerateStructures(Chunk chunk, Vector3i origin)
+        private async Task GenerateStructures(Chunk chunk, Vector3<int> origin)
         {
             Stopwatch stopwatch = DiagnosticsPool.Stopwatches.Rent();
 
@@ -151,37 +149,37 @@ namespace Automata.Game.Chunks.Generation
                 return;
             }
 
-            IStructure testStructure = new TreeStructure();
+            IStructure test_structure = new TreeStructure();
             Random random = new Random(origin.GetHashCode());
 
             for (int y = 0, index = 0; y < GenerationConstants.CHUNK_SIZE; y++)
             for (int z = 0; z < GenerationConstants.CHUNK_SIZE; z++)
             for (int x = 0; x < GenerationConstants.CHUNK_SIZE; x++, index++)
             {
-                Vector3i offset = new Vector3i(x, y, z);
+                Vector3<int> offset = new Vector3<int>(x, y, z);
 
-                if (!testStructure.CheckPlaceStructureAt(World, random, origin + offset))
+                if (!test_structure.CheckPlaceStructureAt(_World, random, origin + offset))
                 {
                     continue;
                 }
 
-                foreach ((Vector3i local, ushort blockID) in testStructure.StructureBlocks)
+                foreach ((Vector3<int> local, ushort block_id) in test_structure.StructureBlocks)
                 {
-                    Vector3i modificationOffset = offset + local;
+                    Vector3<int> modification_offset = offset + local;
 
                     // see if we can allocate the modification directly to the chunk
-                    if (Vector3b.All(modificationOffset >= 0) && Vector3b.All(modificationOffset < GenerationConstants.CHUNK_SIZE))
+                    if (Vector.All(modification_offset >= 0) && Vector.All(modification_offset < GenerationConstants.CHUNK_SIZE))
                     {
                         await chunk.Modifications.AddAsync(new ChunkModification
                         {
                             BlockIndex = index,
-                            BlockID = blockID
+                            BlockID = block_id
                         }).ConfigureAwait(false);
                     }
                     else
                     {
                         // if not, just go ahead and delegate the modification allocation to the world.
-                        await _VoxelWorld.AllocateChunkModification(origin + modificationOffset, blockID).ConfigureAwait(false);
+                        await _VoxelWorld.AllocateChunkModification(origin + modification_offset, block_id).ConfigureAwait(false);
                     }
                 }
             }
@@ -201,8 +199,8 @@ namespace Automata.Game.Chunks.Generation
             Stopwatch stopwatch = DiagnosticsPool.Stopwatches.Rent();
             stopwatch.Restart();
 
-            NonAllocatingQuadsMeshData<uint, PackedVertex> pendingQuads = ChunkMesher.GeneratePackedMesh(chunk.Blocks, chunk.NeighborBlocks().ToArray());
-            await _PendingMeshes.AddAsync((entity, chunk, pendingQuads)).ConfigureAwait(false);
+            NonAllocatingQuadsMeshData<uint, PackedVertex> pending_quads = ChunkMesher.GeneratePackedMesh(chunk.Blocks, chunk.NeighborBlocks().ToArray());
+            await _PendingMeshes.AddAsync((entity, chunk, pending_quads)).ConfigureAwait(false);
 
             DiagnosticsProvider.CommitData<ChunkGenerationDiagnosticGroup, TimeSpan>(new MeshingTime(stopwatch.Elapsed));
             DiagnosticsPool.Stopwatches.Return(stopwatch);

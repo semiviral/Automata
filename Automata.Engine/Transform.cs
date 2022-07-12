@@ -1,4 +1,5 @@
 using System.Numerics;
+using Automata.Engine.Numerics;
 
 namespace Automata.Engine
 {
@@ -6,7 +7,7 @@ namespace Automata.Engine
     {
         private float _Scale;
         private Quaternion _Rotation;
-        private Vector3 _Translation;
+        private Vector3<float> _Translation;
 
         public Matrix4x4 Matrix { get; set; }
         public bool Changed { get; set; }
@@ -31,7 +32,7 @@ namespace Automata.Engine
             }
         }
 
-        public Vector3 Translation
+        public Vector3<float> Translation
         {
             get => _Translation;
             set
@@ -45,7 +46,10 @@ namespace Automata.Engine
         {
             Scale = 1f;
             Rotation = Quaternion.Identity;
-            Translation = Vector3.Zero;
+            Translation = Vector3<float>.Zero;
         }
+
+        public override string ToString() =>
+            $"{nameof(Transform)} {{ {nameof(Translation)} = {Translation}, {nameof(Rotation)} = {Rotation}, {nameof(Scale)} = {Scale} }}";
     }
 }

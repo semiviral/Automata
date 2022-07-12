@@ -31,33 +31,33 @@ namespace Automata.Engine.Benchmarks
         [Benchmark]
         public IMemoryOwner<int> Rent1KBNoClear()
         {
-            IMemoryOwner<int> memoryOwner = _NativeMemoryPool!.Rent<int>(1_000, 0u, out _);
-            memoryOwner.Dispose();
-            return memoryOwner;
+            IMemoryOwner<int> memory_owner = _NativeMemoryPool!.Rent<int>(1_000, 0u, out _);
+            memory_owner.Dispose();
+            return memory_owner;
         }
 
         [Benchmark]
         public IMemoryOwner<int> Rent1KBClear()
         {
-            IMemoryOwner<int> memoryOwner = _NativeMemoryPool!.Rent<int>(1_000, 0u, out _, true);
-            memoryOwner.Dispose();
-            return memoryOwner;
+            IMemoryOwner<int> memory_owner = _NativeMemoryPool!.Rent<int>(1_000, 0u, out _, true);
+            memory_owner.Dispose();
+            return memory_owner;
         }
 
         [Benchmark]
         public IMemoryOwner<int> Rent1MBNoClear()
         {
-            IMemoryOwner<int> memoryOwner = _NativeMemoryPool!.Rent<int>(1_000_000, 0u, out _);
-            memoryOwner.Dispose();
-            return memoryOwner;
+            IMemoryOwner<int> memory_owner = _NativeMemoryPool!.Rent<int>(1_000_000, 0u, out _);
+            memory_owner.Dispose();
+            return memory_owner;
         }
 
         [Benchmark]
         public IMemoryOwner<int> Rent1MBClear()
         {
-            IMemoryOwner<int> memoryOwner = _NativeMemoryPool!.Rent<int>(1_000_000, 0u, out _, true);
-            memoryOwner.Dispose();
-            return memoryOwner;
+            IMemoryOwner<int> memory_owner = _NativeMemoryPool!.Rent<int>(1_000_000, 0u, out _, true);
+            memory_owner.Dispose();
+            return memory_owner;
         }
     }
 }

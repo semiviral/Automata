@@ -10,6 +10,8 @@ namespace Automata.Engine.Numerics
 
         public Primitive(T value) => _Value = value;
 
+        public static T operator /(Primitive<T> a, Primitive<T> b) => Divide(a, b);
+
 
         #region Conversions
 
